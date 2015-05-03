@@ -14,9 +14,7 @@ BLD_TOP=$(top_builddir)/..
 include $(BLD_TOP)/Makefile.global
 
 # Order is important: libblas contains symbols for the other two
-LAPACK_BLAS_LIBS=$(BLD_THIRDPARTY_LIB_DIR)/libblas.a \
-                 $(BLD_THIRDPARTY_LIB_DIR)/liblapack.a \
-                 $(BLD_THIRDPARTY_LIB_DIR)/libf2c.a -lblas -llapack -lf2c
+LAPACK_BLAS_LIBS=-L$(BLD_THIRDPARTY_LIB_DIR) -l:libblas.a -l:liblapack.a -l:libf2c.a
 
 NAME=gpla
 SO_MAJOR_VERSION=1
