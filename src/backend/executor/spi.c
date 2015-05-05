@@ -2030,28 +2030,6 @@ _SPI_pquery(QueryDesc * queryDesc, bool fire_triggers, long tcount)
 		ResetUsage();
 #endif
 
-	/**
-	 * For backoff feature, need to attach the weight to the plantree.
-	 */
-	if (gp_enable_resqueue_priority 
-			&& queryDesc->plannedstmt->planTree)
-	{
-		if (superuser())
-		{
-			queryDesc->plannedstmt->backoff_weight = BackoffSuperuserStatementWeight();					
-
-		} else if (ActivePortal)
-		{
-			queryDesc->plannedstmt->backoff_weight = ResourceQueueGetPriorityWeight(ActivePortal->queueId);					
-		}
-		else 
-		{
-			queryDesc->plannedstmt->backoff_weight = BackoffDefaultWeight();
-		}
-
-		Assert(queryDesc->plannedstmt->backoff_weight > 0);
-	}
-	
 	if (gp_resqueue_memory_policy != RESQUEUE_MEMORY_POLICY_NONE
 			&& superuser())
 	{

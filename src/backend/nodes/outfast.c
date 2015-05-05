@@ -395,7 +395,6 @@ _outPlannedStmt(StringInfo str, PlannedStmt *node)
 	/* Don't serialize policy */
 	WRITE_NODE_FIELD(sliceTable);
 	
-	WRITE_INT_FIELD(backoff_weight);
 	WRITE_UINT64_FIELD(query_mem);
 }
 

@@ -29,6 +29,8 @@ extern int	MaxResourcePortalsPerXact;
 extern bool	ResourceSelectOnly;
 extern bool	ResourceCleanupIdleGangs;
 
+extern Oid MyQueueId; /* resource queue for current role. */
+
 
 /*
  * Data structures
@@ -178,6 +180,8 @@ extern void SetResQueueId(void);
 extern uint32 ResCreatePortalId(const char *name);
 extern void AtCommit_ResScheduler(void);
 extern void AtAbort_ResScheduler(void);
+extern void ResHandleUtilityStmt(Portal portal, Node *stmt);
+extern bool ResLockUtilityPortal(Portal portal, float4 ignoreCostLimit);
 
 /**
  * Assert that the in-memory state matches the catalog table.

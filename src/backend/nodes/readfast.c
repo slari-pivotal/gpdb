@@ -2750,7 +2750,6 @@ _readPlannedStmt(const char ** str)
 	/* intoPolicy not serialized in outfast.c */
 	READ_NODE_FIELD(sliceTable);
 	
-	READ_INT_FIELD(backoff_weight);
 	READ_UINT64_FIELD(query_mem);
 
 	READ_DONE();

@@ -189,7 +189,6 @@ _copyPlannedStmt(PlannedStmt *from)
 		newnode->intoPolicy = NULL;
 	COPY_NODE_FIELD(sliceTable);
 
-	COPY_SCALAR_FIELD(backoff_weight);
 	COPY_SCALAR_FIELD(query_mem);
 
 	return newnode;

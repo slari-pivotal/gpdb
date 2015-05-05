@@ -751,6 +751,79 @@ ResLockPortal(Portal portal, QueryDesc *qDesc)
 
 }
 
+/* This function is a simple version of ResLockPortal, which is used specially
+ * for utility statements; the main logic is same as ResLockPortal, but remove
+ * some unnecessary lines and make some tiny adjustments for utility stmts */
+bool
+ResLockUtilityPortal(Portal portal, float4 ignoreCostLimit)
+{
+	bool returnReleaseOk = false;
+	LOCKTAG		tag;
+	Oid			queueid;
+	int32		lockResult = 0;
+	ResPortalIncrement	incData;
+
+	queueid = portal->queueId;
+
+	/*
+	 * Check we have a valid queue before going any further.
+	 */
+	if (queueid != InvalidOid)
+	{
+		/*
+		 * Setup the resource portal increments, ready to be added.
+		 */
+		incData.pid = MyProc->pid;
+		incData.portalId = portal->portalId;
+		incData.increments[RES_COUNT_LIMIT] = 1;
+		incData.increments[RES_COST_LIMIT] = ignoreCostLimit;
+		incData.increments[RES_MEMORY_LIMIT] = (Cost) 0.0;
+		returnReleaseOk = true;
+
+		/*
+		 * Get the resource lock.
+		 */
+#ifdef RESLOCK_DEBUG
+		elog(DEBUG1, "acquire resource lock for queue %u (portal %u)",
+				queueid, portal->portalId);
+#endif
+		SET_LOCKTAG_RESOURCE_QUEUE(tag, queueid);
+
+		PG_TRY();
+		{
+			lockResult = ResLockAcquire(&tag, &incData);
+		}
+		PG_CATCH();
+		{
+			/*
+			 * We might have been waiting for a resource queue lock when we get
+			 * here. Calling ResLockRelease without calling ResLockWaitCancel will
+			 * cause the locallock to be cleaned up, but will leave the global
+			 * variable lockAwaited still pointing to the locallock hash
+			 * entry.
+			 */
+			ResLockWaitCancel();
+
+			/* Change status to no longer waiting for lock */
+			pgstat_report_waiting(PGBE_WAITING_NONE);
+
+			/* If we had acquired the resource queue lock, release it and clean up */
+			ResLockRelease(&tag, portal->portalId);
+
+			/*
+			 * Perfmon related stuff: clean up if we got cancelled
+			 * while waiting.
+			 */
+
+			portal->queueId = InvalidOid;
+			portal->portalId = INVALID_PORTALID;
+
+			PG_RE_THROW();
+		}
+		PG_END_TRY();
+	}
+	return returnReleaseOk;
+}
 
 /*
  * ResUnLockPortal -- release a resource lock for a portal.
@@ -828,7 +901,23 @@ GetResQueueForRole(Oid roleid)
 void
 SetResQueueId(void)
 {
+	/* to cave the code of cache part, we provide a resource owner here if no
+	 * existing */
+	ResourceOwner owner = NULL;
+
+	if (CurrentResourceOwner == NULL)
+	{
+		owner = ResourceOwnerCreate(NULL, "SetResQueueId");
+		CurrentResourceOwner = owner;
+	}
+
 	MyQueueId = GetResQueueForRole(GetUserId());
+
+	if (owner)
+	{
+		CurrentResourceOwner = NULL;
+		ResourceOwnerDelete(owner);
+	}
 
 	return;
 }
@@ -959,4 +1048,38 @@ AtAbort_ResScheduler(void)
 	/* reset the portal id. */
 	if (numHoldPortals == 0)
 		portalId = 0;
+}
+
+/* This routine checks whether speficied utility stmt should be involved into
+ * resourece queue mgmt; if yes, take the slot from the resource queue; if we
+ * want to track additional utility stmts, add it into the condition check */
+void
+ResHandleUtilityStmt(Portal portal, Node *stmt)
+{
+	if (!IsA(stmt, CopyStmt))
+	{
+		return;
+	}
+
+	if (Gp_role == GP_ROLE_DISPATCH
+		&& ResourceScheduler
+		&& (!ResourceSelectOnly)
+		&& !superuser())
+	{
+		Assert(!LWLockHeldExclusiveByMe(ResQueueLock));
+		LWLockAcquire(ResQueueLock, LW_EXCLUSIVE);
+		ResQueue resQueue = ResQueueHashFind(portal->queueId);
+		LWLockRelease(ResQueueLock);
+
+		Assert(resQueue);
+		int numSlots = (int) ceil(resQueue->limits[RES_COUNT_LIMIT].threshold_value);
+
+		if (numSlots >= 1) /* statement limit exists */
+		{
+			PortalSetStatus(portal, PORTAL_QUEUE);
+
+			portal->releaseResLock = ResLockUtilityPortal(portal, resQueue->ignorecostlimit);
+		}
+		PortalSetStatus(portal, PORTAL_ACTIVE);
+	}
 }

@@ -1037,17 +1037,6 @@ exec_mpp_query(const char *query_string,
 		 */
 		plan->sliceTable = (Node *) sliceTable; /* Cache for CreateQueryDesc */
     }
-    if (gp_enable_resqueue_priority)
-    {
-    	if (plan && plan->backoff_weight > 0)
-    	{
-    		BackoffBackendEntryInit(gp_session_id, gp_command_count, plan->backoff_weight);
-    	}
-    	else
-    	{
-    		BackoffBackendEntryInit(gp_session_id, gp_command_count, BackoffDefaultWeight());
-    	}
-    }
 	
 	/*
 	 * Choose the command type from either the Query or the PlannedStmt.
@@ -4802,7 +4791,6 @@ PostgresMain(int argc, char *argv[],
 	
 					if (ouid > 0 && ouid != GetSessionUserId()) 
 						SetCurrentRoleId(ouid, ouid_is_super);		/* Set the outer UserId */
-
 
 					// UNDONE: Make this more official...
 					if (TempDtxContextInfo.distributedSnapshot.header.maxCount == 0)

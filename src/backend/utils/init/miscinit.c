@@ -508,8 +508,10 @@ InitializeSessionUserId(const char *rolename)
 	 * queue. Do this even in standalone backend mode, just in case someone
 	 * gives the superuser a resource queue.
 	 */
-	if (Gp_role == GP_ROLE_DISPATCH && ResourceScheduler)
+	if ((Gp_role == GP_ROLE_DISPATCH || Gp_role == GP_ROLE_EXECUTE) && ResourceScheduler)
+	{
 		SetResQueueId();
+	}
 
 	/* Record username and superuser status as GUC settings too */
 	SetConfigOption("session_authorization", rolename,
@@ -570,8 +572,10 @@ SetSessionAuthorization(Oid userid, bool is_superuser)
 	SetSessionUserId(userid, is_superuser);
 
 	/* If resource scheduling enabled, set the cached queue for the new role.*/
-	if (Gp_role == GP_ROLE_DISPATCH && ResourceScheduler)
+	if ((Gp_role == GP_ROLE_EXECUTE || Gp_role == GP_ROLE_DISPATCH) && ResourceScheduler)
+	{
 		SetResQueueId();
+	}
 
 	SetConfigOption("is_superuser",
 					is_superuser ? "on" : "off",
@@ -631,8 +635,10 @@ SetCurrentRoleId(Oid roleid, bool is_superuser)
 	SetOuterUserId(roleid);
 
 	/* If resource scheduling enabled, set the cached queue for the new role.*/
-	if (Gp_role == GP_ROLE_DISPATCH && ResourceScheduler)
+	if ((Gp_role == GP_ROLE_DISPATCH || Gp_role == GP_ROLE_EXECUTE) && ResourceScheduler)
+	{
 		SetResQueueId();
+	}
 
 	SetConfigOption("is_superuser",
 					is_superuser ? "on" : "off",

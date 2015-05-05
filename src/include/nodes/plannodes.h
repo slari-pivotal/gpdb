@@ -155,11 +155,6 @@ typedef struct PlannedStmt
 		 */
 		Node *sliceTable;
 		
-		/**
-		 * Backoff weight;
-		 */
-		int	backoff_weight;
-
 		/* What is the memory reserved for this query's execution? */
 		uint64		query_mem;
 
