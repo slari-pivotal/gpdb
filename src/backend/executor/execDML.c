@@ -18,6 +18,8 @@
 #include "executor/execdebug.h"
 #include "executor/execDML.h"
 #include "utils/lsyscache.h"
+#include "parser/parsetree.h"
+#include "cdb/cdbvars.h"
 
 /*
  * reconstructTupleValues
@@ -337,13 +339,54 @@ ExecInsert(TupleTableSlot *slot,
 	bool		rel_is_aocols = false;
 	bool		rel_is_external = false;
 
-
 	/*
 	 * get information on the (current) result relation
 	 */
 	if (estate->es_result_partitions)
 	{
 		resultRelInfo = slot_get_partition(slot, estate);
+
+		/* Check whether the user provided the correct leaf part only if required */
+		if (!dml_ignore_target_partition_check)
+		{
+			Assert(NULL != estate->es_result_partitions->part &&
+					NULL != resultRelInfo->ri_RelationDesc);
+
+			List *resultRelations = estate->es_plannedstmt->resultRelations;
+			/*
+			 * Only inheritance can generate multiple result relations and inheritance
+			 * is not compatible with partitions. As we are in inserting in partitioned
+			 * table, we should not have more than one resultRelation
+			 */
+			Assert(list_length(resultRelations) == 1);
+			/* We only have one resultRelations entry where the user originally intended to insert */
+			int rteIdxForUserRel = linitial_int(resultRelations);
+			Assert (rteIdxForUserRel > 0);
+			Oid userProvidedRel = InvalidOid;
+
+			if (1 == rteIdxForUserRel)
+			{
+				/* Optimization for typical case */
+				userProvidedRel = ((RangeTblEntry *) estate->es_plannedstmt->rtable->head->data.ptr_value)->relid;
+			}
+			else
+			{
+				userProvidedRel = getrelid(rteIdxForUserRel, estate->es_plannedstmt->rtable);
+			}
+
+			/* Error out if user provides a leaf partition that does not match with our calculated partition */
+			if (userProvidedRel != estate->es_result_partitions->part->parrelid &&
+				userProvidedRel != resultRelInfo->ri_RelationDesc->rd_id)
+			{
+				ereport(ERROR,
+						(errcode(ERRCODE_CHECK_VIOLATION),
+						 errmsg("Trying to insert row into wrong partition"),
+						 errdetail("Expected partition: %s, provided partition: %s",
+							resultRelInfo->ri_RelationDesc->rd_rel->relname.data,
+							estate->es_result_relation_info->ri_RelationDesc->rd_rel->relname.data),
+							errOmitLocation(true)));
+			}
+		}
 		estate->es_result_relation_info = resultRelInfo;
 	}
 	else

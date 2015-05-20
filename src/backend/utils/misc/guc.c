@@ -696,6 +696,12 @@ bool		gp_dynamic_partition_pruning = true;
 bool		gp_log_dynamic_partition_pruning = false;
 bool		gp_cte_sharing = false;
 
+/*
+ * If set to true, we will silently insert into the correct leaf
+ * part even if the user specifies a wrong leaf part as a insert target
+ */
+bool		dml_ignore_target_partition_check = false;
+
 char	   *gp_idf_deduplicate_str;
 
 bool fts_diskio_check = false;
@@ -4356,6 +4362,17 @@ static struct config_bool ConfigureNamesBool[] =
 		&gp_disable_catalog_access_on_segment,
 		false, NULL, NULL
 	},
+
+	{
+		{"dml_ignore_target_partition_check", PGC_USERSET, DEVELOPER_OPTIONS,
+			gettext_noop("Ignores checking whether the user provided correct partition during a direct insert to a leaf partition"),
+			NULL,
+			 GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE | GUC_GPDB_ADDOPT
+		},
+		&dml_ignore_target_partition_check,
+		false, NULL, NULL
+	},
+
 
 	/* End-of-list marker */
 	{

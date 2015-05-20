@@ -1044,6 +1044,8 @@ extern bool gp_enable_gpperfmon;
 extern int gp_gpperfmon_send_interval;
 extern bool force_bitmap_table_scan;
 
+extern bool dml_ignore_target_partition_check;
+
 /*gpmon alert level*/
 /* control log alert level used by gpperfmon */
 typedef enum 

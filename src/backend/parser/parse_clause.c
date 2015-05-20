@@ -919,12 +919,12 @@ setTargetTable(ParseState *pstate, RangeVar *relation,
 	
     /* MPP-21035: Directly modify a part of a partitioned table is disallowed */
     PartStatus targetRelPartStatus = rel_part_status(RelationGetRelid(pstate->p_target_relation));
-    if(PART_STATUS_INTERIOR == targetRelPartStatus || PART_STATUS_LEAF == targetRelPartStatus)
+    if(PART_STATUS_INTERIOR == targetRelPartStatus)
     {
     	ereport(ERROR,
     			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-    			 errmsg("Directly modifying a part of a partitioned table is disallowed"),
-    			 errhint("Modify the partitioned table instead"),
+    			 errmsg("Directly modifying intermediate part of a partitioned table is disallowed"),
+    			 errhint("Modify either the root or a leaf partition instead"),
     			 errOmitLocation(true)));
     }
 

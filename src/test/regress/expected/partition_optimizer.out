@@ -1016,7 +1016,7 @@ insert into ggg values (7, 7);
 insert into ggg values (8, 8);
 insert into ggg values (9, 9);
 insert into ggg values (10, 10);
-ERROR:  no partition for partitioning key  (seg1 qpvm4:40001 pid=6507)
+ERROR:  no partition for partitioning key  (seg1 rahmaf2-mbp:40001 pid=78905)
 select * from ggg order by 1, 2;
  id | a 
 ----+---
@@ -1374,7 +1374,7 @@ alter table hhh add partition cc end ('2010-01-01');
 NOTICE:  CREATE TABLE will create partition "hhh_1_prt_cc" for table "hhh"
 -- works - anonymous partition MPP-3350
 alter table hhh add partition end ('2010-02-01');
-NOTICE:  CREATE TABLE will create partition "hhh_1_prt_r1667423841" for table "hhh"
+NOTICE:  CREATE TABLE will create partition "hhh_1_prt_r172041867" for table "hhh"
 -- MPP-3607 - ADD PARTITION with open intervals
 create table no_end1 (aa int, bb int) partition by range (bb)
 (partition foo start(3));
@@ -1637,16 +1637,16 @@ insert into rank values (10, 1, date '2005-05-15', 'F');
 select * from rank ;
  id | rank |    year    | gender 
 ----+------+------------+--------
-  1 |    1 | 01-15-2001 | M
-  3 |    1 | 03-15-2003 | M
-  4 |    1 | 04-15-2004 | M
+  7 |    1 | 02-15-2002 | F
+ 10 |    1 | 05-15-2005 | F
+  5 |    1 | 05-15-2005 | M
+  2 |    1 | 02-15-2002 | M
   6 |    1 | 01-15-2001 | F
   8 |    1 | 03-15-2003 | F
   9 |    1 | 04-15-2004 | F
-  2 |    1 | 02-15-2002 | M
-  5 |    1 | 05-15-2005 | M
-  7 |    1 | 02-15-2002 | F
- 10 |    1 | 05-15-2005 | F
+  4 |    1 | 04-15-2004 | M
+  1 |    1 | 01-15-2001 | M
+  3 |    1 | 03-15-2003 | M
 (10 rows)
 
 alter table rank DROP partition boys restrict;
@@ -2013,8 +2013,8 @@ insert into foz values(2, '2010-04-01');
 select * from foz;
  i |     d      
 ---+------------
- 2 | 04-01-2010
  1 | 04-01-2003
+ 2 | 04-01-2010
 (2 rows)
 
 select * from foz_1_prt_dsf;
@@ -2036,7 +2036,7 @@ insert into d values(1, 10);
 insert into d values(1, 11);
 insert into d values(1, 55);
 insert into d values(1, 70);
-ERROR:  no partition for partitioning key  (seg0 qpvm4:40000 pid=6505)
+ERROR:  no partition for partitioning key  (seg0 rahmaf2-mbp:40000 pid=78904)
 select * from d;
  i | j  
 ---+----
@@ -2119,7 +2119,7 @@ NOTICE:  CREATE TABLE will create partition "d_1_prt_b" for table "d"
 insert into d values (1, 1);
 insert into d values (1, 2);
 insert into d values (1, NULL);
-ERROR:  no partition for partitioning key  (seg0 qpvm4:40000 pid=6505)
+ERROR:  no partition for partitioning key  (seg0 rahmaf2-mbp:40000 pid=78904)
 drop table  d cascade;
 -- allow NULLs into the default partition
 create table d (i int,  j int) partition by range(j)
@@ -2153,10 +2153,10 @@ insert into d values(1, 1, 2);
 insert into d values(1, 3, 4);
 insert into d values(1, 100, 20);
 insert into d values(1, 100, 2000);
-ERROR:  no partition for partitioning key  (seg0 qpvm4:40000 pid=6505)
+ERROR:  no partition for partitioning key  (seg0 rahmaf2-mbp:40000 pid=78904)
 insert into d values(1, '1000', '1001'), (1, '1001', '1002'), (1, '1003', '1004');
 insert into d values(1, 100, NULL);
-ERROR:  no partition for partitioning key  (seg0 qpvm4:40000 pid=6505)
+ERROR:  no partition for partitioning key  (seg0 rahmaf2-mbp:40000 pid=78904)
 select * from d_1_prt_a;
  a | b | c 
 ---+---+---
@@ -2400,7 +2400,7 @@ select * from region where r_regionkey = '7';
 -- tables since we cannot enfoce them. But since this insert maps to a 
 -- single definitive partition, we can detect it.
 insert into region values(7, 'abc', 'def');
-ERROR:  duplicate key violates unique constraint "region_pkey_1_prt_p1_2_prt_sp1_3_prt_1"  (seg0 qpvm4:40000 pid=6505)
+ERROR:  duplicate key violates unique constraint "region_pkey_1_prt_p1_2_prt_sp1_3_prt_1"  (seg0 rahmaf2-mbp:40000 pid=78904)
 drop table region;
 -- exchange
 -- 1) test all sanity checking
@@ -2773,7 +2773,7 @@ insert into bar_p values(6);
 insert into bar_p values(100);
 -- should fail
 alter table foo_p exchange partition for(rank(6)) with table bar_p;
-ERROR:  exchange table contains a row which violates the partitioning specification of "foo_p"  (seg1 qpvm4:40001 pid=10156)
+ERROR:  exchange table contains a row which violates the partitioning specification of "foo_p"  (seg1 rahmaf2-mbp:40001 pid=78919)
 alter table foo_p exchange partition for(rank(6)) with table bar_p without
 validation;
 select * from foo_p;
@@ -2839,7 +2839,7 @@ alter table foo_p exchange partition for(rank(6)) with table bar_p;
 -- but we do now, so the following tries to insert a value that can't go
 -- in part 6.
 insert into bar_p values(10, 10);
-ERROR:  One or more assertions failed  (seg1 antova-mbp.local:40011 pid=36151)
+ERROR:  One or more assertions failed  (seg1 rahmaf2-mbp:40001 pid=78919)
 DETAIL:  Check constraint foo_p_1_prt_6_check for table bar_p was violated
 drop table foo_p;
 select * from bar_p;
@@ -2934,8 +2934,8 @@ select * from foo_p;
 ---+---
  1 | 2
  3 | 4
- 2 | 3
  6 | 6
+ 2 | 3
 (4 rows)
 
 drop table bar_p;
@@ -3252,7 +3252,7 @@ select parname, parruleord, pg_get_expr(parrangestart, parchildrelid, false) as
 insert into foo_p values(5994400);
 insert into foo_p values(1);
 insert into foo_p values(6000002);
-ERROR:  no partition for partitioning key  (seg1 qpvm4:40001 pid=10156)
+ERROR:  no partition for partitioning key  (seg1 rahmaf2-mbp:40001 pid=78919)
 insert into foo_p values(5994376);
 drop table foo_p;
 create table foo_p (i int) 
@@ -3365,9 +3365,9 @@ select * from foo_p;
 select * from foo_p_1_prt_p1;
  i 
 ---
+ 2
  1
  3
- 2
 (3 rows)
 
 select * from foo_p_1_prt_p2;
@@ -4653,7 +4653,7 @@ NOTICE:  CREATE TABLE will create partition "j_1_prt_b" for table "j"
 insert into j select i from generate_series(1, 8) i;
 alter table j split partition for(1) at (2, 3) into (partition fa, partition
 fb);
-NOTICE:  exchanged partition "a" of relation "j" with relation "pg_temp_8472976"
+NOTICE:  exchanged partition "a" of relation "j" with relation "pg_temp_2826839"
 NOTICE:  dropped partition "a" for relation "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_fa" for table "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_fb" for table "j"
@@ -4667,26 +4667,26 @@ select * from j_1_prt_fa;
 select * from j_1_prt_fb;
  i 
 ---
- 2
  3
+ 2
 (2 rows)
 
 alter table j split partition for(5) at (6);
-NOTICE:  exchanged partition "b" of relation "j" with relation "pg_temp_8472976"
+NOTICE:  exchanged partition "b" of relation "j" with relation "pg_temp_2826839"
 NOTICE:  dropped partition "b" for relation "j"
-NOTICE:  CREATE TABLE will create partition "j_1_prt_r1898830594" for table "j"
-NOTICE:  CREATE TABLE will create partition "j_1_prt_r370203341" for table "j"
+NOTICE:  CREATE TABLE will create partition "j_1_prt_r797746864" for table "j"
+NOTICE:  CREATE TABLE will create partition "j_1_prt_r638099219" for table "j"
 select * from j;
  i 
 ---
- 4
- 2
- 8
- 6
  1
  3
  5
  7
+ 4
+ 2
+ 8
+ 6
 (8 rows)
 
 -- should fail
@@ -4723,36 +4723,36 @@ NOTICE:  CREATE TABLE will create partition "k_1_prt_6" for table "k"
 insert into k select i from generate_series(1, 30) i;
 alter table k split default partition start(15) end(20) into
 (partition mydef, partition foo);
-NOTICE:  exchanged partition "mydef" of relation "k" with relation "pg_temp_8473694"
+NOTICE:  exchanged partition "mydef" of relation "k" with relation "pg_temp_2827557"
 NOTICE:  dropped partition "mydef" for relation "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_foo" for table "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_mydef" for table "k"
 select * from k_1_prt_foo;
  i  
 ----
+ 16
+ 18
  15
  17
  19
- 16
- 18
 (5 rows)
 
 alter table k split default partition start(22) exclusive end(25) inclusive
 into (partition bar, partition mydef);
-NOTICE:  exchanged partition "mydef" of relation "k" with relation "pg_temp_8473694"
+NOTICE:  exchanged partition "mydef" of relation "k" with relation "pg_temp_2827557"
 NOTICE:  dropped partition "mydef" for relation "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_bar" for table "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_mydef" for table "k"
 select * from k_1_prt_bar;
  i  
 ----
+ 24
  23
  25
- 24
 (3 rows)
 
 alter table k split partition bar at (23) into (partition baz, partition foz);
-NOTICE:  exchanged partition "bar" of relation "k" with relation "pg_temp_8473694"
+NOTICE:  exchanged partition "bar" of relation "k" with relation "pg_temp_2827557"
 NOTICE:  dropped partition "bar" for relation "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_baz" for table "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_foz" for table "k"
@@ -5031,7 +5031,7 @@ revoke all on a from public;
 grant insert on a to part_role;
 alter table a split partition for(rank(1)) at (date '2006-01-01')
   into (partition f, partition g);
-NOTICE:  exchanged partition "f_1" of relation "a" with relation "pg_temp_8475886"
+NOTICE:  exchanged partition "f_1" of relation "a" with relation "pg_temp_2829749"
 NOTICE:  dropped partition "f_1" for relation "a"
 NOTICE:  CREATE TABLE will create partition "a_1_prt_f" for table "a"
 NOTICE:  CREATE TABLE will create partition "a_1_prt_g" for table "a"
@@ -5039,7 +5039,7 @@ alter table a add default partition mydef;
 NOTICE:  CREATE TABLE will create partition "a_1_prt_mydef" for table "a"
 alter table a split default partition start(date '2010-01-01') end(date
 '2011-01-01') into(partition mydef, partition other);
-NOTICE:  exchanged partition "mydef" of relation "a" with relation "pg_temp_8475886"
+NOTICE:  exchanged partition "mydef" of relation "a" with relation "pg_temp_2829749"
 NOTICE:  dropped partition "mydef" for relation "a"
 NOTICE:  CREATE TABLE will create partition "a_1_prt_other" for table "a"
 NOTICE:  CREATE TABLE will create partition "a_1_prt_mydef" for table "a"
@@ -5097,15 +5097,15 @@ into (partition aa, partition nodate);
 ERROR:  default partition name missing from INTO clause
 alter table k split default partition start ('2009-01-01') end ('2009-02-01')
 into (partition aa, partition default_part);
-NOTICE:  exchanged partition "default_part" of relation "k" with relation "pg_temp_8476358"
+NOTICE:  exchanged partition "default_part" of relation "k" with relation "pg_temp_2830221"
 NOTICE:  dropped partition "default_part" for relation "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_aa" for table "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_default_part" for table "k"
 -- check that it works without INTO
 alter table k split default partition start ('2009-02-01') end ('2009-03-01');
-NOTICE:  exchanged partition "default_part" of relation "k" with relation "pg_temp_8476358"
+NOTICE:  exchanged partition "default_part" of relation "k" with relation "pg_temp_2830221"
 NOTICE:  dropped partition "default_part" for relation "k"
-NOTICE:  CREATE TABLE will create partition "k_1_prt_r26750794" for table "k"
+NOTICE:  CREATE TABLE will create partition "k_1_prt_r1620328366" for table "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_default_part" for table "k"
 drop table k;
 -- List too
@@ -5119,14 +5119,14 @@ NOTICE:  CREATE TABLE will create partition "k_1_prt_mydef" for table "k"
 alter table k split partition mydef at (5) into (partition foo, partition bar);
 ERROR:  default partition name missing from INTO clause
 alter table k split partition mydef at (5) into (partition foo, partition mydef);
-NOTICE:  exchanged partition "mydef" of relation "k" with relation "pg_temp_8477218"
+NOTICE:  exchanged partition "mydef" of relation "k" with relation "pg_temp_2831081"
 NOTICE:  dropped partition "mydef" for relation "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_foo" for table "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_mydef" for table "k"
 alter table k split partition mydef at (10);
-NOTICE:  exchanged partition "mydef" of relation "k" with relation "pg_temp_8477218"
+NOTICE:  exchanged partition "mydef" of relation "k" with relation "pg_temp_2831081"
 NOTICE:  dropped partition "mydef" for relation "k"
-NOTICE:  CREATE TABLE will create partition "k_1_prt_r1951295394" for table "k"
+NOTICE:  CREATE TABLE will create partition "k_1_prt_r164868795" for table "k"
 NOTICE:  CREATE TABLE will create partition "k_1_prt_mydef" for table "k"
 drop table k;
 -- For LIST, make sure that we reject AT() clauses which match all parameters
@@ -5137,7 +5137,7 @@ HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sur
 NOTICE:  CREATE TABLE will create partition "j_1_prt_a" for table "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_b" for table "j"
 alter table j split partition for(1) at (1,2) into (partition fa, partition fb);
-NOTICE:  exchanged partition "a" of relation "j" with relation "pg_temp_8477688"
+NOTICE:  exchanged partition "a" of relation "j" with relation "pg_temp_2831551"
 NOTICE:  dropped partition "a" for relation "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_fa" for table "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_fb" for table "j"
@@ -5155,7 +5155,7 @@ NOTICE:  CREATE TABLE will create partition "j_1_prt_b" for table "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_default_part" for table "j"
 alter table j split partition for(1) at (1,2) into (partition f1a, partition
 f1b);
-NOTICE:  exchanged partition "a" of relation "j" with relation "pg_temp_8477964"
+NOTICE:  exchanged partition "a" of relation "j" with relation "pg_temp_2831827"
 NOTICE:  dropped partition "a" for relation "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_f1a" for table "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_f1b" for table "j"
@@ -5168,7 +5168,7 @@ HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sur
 NOTICE:  CREATE TABLE will create partition "j_1_prt_default_part" for table "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_a" for table "j"
 alter table j split partition for(1) at (5) into (partition f1a, partition f1b);
-NOTICE:  exchanged partition "a" of relation "j" with relation "pg_temp_8478267"
+NOTICE:  exchanged partition "a" of relation "j" with relation "pg_temp_2832130"
 NOTICE:  dropped partition "a" for relation "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_f1a" for table "j"
 NOTICE:  CREATE TABLE will create partition "j_1_prt_f1b" for table "j"
@@ -5211,7 +5211,7 @@ NOTICE:  CREATE TABLE will create partition "list_test_1_prt_bar" for table "lis
 NOTICE:  CREATE TABLE will create partition "list_test_1_prt_baz" for table "list_test"
 alter table list_test split default partition at ('baz') into (partition bing,
 default partition);
-NOTICE:  exchanged partition "baz" of relation "list_test" with relation "pg_temp_8479047"
+NOTICE:  exchanged partition "baz" of relation "list_test" with relation "pg_temp_2832910"
 NOTICE:  dropped partition "baz" for relation "list_test"
 NOTICE:  CREATE TABLE will create partition "list_test_1_prt_bing" for table "list_test"
 NOTICE:  CREATE TABLE will create partition "list_test_1_prt_baz" for table "list_test"
@@ -5272,13 +5272,13 @@ insert into rank values(2, 2, 2008, 'M', 3);
 select * from rank;
  id | rank | year | gender | count 
 ----+------+------+--------+-------
-  1 |    1 | 2007 | M      |     1
   2 |    2 | 2008 | M      |     3
+  1 |    1 | 2007 | M      |     1
 (2 rows)
 
 alter table rank alter partition boys split default partition start ('2007')
 end ('2008') into (partition bfuture, partition year7);
-NOTICE:  exchanged partition "bfuture" of partition "boys" of relation "rank" with relation "pg_temp_8479493"
+NOTICE:  exchanged partition "bfuture" of partition "boys" of relation "rank" with relation "pg_temp_2833356"
 NOTICE:  dropped partition "bfuture" for partition "boys" of relation "rank"
 NOTICE:  CREATE TABLE will create partition "rank_1_prt_boys_2_prt_year7" for table "rank_1_prt_boys"
 NOTICE:  CREATE TABLE will create partition "rank_1_prt_boys_2_prt_bfuture" for table "rank_1_prt_boys"
@@ -5337,7 +5337,7 @@ select * from r;
 -- Split test
 alter table rank alter partition girls split default partition start('2008')
   end('2020') into (partition years, partition gfuture);
-NOTICE:  exchanged partition "gfuture" of partition "girls" of relation "rank" with relation "pg_temp_8479493"
+NOTICE:  exchanged partition "gfuture" of partition "girls" of relation "rank" with relation "pg_temp_2833356"
 NOTICE:  dropped partition "gfuture" for partition "girls" of relation "rank"
 NOTICE:  CREATE TABLE will create partition "rank_1_prt_girls_2_prt_years" for table "rank_1_prt_girls"
 NOTICE:  CREATE TABLE will create partition "rank_1_prt_girls_2_prt_gfuture" for table "rank_1_prt_girls"
@@ -5383,7 +5383,7 @@ alter table bar_p alter partition for ('5') alter partition for ('5')
   drop partition for ('5');
 insert into bar_p values(1, 1);
 insert into bar_p values(5, 5);
-ERROR:  no partition for partitioning key  (seg0 qpvm4:40000 pid=13891)
+ERROR:  no partition for partitioning key  (seg0 rahmaf2-mbp:40000 pid=78930)
 drop table bar_p;
 select parrelid::regclass, * from pg_partition;
  parrelid | parrelid | parkind | parlevel | paristemplate | parnatts | paratts | parclass 
@@ -5547,6 +5547,9 @@ NOTICE:  CREATE TABLE will create partition "g_1_prt_6" for table "g"
 NOTICE:  CREATE TABLE will create partition "g_1_prt_7" for table "g"
 NOTICE:  CREATE TABLE will create partition "g_1_prt_8" for table "g"
 NOTICE:  CREATE TABLE will create partition "g_1_prt_9" for table "g"
+-- start_ignore
+-- Known_opt_diff: MPP-20936
+-- end_ignore
 select * from locktest;
           coalesce          |        mode         | locktype 
 ----------------------------+---------------------+----------
@@ -5571,6 +5574,9 @@ commit;
 -- drop
 begin;
 drop table g;
+-- start_ignore
+-- Known_opt_diff: MPP-20936
+-- end_ignore
 select * from locktest;
           coalesce          |        mode         | locktype 
 ----------------------------+---------------------+----------
@@ -5980,7 +5986,7 @@ ALTER TABLE SG_CAL_EVENT_SILVERTAIL_HOUR SPLIT DEFAULT PARTITION
 START ('2009-04-29 07:00:00'::timestamp) INCLUSIVE END ('2009-04-29
 08:00:00'::timestamp) EXCLUSIVE INTO ( PARTITION P2009042907 ,
 PARTITION st_default );
-NOTICE:  exchanged partition "st_default" of relation "sg_cal_event_silvertail_hour" with relation "pg_temp_8485639"
+NOTICE:  exchanged partition "st_default" of relation "sg_cal_event_silvertail_hour" with relation "pg_temp_2839502"
 NOTICE:  dropped partition "st_default" for relation "sg_cal_event_silvertail_hour"
 NOTICE:  CREATE TABLE will create partition "sg_cal_event_silvertail_hour_1_prt_p2009042907" for table "sg_cal_event_silvertail_hour"
 NOTICE:  CREATE TABLE will create partition "sg_cal_event_silvertail_hour_1_prt_st_default" for table "sg_cal_event_silvertail_hour"
@@ -6004,7 +6010,7 @@ NOTICE:  CREATE TABLE will create partition "foo_p_1_prt_10" for table "foo_p"
 insert into foo_p select i, i+1, repeat('fooo', 9000) from generate_series(1, 100) i;
 alter table foo_p split default partition start (10) end(20) 
 into (partition p10_20, partition def);
-NOTICE:  exchanged partition "def" of relation "foo_p" with relation "pg_temp_8485964"
+NOTICE:  exchanged partition "def" of relation "foo_p" with relation "pg_temp_2839827"
 NOTICE:  dropped partition "def" for relation "foo_p"
 NOTICE:  CREATE TABLE will create partition "foo_p_1_prt_p10_20" for table "foo_p"
 NOTICE:  CREATE TABLE will create partition "foo_p_1_prt_def" for table "foo_p"
@@ -6039,7 +6045,7 @@ NOTICE:  CREATE TABLE will create partition "foo_p_1_prt_10" for table "foo_p"
 insert into foo_p select i, i+1, repeat('fooo', 9000) from generate_series(1, 100) i;
 alter table foo_p split default partition start (10) end(20) 
 into (partition p10_20, partition def);
-NOTICE:  exchanged partition "def" of relation "foo_p" with relation "pg_temp_8486618"
+NOTICE:  exchanged partition "def" of relation "foo_p" with relation "pg_temp_2840481"
 NOTICE:  dropped partition "def" for relation "foo_p"
 NOTICE:  CREATE TABLE will create partition "foo_p_1_prt_p10_20" for table "foo_p"
 NOTICE:  CREATE TABLE will create partition "foo_p_1_prt_def" for table "foo_p"
@@ -6342,7 +6348,7 @@ NOTICE:  CREATE TABLE will create partition "partsupp_1_prt_p2" for table "parts
 alter table partsupp split partition p2 at (NULL);
 ERROR:  AT clause parameter is not a member of the target partition specification
 alter table partsupp split default partition start(null) end(200);
-NOTICE:  exchanged partition "def" of relation "partsupp" with relation "pg_temp_8489517"
+NOTICE:  exchanged partition "def" of relation "partsupp" with relation "pg_temp_2843380"
 NOTICE:  dropped partition "def" for relation "partsupp"
 ERROR:  cannot use NULL with range partition specification
 drop table partsupp;
@@ -6500,7 +6506,7 @@ select * from pg_indexes where schemaname = 'public' and tablename like 'ti%';
 (8 rows)
 
 alter table ti split partition p3 at (7) into (partition pnew1, partition pnew2);
-NOTICE:  exchanged partition "p3" of relation "ti" with relation "pg_temp_8490490"
+NOTICE:  exchanged partition "p3" of relation "ti" with relation "pg_temp_2844353"
 NOTICE:  dropped partition "p3" for relation "ti"
 NOTICE:  CREATE TABLE will create partition "ti_1_prt_pnew1" for table "ti"
 NOTICE:  CREATE TABLE will create partition "ti_1_prt_pnew2" for table "ti"
@@ -6752,7 +6758,7 @@ alter table mpp6297 add partition start (3) end (4) every (1);
 ERROR:  cannot specify EVERY when adding RANGE partition to relation "mpp6297"
 -- this is legal but it doesn't fix the EVERY clause
 alter table mpp6297 add partition start (3) end (4) ;
-NOTICE:  CREATE TABLE will create partition "mpp6297_1_prt_r1666409570" for table "mpp6297"
+NOTICE:  CREATE TABLE will create partition "mpp6297_1_prt_r1418604450" for table "mpp6297"
 -- note that the every clause is still splits into two parts: 1-3 and
 -- 4-10, because the new partition from 3 to 4 doesn't have an EVERY
 -- attribute
@@ -6986,7 +6992,7 @@ select pg_get_partition_def('mpp6589a'::regclass,true);
 ALTER TABLE mpp6589a 
 SPLIT PARTITION p20090312 AT( '20090310' ) 
 INTO( PARTITION p20090309, PARTITION p20090312_tmp);
-NOTICE:  exchanged partition "p20090312" of relation "mpp6589a" with relation "pg_temp_8494389"
+NOTICE:  exchanged partition "p20090312" of relation "mpp6589a" with relation "pg_temp_2848252"
 NOTICE:  dropped partition "p20090312" for relation "mpp6589a"
 NOTICE:  CREATE TABLE will create partition "mpp6589a_1_prt_p20090309" for table "mpp6589a"
 NOTICE:  CREATE TABLE will create partition "mpp6589a_1_prt_p20090312_tmp" for table "mpp6589a"
@@ -7023,7 +7029,7 @@ ALTER TABLE mpp6589i ADD PARTITION start (3) exclusive;
 ERROR:  new partition overlaps existing partition
 -- should work - make sure can add an open-ended final partition
 ALTER TABLE mpp6589i ADD PARTITION start (3);
-NOTICE:  CREATE TABLE will create partition "mpp6589i_1_prt_r1585119321" for table "mpp6589i"
+NOTICE:  CREATE TABLE will create partition "mpp6589i_1_prt_r1832540507" for table "mpp6589i"
 select pg_get_partition_def('mpp6589i'::regclass,true);
      pg_get_partition_def      
 -------------------------------
@@ -7060,7 +7066,7 @@ select pg_get_partition_def('mpp6589b'::regclass,true);
 ALTER TABLE mpp6589b 
 SPLIT PARTITION p20090312 AT( '20090310' ) 
 INTO( PARTITION p20090309, PARTITION p20090312_tmp);
-NOTICE:  exchanged partition "p20090312" of relation "mpp6589b" with relation "pg_temp_8494753"
+NOTICE:  exchanged partition "p20090312" of relation "mpp6589b" with relation "pg_temp_2848616"
 NOTICE:  dropped partition "p20090312" for relation "mpp6589b"
 NOTICE:  CREATE TABLE will create partition "mpp6589b_1_prt_p20090309" for table "mpp6589b"
 NOTICE:  CREATE TABLE will create partition "mpp6589b_1_prt_p20090312_tmp" for table "mpp6589b"
@@ -7989,7 +7995,7 @@ ALTER TABLE MPP10223pk
  ALTER PARTITION min15part 
 SPLIT PARTITION  P_FUTURE AT ('2010-06-25') 
 INTO (PARTITION P20010101, PARTITION P_FUTURE);
-NOTICE:  exchanged partition "p_future" of partition "min15part" of relation "mpp10223pk" with relation "pg_temp_8500085"
+NOTICE:  exchanged partition "p_future" of partition "min15part" of relation "mpp10223pk" with relation "pg_temp_2853948"
 NOTICE:  dropped partition "p_future" for partition "min15part" of relation "mpp10223pk"
 NOTICE:  CREATE TABLE will create partition "mpp10223pk_1_prt_min15part_2_prt_p20010101" for table "mpp10223pk_1_prt_min15part"
 NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "mpp10223pk_1_prt_min15part_2_prt_p20010101_pkey" for table "mpp10223pk_1_prt_min15part_2_prt_p20010101"
@@ -8070,7 +8076,7 @@ ALTER TABLE MPP10223
  ALTER PARTITION min15part 
 SPLIT PARTITION  P_FUTURE AT ('2010-06-25') 
 INTO (PARTITION P20010101, PARTITION P_FUTURE2);
-NOTICE:  exchanged partition "p_future" of partition "min15part" of relation "mpp10223" with relation "pg_temp_8501496"
+NOTICE:  exchanged partition "p_future" of partition "min15part" of relation "mpp10223" with relation "pg_temp_2855359"
 NOTICE:  dropped partition "p_future" for partition "min15part" of relation "mpp10223"
 NOTICE:  CREATE TABLE will create partition "mpp10223_1_prt_min15part_2_prt_p20010101" for table "mpp10223_1_prt_min15part"
 NOTICE:  CREATE TABLE will create partition "mpp10223_1_prt_min15part_2_prt_p_future2" for table "mpp10223_1_prt_min15part"
@@ -8124,7 +8130,7 @@ NOTICE:  CREATE TABLE will create partition "mpp10223b_1_prt_p1_2_prt_sp2" for t
 alter table mpp10223b alter partition p1 
 split partition for (rank(1) ) at (25)
 into (partition sp2, partition sp3);
-NOTICE:  exchanged partition "sp2" of partition "p1" of relation "mpp10223b" with relation "pg_temp_8502467"
+NOTICE:  exchanged partition "sp2" of partition "p1" of relation "mpp10223b" with relation "pg_temp_2856330"
 NOTICE:  dropped partition "sp2" for partition "p1" of relation "mpp10223b"
 NOTICE:  CREATE TABLE will create partition "mpp10223b_1_prt_p1_2_prt_sp2" for table "mpp10223b_1_prt_p1"
 NOTICE:  CREATE TABLE will create partition "mpp10223b_1_prt_p1_2_prt_sp3" for table "mpp10223b_1_prt_p1"
@@ -8322,7 +8328,7 @@ ALTER TABLE mpp10321a
 ALTER PARTITION min15part
 SPLIT PARTITION  P_FUTURE AT ('2010-06-25')
 INTO (PARTITION P20010101, PARTITION P_FUTURE);
-NOTICE:  exchanged partition "p_future" of partition "min15part" of relation "mpp10321a" with relation "pg_temp_8506765"
+NOTICE:  exchanged partition "p_future" of partition "min15part" of relation "mpp10321a" with relation "pg_temp_2860628"
 NOTICE:  dropped partition "p_future" for partition "min15part" of relation "mpp10321a"
 NOTICE:  CREATE TABLE will create partition "mpp10321a_1_prt_min15part_2_prt_p20010101" for table "mpp10321a_1_prt_min15part"
 NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "mpp10321a_1_prt_min15part_2_prt_p20010101_pkey" for table "mpp10321a_1_prt_min15part_2_prt_p20010101"
@@ -8506,7 +8512,7 @@ ERROR:  AT clause parameter is not a member of the target partition specificatio
 -- good split
 alter table cov1 split partition p1 at (5,6,7) 
 into (partition p1, partition p2);
-NOTICE:  exchanged partition "p1" of relation "cov1" with relation "pg_temp_8507888"
+NOTICE:  exchanged partition "p1" of relation "cov1" with relation "pg_temp_2861751"
 NOTICE:  dropped partition "p1" for relation "cov1"
 NOTICE:  CREATE TABLE will create partition "cov1_1_prt_p1" for table "cov1"
 NOTICE:  CREATE TABLE will create partition "cov1_1_prt_p2" for table "cov1"
@@ -8570,7 +8576,7 @@ alter table test_table split default partition
         start (3)
 	end (4)
 	into (partition p2, partition default_partition);
-NOTICE:  exchanged partition "default_partition" of relation "test_table" with relation "pg_temp_8508125"
+NOTICE:  exchanged partition "default_partition" of relation "test_table" with relation "pg_temp_2861988"
 NOTICE:  dropped partition "default_partition" for relation "test_table"
 NOTICE:  CREATE TABLE will create partition "test_table_1_prt_p2" for table "test_table"
 NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "test_table_1_prt_p2_pkey" for table "test_table_1_prt_p2"
@@ -8803,7 +8809,7 @@ alter table s add partition s_test
 NOTICE:  CREATE TABLE will create partition "s_1_prt_s_test" for table "s"
 alter table s split partition for (date '2008-01-03') at (date '2008-01-04')
   into (partition s_test, partition s_test2);
-NOTICE:  exchanged partition "s_test" of relation "s" with relation "pg_temp_8509206"
+NOTICE:  exchanged partition "s_test" of relation "s" with relation "pg_temp_2863069"
 NOTICE:  dropped partition "s_test" for relation "s"
 NOTICE:  CREATE TABLE will create partition "s_1_prt_s_test" for table "s"
 NOTICE:  CREATE TABLE will create partition "s_1_prt_s_test2" for table "s"
@@ -9066,7 +9072,7 @@ create index s_heap_index on s_heap (i2);
 NOTICE:  building index for child partition "s_heap_1_prt_def"
 alter table s_heap split partition def
     at ('def0', 'def1', 'def2', 'def3', 'def4') into (partition def5, partition def0);
-NOTICE:  exchanged partition "def" of relation "s_heap" with relation "pg_temp_8511483"
+NOTICE:  exchanged partition "def" of relation "s_heap" with relation "pg_temp_2865346"
 NOTICE:  dropped partition "def" for relation "s_heap"
 NOTICE:  CREATE TABLE will create partition "s_heap_1_prt_def5" for table "s_heap"
 NOTICE:  CREATE TABLE will create partition "s_heap_1_prt_def0" for table "s_heap"
@@ -9099,7 +9105,7 @@ create index s_heap_ao_index on s_heap_ao (i2);
 NOTICE:  building index for child partition "s_heap_ao_1_prt_def"
 alter table s_heap_ao split partition def
     at ('def0', 'def1', 'def2', 'def3', 'def4') into (partition def5, partition def0);
-NOTICE:  exchanged partition "def" of relation "s_heap_ao" with relation "pg_temp_8511806"
+NOTICE:  exchanged partition "def" of relation "s_heap_ao" with relation "pg_temp_2865669"
 NOTICE:  dropped partition "def" for relation "s_heap_ao"
 NOTICE:  CREATE TABLE will create partition "s_heap_ao_1_prt_def5" for table "s_heap_ao"
 NOTICE:  CREATE TABLE will create partition "s_heap_ao_1_prt_def0" for table "s_heap_ao"
@@ -9129,7 +9135,7 @@ create index s_heap_co_index on s_heap_co (i2);
 NOTICE:  building index for child partition "s_heap_co_1_prt_def"
 alter table s_heap_co split partition def
     at ('def0', 'def1', 'def2', 'def3', 'def4') into (partition def5, partition def0);
-NOTICE:  exchanged partition "def" of relation "s_heap_co" with relation "pg_temp_8512147"
+NOTICE:  exchanged partition "def" of relation "s_heap_co" with relation "pg_temp_2866010"
 NOTICE:  dropped partition "def" for relation "s_heap_co"
 NOTICE:  CREATE TABLE will create partition "s_heap_co_1_prt_def5" for table "s_heap_co"
 NOTICE:  CREATE TABLE will create partition "s_heap_co_1_prt_def0" for table "s_heap_co"
@@ -9618,7 +9624,7 @@ NOTICE:  CREATE TABLE will create partition "t_1_prt_p2" for table "t"
 alter table t drop column d;
 -- Alter table split partition
 alter table t split partition for(1) at (2) into (partition p11, partition p22);
-NOTICE:  exchanged partition "p1" of relation "t" with relation "pg_temp_8513427"
+NOTICE:  exchanged partition "p1" of relation "t" with relation "pg_temp_2867290"
 NOTICE:  dropped partition "p1" for relation "t"
 NOTICE:  CREATE TABLE will create partition "t_1_prt_p11" for table "t"
 NOTICE:  CREATE TABLE will create partition "t_1_prt_p22" for table "t"
@@ -9631,3 +9637,671 @@ select * from t;
 
 -- END MPP-19105
 reset optimizer_nestloop_factor;
+-- Sub-partition insertion with checking if the user provided correct leaf part
+set dml_ignore_target_partition_check=false;
+drop table if exists part_tab;
+NOTICE:  table "part_tab" does not exist, skipping
+create table part_tab ( i int, j int) distributed by (i) partition by range(j) (start(0) end(10) every(2));
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_1" for table "part_tab"
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_2" for table "part_tab"
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_3" for table "part_tab"
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_4" for table "part_tab"
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_5" for table "part_tab"
+-- Wrong part
+insert into part_tab_1_prt_1 values(5,5);
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  Check constraint part_tab_1_prt_1_check for table part_tab_1_prt_1 was violated
+select * from part_tab;
+ i | j 
+---+---
+(0 rows)
+
+select * from part_tab_1_prt_1;
+ i | j 
+---+---
+(0 rows)
+
+insert into part_tab_1_prt_2 values(5,5);
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  Check constraint part_tab_1_prt_2_check for table part_tab_1_prt_2 was violated
+select * from part_tab;
+ i | j 
+---+---
+(0 rows)
+
+select * from part_tab_1_prt_2;
+ i | j 
+---+---
+(0 rows)
+
+-- Right part
+insert into part_tab_1_prt_3 values(5,5);
+select * from part_tab;
+ i | j 
+---+---
+ 5 | 5
+(1 row)
+
+select * from part_tab_1_prt_3;
+ i | j 
+---+---
+ 5 | 5
+(1 row)
+
+-- Root part
+insert into part_tab values(5,5);
+select * from part_tab;
+ i | j 
+---+---
+ 5 | 5
+ 5 | 5
+(2 rows)
+
+drop table if exists input1;
+NOTICE:  table "input1" does not exist, skipping
+create table input1 (x int, y int);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'x' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+insert into input1 select i, i from (select generate_series(1,10) as i) as t;
+drop table if exists input2;
+NOTICE:  table "input2" does not exist, skipping
+create table input2 (x int, y int);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'x' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+insert into input2 select i, i from (select generate_series(1,10) as i) as t;
+-- Multiple range table entries in the plan
+insert into part_tab_1_prt_1 select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x where i2.y = 5;
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  Check constraint part_tab_1_prt_1_check for table part_tab_1_prt_1 was violated
+select * from part_tab;
+ i | j 
+---+---
+ 5 | 5
+ 5 | 5
+(2 rows)
+
+select * from part_tab_1_prt_1;
+ i | j 
+---+---
+(0 rows)
+
+insert into part_tab_1_prt_2 select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x where i2.y = 5;
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  Check constraint part_tab_1_prt_2_check for table part_tab_1_prt_2 was violated
+select * from part_tab;
+ i | j 
+---+---
+ 5 | 5
+ 5 | 5
+(2 rows)
+
+select * from part_tab_1_prt_2;
+ i | j 
+---+---
+(0 rows)
+
+-- Right part
+insert into part_tab_1_prt_3 select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x where i1.x between 4 and 5;
+select * from part_tab;
+ i | j 
+---+---
+ 4 | 4
+ 5 | 5
+ 5 | 5
+ 5 | 5
+(4 rows)
+
+select * from part_tab_1_prt_3;
+ i | j 
+---+---
+ 4 | 4
+ 5 | 5
+ 5 | 5
+ 5 | 5
+(4 rows)
+
+-- Root part but no matching part for i2.y == 10
+insert into part_tab select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x;
+ERROR:  no partition for partitioning key  (seg1 rahmaf2-mbp:40001 pid=78931)
+select * from part_tab;
+ i | j 
+---+---
+ 4 | 4
+ 5 | 5
+ 5 | 5
+ 5 | 5
+(4 rows)
+
+-- Root part
+insert into part_tab select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x where i2.y < 10;
+select * from part_tab;
+ i | j 
+---+---
+ 2 | 2
+ 4 | 4
+ 4 | 4
+ 6 | 6
+ 8 | 8
+ 1 | 1
+ 3 | 3
+ 5 | 5
+ 5 | 5
+ 5 | 5
+ 5 | 5
+ 7 | 7
+ 9 | 9
+(13 rows)
+
+-- Multi-level partitioning
+drop table if exists deep_part;
+NOTICE:  table "deep_part" does not exist, skipping
+create table deep_part ( i int, j int, k int, s char(5)) 
+distributed by (i) 
+partition by list(s)
+subpartition by range (j) subpartition template (start(1)  end(10) every(2))
+subpartition by range (k) subpartition template (start(1)  end(10) every(2))
+(partition female values('F'), partition male values('M'))
+;
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female" for table "deep_part"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male" for table "deep_part"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_1" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_2" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_3" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_4" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_5" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_1" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_2" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_3" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_4" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_5" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_1" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_2" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_3" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_4" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_5" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_1" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_2" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_3" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_4" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_5" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_1" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_2" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_3" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_4" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_5" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_1" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_2" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_3" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_4" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_5" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_1" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_2" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_3" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_4" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_5" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_1" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_2" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_3" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_4" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_5" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_1" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_2" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_3" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_4" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_5" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_1" for table "deep_part_1_prt_male_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_2" for table "deep_part_1_prt_male_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_3" for table "deep_part_1_prt_male_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_4" for table "deep_part_1_prt_male_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_5" for table "deep_part_1_prt_male_2_prt_5"
+-- Intermediate partition insert is not allowed
+insert into deep_part_1_prt_male_2_prt_2 values(1,1,1,'M');
+ERROR:  Directly modifying intermediate part of a partitioned table is disallowed
+HINT:  Modify either the root or a leaf partition instead
+-- Wrong sub-partition (inserting a female value in male partition)
+insert into deep_part_1_prt_male_2_prt_2_3_prt_2 values (1, 1, 1, 'F');
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  
+Check constraint deep_part_1_prt_male_2_prt_2_3_prt_2_check for table deep_part_1_prt_male_2_prt_2_3_prt_2 was violated
+Check constraint deep_part_1_prt_male_2_prt_2_check for table deep_part_1_prt_male_2_prt_2_3_prt_2 was violated
+Check constraint deep_part_1_prt_male_check for table deep_part_1_prt_male_2_prt_2_3_prt_2 was violated
+select * from deep_part;
+ i | j | k | s 
+---+---+---+---
+(0 rows)
+
+-- Correct leaf part
+insert into deep_part_1_prt_male_2_prt_1_3_prt_1 values (1, 1, 1, 'M');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | M    
+(1 row)
+
+select * from deep_part_1_prt_male_2_prt_1_3_prt_1;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | M    
+(1 row)
+
+-- Root part of a multi-level partitioned table
+insert into deep_part values (1, 1, 1, 'M');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+(2 rows)
+
+select * from deep_part_1_prt_male_2_prt_1_3_prt_1;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+(2 rows)
+
+insert into deep_part values (1, 1, 1, 'F');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | F    
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+(3 rows)
+
+select * from deep_part_1_prt_female_2_prt_1_3_prt_1;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | F    
+(1 row)
+
+insert into deep_part values (5, 5, 5, 'M');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | F    
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+ 5 | 5 | 5 | M    
+(4 rows)
+
+select * from deep_part_1_prt_male_2_prt_3_3_prt_3;
+ i | j | k |   s   
+---+---+---+-------
+ 5 | 5 | 5 | M    
+(1 row)
+
+insert into deep_part values (9, 9, 9, 'F');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 9 | 9 | 9 | F    
+ 1 | 1 | 1 | F    
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+ 5 | 5 | 5 | M    
+(5 rows)
+
+select * from deep_part_1_prt_female_2_prt_5_3_prt_5;
+ i | j | k |   s   
+---+---+---+-------
+ 9 | 9 | 9 | F    
+(1 row)
+
+-- Out of range partition
+insert into deep_part values (9, 9, 10, 'F');
+ERROR:  no partition for partitioning key  (seg0 rahmaf2-mbp:40000 pid=78930)
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 9 | 9 | 9 | F    
+ 1 | 1 | 1 | F    
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+ 5 | 5 | 5 | M    
+(5 rows)
+
+-- Sub-partition insertion without checking for correct user provided leaf part
+set dml_ignore_target_partition_check=true;
+drop table if exists part_tab;
+create table part_tab ( i int, j int) distributed by (i) partition by range(j) (start(0) end(10) every(2));
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_1" for table "part_tab"
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_2" for table "part_tab"
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_3" for table "part_tab"
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_4" for table "part_tab"
+NOTICE:  CREATE TABLE will create partition "part_tab_1_prt_5" for table "part_tab"
+-- Wrong part
+insert into part_tab_1_prt_1 values(5,5);
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  Check constraint part_tab_1_prt_1_check for table part_tab_1_prt_1 was violated
+select * from part_tab;
+ i | j 
+---+---
+(0 rows)
+
+select * from part_tab_1_prt_1;
+ i | j 
+---+---
+(0 rows)
+
+insert into part_tab_1_prt_2 values(5,5);
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  Check constraint part_tab_1_prt_2_check for table part_tab_1_prt_2 was violated
+select * from part_tab;
+ i | j 
+---+---
+(0 rows)
+
+select * from part_tab_1_prt_2;
+ i | j 
+---+---
+(0 rows)
+
+-- Right part
+insert into part_tab_1_prt_3 values(5,5);
+select * from part_tab;
+ i | j 
+---+---
+ 5 | 5
+(1 row)
+
+select * from part_tab_1_prt_3;
+ i | j 
+---+---
+ 5 | 5
+(1 row)
+
+-- Root part
+insert into part_tab values(5,5);
+select * from part_tab;
+ i | j 
+---+---
+ 5 | 5
+ 5 | 5
+(2 rows)
+
+drop table if exists input1;
+create table input1 (x int, y int);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'x' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+insert into input1 select i, i from (select generate_series(1,10) as i) as t;
+drop table if exists input2;
+create table input2 (x int, y int);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'x' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+insert into input2 select i, i from (select generate_series(1,10) as i) as t;
+-- Multiple range table entries in the plan
+insert into part_tab_1_prt_1 select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x where i2.y = 5;
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  Check constraint part_tab_1_prt_1_check for table part_tab_1_prt_1 was violated
+select * from part_tab;
+ i | j 
+---+---
+ 5 | 5
+ 5 | 5
+(2 rows)
+
+select * from part_tab_1_prt_1;
+ i | j 
+---+---
+(0 rows)
+
+insert into part_tab_1_prt_2 select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x where i2.y = 5;
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  Check constraint part_tab_1_prt_2_check for table part_tab_1_prt_2 was violated
+select * from part_tab;
+ i | j 
+---+---
+ 5 | 5
+ 5 | 5
+(2 rows)
+
+select * from part_tab_1_prt_2;
+ i | j 
+---+---
+(0 rows)
+
+-- Right part
+insert into part_tab_1_prt_3 select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x where i1.x between 4 and 5;
+select * from part_tab;
+ i | j 
+---+---
+ 4 | 4
+ 5 | 5
+ 5 | 5
+ 5 | 5
+(4 rows)
+
+select * from part_tab_1_prt_3;
+ i | j 
+---+---
+ 4 | 4
+ 5 | 5
+ 5 | 5
+ 5 | 5
+(4 rows)
+
+-- Root part but no matching part for i2.y == 10
+insert into part_tab select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x;
+ERROR:  no partition for partitioning key  (seg1 rahmaf2-mbp:40001 pid=78931)
+select * from part_tab;
+ i | j 
+---+---
+ 4 | 4
+ 5 | 5
+ 5 | 5
+ 5 | 5
+(4 rows)
+
+-- Root part
+insert into part_tab select i1.x, i2.y from input1 as i1 join input2 as i2 on i1.x = i2.x where i2.y < 10;
+select * from part_tab;
+ i | j 
+---+---
+ 2 | 2
+ 4 | 4
+ 4 | 4
+ 6 | 6
+ 8 | 8
+ 1 | 1
+ 3 | 3
+ 5 | 5
+ 5 | 5
+ 5 | 5
+ 5 | 5
+ 7 | 7
+ 9 | 9
+(13 rows)
+
+-- Multi-level partitioning
+drop table if exists deep_part;
+create table deep_part ( i int, j int, k int, s char(5)) 
+distributed by (i) 
+partition by list(s)
+subpartition by range (j) subpartition template (start(1)  end(10) every(2))
+subpartition by range (k) subpartition template (start(1)  end(10) every(2))
+(partition female values('F'), partition male values('M'))
+;
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female" for table "deep_part"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male" for table "deep_part"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5" for table "deep_part_1_prt_female"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_1" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_2" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_3" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_4" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_1_3_prt_5" for table "deep_part_1_prt_female_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_1" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_2" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_3" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_4" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_2_3_prt_5" for table "deep_part_1_prt_female_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_1" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_2" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_3" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_4" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_3_3_prt_5" for table "deep_part_1_prt_female_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_1" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_2" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_3" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_4" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_4_3_prt_5" for table "deep_part_1_prt_female_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_1" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_2" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_3" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_4" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_female_2_prt_5_3_prt_5" for table "deep_part_1_prt_female_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5" for table "deep_part_1_prt_male"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_1" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_2" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_3" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_4" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_1_3_prt_5" for table "deep_part_1_prt_male_2_prt_1"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_1" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_2" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_3" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_4" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_2_3_prt_5" for table "deep_part_1_prt_male_2_prt_2"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_1" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_2" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_3" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_4" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_3_3_prt_5" for table "deep_part_1_prt_male_2_prt_3"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_1" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_2" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_3" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_4" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_4_3_prt_5" for table "deep_part_1_prt_male_2_prt_4"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_1" for table "deep_part_1_prt_male_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_2" for table "deep_part_1_prt_male_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_3" for table "deep_part_1_prt_male_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_4" for table "deep_part_1_prt_male_2_prt_5"
+NOTICE:  CREATE TABLE will create partition "deep_part_1_prt_male_2_prt_5_3_prt_5" for table "deep_part_1_prt_male_2_prt_5"
+-- Intermediate partition insert is not allowed
+insert into deep_part_1_prt_male_2_prt_2 values(1,1,1,'M');
+ERROR:  Directly modifying intermediate part of a partitioned table is disallowed
+HINT:  Modify either the root or a leaf partition instead
+-- Wrong sub-partition (inserting a female value in male partition)
+insert into deep_part_1_prt_male_2_prt_2_3_prt_2 values (1, 1, 1, 'F');
+ERROR:  One or more assertions failed  (seg0 rahmaf2-mbp:40000 pid=78930)
+DETAIL:  
+Check constraint deep_part_1_prt_male_2_prt_2_3_prt_2_check for table deep_part_1_prt_male_2_prt_2_3_prt_2 was violated
+Check constraint deep_part_1_prt_male_2_prt_2_check for table deep_part_1_prt_male_2_prt_2_3_prt_2 was violated
+Check constraint deep_part_1_prt_male_check for table deep_part_1_prt_male_2_prt_2_3_prt_2 was violated
+select * from deep_part;
+ i | j | k | s 
+---+---+---+---
+(0 rows)
+
+-- Correct leaf part
+insert into deep_part_1_prt_male_2_prt_1_3_prt_1 values (1, 1, 1, 'M');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | M    
+(1 row)
+
+select * from deep_part_1_prt_male_2_prt_1_3_prt_1;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | M    
+(1 row)
+
+-- Root part of a multi-level partitioned table
+insert into deep_part values (1, 1, 1, 'M');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+(2 rows)
+
+select * from deep_part_1_prt_male_2_prt_1_3_prt_1;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+(2 rows)
+
+insert into deep_part values (1, 1, 1, 'F');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | F    
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+(3 rows)
+
+select * from deep_part_1_prt_female_2_prt_1_3_prt_1;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | F    
+(1 row)
+
+insert into deep_part values (5, 5, 5, 'M');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 1 | 1 | 1 | F    
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+ 5 | 5 | 5 | M    
+(4 rows)
+
+select * from deep_part_1_prt_male_2_prt_3_3_prt_3;
+ i | j | k |   s   
+---+---+---+-------
+ 5 | 5 | 5 | M    
+(1 row)
+
+insert into deep_part values (9, 9, 9, 'F');
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 9 | 9 | 9 | F    
+ 1 | 1 | 1 | F    
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+ 5 | 5 | 5 | M    
+(5 rows)
+
+select * from deep_part_1_prt_female_2_prt_5_3_prt_5;
+ i | j | k |   s   
+---+---+---+-------
+ 9 | 9 | 9 | F    
+(1 row)
+
+-- Out of range partition
+insert into deep_part values (9, 9, 10, 'F');
+ERROR:  no partition for partitioning key  (seg0 rahmaf2-mbp:40000 pid=78930)
+select * from deep_part;
+ i | j | k |   s   
+---+---+---+-------
+ 9 | 9 | 9 | F    
+ 1 | 1 | 1 | F    
+ 1 | 1 | 1 | M    
+ 1 | 1 | 1 | M    
+ 5 | 5 | 5 | M    
+(5 rows)
+
+drop table input2;
+drop table input1;
+drop table part_tab;
+drop table deep_part;
