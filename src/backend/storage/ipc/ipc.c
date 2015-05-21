@@ -44,7 +44,7 @@ bool		proc_exit_inprogress = false;
  */
 static bool atexit_callback_setup = false;
 extern char DoingCommandRead;
-
+extern void WaitInterconnectQuit(void);
 
 /* ----------------------------------------------------------------
  *						exit() handling stuff
@@ -202,6 +202,19 @@ proc_exit_prepare(int code)
 	 * correct work.
 	 */
 	cdbdisp_waitThreads();
+
+	/*
+	* Make sure interconnect thread quit before shmem_exit() in FATAL case.
+	* Otherwise, shmem_exit() may free MemoryContex of MotionConns in connHtab unexpectedly;
+	*
+	* For example: PORTAL_MULTI_QUERY strategy doesn't bind estate with portal,
+	* so when fatal occurs, MotionConns of estate don't get removed through
+	* TeardownInterconnect(), but MemoryContex of these MotionConns are freed.
+	*
+	* It's ok to shutdown Interconnect background thread here, process is dying, no
+	* necessary to receive more motion data.
+	*/
+	WaitInterconnectQuit();
 
 	/* do our shared memory exits first */
 	shmem_exit(code);

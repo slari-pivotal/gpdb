@@ -3704,6 +3704,15 @@ ic_rx_thread_func(void *arg)
 				break;
 			}
 
+			if (rx_thread_shutdown)
+			{
+				if (DEBUG2 >= log_min_messages)
+				{
+					write_log("udp-ic: rx-thread shutting down");
+				}
+				break;
+			}
+
 			if (n == 0)
 			{
 				continue;
@@ -3724,6 +3733,15 @@ ic_rx_thread_func(void *arg)
 			peerlen = sizeof(peer);
 			read_count = recvfrom(UDP_listenerFd, (char *)pkt, Gp_max_packet_size, 0,
 								  (struct sockaddr *)&peer, &peerlen);
+
+			if (rx_thread_shutdown)
+			{
+				if (DEBUG2 >= log_min_messages)
+				{
+					write_log("udp-ic: rx-thread shutting down");
+				}
+				break;
+			}
 
 			ic_stats_pkt_count++;
 
@@ -4231,4 +4249,20 @@ rx_handle_mismatch(struct icpkthdr *pkt, struct sockaddr_storage *peer, int peer
 		if (DEBUG4 >= log_min_messages)
 			write_log("dropping packet from command-id %d seq %d (my cmd %d)", pkt->icId, pkt->seq, gp_interconnect_id);
 	}
+}
+
+void
+WaitInterconnectQuitUDP(void)
+{
+	/* In case ic thread is waiting lock */
+	pthread_mutex_unlock(&rx_thread_mutex);
+
+	rx_thread_shutdown = true;
+
+	if(ic_rx_thread_created)
+	{
+		SendDummyPacket();
+		pthread_join(ic_rx_thread, NULL);
+	}
+	ic_rx_thread_created = false;
 }

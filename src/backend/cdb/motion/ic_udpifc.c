@@ -6241,7 +6241,9 @@ rxThreadFunc(void *arg)
 		if (compare_and_swap_32(&ic_control_info.shutdown, 1, 0))
 		{
 			if (DEBUG1 >= log_min_messages)
+			{
 				write_log("udp-ic: rx-thread shutting down");
+			}
 			break;
 		}
 
@@ -6266,6 +6268,15 @@ rxThreadFunc(void *arg)
 			nfd.events = POLLIN;
 
 			n = poll(&nfd, 1, RX_THREAD_POLL_TIMEOUT);
+
+			if (compare_and_swap_32(&ic_control_info.shutdown, 1, 0))
+			{
+				if (DEBUG1 >= log_min_messages)
+				{
+					write_log("udp-ic: rx-thread shutting down");
+				}
+				break;
+			}
 
 			if (n < 0)
 			{
@@ -6301,6 +6312,15 @@ rxThreadFunc(void *arg)
 			peerlen = sizeof(peer);
 			read_count = recvfrom(UDP_listenerFd, (char *)pkt, Gp_max_packet_size, 0,
 								  (struct sockaddr *)&peer, &peerlen);
+
+			if (compare_and_swap_32(&ic_control_info.shutdown, 1, 0))
+			{
+				if (DEBUG1 >= log_min_messages)
+				{
+					write_log("udp-ic: rx-thread shutting down");
+				}
+				break;
+			}
 
 			if (DEBUG5 >= log_min_messages)
 				write_log("received inbound len %d", read_count);
@@ -6893,4 +6913,23 @@ dumpConnections(ChunkTransportStateEntry *pEntry, const char *fname)
 		fprintf(ofile, "\n");
 	}
     fclose(ofile);
+}
+
+void
+WaitInterconnectQuitUDPIFC(void)
+{
+	/*
+	 * Just in case ic thread is waiting on the locks.
+	*/
+	pthread_mutex_unlock(&ic_control_info.errorLock);
+	pthread_mutex_unlock(&ic_control_info.lock);
+
+	compare_and_swap_32(&ic_control_info.shutdown, 0, 1);
+
+	if(ic_control_info.threadCreated)
+	{
+		SendDummyPacket();
+		pthread_join(ic_control_info.threadHandle, NULL);
+	}
+	ic_control_info.threadCreated = 0;
 }
