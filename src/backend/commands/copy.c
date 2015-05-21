@@ -52,7 +52,6 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
-#include "utils/portal.h"
 #include "utils/builtins.h"
 
 #include "cdb/cdbvars.h"
@@ -76,7 +75,6 @@ typedef struct
 	CopyState	cstate;			/* CopyStateData for the command */
 } DR_copy;
 
-extern Portal		ActivePortal;
 /* non-export function prototypes */
 static void DoCopyTo(CopyState cstate);
 extern void CopyToDispatch(CopyState cstate);
@@ -117,6 +115,8 @@ static void CopyInitPartitioningState(EState *estate);
 static void CopyInitDataParser(CopyState cstate);
 static bool CopyCheckIsLastLine(CopyState cstate);
 static char *extract_line_buf(CopyState cstate);
+uint64
+DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate);
 
 /* ==========================================================================
  * The follwing macros aid in major refactoring of data processing code (in
@@ -863,6 +863,8 @@ void ValidateControlChars(bool copy, bool load, bool csv_mode, char *delim,
 	}
 }
 
+
+
 /*
  *	 DoCopy executes the SQL COPY statement
  *
@@ -896,9 +898,8 @@ void ValidateControlChars(bool copy, bool load, bool csv_mode, char *delim,
  * the table.
  */
 uint64
-DoCopy(const CopyStmt *stmt, const char *queryString)
+DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate)
 {
-	CopyState	cstate;
 	bool		is_from = stmt->is_from;
 	bool		pipe = (stmt->filename == NULL || Gp_role == GP_ROLE_EXECUTE);
 	List	   *attnamelist = stmt->attlist;
@@ -914,8 +915,6 @@ DoCopy(const CopyStmt *stmt, const char *queryString)
     /* save relationOid for auto-stats */
 	Oid         relationOid = InvalidOid;
 
-	/* Allocate workspace and zero all fields */
-	cstate = (CopyStateData *) palloc0(sizeof(CopyStateData));
 
 	/* Extract options from the statement node tree */
 	foreach(option, stmt->options)
@@ -1331,10 +1330,6 @@ DoCopy(const CopyStmt *stmt, const char *queryString)
 		ExecutorStart(cstate->queryDesc, 0);
 
 		tupDesc = cstate->queryDesc->tupDesc;
-		/*
-		 * In case some errors happen, process have chance to clean gangs etcs. 
-		 */
-		ActivePortal->queryDesc = cstate->queryDesc;
 	}
 
 	cstate->attnamelist = attnamelist;
@@ -1586,7 +1581,7 @@ DoCopy(const CopyStmt *stmt, const char *queryString)
 		/* Close down the query and free resources. */
 		ExecutorEnd(cstate->queryDesc);
 		FreeQueryDesc(cstate->queryDesc);
-		ActivePortal->queryDesc = NULL;
+		cstate->queryDesc = NULL;
 	}
 
 	/* Clean up single row error handling related memory */
@@ -1622,9 +1617,32 @@ DoCopy(const CopyStmt *stmt, const char *queryString)
 		
 	pfree(cstate->attribute_buf.data);
 	pfree(cstate->line_buf.data);
-	pfree(cstate);
 
 	return processed;
+}
+
+uint64
+DoCopy(const CopyStmt *stmt, const char *queryString)
+{
+	uint64 result = -1;
+	/* Allocate workspace and zero all fields */
+	CopyState cstate = (CopyStateData *) palloc0(sizeof(CopyStateData));
+	PG_TRY();
+	{
+		result = DoCopyInternal(stmt, queryString, cstate);
+	}
+	PG_CATCH();
+	{
+		if (cstate->queryDesc)
+		{
+			/* should shutdown the mpp stuff such as interconnect and dispatch thread */
+			mppExecutorCleanup(cstate->queryDesc);
+		}
+		PG_RE_THROW();
+	}
+	PG_END_TRY();
+	pfree(cstate);
+	return result;
 }
 
 /*
