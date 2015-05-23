@@ -1392,6 +1392,8 @@ void UpdateSerializableCommandId(void)
 
 /*
  * DatabaseHasActiveBackends -- are there any backends running in the given DB
+ * If there are other backends in the DB, we will wait a maximum of 5 seconds
+ * for them to exit.
  *
  * If 'ignoreMyself' is TRUE, ignore this particular backend while checking
  * for backends in the target database.
@@ -1409,25 +1411,37 @@ DatabaseHasActiveBackends(Oid databaseId, bool ignoreMyself)
 	bool		result = false;
 	ProcArrayStruct *arrayP = procArray;
 	int			index;
+	int tries;
 
-	LWLockAcquire(ProcArrayLock, LW_SHARED);
-
-	for (index = 0; index < arrayP->numProcs; index++)
+	for (tries = 0; tries < 50; tries++)
 	{
-		volatile PGPROC *proc = arrayP->procs[index];
+		CHECK_FOR_INTERRUPTS();
+		result = false;
+		LWLockAcquire(ProcArrayLock, LW_SHARED);
 
-		if (proc->databaseId == databaseId)
+		for (index = 0; index < arrayP->numProcs; index++)
 		{
-			if (ignoreMyself && proc == MyProc)
-				continue;
+			volatile PGPROC *proc = arrayP->procs[index];
 
-			result = true;
-			break;
+			if (proc->databaseId == databaseId)
+			{
+				if (ignoreMyself && proc == MyProc)
+					continue;
+
+				result = true;
+				break;
+			}
 		}
+		LWLockRelease(ProcArrayLock);
+
+		/* no confilicting backend, so done */
+		if (!result)
+		{
+			return false;
+		}
+		/* otherwise, sleep 100 ms, then try again */
+		pg_usleep(100 * 1000L );
 	}
-
-	LWLockRelease(ProcArrayLock);
-
 	return result;
 }
 
