@@ -4,9 +4,9 @@
 %error-verbose                           /* A little extra debugging info */
 
 %{
+  #include <parser.h>
   #include <yaml_parse.h>
   #include <yaml.h>
-  #include <parser.h>
 
 /*
  * Ancient flex versions, like the ones on our build machines don't support

@@ -137,7 +137,7 @@ $(srcdir)/scan.c: scan.l
 ifdef FLEX
 	$(FLEX) $(FLEXFLAGS) -o'$@' $<
 	# This is due to flex bug around unused variable yyg in <= 2.5.35
-	$(PERL) -pi'' -e 's/^.* depending upon options\. \*\/$$//' $@
+	$(PERL) -pi'' -e 's/^.* depending upon options\. \*\/$$/$$& \n\n(void) yyg;/' $@
 else
 	@$(missing) flex $< $@
 endif

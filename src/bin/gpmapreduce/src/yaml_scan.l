@@ -14,8 +14,8 @@
 /* %option reentrant */
 
 %{
-#include <yaml_parse.h>       /* Get the token types */
 #include <parser.h>
+#include <yaml_parse.h>       /* Get the token types */
 
 /* 
  * Setup prototypes since we build with -Wmissing-prototypes and flex isn't 

@@ -638,7 +638,7 @@ other			.
 
 					BEGIN(INITIAL);
 					if (literallen == 0)
-						yyerror("zero-length delimited identifier");
+						yyerror(NULL, "zero-length delimited identifier");
 					ident = litbufdup();
 					if (literallen >= NAMEDATALEN)
 						truncate_identifier(ident, literallen, true);
@@ -754,7 +754,7 @@ other			.
 					 * a syntactic mistake anyway.
 					 */
 					if (nchars >= NAMEDATALEN)
-						yyerror("operator too long");
+						yyerror(NULL, "operator too long");
 
 					/* Convert "!=" operator to "<>" for compatibility */
 					yylval.val.modificator = NULL;
@@ -923,7 +923,7 @@ lexer_errposition(void)
  * be misleading!
  */
 void
-yyerror(const char *message)
+yyerror(List **result, const char *message)
 {
 	const char *loc = scanbuf + yylloc;
 
