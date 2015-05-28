@@ -412,23 +412,23 @@ _readQuery(void)
      */
     if (pg_strtok_peek_fldname("intoOidInfo.relOid"))
     {
-        READ_SCALAR_VALUE(intoOidInfo.relOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.comptypeOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.toastOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.toastIndexOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.toastComptypeOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.aosegOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.aosegIndexOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.aosegComptypeOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.aovisimapOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.aovisimapIndexOid, InvalidOid);
-		READ_SCALAR_VALUE(intoOidInfo.aovisimapComptypeOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.relOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.comptypeOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.toastOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.toastIndexOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.toastComptypeOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aosegOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aosegIndexOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aosegComptypeOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aovisimapOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aovisimapIndexOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aovisimapComptypeOid, InvalidOid);
 	}
     if (pg_strtok_peek_fldname("intoOidInfo.aoblkdirOid"))
 	{
-        READ_SCALAR_VALUE(intoOidInfo.aoblkdirOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.aoblkdirIndexOid, InvalidOid);
-        READ_SCALAR_VALUE(intoOidInfo.aoblkdirComptypeOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aoblkdirOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aoblkdirIndexOid, InvalidOid);
+		(void) READ_SCALAR_VALUE(intoOidInfo.aoblkdirComptypeOid, InvalidOid);
     }
 
 	local_node->intoPolicy = NULL;
