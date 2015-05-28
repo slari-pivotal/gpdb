@@ -500,7 +500,16 @@ PGAC_ARG_BOOL(enable, debugntuplestore, no, [  --enable-ntuplestore      enable 
 PGAC_ARG_BOOL(enable, testutils, no, [  --enable-testutils        enable testing utilities],
               [AC_DEFINE([USE_TEST_UTILS], 1,
                          [Define to 1 to build with testing utilities. (--enable-testutils)])])
-                         
+
+#
+# Enable Greenplum ORCA optimizer
+#
+PGAC_ARG_BOOL(enable, orca, no, [  --enable-orca        enable ORCA optimizer],
+              [AC_DEFINE([USE_ORCA], 1,
+                         [Define to 1 to build with Greenplum ORCA optimizer. (--enable-orca)])])
+AC_MSG_RESULT([enable_orca])
+AC_SUBST(enable_orca)
+
 #
 # --enable-snmp enables snmp mib and trap/inform
 #

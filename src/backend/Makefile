@@ -20,6 +20,9 @@ include $(top_builddir)/../releng/releng.mk
 SUBDIRS = access bootstrap catalog parser commands executor foreign \
 	fts lib libpq gp_libpq_fe main nodes optimizer port postmaster regex \
 	replication rewrite storage tcop utils $(top_builddir)/src/timezone cdb
+ifeq ($(enable_orca),yes)
+SUBDIRS += gpopt
+endif
 
 include $(srcdir)/common.mk
 
@@ -59,24 +62,27 @@ LIBS := $(LIBS) -L$(top_builddir)/src/backend/libpq/bsafe_wrapper \
 endif
 
 # adding orca libraries
+ifeq ($(enable_orca),yes)
 LIBS := $(LIBS) -L$(LIBGPOS)/$(OBJDIR_DEFAULT) -lgpos
 LIBS := $(LIBS) -L$(XERCES_LIBDIR) -lxerces-c-3.1
 LIBS := $(LIBS) -L$(OPTIMIZER)/libnaucrates/$(OBJDIR_DEFAULT) -lnaucrates
 LIBS := $(LIBS) -L$(OPTIMIZER)/libgpdbcost/$(OBJDIR_DEFAULT) -lgpdbcost
-LIBS := $(LIBS) -L$(OPTIMIZER)/libgpopt/$(OBJDIR_DEFAULT) -lgpopt -lpthread
+LIBS := $(LIBS) -L$(OPTIMIZER)/libgpopt/$(OBJDIR_DEFAULT) -lgpopt
 LIBS := $(LIBS) -L$(top_builddir)/src/backend/gpopt -ldxltranslators
+endif
+
+# Greenplum uses threads in the backend
+LIBS := $(LIBS) -lpthread
+
 ##########################################################################
 
-all: submake-libpgport submake-libdxltranslators submake-libbsafe_wrapper submake-libgpla postgres $(POSTGRES_IMP)
+all: submake-libpgport submake-libbsafe_wrapper submake-libgpla postgres $(POSTGRES_IMP)
 
 submake-libgpla:
 	$(MAKE) -C utils/stat/libgpla all
 
 submake-libbsafe_wrapper:
 	$(MAKE) -C libpq/bsafe_wrapper all
-	
-submake-libdxltranslators: 
-	$(MAKE) -C gpopt all
 
 ifneq ($(PORTNAME), cygwin)
 ifneq ($(PORTNAME), win32)
@@ -284,9 +290,6 @@ endif
 ifeq ($(PORTNAME), win32)
 	rm -f postgres.dll postgres.def libpostgres.a $(WIN32RES)
 endif
-	find gpopt -name *.o | xargs rm -rf
-	find gpopt -name *.so | xargs rm -rf
-	find gpopt -name *.dylib | xargs rm -rf
 
 distclean: clean
 	rm -f port/tas.s port/dynloader.c port/pg_sema.c port/pg_shmem.c

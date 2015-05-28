@@ -701,11 +701,12 @@ with_perl
 with_tcl
 enable_thread_safety
 INCLUDES
-enable_ddboost
 enable_netbackup
+enable_ddboost
 enable_connectemc
 enable_gphdfs
 enable_snmp
+enable_orca
 autodepend
 TAS
 GP_MAJORVERSION
@@ -808,6 +809,7 @@ enable_forceplan
 enable_debugbreak
 enable_debugntuplestore
 enable_testutils
+enable_orca
 enable_snmp
 enable_gphdfs
 enable_connectemc
@@ -1479,6 +1481,7 @@ build with coverage testing instrumentation
   --enable-debugbreak        enable debug_break and debug_break_n (for debugging)
   --enable-ntuplestore      enable debug_ntuplestore (for debugging)
   --enable-testutils        enable testing utilities
+  --enable-orca        enable ORCA optimizer
   --enable-snmp        enable snmp for MIB and alerts via TRAP/INFORM
   --enable-gphdfs        enables GPHDFS support
   --enable-connectemc     enable connect emc support
@@ -4869,6 +4872,39 @@ else
 
 fi
 
+
+
+#
+# Enable Greenplum ORCA optimizer
+#
+
+pgac_args="$pgac_args enable_orca"
+
+# Check whether --enable-orca was given.
+if test "${enable_orca+set}" = set; then :
+  enableval=$enable_orca;
+  case $enableval in
+    yes)
+
+$as_echo "#define USE_ORCA 1" >>confdefs.h
+
+      ;;
+    no)
+      :
+      ;;
+    *)
+      as_fn_error $? "no argument expected for --enable-orca option" "$LINENO" 5
+      ;;
+  esac
+
+else
+  enable_orca=no
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: enable_orca" >&5
+$as_echo "enable_orca" >&6; }
 
 
 #

@@ -24,7 +24,11 @@ extern Datum EnableXform(PG_FUNCTION_ARGS);
 Datum
 enable_xform(PG_FUNCTION_ARGS)
 {
+#ifdef USE_ORCA
 	return EnableXform(fcinfo);
+#else
+	return CStringGetTextDatum("ORCA not supported");
+#endif
 }
 
 extern Datum DisableXform(PG_FUNCTION_ARGS);
@@ -35,7 +39,11 @@ extern Datum DisableXform(PG_FUNCTION_ARGS);
 Datum
 disable_xform(PG_FUNCTION_ARGS)
 {
+#ifdef USE_ORCA
 	return DisableXform(fcinfo);
+#else
+	return CStringGetTextDatum("ORCA not supported");
+#endif
 }
 
 extern Datum LibraryVersion();
@@ -46,5 +54,9 @@ extern Datum LibraryVersion();
 Datum
 gp_opt_version(PG_FUNCTION_ARGS __attribute__((unused)))
 {
+#ifdef USE_ORCA
 	return LibraryVersion();
+#else
+	return CStringGetTextDatum("ORCA not supported");
+#endif
 }

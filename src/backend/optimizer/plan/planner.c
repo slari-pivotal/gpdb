@@ -110,7 +110,9 @@ static List *make_subplanTargetList(PlannerInfo *root, List *tlist,
 static List *register_ordered_aggs(List *tlist, Node *havingqual, List *sub_tlist);
 
 // GP optimizer entry point
+#ifdef USE_ORCA
 extern PlannedStmt *PplstmtOptimize(Query *parse, bool *pfUnexpectedFailure);
+#endif
 
 typedef struct
 {
@@ -144,6 +146,7 @@ static Plan *pushdown_preliminary_limit(Plan *plan, Node *limitCount, int64 coun
 bool is_dummy_plan(Plan *plan);
 
 
+#ifdef USE_ORCA
 /**
  * Logging of optimization outcome
  */
@@ -181,8 +184,9 @@ static void log_optimizer(PlannedStmt *plan, bool fUnexpectedFailure)
 		elog(LOG, "Planner produced plan :%d", fUnexpectedFailure);
 	}
 }
+#endif
 
-
+#ifdef USE_ORCA
 /**
  * Postprocessing of optimizer's plan
  */
@@ -210,8 +214,9 @@ static void postprocess_plan(PlannedStmt *plan)
 	globNew->subplans = plan->subplans;
 	(void) apply_shareinput_xslice(plan->planTree, globNew);
 }
+#endif
 
-
+#ifdef USE_ORCA
 /*
  * optimize query using the new optimizer
  */
@@ -238,7 +243,7 @@ optimize_query(Query *parse, ParamListInfo boundParams)
 
 	return result;
 }
-
+#endif
 
 /*****************************************************************************
  *
@@ -267,6 +272,7 @@ planner(Query *parse, int cursorOptions,
 	 * TODO: caragg 11/08/2013: Enable ORCA when running in utility mode (MPP-21841)
 	 * TODO: caragg 02/05/2014: Enable ORCA when running on the segments (MPP-22515)
 	 */
+#ifdef USE_ORCA
 	if (optimizer && (GP_ROLE_UTILITY != Gp_role) && (MASTER_CONTENT_ID == GpIdentity.segindex))
 	{
 		if (gp_log_optimization_time)
@@ -285,8 +291,8 @@ planner(Query *parse, int cursorOptions,
 			INSTR_TIME_SUBTRACT(endtime, starttime);
 			elog(LOG, "Optimizer Time: %.3f ms", INSTR_TIME_GET_MILLISEC(endtime));
 		}
-
 	}
+#endif /* USE_ORCA */
 
 	if (!result)
 	{
