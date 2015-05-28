@@ -123,6 +123,7 @@
 
 #include "postgres.h"
 
+#ifdef USE_LIBXML
 #include <libxml/chvalid.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -131,6 +132,7 @@
 #include <libxml/xmlwriter.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
+#endif	/* USE_LIBXML */
 
 #include "catalog/namespace.h"
 #include "catalog/pg_type.h"
@@ -158,6 +160,8 @@
 int			xmlbinary;
 int			xmloption;
 
+#ifdef USE_LIBXML
+
 static StringInfo xml_err_buf = NULL;
 
 static void xml_errorHandler(void *ctxt, const char *msg,...);
@@ -183,8 +187,17 @@ static bool print_xml_decl(StringInfo buf, const xmlChar *version,
 static xmlDocPtr xml_parse(text *data, XmlOptionType xmloption_arg,
 		  bool preserve_whitespace, int encoding);
 static text *xml_xmlnodetoxmltype(xmlNodePtr cur);
+#endif	/* USE_LIBXML */
+
+#define NO_XML_SUPPORT() \
+	ereport(ERROR, \
+			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED), \
+			 errmsg("unsupported XML feature"), \
+			 errdetail("This functionality requires the server to be built with libxml support."), \
+			 errhint("You need to rebuild PostgreSQL using --with-libxml.")))
 
 
+#ifdef USE_LIBXML
 
 static int
 xmlChar_to_encoding(const xmlChar *encoding_name)
@@ -198,7 +211,7 @@ xmlChar_to_encoding(const xmlChar *encoding_name)
 						(const char *) encoding_name)));
 	return encoding;
 }
-
+#endif
 
 /*
  * xml_in uses a plain C string to VARDATA conversion, so for the time being
@@ -210,6 +223,7 @@ xmlChar_to_encoding(const xmlChar *encoding_name)
 Datum
 xml_in(PG_FUNCTION_ARGS)
 {
+#ifdef USE_LIBXML
 	char	   *s = PG_GETARG_CSTRING(0);
 	xmltype    *vardata;
 	xmlDocPtr	doc;
@@ -224,6 +238,10 @@ xml_in(PG_FUNCTION_ARGS)
 	xmlFreeDoc(doc);
 
 	PG_RETURN_XML_P(vardata);
+#else
+	NO_XML_SUPPORT();
+	return 0;
+#endif
 }
 
 
@@ -242,6 +260,7 @@ xml_out_internal(xmltype *x, pg_enc target_encoding)
 {
 	char	   *str = text_to_cstring((text *) x);
 
+#ifdef USE_LIBXML
 	size_t		len = strlen(str);
 	xmlChar    *version;
 	int			standalone;
@@ -274,6 +293,7 @@ xml_out_internal(xmltype *x, pg_enc target_encoding)
 	xml_ereport_by_code(WARNING, ERRCODE_INTERNAL_ERROR,
 						"could not parse XML declaration in stored value",
 						res_code);
+#endif
 	return str;
 }
 
@@ -296,6 +316,7 @@ xml_out(PG_FUNCTION_ARGS)
 Datum
 xml_recv(PG_FUNCTION_ARGS)
 {
+#ifdef USE_LIBXML
 	StringInfo	buf = (StringInfo) PG_GETARG_POINTER(0);
 	xmltype    *result;
 	char	   *str;
@@ -355,6 +376,10 @@ xml_recv(PG_FUNCTION_ARGS)
 	}
 
 	PG_RETURN_XML_P(result);
+#else
+	NO_XML_SUPPORT();
+	return 0;
+#endif
 }
 
 
@@ -392,13 +417,14 @@ stringinfo_to_xmltype(StringInfo buf)
 }
 
 
+#ifdef USE_LIBXML
 static xmltype *
 xmlBuffer_to_xmltype(xmlBufferPtr buf)
 {
 	return (xmltype *) cstring_to_text_with_len((char *) xmlBufferContent(buf),
 												xmlBufferLength(buf));
 }
-
+#endif
 
 Datum
 xmlcomment(PG_FUNCTION_ARGS)
@@ -439,6 +465,7 @@ xmlcomment(PG_FUNCTION_ARGS)
 xmltype *
 xmlconcat(List *args)
 {
+#ifdef USE_LIBXML
 	int			global_standalone = 1;
 	xmlChar    *global_version = NULL;
 	bool		global_version_no_value = false;
@@ -491,6 +518,10 @@ xmlconcat(List *args)
 	}
 
 	return stringinfo_to_xmltype(&buf);
+#else
+	NO_XML_SUPPORT();
+	return NULL;
+#endif
 }
 
 
@@ -551,6 +582,7 @@ xmltotext_with_xmloption(xmltype *data, XmlOptionType xmloption_arg)
 xmltype *
 xmlparse(text *data, XmlOptionType xmloption_arg, bool preserve_whitespace)
 {
+#ifdef USE_LIBXML
 	xmlDocPtr	doc;
 
 	doc = xml_parse(data, xmloption_arg, preserve_whitespace,
@@ -558,6 +590,10 @@ xmlparse(text *data, XmlOptionType xmloption_arg, bool preserve_whitespace)
 	xmlFreeDoc(doc);
 
 	return (xmltype *) data;
+#else
+	NO_XML_SUPPORT();
+	return NULL;
+#endif
 }
 
 
@@ -611,6 +647,7 @@ xmlpi(char *target, text *arg, bool arg_is_null, bool *result_is_null)
 xmltype *
 xmlroot(xmltype *data, text *version, int standalone)
 {
+#ifdef USE_LIBXML
 	char	   *str;
 	size_t		len;
 	xmlChar    *orig_version;
@@ -648,6 +685,10 @@ xmlroot(xmltype *data, text *version, int standalone)
 	appendStringInfoString(&buf, str + len);
 
 	return stringinfo_to_xmltype(&buf);
+#else
+	NO_XML_SUPPORT();
+	return NULL;
+#endif
 }
 
 
@@ -672,6 +713,7 @@ xmlvalidate(PG_FUNCTION_ARGS)
 bool
 xml_is_document(xmltype *arg)
 {
+#ifdef USE_LIBXML
 	bool		result;
 	xmlDocPtr	doc = NULL;
 	MemoryContext ccxt = CurrentMemoryContext;
@@ -707,9 +749,14 @@ xml_is_document(xmltype *arg)
 		xmlFreeDoc(doc);
 
 	return result;
+#else                                                   /* not USE_LIBXML */
+	NO_XML_SUPPORT();
+	return false;
+#endif   /* not USE_LIBXML */
 }
 
 
+#ifdef USE_LIBXML
 
 /*
  * pg_xml_init --- set up for use of libxml
@@ -1314,12 +1361,14 @@ xml_ereport_by_code(int level, int sqlcode,
 			 errdetail(det, code)));
 }
 
+#endif   /* USE_LIBXML */
 
 
 /*
  * XPath related functions
  */
 
+#ifdef USE_LIBXML
 /*
  * Convert XML node to text (dump subtree in case of element,
  * return value otherwise)
@@ -1367,7 +1416,7 @@ xml_xmlnodetoxmltype(xmlNodePtr cur)
 
 	return result;
 }
-
+#endif
 
 /*
  * Common code for xpath() and xmlexists()
@@ -1379,6 +1428,7 @@ xml_xmlnodetoxmltype(xmlNodePtr cur)
  * an XML document - XPath doesn't work easily on fragments without
  * a context node being known.
  */
+#ifdef USE_LIBXML
 static void
 xpath_internal(text *xpath_expr_text, xmltype *data, ArrayType *namespaces,
 			   int *res_nitems, ArrayBuildState **astate)
@@ -1563,6 +1613,7 @@ xpath_internal(text *xpath_expr_text, xmltype *data, ArrayType *namespaces,
 	xmlFreeDoc(doc);
 	xmlFreeParserCtxt(ctxt);
 }
+#endif
 
 /*
  * Evaluate XPath expression and return array of XML values.
@@ -1574,6 +1625,7 @@ xpath_internal(text *xpath_expr_text, xmltype *data, ArrayType *namespaces,
 Datum
 xpath(PG_FUNCTION_ARGS)
 {
+#ifdef USE_LIBXML
 	text	   *xpath_expr_text = PG_GETARG_TEXT_P(0);
 	xmltype    *data = PG_GETARG_XML_P(1);
 	ArrayType  *namespaces = PG_GETARG_ARRAYTYPE_P(2);
@@ -1587,6 +1639,10 @@ xpath(PG_FUNCTION_ARGS)
 		PG_RETURN_ARRAYTYPE_P(construct_empty_array(XMLOID));
 	else
 		PG_RETURN_DATUM(makeArrayResult(astate, CurrentMemoryContext));
+#else
+        NO_XML_SUPPORT();
+        return 0;
+#endif
 }
 
 /*
@@ -1596,6 +1652,7 @@ xpath(PG_FUNCTION_ARGS)
 Datum
 xmlexists(PG_FUNCTION_ARGS)
 {
+#ifdef USE_LIBXML
 	text	   *xpath_expr_text = PG_GETARG_TEXT_P(0);
 	xmltype    *data = PG_GETARG_XML_P(1);
 	int			res_nitems;
@@ -1604,6 +1661,10 @@ xmlexists(PG_FUNCTION_ARGS)
 				   &res_nitems, NULL);
 
 	PG_RETURN_BOOL(res_nitems > 0);
+#else
+	NO_XML_SUPPORT();
+	return 0;
+#endif
 }
 
 /*
@@ -1614,6 +1675,7 @@ xmlexists(PG_FUNCTION_ARGS)
 Datum
 xpath_exists(PG_FUNCTION_ARGS)
 {
+#ifdef USE_LIBXML
 	text	   *xpath_expr_text = PG_GETARG_TEXT_P(0);
 	xmltype    *data = PG_GETARG_XML_P(1);
 	ArrayType  *namespaces = PG_GETARG_ARRAYTYPE_P(2);
@@ -1623,12 +1685,17 @@ xpath_exists(PG_FUNCTION_ARGS)
 				   &res_nitems, NULL);
 
 	PG_RETURN_BOOL(res_nitems > 0);
+#else
+	NO_XML_SUPPORT();
+	return 0;
+#endif
 }
 
 /*
  * Functions for checking well-formed-ness
  */
 
+#ifdef USE_LIBXML
 static bool
 wellformed_xml(text *data, XmlOptionType xmloption_arg)
 {
@@ -1653,27 +1720,43 @@ wellformed_xml(text *data, XmlOptionType xmloption_arg)
 
 	return result;
 }
+#endif
 
 Datum
 xml_is_well_formed(PG_FUNCTION_ARGS)
 {
+#ifdef USE_LIBXML
 	text	   *data = PG_GETARG_TEXT_P(0);
 
 	PG_RETURN_BOOL(wellformed_xml(data, xmloption));
+#else
+	NO_XML_SUPPORT();
+	return 0;
+#endif   /* not USE_LIBXML */
 }
 
 Datum
 xml_is_well_formed_document(PG_FUNCTION_ARGS)
 {
+#ifdef USE_LIBXML
 	text	   *data = PG_GETARG_TEXT_P(0);
 
 	PG_RETURN_BOOL(wellformed_xml(data, XMLOPTION_DOCUMENT));
+#else
+	NO_XML_SUPPORT();
+	return 0;
+#endif   /* not USE_LIBXML */
 }
 
 Datum
 xml_is_well_formed_content(PG_FUNCTION_ARGS)
 {
+#ifdef USE_LIBXML
 	text	   *data = PG_GETARG_TEXT_P(0);
 
 	PG_RETURN_BOOL(wellformed_xml(data, XMLOPTION_CONTENT));
+#else
+	NO_XML_SUPPORT();
+	return 0;
+#endif   /* not USE_LIBXML */
 }
