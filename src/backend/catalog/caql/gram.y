@@ -50,7 +50,7 @@ int caql_yylex(YYSTYPE *lvalp, YYLTYPE *llocp, caql_scanner_t yyscanner);
 
 %expect 0
 %pure-parser
-%name-prefix "caql_yy"
+%name-prefix="caql_yy"
 %parse-param { caql_parser_t yyparser }
 %lex-param   { caql_scanner_t YYLEX_PARAM }
 %locations
