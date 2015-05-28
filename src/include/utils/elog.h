@@ -115,16 +115,16 @@ extern pthread_t main_tid;
  ** Use when elog()/ereport() is just not worth it because no user would
  *  ever see the nice customized message that you would otherwise code up
  *  for that weird case that should never happen.
- ** Can be used in macros and conditional expressions.
  */
 /*
  * TODO  Chuck asks:  Why aren't we passing the text of the assertion to elog_internalerror?
  * How is anybody supposed to know what was wrong?
  */
-#define Insist(assertion)   \
-    ( (assertion)           \
-        ? true              \
-	    : (elog_internalerror(__FILE__, __LINE__, PG_FUNCNAME_MACRO), false) )
+#define Insist(assertion) \
+	do {				  \
+		if (!(assertion))										   \
+			elog_internalerror(__FILE__, __LINE__, PG_FUNCNAME_MACRO);	\
+	} while(0)
 
 /*
  * Insist(bool assertion, const char * fmt, ... )
@@ -132,9 +132,13 @@ extern pthread_t main_tid;
  * before exiting.
  */
 #define insist_log(assertion, ... ) 	\
-	( (assertion)						\
-		? true							\
-		: ({ elog(LOG, __VA_ARGS__);  elog_internalerror(__FILE__, __LINE__, PG_FUNCNAME_MACRO); } ))
+	do {								\
+		if (!(assertion))				\
+		{								\
+			elog(LOG, __VA_ARGS__);		\
+			elog_internalerror(__FILE__, __LINE__, PG_FUNCNAME_MACRO); \
+		}								\
+	} while(0)
 
 #ifdef _MSC_VER
 __declspec(noreturn)
