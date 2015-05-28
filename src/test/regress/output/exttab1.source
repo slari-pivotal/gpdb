@@ -1026,7 +1026,7 @@ location ('file://@hostname@@abs_srcdir@/data/tableless.csv')
 format 'csv'
 log errors segment reject limit 10;
 select * from tableless_ext;
-NOTICE:  Found 3 data formatting errors (3 or more input rows). Rejected related input data.
+NOTICE:  Found 2 data formatting errors (2 or more input rows). Rejected related input data.
  a | b 
 ---+---
  1 |  
@@ -1038,16 +1038,14 @@ SELECT relname, linenum, errmsg FROM gp_read_error_log('tableless_ext');
 ---------------+---------+---------------------------------------
  tableless_ext |       2 | extra data after last expected column
  tableless_ext |       4 | missing data for column "b"
- tableless_ext |       5 | missing data for column "b"
-(3 rows)
+(2 rows)
 
 SELECT (gp_read_error_log('tableless_ext')).errmsg;
                 errmsg                 
 ---------------------------------------
  extra data after last expected column
  missing data for column "b"
- missing data for column "b"
-(3 rows)
+(2 rows)
 
 SELECT gp_truncate_error_log('tableless_ext');
  gp_truncate_error_log 
@@ -1061,7 +1059,7 @@ SELECT relname, linenum, errmsg FROM gp_read_error_log('tableless_ext');
 (0 rows)
 
 select * from tableless_ext;
-NOTICE:  Found 3 data formatting errors (3 or more input rows). Rejected related input data.
+NOTICE:  Found 2 data formatting errors (2 or more input rows). Rejected related input data.
  a | b 
 ---+---
  1 |  
@@ -1075,7 +1073,7 @@ SELECT gp_truncate_error_log('*');
 (1 row)
 
 select * from tableless_ext;
-NOTICE:  Found 3 data formatting errors (3 or more input rows). Rejected related input data.
+NOTICE:  Found 2 data formatting errors (2 or more input rows). Rejected related input data.
  a | b 
 ---+---
  1 |  

@@ -839,6 +839,10 @@ static DataLineStatus parse_next_line(FileScanDesc scan)
 		/* Did not get a complete and valid data line? */
 		if(!pstate->line_done)
 		{
+			if(pstate->line_buf.len == 0 && pstate->raw_buf_done)
+			{
+				ret_mode = NEED_MORE_DATA;
+			}
 			/*
 			 * If eof is not yet reached, we skip att parsing and read more
 			 * data. But if eof _was_ reached it means that this data line is

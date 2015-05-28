@@ -3084,6 +3084,14 @@ CopyFromDispatch(CopyState cstate)
 				if(!cstate->line_done)
 				{
 					/*
+					 * if eof reached, and no data in line_buf,
+					 * we don't need to do att parsing
+					 */
+					if (cstate->fe_eof && cstate->line_buf.len == 0)
+					{
+						break;
+					}
+					/*
 					 * We did not finish reading a complete data line.
 					 *
 					 * If eof is not yet reached, we skip att parsing
@@ -3852,6 +3860,14 @@ CopyFrom(CopyState cstate)
 				if(!cstate->line_done)
 				{
 					/*
+					 * if eof reached, and no data in line_buf,
+					 * we don't need to do att parsing.
+					 */
+					if (cstate->fe_eof && cstate->line_buf.len == 0)
+					{
+						break;
+					}
+					/*
 					 * We did not finish reading a complete date line
 					 *
 					 * If eof is not yet reached, we skip att parsing
@@ -4289,6 +4305,13 @@ CopyReadLineText(CopyState cstate, size_t bytesread)
 	 */
 	escapec = cstate->escape[0];
 
+	if (cstate->raw_buf_index >= bytesread)
+	{
+		cstate->raw_buf_done = true;
+		cstate->line_done = CopyCheckIsLastLine(cstate);
+		return false;
+	}
+
 	/*
 	 * Detect end of line type if not already detected.
 	 */
@@ -4339,6 +4362,10 @@ CopyReadLineText(CopyState cstate, size_t bytesread)
 					cstate->cr_in_prevbuf = false;
 					preProcessDataLine(cstate);
 
+					if (cstate->raw_buf_index >= bytesread)
+					{
+						cstate->raw_buf_done = true;
+					}
 					return true;
 				}
 			}
@@ -4389,16 +4416,24 @@ CopyReadLineText(CopyState cstate, size_t bytesread)
 			if (cstate->eol_type == EOL_CRLF)
 			{
 				/* check if there is a '\n' after the '\r' */
-				if (*(cstate->endloc + 1) == '\n')
+				if (cstate->raw_buf_index < bytesread && *(cstate->endloc + 1) == '\n')
 				{
 					/* this is a line end */
 					appendBinaryStringInfo(&cstate->line_buf, cstate->begloc, 1);		/* load that '\n' */
 					cstate->raw_buf_index++;
 					cstate->begloc++;
 				}
+				/* no data left, may in next buf*/
+				else if (cstate->raw_buf_index >= bytesread)
+				{
+					cstate->cr_in_prevbuf = true;
+					eol_found = false;
+				}
 				else
+				{
 					/* just a CR, not a line end */
 					eol_found = false;
+				}
 			}
 
 			/*
@@ -4420,6 +4455,12 @@ CopyReadLineText(CopyState cstate, size_t bytesread)
 			{
 				/* stay in the loop and process some more data. */
 				cstate->line_done = false;
+
+				/* no data left, retuen false */
+				if (cstate->raw_buf_done)
+				{
+					return false;
+				}
 
 				if (eol_found)
 					cstate->cur_lineno++;		/* increase line index for error
@@ -4505,6 +4546,13 @@ CopyReadLineCSV(CopyState cstate, size_t bytesread)
 	if (quotec == escapec)
 		escapec = '\0';
 
+	if (cstate->raw_buf_index >= bytesread)
+	{
+		cstate->raw_buf_done = true;
+		cstate->line_done = CopyCheckIsLastLine(cstate);
+		return false;
+	}
+
 	/*
 	 * Detect end of line type if not already detected.
 	 */
@@ -4554,6 +4602,10 @@ CopyReadLineCSV(CopyState cstate, size_t bytesread)
 					preProcessDataLine(cstate);
 					cstate->cr_in_prevbuf = false;
 
+					if (cstate->raw_buf_index >= bytesread)
+					{
+						cstate->raw_buf_done = true;
+					}
 					return true;
 				}
 			}
@@ -4642,16 +4694,23 @@ CopyReadLineCSV(CopyState cstate, size_t bytesread)
 				/* if dos eol, check for '\n' after the '\r' */
 				if (cstate->eol_type == EOL_CRLF)
 				{
-					if (*(cstate->endloc + 1) == '\n')
+					if (cstate->raw_buf_index < bytesread && *(cstate->endloc + 1) == '\n')
 					{
 						/* this is a line end */
 						appendBinaryStringInfo(&cstate->line_buf, cstate->begloc, 1);	/* load that '\n' */
 						cstate->raw_buf_index++;
 						cstate->begloc++;
 					}
+					else if (cstate->raw_buf_index >= bytesread)
+					{
+						cstate->cr_in_prevbuf = true;
+						eol_found = false;
+					}
 					else
+					{
 						/* just a CR, not a line end */
 						eol_found = false;
+					}
 				}
 
 				/*
@@ -4668,6 +4727,15 @@ CopyReadLineCSV(CopyState cstate, size_t bytesread)
 				{
 					cstate->line_done = true;
 					break;
+				}
+				else
+				{
+					cstate->line_done = false;
+					/* no data left, return false */
+					if (cstate->raw_buf_done)
+					{
+						return false;
+					}
 				}
 			}
 		}						/* end of found eol_ch */
@@ -6568,10 +6636,12 @@ static void CopyInitDataParser(CopyState cstate)
  * process it like the other lines (remove metadata chars, encoding conversion).
  *
  * See MPP-4406 for an example of why this is needed.
+ *
+ * Notice: if line_buf is empty, no need to add EOL
  */
 static bool CopyCheckIsLastLine(CopyState cstate)
 {
-	if (cstate->fe_eof)
+	if (cstate->fe_eof && cstate->line_buf.len > 0)
 	{
 		concatenateEol(cstate);
 		return true;
