@@ -401,6 +401,7 @@ bool		Debug_filerep_memory_log_flush = false;
 bool		filerep_inject_listener_fault = false;
 bool		filerep_inject_db_startup_fault = false;
 bool		filerep_inject_change_tracking_recovery_fault = false;
+bool		filerep_mirrorvalidation_during_resync = false;
 
 /* WAL based replication debug GUCs */
 bool	 	debug_walrepl_snd = false;
@@ -3454,6 +3455,16 @@ static struct config_bool ConfigureNamesBool[] =
 			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
 		},
 		&filerep_inject_change_tracking_recovery_fault,
+		false, NULL, NULL
+	},
+
+	{
+		{"filerep_mirrorvalidation_during_resync", PGC_POSTMASTER, DEVELOPER_OPTIONS,
+			gettext_noop("Setting enables checking for file existence for all relations on mirror during incremental resynchronization"),
+			NULL,
+			GUC_NO_SHOW_ALL
+		},
+		&filerep_mirrorvalidation_during_resync,
 		false, NULL, NULL
 	},
 

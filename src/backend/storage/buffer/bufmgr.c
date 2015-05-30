@@ -802,15 +802,21 @@ ReadBuffer_Resync(SMgrRelation reln, BlockNumber blockNum, volatile BufferDesc* 
 		{
 			ereport(WARNING,
 					(errcode(ERRCODE_DATA_CORRUPTED),
-					 errmsg("invalid page header in block %u of relation \"\"; zeroing out page",
-							blockNum/*, relpath(reln->smgr_rnode)*/)));
+					 errmsg("invalid page header in block %u of relation '%u/%u/%u'; zeroing out page",
+							blockNum,
+							reln->smgr_rnode.spcNode,
+							reln->smgr_rnode.dbNode,
+							reln->smgr_rnode.relNode)));
 			MemSet((char *) bufBlock, 0, BLCKSZ);
 		}
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_DATA_CORRUPTED),
-					 errmsg("invalid page header in block %u of relation \"\"",
-							blockNum/*, relpath(reln->smgr_rnode)*/),
+					 errmsg("invalid page header in block %u of relation '%u/%u/%u'",
+							blockNum,
+							reln->smgr_rnode.spcNode,
+							reln->smgr_rnode.dbNode,
+							reln->smgr_rnode.relNode),
 					 errSendAlert(true)));
 	}
 

@@ -1937,7 +1937,7 @@ FileRepMirror_RunConsumer(void)
 					case FileRepValidationExistence:
 					{	
 						struct stat	 st;
-						
+
 						if (stat(fileName, &st) >= 0)
 						{
 							fileRepMessageHeader->fileRepOperationDescription.validation.mirrorStatus = FileRepStatusSuccess;

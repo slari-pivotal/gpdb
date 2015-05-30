@@ -4991,7 +4991,7 @@ static void PersistentFileSysObj_ScanStateAction(
 						 serialNum,
 						 ItemPointerToString(&persistentTid));
 
-				if (mirrorExistenceState == MirroredObjectExistenceState_MirrorCreated)
+				if (filerep_mirrorvalidation_during_resync && (mirrorExistenceState == MirroredObjectExistenceState_MirrorCreated))
 				{
 					PersistentFileSysRelStorageMgr	relStorageMgr = PersistentFileSysRelStorageMgr_None;
 

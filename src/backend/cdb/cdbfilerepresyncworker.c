@@ -351,22 +351,24 @@ FileRepPrimary_ResyncWrite(FileRepResyncHashEntry_s	*entry)
 						
 					if (mirrorDataLossOccurred)
 						break;
+
+					if (entry->mirrorDataSynchronizationState != MirroredRelDataSynchronizationState_FullCopy)
+					{
+						LockRelationForResyncExtension(&smgr_relation->smgr_rnode, ExclusiveLock);
 					
-					LockRelationForResyncExtension(&smgr_relation->smgr_rnode, ExclusiveLock);
+						numBlocks = smgrnblocks(smgr_relation);
 					
-					numBlocks = smgrnblocks(smgr_relation);
-					
-					smgrtruncate(smgr_relation, 
+						smgrtruncate(smgr_relation,
 								 numBlocks,
 								 TRUE /* isTemp, TRUE means to not record in XLOG */,
 								 FALSE /* isLocalBuf */,
 								 &entry->persistentTid,
 								 entry->persistentSerialNum);
 								 
-					UnlockRelationForResyncExtension(&smgr_relation->smgr_rnode, ExclusiveLock);
+						UnlockRelationForResyncExtension(&smgr_relation->smgr_rnode, ExclusiveLock);
+					}
 					
 					smgrimmedsync(smgr_relation);
-					
 					smgrclose(smgr_relation);
 					
 					smgr_relation = NULL;
