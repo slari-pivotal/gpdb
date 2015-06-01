@@ -433,14 +433,14 @@ AC_DEFINE_UNQUOTED(PG_VERSION_STR,
 AC_DEFINE_UNQUOTED(GP_VERSION,
                    ["$GP_VERSION"],
                    [A string containing the Greenplum version number])
-                 
+
 dnl If we are a development build, fake a numeric version number  
 dnl this needs to be manually updated each time we branch a new version
 
-if `echo "$GP_VERSION" | grep "main build" > /dev/null 2>&1` ; then
+if test "$GP_VERSION" = "devel" ; then
    GP_VERSION="4.3.0"
 fi
-                   
+
 [GP_MAJORVERSION=`expr "$GP_VERSION" : '\([0-9][0-9]*\.[0-9][0-9]*\)'`]
 AC_SUBST(GP_MAJORVERSION)
 AC_DEFINE_UNQUOTED(GP_MAJORVERSION, "$GP_MAJORVERSION", [Greenplum major version as a string])

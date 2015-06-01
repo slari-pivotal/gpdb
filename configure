@@ -4672,7 +4672,7 @@ _ACEOF
 
 
 
-if `echo "$GP_VERSION" | grep "main build" > /dev/null 2>&1` ; then
+if test "$GP_VERSION" = "devel" ; then
    GP_VERSION="4.3.0"
 fi
 
