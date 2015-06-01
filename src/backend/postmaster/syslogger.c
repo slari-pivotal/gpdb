@@ -38,9 +38,7 @@
 #include "postmaster/fork_process.h"
 #include "postmaster/postmaster.h"
 #include "postmaster/syslogger.h"
-#if (USE_EMAIL || USE_SNMP)
 #include "postmaster/sendalert.h"
-#endif
 #include "storage/ipc.h"
 #include "storage/pg_shmem.h"
 #include "utils/guc.h"
