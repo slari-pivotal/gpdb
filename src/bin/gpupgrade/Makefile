@@ -14,7 +14,7 @@ top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 
 # The frontend doesn't need everything that's in LIBS, some are backend only
-LIBS := $(filter-out -llapack -lblas -lf2c -lresolv -lbz2, $(LIBS))
+LIBS := $(filter-out -lresolv -lbz2, $(LIBS))
 LIBS := $(filter-out -lreadline -ledit -ltermcap -lncurses -lcurses -lcurl -lssl -lz -lpam -lkrb5 -lgssapi_krb5 -lcom_err -lk5crypto -lnuma -lkrb5support, $(LIBS))
 
 MODCAT_OBJS= gpmodcontrol.o pg_crc.o crc32c.o

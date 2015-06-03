@@ -16,7 +16,7 @@ top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 
 # The frontend doesn't need everything that's in LIBS, some are backend only
-LIBS := $(filter-out -llapack -lblas -lf2c -lresolv, $(LIBS))
+LIBS := $(filter-out -lresolv, $(LIBS))
 # This program isn't interactive, so doesn't need these
 LIBS := $(filter-out -lreadline -ledit -ltermcap -lncurses -lcurses -lcurl -lssl -lcrypto, $(LIBS))
 

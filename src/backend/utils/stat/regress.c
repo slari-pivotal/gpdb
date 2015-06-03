@@ -79,50 +79,9 @@ static void float8_mregr_compute(MRegrState	*inState,
 								 ArrayType	**outTStats,
 								 ArrayType	**outPValues);
 
-static inline void symmetricMatrixTimesVector(uint32 inSize, float8 *inMatrix,
+static void symmetricMatrixTimesVector(uint32 inSize, float8 *inMatrix,
 	float8 *inVector, float8 *outResult);
-static inline double dotProduct(uint32 inSize, float8 *inVec1,
-	float8 *inVec2);
-
-static long int (*gp_dgemv)(char *trans, long int *m,
-					   long int *n, double *alpha,
-					   double *a, long int *lda,
-					   double *x, long int *incx,
-					   double *beta, double *y,
-					   long int *incy) = NULL;
-
-static double (*gp_ddot)(long int *n, double *dx, long int *incx,
-						double *dy, long int *incy) = NULL;
-
-/*
- * Link in gp_dgemv and gp_ddot.
- */
-static void
-link_la_function(void)
-{
-	void *hdl = NULL;
-
-	if (gp_dgemv && gp_ddot)
-		return;
-
-	hdl = load_gpla();
-
-	if (!gp_dgemv)
-	{
-		gp_dgemv = dlsym(hdl, "gp_dgemv");
-		if (!gp_dgemv)
-			elog(ERROR, "cannot load function: %s", dlerror());
-	}
-
-	if (!gp_ddot)
-	{
-		gp_ddot = dlsym(hdl, "gp_ddot");
-		if (!gp_ddot)
-			elog(ERROR, "cannot load function: %s", dlerror());
-	}
-}
-
-	
+static double dotProduct(uint32 inSize, float8 *inVec1, float8 *inVec2);
 	
 static bool
 float8_mregr_accum_get_args(FunctionCallInfo fcinfo,
@@ -511,7 +470,6 @@ float8_mregr_compute(MRegrState	*inState,
 	            r2,
 	            variance;
 	float8      *XtX_inv, *coef, *stdErr, *tStats = NULL, *pValues = NULL;
-	float8      condNoOfXtX;
 	uint32      i;
 	
 	/*
@@ -519,7 +477,7 @@ float8_mregr_compute(MRegrState	*inState,
 	 *           and IS_FEASIBLE_STATE_LEN(STATE_LEN(inState->len))
 	 */
 	XtX_inv = palloc((uint64) inState->len * inState->len * sizeof(float8));
-	condNoOfXtX = pinv(inState->len, inState->len, inState->XtX, XtX_inv);
+	pinv(inState->len, inState->len, inState->XtX, XtX_inv);
 	
 	/*
 	 * FIXME: Decide on whether we want to display an info message or rather
@@ -769,60 +727,44 @@ float8_mregr_pvalues(PG_FUNCTION_ARGS)
 /*
  * Multiply symmetric matrix with vector
  */
-static inline void
+static void
 symmetricMatrixTimesVector(uint32 inSize, float8 *inMatrix,
 	float8 *inVector, float8 *outResult)
 {
-	/*
-	 * We use types defined in f2c.h for values that we pass to LAPACK.
-	 * Precondition: sizeof(long int) >= sizeof(inSize)
-	 *          and: types float8 and double must be identical
-	 */
-	char       N_char = 'N';
-	long int    size = inSize;
-	double one_float = 1.0, zero_float = 0.0;
-	long int    one_int = 1;
-	
-	/*
-	 * Using dgemv, we compute
-	 * coef := alpha * inMatrix * Xty + beta * inVector,
-	 * where alpha = 1 and beta = 0
+	int			i,
+				j;
+
+	/*-----------
+	 * Math recap:
 	 *
-	 * dgemv assumes matrices are stored in colum-major order. Since inMatrix
-	 * is symmetric, we don't have to worry about it though.
+	 *     | a b c |     | x |
+	 * A = | p q r | B = | y |
+	 *     | u v w |     | z |
+	 *
+	 *         | ax + by + cz |
+	 * A * B = | px + qy + rz |
+	 *         | ux + vy + wz |
+	 *
+	 *-----------
 	 */
-	link_la_function();
-	gp_dgemv(
-		&N_char /* no transpose of matrix */,
-		&size /* number of rows */,
-		&size /* number of columns */,
-		&one_float /* alpha */,
-		inMatrix,
-		&size /* first dimension of matrix */,
-		inVector,
-		&one_int /* delta between elements in vector */,
-		&zero_float /* beta */,
-		outResult,
-		&one_int /* delta between elements in vector */
-	);
+	for (i = 0; i < inSize; i++)
+	{
+		outResult[i] = 0;
+		for (j = 0; j < inSize; j++)
+			outResult[i] += inMatrix[i*inSize + j] * inVector[j];
+	}
 }
 
 /* Dot product */
-static inline double
+static float8
 dotProduct(uint32 inSize, float8 *inVec1, float8 *inVec2)
 {
-	/*
-	 * Precondition: sizeof(long int) >= sizeof(inSize)
-	 *          and: types float8 and double must be identical
-	 */
-	long int size = inSize;
-	long int one_int = 1;
-	link_la_function();
-	return gp_ddot(
-		&size,
-		inVec1,
-		&one_int /* delta between elements in vector inVec1 */,
-		inVec2,
-		&one_int /* delta between elements in vector inVec2 */
-	);
+	float8		result;
+	int			i;
+
+	result = 0;
+	for (i = 0; i < inSize; i++)
+		result += inVec1[i] * inVec2[i];
+
+	return result;
 }

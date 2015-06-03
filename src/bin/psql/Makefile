@@ -42,7 +42,7 @@ OBJS=	command.o common.o help.o input.o stringutils.o mainloop.o copy.o \
 FLEXFLAGS = -Cfe
 
 # The frontend doesn't need everything that's in LIBS, some are backend only
-LIBS := $(filter-out -llapack -lblas -lf2c -lresolv -lbz2, $(LIBS))
+LIBS := $(filter-out -lresolv -lbz2, $(LIBS))
 
 all: submake-libpq submake-libpgport psql
 
