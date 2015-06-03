@@ -14,7 +14,7 @@ top_builddir = ../../../..
 include $(top_builddir)/src/Makefile.global
 
 ifneq ($(PORTNAME), win32)
-override CFLAGS += $(PTHREAD_CFLAGS) -pthread
+override CFLAGS += $(PTHREAD_CFLAGS) -pthread -Wno-error
 endif
 
 
