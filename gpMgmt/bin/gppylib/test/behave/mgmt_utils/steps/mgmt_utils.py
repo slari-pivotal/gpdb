@@ -912,6 +912,11 @@ def impl(context, tname, dbname):
     print 'veryfing data integraty'
     match_table_select(context, tname, dbname)
 
+@then('verify that table "{tname}" in "{dbname}" has same data on source and destination system with order by {orderby}')
+def impl(context, tname, dbname, orderby):
+    print 'veryfing data integraty'
+    match_table_select(context, tname, dbname, orderby)
+
 @then('verify that partitioned tables "{table_list}" in "{dbname}" have {num_parts} partitions')
 def impl(context, table_list, dbname, num_parts):
     num_parts = int(num_parts.strip())

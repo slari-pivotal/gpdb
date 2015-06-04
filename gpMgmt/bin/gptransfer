@@ -252,7 +252,7 @@ def create_parser():
     general_option_group.add_option(
         '--delimiter',
         type='string',
-        default='\001',
+        default= ',',
         action='store',
         metavar='<delim>',
         help='Delimiter to use for external tables'
@@ -272,6 +272,21 @@ def create_parser():
         default=False,
         action='store_true',
         help=SUPPRESS_HELP
+    )
+    general_option_group.add_option(
+        '--format',
+        dest='format',
+        default='CSV',
+        action='store',
+        choices=['CSV', 'csv', 'TEXT','text'],
+        help='Transfer data in CSV(default) or TEXT format'
+    )
+    general_option_group.add_option(
+        '--quote',
+        dest='quote',
+        default='\001',
+        action='store',
+        help='Specifies the quotation character for CSV mode. The default is "\001".'
     )
 
     parser.add_option_group(general_option_group)
@@ -1362,7 +1377,7 @@ class GpTransferCommand(Command):
         fast_mode, exclusive_lock, schema_only, work_dir,
         host_map, source_config, batch_size, gpfdist_port, gpfdist_last_port, 
         gpfdist_instance_count, max_line_length, timeout, wait_time, 
-        delimiter, validator):
+        delimiter, validator, format, quote):
         """
         name: name of the command
         src_host: source GPDB host
@@ -1391,6 +1406,8 @@ class GpTransferCommand(Command):
         wait_time: time to wait on destination query (TODO: remove this in next release)
         delimiter: delimiter char to use for external tables
         validator: validator to use
+        format: transfer data in CSV(default) or TEXT format
+        quote: specifies the quotation character for CSV mode
         """
 
         self._src_host = src_host
@@ -1418,6 +1435,8 @@ class GpTransferCommand(Command):
         self._timeout = timeout
         self._wait_time = wait_time
         self._delimiter = delimiter
+        self._format = format
+        self._quote = quote
         # _used_ports is a dict where key is hostname and val is list of
         # ints (ports used)
         self._pipe = os.path.join(work_dir,
@@ -1698,25 +1717,33 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
             distributed_clause = self._get_distributed_by()
             wext_sql = \
                 '''CREATE WRITABLE EXTERNAL WEB TABLE gptransfer.%s (LIKE \"%s\".\"%s\")
-                    EXECUTE 'cat > %s.$GP_SEGMENT_ID'
-                    FORMAT 'TEXT' (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')
-                    ENCODING 'UTF8' %s
+                   EXECUTE 'cat > %s.$GP_SEGMENT_ID'
+                   FORMAT '%s' 
                 ''' % (self._wext_name,
                        self._table_pair.source.schema,
                        self._table_pair.source.table,
                        self._pipe,
-                       self._delimiter,
-                       distributed_clause)
+                       self._format)
+            if self._format.lower() == 'csv':
+                wext_sql += """ (DELIMITER AS ',' QUOTE AS E'%s' NULL AS '')""" % self._quote
+            elif self._format.lower() == 'text':
+                wext_sql += """ (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')""" % self._delimiter
+            wext_sql += """ ENCODING 'UTF8' %s""" % distributed_clause
         else:
             wext_sql = \
                 '''CREATE WRITABLE EXTERNAL TABLE gptransfer.%s ( LIKE \"%s\".\"%s\")
-                    LOCATION (%s)
-                    FORMAT 'TEXT' (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')
-                    ENCODING \'UTF8\' DISTRIBUTED RANDOMLY''' \
+                   LOCATION (%s)
+                   FORMAT '%s' ''' \
                 % (self._wext_name,
                    self._table_pair.source.schema,
                    self._table_pair.source.table,
-                   urls, self._delimiter)
+                   urls,
+                   self._format)
+            if self._format.lower() == 'csv':
+                wext_sql += """ (DELIMITER AS ',' QUOTE AS E'%s' NULL AS '')""" % self._quote
+            elif self._format.lower() == 'text':
+                wext_sql += """ (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')""" % self._delimiter
+            wext_sql += """ ENCODING \'UTF8\' DISTRIBUTED RANDOMLY"""
         cur = execSQL(self._src_conn, wext_sql)
         cur.close()
 
@@ -1731,10 +1758,16 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         ext_sql = \
             """CREATE EXTERNAL TABLE gptransfer.%s (LIKE \"%s\".\"%s\")
                LOCATION(%s)
-               FORMAT 'TEXT' (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')""" \
+               FORMAT '%s' """\
             % (self._ext_name,
                self._table_pair.dest.schema,
-               self._table_pair.dest.table, urls, self._delimiter)
+               self._table_pair.dest.table,
+               urls,
+               self._format)
+        if self._format.lower() == 'csv':
+            ext_sql += """(DELIMITER AS ',' QUOTE AS E'%s' NULL AS '')""" % self._quote
+        elif self._format.lower() == 'text':
+            ext_sql += """(DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off' NEWLINE AS 'CRLF')""" % self._delimiter
         cur = execSQL(self._dest_conn, ext_sql)
         cur.close()
 
@@ -2230,6 +2263,10 @@ class GpTransfer(object):
 
         self._cleanup_schemas = False
 
+        # --format would be 'TEXT' if delimiter is other than ','
+        if self._options.delimiter != ",":
+            self._options.format = 'text'
+
         # get GpArray objects of source and destination GPDB systems
         self._src_config = None
         self._dest_config = None
@@ -2302,7 +2339,6 @@ class GpTransfer(object):
         """
         Runs the data transfer based on the options provided.
         """
-
         if not self._options.dry_run:
             self.setup()
 
@@ -2359,6 +2395,8 @@ class GpTransfer(object):
                     self._options.wait_time,
                     self._options.delimiter,
                     self._options.validator,
+                    self._options.format,
+                    self._options.quote,
                 )
                 self._pool.addCommand(cmd)
                 cmds_queued += 1
@@ -2813,6 +2851,14 @@ class GpTransfer(object):
            (len(self._options.delimiter) != 1):
             raise ProgramArgumentValidationException(
                 'Invalid --delimiter.  Must be single character')
+
+        if self._options.delimiter != "," and self._options.format.lower() == 'csv':
+            raise ProgramArgumentValidationException(
+                'Invalid --delimiter. Delimiter %s is not allowed in CSV(default) format. Specify --format=TEXT' % self._options.delimiter)
+
+        if self._options.delimiter == ',' and self._options.format.lower() == 'text':
+            raise ProgramArgumentValidationException(
+                'Invalid --delimiter. Default delimiter "," is not allowed in TEXT format. Specify --delimiter option for TEXT')
 
     def _get_configurations(self):
         """

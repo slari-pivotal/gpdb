@@ -713,10 +713,14 @@ def check_row_count(tablename, dbname, nrows):
 def check_empty_table(tablename, dbname):
     check_row_count(tablename, dbname, 0)
      
-def match_table_select(context, tablename, dbname):
-    check_query = 'psql -d %s -c \'select * from %s\'' % (dbname, tablename)
+def match_table_select(context, tablename, dbname, orderby=None):
+    if orderby != None :
+        check_query = 'psql -d %s -c \'select * from %s order by %s\'' % (dbname, tablename, orderby)
+        command = 'psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -d %s -c \'select * from %s order by %s\''%(dbname, tablename, orderby)
+    else:
+        check_query = 'psql -d %s -c \'select * from %s\'' % (dbname, tablename)
+        command = 'psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -d %s -c \'select * from %s\''%(dbname, tablename)
     (rc, out1, err) = run_cmd(check_query)
-    command = 'psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -d %s -c \'select * from %s\''%(dbname, tablename)
     (rc, out2, err) = run_cmd(command)
     if out2 != out1:
         raise Exception('table %s in database %s between source and destination system does not match'%(tablename,dbname))
