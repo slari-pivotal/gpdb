@@ -16,24 +16,18 @@ include $(top_builddir)/src/Makefile.global
 
 ifeq "$(findstring -ftest-coverage,$(CFLAGS))" ""
 unittest-check:
-	$(MAKE) -C gphdfs unittest
 	$(MAKE) -e LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(nbu_libdir) -C pg_dump/cdb/test check
 	$(MAKE) -C pg_dump/test check
 else
 unittest-check:
-	$(MAKE) -C gphdfs unittest
 	$(MAKE) -C pg_dump/test check
 endif
 
 DIRS = initdb ipcclean pg_basebackup pg_ctl pg_dump \
 	psql scripts pg_config pg_controldata pg_resetxlog \
-	gpmapreduce gpmirrortransition gpupgrade gphdfs/src/protocol_formatter \
+	gpmapreduce gpmirrortransition gpupgrade \
 	gp_workfile_mgr \
 	gp_session_state
-
-ifeq ($(enable_gphdfs),yes)
-DIRS+=gphdfs
-endif
 
 ifeq ($(enable_snmp),yes)
 DIRS+=gpsnmpd

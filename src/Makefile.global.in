@@ -181,7 +181,6 @@ enable_orca		= @enable_orca@
 enable_snmp			= @enable_snmp@
 enable_email		= @enable_email@
 enable_connectemc	= @enable_connectemc@
-enable_gphdfs		= @enable_gphdfs@
 enable_ddboost	    = @enable_ddboost@
 enable_netbackup	= @enable_netbackup@
 

@@ -520,15 +520,6 @@ AC_MSG_RESULT([checking whether to build with snmp... $enable_snmp])
 AC_SUBST(enable_snmp)
 
 #
-# --enable-gphdfs enables GPHDFS support
-#
-PGAC_ARG_BOOL(enable, gphdfs, no, [  --enable-gphdfs        enables GPHDFS support],
-              [AC_DEFINE([USE_GPHDFS], 1, 
-                         [Define to 1 to build with gphdfs capabilities. (--enable-gphdfs)])])
-AC_MSG_RESULT([checking whether to build with gphdfs...$enable_gphdfs])
-AC_SUBST(enable_gphdfs)
-
-#
 # --enable-connectemc enables connect emc support
 #
 PGAC_ARG_BOOL(enable, connectemc, no,  [  --enable-connectemc     enable connect emc support],

@@ -706,7 +706,6 @@ INCLUDES
 enable_netbackup
 enable_ddboost
 enable_connectemc
-enable_gphdfs
 enable_snmp
 enable_orca
 autodepend
@@ -813,7 +812,6 @@ enable_debugntuplestore
 enable_testutils
 enable_orca
 enable_snmp
-enable_gphdfs
 enable_connectemc
 enable_ddboost
 enable_netbackup
@@ -1486,7 +1484,6 @@ build with coverage testing instrumentation
   --enable-testutils        enable testing utilities
   --enable-orca        enable ORCA optimizer
   --enable-snmp        enable snmp for MIB and alerts via TRAP/INFORM
-  --enable-gphdfs        enables GPHDFS support
   --enable-connectemc     enable connect emc support
   --enable-ddboost     enable connect emc support
   --enable-netbackup     enable NetBackup support
@@ -4942,39 +4939,6 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: checking whether to build with snmp... $enable_snmp" >&5
 $as_echo "checking whether to build with snmp... $enable_snmp" >&6; }
-
-
-#
-# --enable-gphdfs enables GPHDFS support
-#
-
-pgac_args="$pgac_args enable_gphdfs"
-
-# Check whether --enable-gphdfs was given.
-if test "${enable_gphdfs+set}" = set; then :
-  enableval=$enable_gphdfs;
-  case $enableval in
-    yes)
-
-$as_echo "#define USE_GPHDFS 1" >>confdefs.h
-
-      ;;
-    no)
-      :
-      ;;
-    *)
-      as_fn_error $? "no argument expected for --enable-gphdfs option" "$LINENO" 5
-      ;;
-  esac
-
-else
-  enable_gphdfs=no
-
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: checking whether to build with gphdfs...$enable_gphdfs" >&5
-$as_echo "checking whether to build with gphdfs...$enable_gphdfs" >&6; }
 
 
 #
