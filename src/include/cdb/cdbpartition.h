@@ -284,5 +284,7 @@ freeValueArrays(Datum *values, bool *isnull);
 extern PartitionRule*
 get_next_level_matched_partition(PartitionNode *partnode, Datum *values, bool *isnull,
 								TupleDesc tupdesc, PartitionAccessMethods *accessMethods);
+extern bool
+has_subpartition_template(Oid rootOid, int16 parlevel);
 
 #endif   /* CDBPARTITION_H */

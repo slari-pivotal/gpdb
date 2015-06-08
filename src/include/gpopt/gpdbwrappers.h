@@ -610,6 +610,9 @@ namespace gpdb {
 	// return the number of leaf partition for a given table oid
 	ULONG UlLeafPartitions(Oid oidRelation);
 
+	// has subpartition template at the given level
+	BOOL FHasSubPartitionTemplate(Oid oidRelation, ULONG ulLevel);
+
 } //namespace gpdb
 
 #define ForEach(cell, l)	\

@@ -316,17 +316,9 @@ CTranslatorUtils::Pdxltabdesc
 	{
 		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Inherited tables"));
 	}
-	
-	if (!optimizer_multilevel_partitioning && 1 < pmdrel->UlPartColumns())
-	{
-		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Multi-level partitioned tables"));
-	}
 
-	if (gpdb::FRelPartIsInterior(oidRel))
-	{
-		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Query on intermediate partition"));
-	}
-	
+	UnSupportedMultiLevelPartitioned(oidRel, pmdrel);
+
 	// look up table name
 	const CWStringConst *pstrTblName = pmdrel->Mdname().Pstr();
 	CMDName *pmdnameTbl = New(pmp) CMDName(pmp, pstrTblName);
@@ -378,6 +370,49 @@ CTranslatorUtils::Pdxltabdesc
 
 	return pdxltabdesc;
 }
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CTranslatorUtils::UnSupportedMultiLevelPartitioned
+//
+//	@doc:
+//      If the query is on a multi-level partitioned table, raise exception for
+//      unsupported queries on such tables
+//
+//---------------------------------------------------------------------------
+void
+CTranslatorUtils::UnSupportedMultiLevelPartitioned
+	(
+	OID oidRel,
+	const IMDRelation *pmdrel
+	)
+{
+	GPOS_ASSERT(NULL != pmdrel);
+
+	ULONG ulLevels = pmdrel->UlPartColumns();
+	if (1 < ulLevels)
+	{
+		if (!optimizer_multilevel_partitioning)
+		{
+			GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("multi-level partitioned tables"));
+		}
+
+		for (ULONG ul = 1; ul <= ulLevels; ul++)
+		{
+			// all subpartitions must have an associated template
+			if (!gpdb::FHasSubPartitionTemplate(oidRel, ul))
+			{
+				GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("query on table having subpartitions without templates"));
+			}
+		}
+	}
+
+	if (gpdb::FRelPartIsInterior(oidRel))
+	{
+		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("query on intermediate partition"));
+	}
+}
+
 
 //---------------------------------------------------------------------------
 //	@function:
