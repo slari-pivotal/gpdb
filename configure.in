@@ -1881,9 +1881,7 @@ else
   link_test_func=exit
 fi
 
-if test "$PORTNAME" = "darwin"; then
-  PGAC_PROG_CC_LDFLAGS_OPT([-Wl,-dead_strip_dylibs], $link_test_func)
-elif test "$PORTNAME" = "openbsd"; then
+if test "$PORTNAME" = "openbsd"; then
   PGAC_PROG_CC_LDFLAGS_OPT([-Wl,-Bdynamic], $link_test_func)
 else
   PGAC_PROG_CC_LDFLAGS_OPT([-Wl,--as-needed], $link_test_func)
