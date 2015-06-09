@@ -185,6 +185,7 @@ static Bitmapset *
 get_partition_key_bitmapset(Oid relid);
 
 static List *get_deparsed_partition_encodings(Oid relid, Oid paroid);
+static List *rel_get_leaf_relids_from_rule(Oid ruleOid);
 
 /* Is the given relation the top relation of a partitioned table?
  *
@@ -2544,6 +2545,138 @@ all_leaf_partition_relids(PartitionNode *pn)
 }
 
 /*
+ * Given an Oid of a partition rule, return all leaf-level table Oids that are
+ * descendants of the given rule.
+ * Input:
+ * 	ruleOid - the oid of an entry in pg_partition_rule
+ * Output:
+ * 	a list of Oids of all leaf-level partition tables under the given rule in
+ * 	the partitioning hierarchy.
+ */
+static List *
+rel_get_leaf_relids_from_rule(Oid ruleOid)
+{
+	if (!OidIsValid(ruleOid))
+	{
+		return NIL;
+	}
+
+	List* lChildrenOid = NIL;
+	int nChildren = caql_getcount(NULL, cql("SELECT * FROM pg_partition_rule "
+											" WHERE parparentrule = :1 ",
+											ObjectIdGetDatum(ruleOid)));
+	/* if ruleOid is not parent of any rule, we have reached the leaf level and
+	 * we need to append parchildrelid of this entry to the output
+	 */
+	if (nChildren == 0)
+	{
+		HeapTuple tuple = caql_getfirst(NULL,
+									  cql("SELECT * FROM pg_partition_rule "
+										  " WHERE oid = :1 ",
+										  ObjectIdGetDatum(ruleOid)));
+		Form_pg_partition_rule rule_desc = (Form_pg_partition_rule)GETSTRUCT(tuple);
+
+		lChildrenOid = lcons_oid(rule_desc->parchildrelid, lChildrenOid);
+	}
+
+	/* Otherwise we are still in mid-level, hence recursively call this function
+	 * on children rules of the given rule.
+	 */
+	else
+	{
+		cqContext *pcqCtx = caql_beginscan(
+									NULL,
+									cql("SELECT * FROM pg_partition_rule "
+										" WHERE parparentrule = :1 ",
+										ObjectIdGetDatum(ruleOid)));
+		HeapTuple tup;
+		while (HeapTupleIsValid(tup = caql_getnext(pcqCtx)))
+		{
+			lChildrenOid = list_concat(lChildrenOid, rel_get_leaf_relids_from_rule(HeapTupleGetOid(tup)));
+		}
+		caql_endscan(pcqCtx);
+	}
+
+	return lChildrenOid;
+}
+
+/* Given a partition table Oid (root or interior), return the Oids of all leaf-level
+ * children below it. Similar to all_leaf_partition_relids() but takes Oid as input.
+ */
+List *
+rel_get_leaf_children_relids(Oid relid)
+{
+	PartStatus ps = rel_part_status(relid);
+	List *leaf_relids = NIL;
+	Assert(PART_STATUS_INTERIOR == ps || PART_STATUS_ROOT == ps);
+
+	if (PART_STATUS_ROOT == ps)
+	{
+		PartitionNode *pn = get_parts(relid, 0 /*level*/, 0 /*parent*/, false /*inctemplate*/,
+				CurrentMemoryContext, true /*includesubparts*/);
+		leaf_relids = all_leaf_partition_relids(pn);
+		pfree(pn);
+	}
+	else if (PART_STATUS_INTERIOR == ps)
+	{
+		HeapTuple tuple = caql_getfirst(NULL,
+								  cql("SELECT * FROM pg_partition_rule "
+									  " WHERE parchildrelid = :1 ",
+									  ObjectIdGetDatum(relid)));
+		if (HeapTupleIsValid(tuple))
+		{
+			leaf_relids = rel_get_leaf_relids_from_rule(HeapTupleGetOid(tuple));
+			heap_freetuple(tuple);
+		}
+	}
+	else if (PART_STATUS_LEAF == ps)
+	{
+		leaf_relids = list_make1_oid(relid);
+	}
+
+	return leaf_relids;
+}
+
+/* Return the pg_class Oids of the relations representing interior parts of the
+ * PartitionNode tree headed by the argument PartitionNode.
+ *
+ * The caller is responsible for freeing the list after using it.
+ */
+List *
+all_interior_partition_relids(PartitionNode *pn)
+{
+	if (NULL == pn)
+	{
+		return NIL;
+	}
+
+	ListCell *lc;
+	List *interior_relids = NIL;
+
+	foreach(lc, pn->rules)
+	{
+		PartitionRule *rule = lfirst(lc);
+		if (rule->children)
+		{
+			interior_relids = lappend_oid(interior_relids, rule->parchildrelid);
+			interior_relids = list_concat(interior_relids, all_interior_partition_relids(rule->children));
+		}
+	}
+
+	if (pn->default_part)
+	{
+		if (pn->default_part->children)
+		{
+			interior_relids = lappend_oid(interior_relids, pn->default_part->parchildrelid);
+			interior_relids = list_concat(interior_relids,
+							  all_interior_partition_relids(pn->default_part->children));
+		}
+	}
+
+	return interior_relids;
+}
+
+/*
  * Return the number of leaf parts of the partitioned table with the given oid
  */
 int
@@ -2667,7 +2800,7 @@ rel_partition_get_master(Oid relid)
  * the partition for that relation, using partition names if possible,
  * else rank or value expressions.
  */
-static List *rel_get_part_path1(Oid relid)
+List *rel_get_part_path1(Oid relid)
 {
 	HeapTuple	 tuple;
 	Oid			 paroid		   = InvalidOid;

@@ -173,11 +173,19 @@ CdbHeap_Insert(CdbHeap *hp, void *newElement)
     holeSlot = slotN;
     hp->nSlotsUsed++;
 
+    Assert(bytesPerSlot > 0);
+
     /* Bubble the hole up to the proper level.  Ancestors scoot down. */
     while (slot0 < holeSlot)
     {
-        /* Compute parent ptr. */
-        char   *dadSlot = slot0 + (((holeSlot - slot0) >> 1) & -bytesPerSlot);
+        /* Compute parent ptr.
+        (1) index(slot_k) = (addr(slot_k)-addr(slot_0)) / bytesPerSlot
+		(2) for Min-Heap, index(slot_dad) = floor((index(slot_child)-1)/2)
+		Combine the above two formula, we have
+		addr(slot_dad) = ((addr(slot_child) - addr(slot_0)) / bytesPerSlot - 1) / 2 * bytesPerSlot + addr(slot_0)
+					   = addr(slot_0) + bytesPerSlot * ((addr(slot_child) - addr(slot_0) - bytesPerSlot) / bytesPerSlot / 2)
+         */
+        char   *dadSlot = slot0 + bytesPerSlot * (((holeSlot - slot0 - bytesPerSlot) / bytesPerSlot) >> 1);
 
         /* Hole comes to rest where parent value <= new value. */
         if ((*comparator)(dadSlot, newElement, comparatorContext) <= 0)

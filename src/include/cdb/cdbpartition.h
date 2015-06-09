@@ -172,6 +172,9 @@ extern PartitionNode *
 get_parts(Oid relid, int2 level, Oid parent, bool inctemplate,
 		  MemoryContext mcxt, bool includesubparts);
 
+extern List *
+rel_get_leaf_children_relids(Oid relid);
+
 extern Oid 
 rel_partition_get_root(Oid relid);
 
@@ -267,6 +270,11 @@ LogSelectedPartitionOids(HTAB *pidIndex);
 
 extern List *
 all_leaf_partition_relids(PartitionNode *pn);
+
+extern List *
+all_interior_partition_relids(PartitionNode *pn);
+
+extern List *rel_get_part_path1(Oid relid);
 
 extern int
 countLeafPartTables(Oid rootOid);
