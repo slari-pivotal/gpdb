@@ -18,6 +18,7 @@ Feature: gptransfer tests
     @gptransfer_setup
     Scenario: gptransfer setup
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -30,6 +31,7 @@ Feature: gptransfer tests
     @T339833
     Scenario: gptransfer full, source cluster -> source cluster
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -42,6 +44,7 @@ Feature: gptransfer tests
     @T339831
     Scenario: gptransfer full no validator
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -65,6 +68,7 @@ Feature: gptransfer tests
     @T339913
     Scenario: gptransfer full md5 validator
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -88,6 +92,7 @@ Feature: gptransfer tests
     @T339914
     Scenario: gptransfer full count validator
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -110,6 +115,7 @@ Feature: gptransfer tests
     @T339915
     Scenario: gptransfer full with drop
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -123,6 +129,7 @@ Feature: gptransfer tests
     @T339916
     Scenario: gptransfer full with skip
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -136,6 +143,7 @@ Feature: gptransfer tests
     @T339917
     Scenario: gptransfer full with truncate
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -431,7 +439,7 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer -d bad_db --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
         Then gptransfer should return a return code of 1
-        And gptransfer should print Found no matched database bad_db in source system to stdout
+        And gptransfer should print Find no user databases matching "bad_db" in source system to stdout
         And gptransfer should print Found no tables to transfer to stdout
 
     @T339956
@@ -536,13 +544,13 @@ Feature: gptransfer tests
     @T339841
     Scenario: gptransfer with dependent database object
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
         And the database "gptransfer_testdb3" does not exist
         And the database "gptransfer_testdb4" does not exist
         And the database "gptransfer_testdb5" does not exist
-        And database "gptransfer_testdb1" exists
         And there is a table "dependent_table" dependent on function "test_function" in database "gptransfer_testdb1" on the source system
         And the user runs "gptransfer --full --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
         Then gptransfer should return a return code of 0
@@ -564,8 +572,8 @@ Feature: gptransfer tests
         Then gptransfer should return a return code of 2
         And gptransfer should print missing from map file to stdout
 
-    @T339962
-    Scenario: gptransfer should not allow --full and --dest-database option
+    @unsupported_identifiers
+    Scenario: gptransfer unsupported identifiers in table name
         Given the database is running
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
@@ -573,7 +581,54 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb3" does not exist
         And the database "gptransfer_testdb4" does not exist
         And the database "gptransfer_testdb5" does not exist
-        And database "gptransfer_destdb" exists
+        And the user runs "psql -U $GPTRANSFER_SOURCE_USER -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -c 'create table "tt*$#@"(i int)' gptransfer_testdb1"
+        And the user runs "gptransfer -d gptransfer_testdb1 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
+        Then gptransfer should return a return code of 1
+        And gptransfer should print Found unsupported identifiers to stdout
+        And the user runs "psql -U $GPTRANSFER_SOURCE_USER -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -c 'drop table "tt*$#@"' gptransfer_testdb1"
+
+    @unsupported_identifiers
+    Scenario: gptransfer unsupported identifiers in schema name
+        Given the database is running
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "psql -U $GPTRANSFER_SOURCE_USER -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -c 'create schema "Bad*$#@Schema"' gptransfer_testdb1"
+        And the user runs "psql -U $GPTRANSFER_SOURCE_USER -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -c 'create table "Bad*$#@Schema".test(i int)' gptransfer_testdb1"
+        And the user runs "gptransfer -d gptransfer_testdb1 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
+        Then gptransfer should return a return code of 1
+        And gptransfer should print Found unsupported identifiers to stdout
+        And the user runs "psql -U $GPTRANSFER_SOURCE_USER -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -c 'drop schema "Bad*$#@Schema" cascade' gptransfer_testdb1"
+
+    @unsupported_identifiers
+    Scenario: gptransfer unsupported identifiers in database name
+        Given the database is running
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "createdb -U $GPTRANSFER_SOURCE_USER -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST Bad*\$#@DB"
+        And the user runs "psql -U $GPTRANSFER_SOURCE_USER -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -c 'create table test(i int)' Bad*\$#@DB"
+        And the user runs "gptransfer -d 'Bad/[*][$]/#@DB' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
+        Then gptransfer should return a return code of 1
+        And gptransfer should print Found unsupported identifiers to stdout
+        And the user runs "dropdb -U $GPTRANSFER_SOURCE_USER -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST Bad*\$#@DB"
+
+    @T339962
+    Scenario: gptransfer should not allow --full and --dest-database option
+        Given the database is running
+        And the database "gptest" does not exist
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer --full --dest-database gptransferdestdb --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
         Then gptransfer should return a return code of 2
         And gptransfer should print --dest-database option cannot be used with the --full option to stdout
@@ -582,6 +637,7 @@ Feature: gptransfer tests
     @T339963
     Scenario: gptransfer should not allow --batch-size > 10
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -595,6 +651,7 @@ Feature: gptransfer tests
     @T339856
     Scenario: gptransfer should not allow --batch-size < 1
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -608,6 +665,7 @@ Feature: gptransfer tests
     @T339964
     Scenario: gptransfer should not allow --full and -t
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -622,6 +680,7 @@ Feature: gptransfer tests
     @T339965
     Scenario: gptransfer should not allow --full and -d
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -636,6 +695,7 @@ Feature: gptransfer tests
     @T339966
     Scenario: gptransfer should not allow --full and -f
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -689,6 +749,7 @@ Feature: gptransfer tests
     @T339970
     Scenario: gptransfer missing one of --full, -f, -t or -d
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -902,6 +963,7 @@ Feature: gptransfer tests
     @T339902
     Scenario: gptransfer within the same system with --dest-host not specified
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -914,6 +976,7 @@ Feature: gptransfer tests
     @T339861
     Scenario: gptransfer with --dest-port not specified
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -926,6 +989,7 @@ Feature: gptransfer tests
     @T339863
     Scenario: gptransfer with --dest-user not specified to use default system user
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -935,9 +999,25 @@ Feature: gptransfer tests
         And the user runs "gptransfer --full --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
         Then gptransfer should return a return code of 0
 
+   @T432109
+    Scenario: gptransfer --full with user database exist in destination system
+        Given the database is running
+        And the database "gptest" does not exist
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And database "gptransfer_destdb" exists
+        And the user runs "gptransfer --full --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
+        Then gptransfer should return a return code of 2
+        And gptransfer should print --full option specified but databases exist in destination system to stdout
+
     @T339864
     Scenario: gptransfer with --dest-user root
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -950,6 +1030,7 @@ Feature: gptransfer tests
     @T339865
     Scenario: gptransfer with log in ~/gpAdminLogs
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -963,6 +1044,7 @@ Feature: gptransfer tests
     @T339866
     Scenario: gptransfer with log in /tmp
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -976,6 +1058,7 @@ Feature: gptransfer tests
     @T339867
     Scenario: gptransfer with log in nonexistent directory
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -1030,6 +1113,7 @@ Feature: gptransfer tests
     @T339873
     Scenario: gptransfer --skip-existing conflicts with --full
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -1056,6 +1140,7 @@ Feature: gptransfer tests
     @T339876
     Scenario: gptransfer with invalid dest user
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -1162,6 +1247,7 @@ Feature: gptransfer tests
     @T339911
     Scenario: gptransfer --verbose
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -1176,6 +1262,7 @@ Feature: gptransfer tests
     @T339830
     Scenario: gptransfer full with all types of database objects created
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -1203,6 +1290,7 @@ Feature: gptransfer tests
    @T339824
     Scenario: gptransfer full with all ddl, dml and filespace
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -1230,6 +1318,7 @@ Feature: gptransfer tests
     @T339821
     Scenario: gptransfer full in change tracking
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist
@@ -1258,6 +1347,7 @@ Feature: gptransfer tests
     @T339821
     Scenario: gptransfer in resync
         Given the database is running
+        And the database "gptest" does not exist
         And the database "gptransfer_destdb" does not exist
         And the database "gptransfer_testdb1" does not exist
         And the database "gptransfer_testdb2" does not exist

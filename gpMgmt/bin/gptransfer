@@ -79,7 +79,7 @@ DEFAULT_BASE_WORKDIR=os.path.expanduser('~/')
 GPTRANSFER_TMP_DIR = 'gptransfer_%d' % os.getpid()
 
 now = datetime.datetime.now()
-GPTRANSFER_FAILED_TABLES_FILE = 'failed_transer_tables_%s.txt' % now.strftime(
+GPTRANSFER_FAILED_TABLES_FILE = 'failed_transfer_tables_%s.txt' % now.strftime(
     '%Y%m%d_%H%M%S')
 
 DEFAULT_BATCH_SIZE = 2
@@ -614,18 +614,54 @@ def validate_regexp(regexp=None):
     """
 
     if regexp.count('/') % 2 != 0:
-        raise Exception('Regular expression should be surround with \\')
+        raise Exception('Regular expression should be surround with /')
 
     return regexp.replace('/', '')
 
 
-def get_user_tables(host, port, user, databases=None):
+def get_user_databases(host, port, user):
     """
-    Retrieves a list of all tables on a GPDB system.
+    get all user databases in the gpdb system
+    """
+    all_dbs = list()
+
+    url = DbURL(host, port, 'template1', user)
+    conn = connect(url)
+    all_dbs = [db[0] for db in getUserDatabaseList(conn)]
+    conn.close()
+
+    return all_dbs
+
+
+def get_databases_by_regexp(host, port, user, databases, warning=False):
+    """
+    Retrieves a list of all databases based on matching the regular expressions.
+    """
+    dbs = list()
+    all_dbs = get_user_databases(host, port, user)
+
+    for database in databases:
+        db_matched = False
+        for db in all_dbs:
+            try:
+                if re.match(r'%s' % database, db, re.L|re.U) and db not in dbs:
+                    dbs.append(db)
+                    db_matched = True
+            except Exception, e:
+                raise Exception("Error matching regular expression %s with %s\n%s" %(database, db, e))
+        if not db_matched and warning:
+            logger.warning('Find no user databases matching "%s" in source system' % database[1 : len(database) - 1])
+
+    return dbs
+
+def get_user_tables(host, port, user, databases=None, full=False):
+    """
+    Retrieves all tables from a list of databases on a GPDB system.
 
     host: hostname of GPDB system
     port: port of the GPDB system
     user: username to use to connect to GPDB system
+    full: True if to retrieve tables of all databases
     """
 
     # We need to use this SQL query because we only want the top level
@@ -641,34 +677,14 @@ WHERE
 AND n.nspname NOT IN ('gpexpand', 'pg_bitmapindex', 'information_schema', 'gp_toolkit');"""
 
     all_tables = set()
-    all_dbs = list()
-    dbs = set()
 
-    # get all databases in the source system
-    url = DbURL(host, port, 'template1', user)
-    conn = connect(url)
-    all_dbs = [db[0] for db in getUserDatabaseList(conn)]
-    conn.close()
-
-    if databases is not None:
-        for database in databases:
-            db_exist = False
-            for db in all_dbs:
-                try:
-                    if re.match(r'%s' % database, db, re.I|re.U) and db not in dbs:
-                        dbs.add(db)
-                        db_exist = True
-                except Exception, e:
-                    raise Exception("Error matching regular expression %s with %s\n%s" %(database, db, e))
-
-            # print the database name without leading and trailing regexp character
-            if not db_exist:
-                logger.warn('Found no matched database %s in source system.' % database[1:len(database)-1])
-    else:
-        dbs = all_dbs
+    if full:
+        databases = get_user_databases(host, port, user)
+    elif databases is None or len(databases) == 0:
+        return all_tables
 
     # get all the tables in the source system
-    for database in dbs:
+    for database in databases:
         url = DbURL(host, port, database, user)
         conn = connect(url)
         cur = execSQL(conn, all_tables_sql)
@@ -698,23 +714,25 @@ WHERE c.relname = '%s' AND n.nspname = '%s'"""
     return res[0]
 
 
-def schema_exists_on_system(host, port, user, schema):
+def schema_exists_on_system(host, port, user, schema, databases=None):
     """
     host: hostname or ip address of Greenplum DB
     port: port of Greenplum DB
     user: user to connect as
     schema: schema name to search for
+    databases: list of databases to search for schema
 
-    Returns True if schema exists in any user database
+    Returns True if schema exists in the user database
     """
-    url = DbURL(host, port, 'template1', user)
-    conn = connect(url)   
-    databases = getUserDatabaseList(conn)
-    conn.close()
-    
-    for db in databases:
-        db = db[0]
-        url = DbURL(host, port, db, user)
+
+    if databases is None:
+        url = DbURL(host, port, 'template1', user)
+        conn = connect(url)
+        databases = [db[0] for db in getUserDatabaseList(conn)]
+        conn.close()
+
+    for database in databases:
+        url = DbURL(host, port, database, user)
         conn = connect(url)
         schema_exists = doesSchemaExist(conn, schema)
         conn.close()
@@ -940,7 +958,7 @@ class MD5MergeTableValidator(TableValidator):
                                          REMOTE, self._src_host)
         self._pool.addCommand(src_pipe_cmd)
 
-        dest_pipe_cmd = GpCreateNamedPipe('Create source validation pipe',
+        dest_pipe_cmd = GpCreateNamedPipe('Create destination validation pipe',
                                           self._dest_pipe,
                                           REMOTE, self._dest_host)
         self._pool.addCommand(dest_pipe_cmd)
@@ -1293,7 +1311,7 @@ class GpSchemaDump(Command):
                 % (host, port, user)
         else:
             cmdStr = 'pg_dump -s -x -O --gp-syntax -h %s -p %d -U %s -t ' \
-                '%s.%s %s' % (host, port, user, schema, table, database)
+                '\'\"%s\".\"%s\"\' %s' % (host, port, user, schema, table, database)
 
         Command.__init__(self, name, cmdStr, ctxt, remoteHost)
 
@@ -1443,7 +1461,7 @@ class GpTransferCommand(Command):
         try:
             if not canceled:
                 self._pool = WorkerPool(self._batch_size)
-                logger.info('Starting transer of %s to %s...',
+                logger.info('Starting transfer of %s to %s...',
                             self._table_pair.source,
                             self._table_pair.dest)
 
@@ -1542,8 +1560,8 @@ FROM (
 JOIN pg_attribute a ON (d.localoid = a.attrelid AND d.colnum = a.attnum)
 JOIN pg_class c ON (d.localoid = c.oid)
 JOIN pg_namespace n ON (c.relnamespace = n.oid)
-WHERE LOWER(nspname) = LOWER('%s')
-AND LOWER(relname) = LOWER('%s')
+WHERE nspname = '%s'
+AND relname = '%s'
 GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                                  self._table_pair.source.table)
         try:
@@ -1567,7 +1585,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
 
         logger.info('Truncating target table %s...', self._table_pair.dest)
-        cur = execSQL(self._dest_conn, 'TRUNCATE TABLE %s.%s'
+        cur = execSQL(self._dest_conn, 'TRUNCATE TABLE \"%s\".\"%s\"'
                       % (self._table_pair.dest.schema,
                          self._table_pair.dest.table))
         cur.close()
@@ -1578,7 +1596,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
 
         logger.info('Dropping target table %s...', self._table_pair.dest)
-        cur = execSQL(self._dest_conn, 'DROP TABLE %s.%s'
+        cur = execSQL(self._dest_conn, 'DROP TABLE \"%s\".\"%s\"'
                       % (self._table_pair.dest.schema,
                          self._table_pair.dest.table))
         cur.close()
@@ -1643,6 +1661,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                                 % self._table_pair.source,
                                 os.path.dirname(self._pipe), REMOTE, address)
             self._pool.addCommand(cmd)
+
         cmd = MakeDirectory('create dir for table %s'
                             % self._table_pair.source,
                             os.path.dirname(self._pipe), REMOTE, self._src_host)
@@ -1650,7 +1669,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         cmd = MakeDirectory('create dir for table %s'
                             % self._table_pair.source,
                             os.path.dirname(self._pipe), REMOTE, self._dest_host)
-        self._pool.addCommand(cmd)        
+        self._pool.addCommand(cmd)
 
         self._pool.join()
         self._pool.check_results()
@@ -1678,7 +1697,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         if self._fast_mode:
             distributed_clause = self._get_distributed_by()
             wext_sql = \
-                '''CREATE WRITABLE EXTERNAL WEB TABLE gptransfer.%s (LIKE %s.%s)
+                '''CREATE WRITABLE EXTERNAL WEB TABLE gptransfer.%s (LIKE \"%s\".\"%s\")
                     EXECUTE 'cat > %s.$GP_SEGMENT_ID'
                     FORMAT 'TEXT' (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')
                     ENCODING 'UTF8' %s
@@ -1690,7 +1709,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                        distributed_clause)
         else:
             wext_sql = \
-                '''CREATE WRITABLE EXTERNAL TABLE gptransfer.%s ( LIKE %s.%s )
+                '''CREATE WRITABLE EXTERNAL TABLE gptransfer.%s ( LIKE \"%s\".\"%s\")
                     LOCATION (%s)
                     FORMAT 'TEXT' (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')
                     ENCODING \'UTF8\' DISTRIBUTED RANDOMLY''' \
@@ -1710,7 +1729,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                     self._table_pair.dest)
         urls = ','.join(["'%s'" % url for url in self._ext_gpfdist_urls])
         ext_sql = \
-            """CREATE EXTERNAL TABLE gptransfer.%s (LIKE %s.%s)
+            """CREATE EXTERNAL TABLE gptransfer.%s (LIKE \"%s\".\"%s\")
                LOCATION(%s)
                FORMAT 'TEXT' (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')""" \
             % (self._ext_name,
@@ -1725,7 +1744,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
 
         logger.info('Analyzing destination table %s...', self._table_pair.dest)
-        sql = 'ANALYZE %s.%s' % (self._table_pair.dest.schema,
+        sql = 'ANALYZE \"%s\".\"%s\"' % (self._table_pair.dest.schema,
                                  self._table_pair.dest.table)
         cur = execSQL(self._dest_conn, sql)
         cur.close()
@@ -1911,12 +1930,12 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
         cur = None
         try:
-            query = """INSERT INTO gptransfer.%s SELECT * FROM %s.%s""" \
+            query = """INSERT INTO gptransfer.%s SELECT * FROM \"%s\".\"%s\"""" \
                 % (self._wext_name,
                    self._table_pair.source.schema,
                    self._table_pair.source.table)
             if self._exclusive_lock:
-                lock_query = "LOCK TABLE %s.%s IN EXCLUSIVE MODE;" % \
+                lock_query = "LOCK TABLE \"%s\".\"%s\" IN EXCLUSIVE MODE;" % \
                     (self._table_pair.source.schema, self._table_pair.source.table)
                 execSQL(self._src_conn, lock_query)
 
@@ -1940,12 +1959,12 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
         cur = None
         try:
-            query = """INSERT INTO %s.%s SELECT * FROM gptransfer.%s""" \
+            query = """INSERT INTO \"%s\".\"%s\" SELECT * FROM gptransfer.%s""" \
                 % (self._table_pair.dest.schema,
                    self._table_pair.dest.table,
                    self._ext_name)
             if self._exclusive_lock:
-                lock_query = "LOCK TABLE %s.%s IN EXCLUSIVE MODE" % \
+                lock_query = "LOCK TABLE \"%s\".\"%s\" IN EXCLUSIVE MODE" % \
                     (self._table_pair.dest.schema, self._table_pair.dest.table)
                 execSQL(self._dest_conn, lock_query)
 
@@ -2062,6 +2081,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                               os.path.dirname(self._pipe),
                               REMOTE, address)
             self._pool.addCommand(cmd)
+
         cmd = RemoveFiles('remove dir for table %s'
                           % self._table_pair.source,
                           os.path.dirname(self._pipe),
@@ -2215,39 +2235,27 @@ class GpTransfer(object):
         self._dest_config = None
         self._get_configurations()
 
-        # get all the tables from the source GPDB system
-        logger.info("Retrieving list of source tables...")
-        self._src_tables = \
-            get_user_tables(self._options.source_host,
-                            self._options.source_port, self._options.source_user)
+        self._src_databases = None
+        self._dest_databases = None
 
-        # Check to see if we have any gptransfer schemas on either system
-        logger.info('Checking for gptransfer schemas...')
-        if schema_exists_on_system(self._options.source_host,
-                                   self._options.source_port,
-                                   self._options.source_user,
-                                   'gptransfer'):
-            logger.error('The gptransfer schema already exists on the source system.')
-            logger.error('This is likely due to a previous run on gptransfer')
-            logger.error('being forcefully terminated and not properly cleaned up.')
-            logger.error('Remove these schemas and rerun gptransfer.')
-            raise Exception('gptransfer schema already exists on source system')
+        self._all_src_databases = get_user_databases(self._options.source_host,
+                                             self._options.source_port,
+                                             self._options.source_user)
+        self._all_dest_databases = get_user_databases(self._options.dest_host,
+                                             self._options.dest_port,
+                                             self._options.dest_user)
 
-        if schema_exists_on_system(self._options.dest_host,
-                                   self._options.dest_port,
-                                   self._options.dest_user,
-                                   'gptransfer'):
-            logger.error('The gptransfer schema already exists on destination system.')
-            logger.error('This is likely due to a previous run on gptransfer')
-            logger.error('being forcefully terminated and not properly cleaned up.')
-            logger.error('Remove these schemas and rerun gptransfer.')
-            raise Exception('gptransfer schema already exists on destination system')
+        self._src_tables = self._get_source_tables()
+
+        self._validate_schema_not_exists()
 
         # get all the tables from the destination GPDB system
         logger.info("Retrieving list of destination tables...")
         self._dest_tables = \
             get_user_tables(self._options.dest_host,
-                            self._options.dest_port, self._options.dest_user)
+                            self._options.dest_port,
+                            self._options.dest_user,
+                            [db for db in self._dest_databases if db in self._all_dest_databases])
 
         # segment address list
         self._host_map = self._get_host_map()
@@ -2397,9 +2405,11 @@ class GpTransfer(object):
         cmd = MakeDirectory('Create work directory',
                             self._work_dir, REMOTE, self._options.source_host)
         self._pool.addCommand(cmd)
+
         cmd = MakeDirectory('Create work directory',
                             self._work_dir, REMOTE, self._options.dest_host)
         self._pool.addCommand(cmd)
+
         self._pool.join()
         self._pool.check_results()
 
@@ -2443,7 +2453,7 @@ class GpTransfer(object):
             url = DbURL(self._options.dest_host, self._options.dest_port,
                         'template1', self._options.dest_user)
             conn = connect(url)
-            databases = getUserDatabaseList(conn)
+            databases = [db[0] for db in getUserDatabaseList(conn)]
             conn.close()
 
             toolkit_file = os.path.join(self._gphome, 'share', 'postgresql', 'gp_toolkit.sql')
@@ -2453,7 +2463,7 @@ class GpTransfer(object):
                                 self._options.dest_host,
                                 self._options.dest_port,
                                 self._options.dest_user,
-                                database[0],
+                                database,
                                 toolkit_file)
                 self._pool.addCommand(toolkit_cmd)
             self._pool.join()
@@ -2498,7 +2508,7 @@ class GpTransfer(object):
                     logger.info('Creating schema %s in database %s...',
                                 schema, database)
                     if not doesSchemaExist(conn, schema):
-                        execSQL(conn, 'CREATE SCHEMA %s' % schema)
+                        execSQL(conn, 'CREATE SCHEMA \"%s\"' % schema)
                 conn.commit()
                 conn.close()
 
@@ -2561,13 +2571,13 @@ class GpTransfer(object):
             cmd = RemoveDirectory('Remove work directory',
                                   self._work_dir, REMOTE, self._options.dest_host)
             self._pool.addCommand(cmd)
+
             cmd = RemoveDirectory('Remove work directory',
                                   self._work_dir, REMOTE, self._options.source_host)
             self._pool.addCommand(cmd)
 
-
-
             self._pool.join()
+
 
             if self._options.validator:
                 logger.info('Cleaning up validator...')
@@ -2740,9 +2750,9 @@ class GpTransfer(object):
             raise ProgramArgumentValidationException('At least one of --full, -f, -t or -d must'
                                    ' be specified')
 
-        if self._options.full and len(self._dest_tables) != 0:
-            raise ProgramArgumentValidationException('--full option specified but tables exist '
-                                   'on destination system')
+        if self._options.full and self._dest_databases != None and len(self._dest_databases) != 0:
+            raise ProgramArgumentValidationException('--full option specified but databases exist '
+                                   'in destination system')
 
         if self._options.base_port <= 1024 or self._options.base_port > 65535:
             raise ProgramArgumentValidationException('Invalid --base-port option')
@@ -2820,6 +2830,184 @@ class GpTransfer(object):
                     'template1', self._options.dest_user)
         self._dest_config = GpArray.initFromCatalog(url)
 
+
+    def _validate_schema_not_exists(self):
+        """
+        Check to see if we have any gptransfer schemas on either system
+        """
+        logger.info('Checking for gptransfer schemas...')
+
+        schemas_exists_on_source = False
+        schemas_exists_on_destination = False
+        if self._options.full:
+            if schema_exists_on_system(self._options.source_host,
+                                       self._options.source_port,
+                                       self._options.source_user,
+                                       'gptransfer'):
+                schemas_exists_on_source = True
+
+            if schema_exists_on_system(self._options.dest_host,
+                                       self._options.dest_port,
+                                       self._options.dest_user,
+                                       'gptransfer'):
+                schemas_exists_on_destination = True
+
+        else:
+            if schema_exists_on_system(self._options.source_host,
+                                       self._options.source_port,
+                                       self._options.source_user,
+                                       'gptransfer',
+                                       self._src_databases):
+                schemas_exists_on_source = True
+
+            if schema_exists_on_system(self._options.dest_host,
+                                       self._options.dest_port,
+                                       self._options.dest_user,
+                                       'gptransfer',
+                                       [db for db in self._dest_databases if db in self._all_dest_databases]):
+                schemas_exists_on_destination = True
+
+        if schemas_exists_on_source:
+            logger.error('The gptransfer schema already exists on the source system.')
+            logger.error('This is likely due to a previous run on gptransfer')
+            logger.error('being forcefully terminated and not properly cleaned up.')
+            logger.error('Remove these schemas and rerun gptransfer.')
+            raise Exception('gptransfer schema already exists on source system')
+
+        if schemas_exists_on_destination:
+            logger.error('The gptransfer schema already exists on destination system.')
+            logger.error('This is likely due to a previous run on gptransfer')
+            logger.error('being forcefully terminated and not properly cleaned up.')
+            logger.error('Remove these schemas and rerun gptransfer.')
+            raise Exception('gptransfer schema already exists on destination system')
+
+
+    def _get_source_tables(self):
+        source_tables = list()
+        if self._options.full:
+            for src_table in get_user_tables(self._options.source_host,
+                                             self._options.source_port,
+                                             self._options.source_user,
+                                             full = True):
+                if src_table.database != 'gpperfmon':
+                    source_tables.append(src_table)
+
+            self._src_databases = self._all_src_databases
+            self._dest_databases = self._all_dest_databases
+
+            if 'gpperfmon' in self._src_databases:
+                logger.warn('Tables in database "gpperfmon" will not be transferred with full option')
+                self._src_databases.remove('gpperfmon')
+        else:
+            # get all source databases for both full transfer and table transfer
+            databases_full_transfer = list()
+            databases_table_transfer = list()
+
+            # for databases to transfer with option -d
+            databases = list()
+            for database in self._options.databases:
+                databases.append(_process_regexp(database))
+            databases_full_transfer = get_databases_by_regexp(
+                                               self._options.source_host,
+                                               self._options.source_port,
+                                               self._options.source_user,
+                                               databases, True)
+
+            # add all tables of source databases
+            for table in get_user_tables(self._options.source_host,
+                                         self._options.source_port,
+                                         self._options.source_user,
+                                         databases_full_transfer):
+                source_tables.append(table)
+
+            del databases[:]
+            # add specified tables and parse wildcard of table names
+            tables = list()
+            for fqn in self._options.tables:
+                (database, schema, table) = split_fqn(fqn)
+                database = _process_regexp(database)
+                schema = _process_regexp(schema)
+                table = _process_regexp(table)
+
+                if database not in databases:
+                    databases.append(database)
+
+                if (database, schema, table) not in tables:
+                    tables.append((database, schema, table))
+
+            # add all tables in input file and parse wildcard of table names
+            if self._options.input_file:
+                with open(self._options.input_file) as input_file:
+                    for line in input_file:
+                        line = line.strip()
+                        if line.startswith('#'):
+                            continue
+
+                        (database, schema, table) = split_fqn(line)
+                        database = _process_regexp(database)
+                        schema = _process_regexp(schema)
+                        table = _process_regexp(table)
+
+                        if database not in databases:
+                            databases.append(database)
+
+                        if (database, schema, table) not in tables:
+                            tables.append((database, schema, table))
+
+            databases_table_transfer = get_databases_by_regexp(
+                                           self._options.source_host,
+                                           self._options.source_port,
+                                           self._options.source_user,
+                                           databases, True)
+
+            # get all source databases to transfer tables from
+            self._src_databases = databases_full_transfer + databases_table_transfer
+
+            # get all destination databases
+            if self._options.dest_database:
+                self._dest_databases = [self._options.dest_database]
+            else:
+                self._dest_databases = [db for db in self._all_dest_databases if db in self._src_databases]
+
+            # get all the tables of specified databases from the source GPDB system
+            logger.info("Retrieving source tables...")
+            user_tables = get_user_tables(self._options.source_host,
+                                          self._options.source_port,
+                                          self._options.source_user,
+                                          databases_table_transfer)
+
+            for user_table in user_tables:
+                database, schema, table = user_table.database, user_table.schema, user_table.table
+
+                skip = False
+                for db in databases_full_transfer:
+                    try:
+                        if re.match(r'%s' % db, database, re.L|re.U):
+                            logger.debug('Table %s in database %s has already been added, skip.' % (table, database))
+                            skip = True
+                            break
+                    except Exception, e:
+                        raise Exception('Error matching regular expression %s with %s\n%s' % (db,database,e))
+                if not skip:
+                    is_table_match = False
+                    for (db_, schema_, table_) in tables:
+                        try:
+                            if (re.match(r'%s' % db_, database, re.L|re.U) and
+                                re.match(r'%s' % schema_, schema, re.L|re.U) and
+                                re.match(r'%s' % table_, table, re.L|re.U)):
+
+                                is_table_match = True
+                                break
+                        except Exception, e:
+                            raise Exception('Error matching regular expression, %s with database name %s'
+                                            ' or %s with schema name %s, or %s with table name %s\n%s' %
+                                            (db_, database, schema_, schema, table_, table, e))
+                    if is_table_match:
+                        source_tables.append(user_table)
+
+        return source_tables
+
+
     def _build_table_transfer_set(self):
         """
         Builds up the list of tables to transfer.
@@ -2829,97 +3017,40 @@ class GpTransfer(object):
         table_pairs = set()
         if self._options.full:
             for src_table in self._src_tables:
-                if src_table.database != 'gpperfmon':
-                    table_pairs.add(GpTransferTablePair(src_table,
-                                    GpTransferTable(src_table.database,
-                                    src_table.schema, src_table.table,
-                                    src_table.external)))
+                table_pairs.add(GpTransferTablePair(src_table,
+                                GpTransferTable(src_table.database,
+                                src_table.schema, src_table.table,
+                                src_table.external)))
         else:
-            databases = list()
-            for database in self._options.databases:
-                databases.append(_process_regexp(database))
-            # add all tables in specified databases
-            for table in get_user_tables(self._options.source_host,
-                                         self._options.source_port,
-                                         self._options.source_user,
-                                         databases):
-
-                table_pairs.add(GpTransferTablePair(table,
-                                GpTransferTable(
-                                    (self._options.dest_database if self._options.dest_database else table.database),
-                                table.schema, table.table, table.external)))
-
-            # add specified tables to set and handles wildcard of table names
-            tables = list()
-            for fqn in self._options.tables:
-                (database, schema, table) = split_fqn(fqn)
-                if (database, schema, table) not in tables:
-                    tables.append((_process_regexp(database),
-                                   _process_regexp(schema),
-                                   _process_regexp(table)))
-
-            # add all tables in input file and handles wildcard of table names
-            if self._options.input_file:
-                with open(self._options.input_file) as input_file:
-                    for line in input_file:
-                        line = line.strip()
-                        if line.startswith('#'):
-                            continue
-
-                        (database, schema, table) = split_fqn(line)
-                        if (database, schema, table) not in tables:
-                            tables.append((_process_regexp(database),
-                                           _process_regexp(schema),
-                                           _process_regexp(table)))
-
             for src_table in self._src_tables:
-                database, schema, table = src_table.database, src_table.schema, src_table.table
-
-                skip_database = False
-                logger.debug('Check if database objects has already been added')
-                for db in databases:
-                    try:
-                        if re.match(r'%s' % db, database, re.I|re.U):
-                            skip_database = True
-                            break
-                    except Exception, e:
-                        raise Exception('Error matching regular expression %s with %s\n%s' % (db,database,e))
-                if skip_database:
-                    continue
-                else:
-                    is_table_match = False
-                    for (db_, schema_, table_) in tables:
-                        try:
-                            if (re.match(r'%s' % db_, database, re.I|re.U) and
-                                re.match(r'%s' % schema_, schema, re.I|re.U) and
-                                re.match(r'%s' % table_, table, re.I|re.U)):
-
-                                is_table_match = True
-                                break
-                        except Exception, e:
-                            raise Exception('Error matching regular expression, %s with database name %s'
-                                            ' or %s with schema name %s, or %s with table name %s\n%s' %
-                                            (db_, database, schema_, schema, table_, table, e))
-                    if is_table_match:
-                        is_external = False
-                        try:
-                            is_external = is_table_external(self._options.source_host,
-                                                            self._options.source_port,
-                                                            self._options.source_user,
-                                                            database, schema, table)
-                        except:
-                            # Source table doesn't exist.  We'll pick up this error when we validate
-                            # later on
-                            pass
-                        table_pairs.add(GpTransferTablePair(
-                                            GpTransferTable(
-                                                database, schema, table, is_external),
-                                            GpTransferTable(
-                                                (self._options.dest_database if self._options.dest_database else database),
-                                                schema, table, is_external)))
-
+                table_pairs.add(GpTransferTablePair(
+                                    GpTransferTable(
+                                        src_table.database, src_table.schema, src_table.table, src_table.external),
+                                    GpTransferTable(
+                                        (self._options.dest_database if self._options.dest_database else src_table.database),
+                                         src_table.schema, src_table.table, src_table.external)))
         return table_pairs
 
+
+    def _is_identifier_supported(self, identifier):
+        """
+        Verify that the characters of identifier starts with a-z, or A-Z or underscore,
+        followed by lower or upper case (a-z, A-Z), or digits(0-9), or underscore (_)
+        """
+
+        if not ((identifier[0:1] >= 'a' and identifier[0:1] <= 'z') or
+                (identifier[0:1] >= 'A' and identifier[0:1] <= 'Z') or
+                identifier[0:1] == '_'):
+
+           return False
+
+        for c in identifier:
+            if not ((c >= 'a' and c <= 'z') or
+                    (c >= 'A' and c <= 'Z') or
+                    (c >= '0' and c <= '9') or
+                    (c == '_')):
+                return False
+        return True
 
     def _validate_table_transfer_set(self):
         """
@@ -2929,12 +3060,19 @@ class GpTransfer(object):
         logger.info('Validating transfer table set...')
 
         # make sure we don't collide on dest table names
+        non_supported_table_name_list = list()
         target_tables = set()
         remove_list = list()
         truncate_list = list()
         drop_list = list()
 
         for table_pair in self._table_transfer_set:
+
+            if not (self._is_identifier_supported(table_pair.source.database) and
+                    self._is_identifier_supported(table_pair.source.schema) and
+                    self._is_identifier_supported(table_pair.source.table)):
+
+                non_supported_table_name_list.append(table_pair)
 
             if table_pair.dest in target_tables:
                 raise Exception('Multiple tables map to %s.  Remove one of '
@@ -2946,6 +3084,10 @@ class GpTransfer(object):
             if table_pair.dest in self._dest_tables:
                 if self._options.skip_existing:
                     remove_list.append(table_pair)
+
+                    #remove tables with non supported name if not to transfer
+                    if table_pair in non_supported_table_name_list:
+                        non_supported_table_name_list.remove(table_pair)
                 elif table_pair.dest.external:
                     continue
                 elif not self._options.truncate and not self._options.drop:
@@ -2957,6 +3099,18 @@ class GpTransfer(object):
                         truncate_list.append(table_pair.dest)
                     else:
                         drop_list.append(table_pair.dest)
+
+        if len(non_supported_table_name_list) > 0:
+            with open(GPTRANSFER_FAILED_TABLES_FILE, 'w') as failed_file:
+                for table_pair in non_supported_table_name_list:
+                    failed_file.write("%s%s%s%s%s\n" %
+                                     (table_pair.source.database, SCHEMA_DELIMITER,
+                                      table_pair.source.schema, SCHEMA_DELIMITER, table_pair.source.table))
+            logger.error('Found unsupported identifiers')
+            logger.error('Valid identifiers must start with a-z, or A-Z or underscore followed by a-z, '
+                         'or A-Z, or 0-9, or underscore')
+            logger.error('A list of these tables has been written to the file %s', GPTRANSFER_FAILED_TABLES_FILE)
+            sys.exit(1)
 
         for remove in remove_list:
             self._table_transfer_set.remove(remove)

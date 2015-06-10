@@ -183,7 +183,7 @@ def check_db_exists(dbname):
     LIST_DATABASE_SQL = 'select datname from pg_database'  
   
     results = []  
-    with dbconn.connect(dbconn.DbURL()) as conn:
+    with dbconn.connect(dbconn.DbURL(dbname='template1')) as conn:
         curs = dbconn.execSQL(conn, LIST_DATABASE_SQL)
         results = curs.fetchall()
 
