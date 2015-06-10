@@ -5178,7 +5178,7 @@ checkNetworkTimeout(ICBuffer *buf, uint64 now)
 	 * by OS for a long time. In this case, only a few times are tried.
 	 * Thus, the GUC Gp_interconnect_min_retries_before_timeout is added here.
 	 */
-	if ((buf->nRetry > Gp_interconnect_min_retries_before_timeout) && (now - buf->sentTime) > (Gp_interconnect_transmit_timeout * 1000 * 1000))
+	if ((buf->nRetry > Gp_interconnect_min_retries_before_timeout) && (now - buf->sentTime) > ((uint64)Gp_interconnect_transmit_timeout * 1000 * 1000))
 	{
 		ereport(ERROR, (errcode(ERRCODE_GP_INTERCONNECTION_ERROR),
 						errmsg("Interconnect encountered a network error, please check your network"),
@@ -5292,7 +5292,7 @@ checkDeadlock(ChunkTransportStateEntry *pEntry, MotionConn *conn)
 			ic_statistics.statusQueryMsgNum++;
 
 			/* check network error. */
-			if ((now - conn->deadlockCheckBeginTime) > (Gp_interconnect_transmit_timeout * 1000 * 1000))
+			if ((now - conn->deadlockCheckBeginTime) > ((uint64)Gp_interconnect_transmit_timeout * 1000 * 1000))
 			{
 				ereport(ERROR, (errcode(ERRCODE_GP_INTERCONNECTION_ERROR),
 								errmsg("Interconnect encountered a network error, please check your network"),
@@ -5370,7 +5370,7 @@ checkExpirationCapacityFC(ChunkTransportState *transportStates, ChunkTransportSt
 	uint64 now = getCurrentTime();
 	uint64 elapsed = now - ic_control_info.lastPacketSendTime;
 
-	if (elapsed >= (timeout * 1000))
+	if (elapsed >= ((uint64)timeout * 1000))
 	{
 		ICBufferLink *bufLink = icBufferListFirst(&conn->unackQueue);
 		ICBuffer *buf = GET_ICBUFFER_FROM_PRIMARY(bufLink);
