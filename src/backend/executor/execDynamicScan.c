@@ -1456,12 +1456,10 @@ DynamicScan_RescanIndex(IndexScanState *indexScanState, ExprContext *exprCtxt, b
 	if (NULL != exprCtxt)
 	{
 		econtext->ecxt_outertuple = exprCtxt->ecxt_outertuple;
-		/*
-		 * If we are provided an outer tuple, we need to recalculate
-		 * the runtime keys.
-		 */
-		indexScanState->iss_RuntimeKeysReady = false;
 	}
+
+	/* There might be a change of parameter values. Therefore, recompute the runtime keys */
+	indexScanState->iss_RuntimeKeysReady = false;
 
 	/*
 	 * Reset the runtime-key context so we don't leak memory as each outer
