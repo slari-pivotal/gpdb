@@ -329,6 +329,13 @@ CConfigParamMapping::SConfigMappingElem CConfigParamMapping::m_elem[] =
 		&optimizer_prefer_expanded_distinct_aggs,
 		false,  // m_fNegate
 		GPOS_WSZ_LIT("Prefer plans that expand multiple distinct aggregates into join of single distinct aggregate")
+		},
+
+		{
+		EopttraceDisablePushingCTEConsumerReqsToCTEProducer,
+		&optimizer_push_requirements_from_consumer_to_producer,
+		true,  // m_fNegate
+		GPOS_WSZ_LIT("Optimize CTE producer plan on requirements enforced on top of CTE consumer")
 		}
 };
 

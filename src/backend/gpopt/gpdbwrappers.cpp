@@ -191,6 +191,7 @@
 #define ALLOW_static_part_selection
 #define ALLOW_isMotionGather
 #define ALLOW_estimate_rel_size
+#define ALLOW_has_subpartition_template
 
 #include "gpopt/utils/gpdbdefs.h"
 

@@ -747,6 +747,7 @@ bool        optimizer_enable_space_pruning;
 bool        optimizer_prefer_multistage_agg;
 bool		optimizer_enable_multiple_distinct_aggs;
 bool		optimizer_prefer_expanded_distinct_aggs;
+bool		optimizer_push_requirements_from_consumer_to_producer;
 bool		optimizer_direct_dispatch;
 bool		optimizer_enable_hashjoin_redistribute_broadcast_children;
 bool		optimizer_enable_broadcast_nestloop_outer_child;
@@ -4098,6 +4099,16 @@ static struct config_bool ConfigureNamesBool[] =
                 },
                 &optimizer_prefer_expanded_distinct_aggs,
                 true, NULL, NULL
+        },
+
+        {
+        		{"optimizer_push_requirements_from_consumer_to_producer", PGC_USERSET, DEVELOPER_OPTIONS,
+        				gettext_noop("Optimize CTE producer plan on requirements enforced on top of CTE consumer in the optimizer."),
+        				NULL,
+        				GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+        		},
+        		&optimizer_push_requirements_from_consumer_to_producer,
+        		false, NULL, NULL
         },
 
         {

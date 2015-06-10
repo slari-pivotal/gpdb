@@ -319,7 +319,7 @@ COptServer::PvCheckConnections
 			}
 		}
 
-		USleep(GPOPT_CONN_CHECK_SLEEP_MS);
+		clib::USleep(GPOPT_CONN_CHECK_SLEEP_MS);
 	}
 
 	return NULL;
