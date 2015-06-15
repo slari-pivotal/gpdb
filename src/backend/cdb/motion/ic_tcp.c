@@ -295,28 +295,32 @@ setupTCPListeningSocket(int backlog, int *listenerSocketFd, uint16 *listenerPort
 			break;              /* Success */
 
 		close(fd);
+		fd = -1;
 	}
 
+	fun = "bind";
+	if (fd == -1)
+		goto error;
 
-    /* Make socket non-blocking. */
-    fun = "fcntl(O_NONBLOCK)";
-    if (!pg_set_noblock(fd))
-        goto error;
+	/* Make socket non-blocking. */
+	fun = "fcntl(O_NONBLOCK)";
+	if (!pg_set_noblock(fd))
+		goto error;
 
-    fun = "listen";
-    if (listen(fd, backlog) < 0)
-        goto error;
+	fun = "listen";
+	if (listen(fd, backlog) < 0)
+		goto error;
 
-    /* Get the listening socket's port number. */
-    fun = "getsockname";
-    addrlen = sizeof(addr);
-    if (getsockname(fd, (struct sockaddr *) &addr, &addrlen) < 0)
-        goto error;
+	/* Get the listening socket's port number. */
+	fun = "getsockname";
+	addrlen = sizeof(addr);
+	if (getsockname(fd, (struct sockaddr *) &addr, &addrlen) < 0)
+		goto error;
 
-    /* Give results to caller. */
-    *listenerSocketFd = fd;
+	/* Give results to caller. */
+	*listenerSocketFd = fd;
 
-    /* display which port was chosen by the system. */
+/* display which port was chosen by the system. */
 	if (addr.ss_family == AF_INET6)
 		*listenerPort = ntohs(((struct sockaddr_in6*)&addr)->sin6_port);
 	else
