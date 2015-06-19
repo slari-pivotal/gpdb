@@ -469,11 +469,6 @@ namespace gpdxl
 			// translate the list of error messages from an assert constraint list
 			static 
 			List *PlAssertErrorMsgs(CDXLNode *pdxlnAssertConstraintList);
-
-			// if the query is on a multi-level partitioned table, raise exception for unsupported
-			// queries on such tables
-			static
-			void UnSupportedMultiLevelPartitioned(OID oidRel, const IMDRelation *pmdrel);
 	};
 }
 

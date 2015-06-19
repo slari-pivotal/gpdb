@@ -8919,55 +8919,6 @@ findPartitionNodeEntry(PartitionNode *partitionNode, Oid partOid)
 }
 
 /*
- * Does the given top relation of a partitioned table at the given level have a subpartition template
- */
-bool
-has_subpartition_template(Oid rootOid, int16 parlevel)
-{
-	Assert (rel_is_partitioned(rootOid));
-	Assert (parlevel >= 0);
-
-	Relation rel;
-	HeapTuple tuple;
-	TupleDesc tupledesc;
-	cqContext       *pcqCtx;
-	cqContext        cqc;
-
-	/* Reject calls from QEs running on a segment database, since
-	 * pg_partition and  pg_partition_rule are populated only
-	 * on the entry database.
-	 */
-	Insist(-1 == Gp_segment);
-
-	rel = heap_open(PartitionRelationId, AccessShareLock);
-
-	pcqCtx = caql_beginscan(
-			caql_addrel(cqclr(&cqc), rel),
-			cql("SELECT * FROM pg_partition "
-					" WHERE parrelid = :1 "
-					" AND parlevel = :2 ",
-					ObjectIdGetDatum(rootOid),
-					Int16GetDatum(parlevel)));
-
-	tupledesc = RelationGetDescr(rel);
-
-	bool hasPartTemplates = false;
-	while (HeapTupleIsValid(tuple = caql_getnext(pcqCtx)) && !hasPartTemplates)
-	{
-		Form_pg_partition partrow = (Form_pg_partition)GETSTRUCT(tuple);
-		if (partrow->paristemplate)
-		{
-			hasPartTemplates = true;
-		}
-	}
-
-	caql_endscan(pcqCtx);
-	heap_close(rel, AccessShareLock);
-
-	return hasPartTemplates;
-}
-
-/*
  * createValueArrays
  *   Create an Datum/bool array that will be used to populate partition key value.
  *

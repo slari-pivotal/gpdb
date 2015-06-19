@@ -2938,21 +2938,4 @@ gpdb::UlLeafPartitions
 	return 0;
 }
 
-BOOL
-gpdb::FHasSubPartitionTemplate
-		(
-		Oid oidTable,
-		ULONG ulLevel
-		)
-{
-	GP_WRAP_START;
-	{
-		return has_subpartition_template(oidTable, ulLevel);
-	}
-	GP_WRAP_END;
-
-	return false;
-}
-
-
 // EOF
