@@ -9274,6 +9274,82 @@ select enable_xform('CXformInnerJoin2NLJoin');
  CXformInnerJoin2NLJoin is enabled
 (1 row)
 
+-- MPP-25661: IndexScan crashing for qual with reference to outer tuple
+drop table if exists idxscan_outer;
+NOTICE:  table "idxscan_outer" does not exist, skipping
+create table idxscan_outer
+(
+id serial,
+code character varying(25),
+name character varying(40)
+);
+NOTICE:  CREATE TABLE will create implicit sequence "idxscan_outer_id_seq" for serial column "idxscan_outer.id"
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'id' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+drop table if exists idxscan_inner;
+NOTICE:  table "idxscan_inner" does not exist, skipping
+create table idxscan_inner
+(
+ordernum int unique,
+productid int,
+comment character varying(40)
+);
+NOTICE:  CREATE TABLE / UNIQUE will create implicit index "idxscan_inner_ordernum_key" for table "idxscan_inner"
+insert into idxscan_outer values (1, 'a', 'aaa');
+insert into idxscan_outer values (2, 'b', 'bbb');
+insert into idxscan_outer values (3, 'c', 'ccc');
+insert into idxscan_inner values (11, 1, 'xxxx');
+insert into idxscan_inner values (24, 2, 'yyyy');
+insert into idxscan_inner values (13, 3, 'zzzz');
+select disable_xform('CXformInnerJoin2HashJoin');
+            disable_xform             
+--------------------------------------
+ CXformInnerJoin2HashJoin is disabled
+(1 row)
+
+select disable_xform('CXformLeftSemiJoin2HashJoin');
+              disable_xform              
+-----------------------------------------
+ CXformLeftSemiJoin2HashJoin is disabled
+(1 row)
+
+explain select id, comment from idxscan_outer as o join idxscan_inner as i on o.id = i.productid
+where ordernum between 10 and 20;
+                                                 QUERY PLAN                                                 
+------------------------------------------------------------------------------------------------------------
+ Gather Motion 2:1  (slice2; segments: 2)  (cost=0.00..433.00 rows=1 width=9)
+   ->  Nested Loop  (cost=0.00..433.00 rows=1 width=9)
+         Join Filter: true
+         ->  Broadcast Motion 2:2  (slice1; segments: 2)  (cost=0.00..431.00 rows=2 width=4)
+               ->  Table Scan on idxscan_outer  (cost=0.00..431.00 rows=1 width=4)
+         ->  Index Scan using idxscan_inner_ordernum_key on idxscan_inner  (cost=0.00..2.00 rows=1 width=5)
+               Index Cond: ordernum >= 10 AND ordernum <= 20
+               Filter: idxscan_outer.id = idxscan_inner.productid
+ Settings:  optimizer=on; optimizer_segments=3
+(9 rows)
+
+select id, comment from idxscan_outer as o join idxscan_inner as i on o.id = i.productid
+where ordernum between 10 and 20;
+ id | comment 
+----+---------
+  1 | xxxx
+  3 | zzzz
+(2 rows)
+
+select enable_xform('CXformInnerJoin2HashJoin');
+            enable_xform             
+-------------------------------------
+ CXformInnerJoin2HashJoin is enabled
+(1 row)
+
+select enable_xform('CXformLeftSemiJoin2HashJoin');
+              enable_xform              
+----------------------------------------
+ CXformLeftSemiJoin2HashJoin is enabled
+(1 row)
+
+drop table idxscan_outer;
+drop table idxscan_inner;
 -- clean up
 drop schema orca cascade;
 NOTICE:  drop cascades to table orca.bm_dyn_test_onepart_1_prt_part5

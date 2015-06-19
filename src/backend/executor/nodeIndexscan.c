@@ -29,6 +29,7 @@
 #include "cdb/cdbvars.h"
 #include "executor/execdebug.h"
 #include "executor/nodeIndexscan.h"
+#include "executor/execIndexscan.h"
 #include "nodes/nodeFuncs.h"
 #include "optimizer/clauses.h"
 #include "utils/array.h"
@@ -488,6 +489,8 @@ ExecEndIndexScan(IndexScanState *node)
 	 */
 	ExecCloseScanRelation(relation);
 
+	Assert(NULL != node->iss_RuntimeContext);
+	FreeRuntimeKeysContext(node);
 	EndPlanStateGpmonPkt(&node->ss.ps);
 }
 
@@ -612,24 +615,8 @@ ExecInitIndexScan(IndexScan *node, EState *estate, int eflags)
 						   NULL,	/* no ArrayKeys */
 						   NULL);
 	
-	/*
-	 * If we have runtime keys, we need an ExprContext to evaluate them. The
-	 * node's standard context won't do because we want to reset that context
-	 * for every tuple.  So, build another context just like the other one...
-	 * -tgl 7/11/00
-	 */
-	if (indexstate->iss_NumRuntimeKeys != 0)
-	{
-		ExprContext *stdecontext = indexstate->ss.ps.ps_ExprContext;
-		
-		ExecAssignExprContext(estate, &indexstate->ss.ps);
-		indexstate->iss_RuntimeContext = indexstate->ss.ps.ps_ExprContext;
-		indexstate->ss.ps.ps_ExprContext = stdecontext;
-	}
-	else
-	{
-		indexstate->iss_RuntimeContext = NULL;
-	}
+	InitRuntimeKeysContext(indexstate);
+	Assert(NULL != indexstate->iss_RuntimeContext);
 		
 	/*
 	 * Initialize index-specific scan state

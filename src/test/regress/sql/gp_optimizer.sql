@@ -1066,5 +1066,44 @@ select enable_xform('CXformInnerJoin2HashJoin');
 select enable_xform('CXformInnerJoin2IndexGetApply');
 select enable_xform('CXformInnerJoin2NLJoin');
 
+-- MPP-25661: IndexScan crashing for qual with reference to outer tuple
+drop table if exists idxscan_outer;
+create table idxscan_outer
+(
+id serial,
+code character varying(25),
+name character varying(40)
+);
+
+drop table if exists idxscan_inner;
+create table idxscan_inner
+(
+ordernum int unique,
+productid int,
+comment character varying(40)
+);
+
+insert into idxscan_outer values (1, 'a', 'aaa');
+insert into idxscan_outer values (2, 'b', 'bbb');
+insert into idxscan_outer values (3, 'c', 'ccc');
+
+insert into idxscan_inner values (11, 1, 'xxxx');
+insert into idxscan_inner values (24, 2, 'yyyy');
+insert into idxscan_inner values (13, 3, 'zzzz');
+
+select disable_xform('CXformInnerJoin2HashJoin');
+select disable_xform('CXformLeftSemiJoin2HashJoin');
+
+explain select id, comment from idxscan_outer as o join idxscan_inner as i on o.id = i.productid
+where ordernum between 10 and 20;
+
+select id, comment from idxscan_outer as o join idxscan_inner as i on o.id = i.productid
+where ordernum between 10 and 20;
+
+select enable_xform('CXformInnerJoin2HashJoin');
+select enable_xform('CXformLeftSemiJoin2HashJoin');
+
+drop table idxscan_outer;
+drop table idxscan_inner;
 -- clean up
 drop schema orca cascade;
