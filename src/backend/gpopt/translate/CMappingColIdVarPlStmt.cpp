@@ -23,6 +23,7 @@
 
 #include "gpopt/translate/CMappingColIdVarPlStmt.h"
 #include "gpopt/translate/CDXLTranslateContextBaseTable.h"
+#include "exception.h"
 
 #include "gpos/base.h"
 #include "gpos/common/CAutoP.h"
@@ -30,6 +31,7 @@
 #include "dxl/operators/CDXLScalarIdent.h"
 
 #include "md/CMDIdGPDB.h"
+
 #include "gpopt/gpdbwrappers.h"
 
 using namespace gpdxl;
@@ -214,6 +216,7 @@ CMappingColIdVarPlStmt::PvarFromDXLNodeScId
 			GPOS_ASSERT(NULL != pdxltrctxRight);
 
 			pte = pdxltrctxRight->Pte(ulColId);
+
 			idxVarno = INNER;
 
 			// check any additional contexts if col is still not found yet
@@ -231,8 +234,11 @@ CMappingColIdVarPlStmt::PvarFromDXLNodeScId
 				Var *pv = (Var*) pte->expr;
 				idxVarno = pv->varno;
 			}
+		}
 
-			GPOS_ASSERT(NULL != pte);
+		if (NULL  == pte)
+		{
+			GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiDXL2PlStmtAttributeNotFound, ulColId);
 		}
 
 		attno = pte->resno;
