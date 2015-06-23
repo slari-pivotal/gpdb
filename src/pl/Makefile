@@ -26,10 +26,6 @@ ifeq ($(with_tcl), yes)
 DIRS += tcl
 endif
 
-ifeq ($(with_r), yes)
-DIRS += plr
-endif
-
 all install installdirs uninstall distprep:
 	@for dir in $(DIRS); do $(MAKE) -C $$dir $@ || exit 1; done
 
