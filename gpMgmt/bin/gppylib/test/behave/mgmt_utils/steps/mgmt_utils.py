@@ -42,7 +42,7 @@ from gppylib.test.behave_utils.utils import bring_nic_down, bring_nic_up, run_cm
                                             get_partition_list, verify_stats, drop_external_table_if_exists, get_all_hostnames_as_list, get_pid_for_segment, kill_process, get_num_segments, \
                                             check_user_permissions, get_change_tracking_segment_info, add_partition, drop_partition, check_pl_exists, check_constraint_exists, \
                                             are_segments_running, execute_sql_singleton, check_row_count, diff_backup_restore_data, check_dump_dir_exists, verify_restored_table_is_analyzed, \
-                                            analyze_database, delete_rows_from_table
+                                            analyze_database, delete_rows_from_table, check_count_for_specific_query
 
 from gppylib.operations.dump import get_partition_state
 from gppylib.test.behave_utils.gpfdist_utils.gpfdist_mgmt import Gpfdist
@@ -3660,3 +3660,7 @@ def impl(context, dbname):
 @then('the user deletes rows from the table "{table_name}" of database "{dbname}" where "{column_name}" is "{info}"')
 def impl(context, dbname, table_name, column_name, info):
     delete_rows_from_table(context, dbname, table_name, column_name, info)
+
+@then('verify that the query "{query}" in database "{dbname}" returns "{nrows}"')
+def impl(context, dbname, query, nrows):
+    check_count_for_specific_query(dbname, query, int(nrows))

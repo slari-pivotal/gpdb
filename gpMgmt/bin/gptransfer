@@ -1725,9 +1725,9 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                        self._pipe,
                        self._format)
             if self._format.lower() == 'csv':
-                wext_sql += """ (DELIMITER AS ',' QUOTE AS E'%s' NULL AS '')""" % self._quote
+                wext_sql += """ (DELIMITER AS ',' QUOTE AS E'%s')""" % self._quote
             elif self._format.lower() == 'text':
-                wext_sql += """ (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')""" % self._delimiter
+                wext_sql += """ (DELIMITER AS E'%s' ESCAPE AS 'off')""" % self._delimiter
             wext_sql += """ ENCODING 'UTF8' %s""" % distributed_clause
         else:
             wext_sql = \
@@ -1740,9 +1740,9 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                    urls,
                    self._format)
             if self._format.lower() == 'csv':
-                wext_sql += """ (DELIMITER AS ',' QUOTE AS E'%s' NULL AS '')""" % self._quote
+                wext_sql += """ (DELIMITER AS ',' QUOTE AS E'%s')""" % self._quote
             elif self._format.lower() == 'text':
-                wext_sql += """ (DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off')""" % self._delimiter
+                wext_sql += """ (DELIMITER AS E'%s' ESCAPE AS 'off')""" % self._delimiter
             wext_sql += """ ENCODING \'UTF8\' DISTRIBUTED RANDOMLY"""
         cur = execSQL(self._src_conn, wext_sql)
         cur.close()
@@ -1765,9 +1765,9 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                urls,
                self._format)
         if self._format.lower() == 'csv':
-            ext_sql += """(DELIMITER AS ',' QUOTE AS E'%s' NULL AS '')""" % self._quote
+            ext_sql += """(DELIMITER AS ',' QUOTE AS E'%s')""" % self._quote
         elif self._format.lower() == 'text':
-            ext_sql += """(DELIMITER AS E'%s' NULL AS '' ESCAPE AS 'off' NEWLINE AS 'CRLF')""" % self._delimiter
+            ext_sql += """(DELIMITER AS E'%s' ESCAPE AS 'off')""" % self._delimiter
         cur = execSQL(self._dest_conn, ext_sql)
         cur.close()
 

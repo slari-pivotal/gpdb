@@ -1306,3 +1306,11 @@ def validate_parse_email_file(context, email_file_path):
                     raise Exception(" %s not present" % key)
     except Exception as e:
         raise Exception("\'%s\' file is not formatted properly." % email_file_path)
+
+def check_count_for_specific_query(dbname, query, nrows):
+    NUM_ROWS_QUERY = '%s' % query
+    # We want to bubble up the exception so that if table does not exist, the test fails
+    with dbconn.connect(dbconn.DbURL(dbname=dbname)) as conn:
+        result = dbconn.execSQLForSingleton(conn, NUM_ROWS_QUERY)
+    if result != nrows:
+        raise Exception('%d rows in table %s.%s, expected row count = %d' % (result, dbname, tablename, nrows))

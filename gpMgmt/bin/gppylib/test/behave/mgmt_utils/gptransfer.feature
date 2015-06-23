@@ -1496,11 +1496,33 @@ Feature: gptransfer tests
     Scenario: test for new line character, double quote, single quote, comma, etc. for gptransfer in CSV format
         Given the database is running
         And the database "gptransfer_test_db" does not exist
-        And the user runs "psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_test_db_data.sql -d template1"
+        And the user runs "psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer/gptransfer_test_db_data.sql -d template1"
         Then psql should return a return code of 0 
         And the user runs "gptransfer -t 'gptransfer_test_db.public.t1' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
         Then gptransfer should return a return code of 0 
         And verify that table "t1" in "gptransfer_test_db" has same data on source and destination system with order by "id" 
+
+    Scenario: Empty spaces in NOT NULL columns and NULL values are getting transferred correctly in CSV format
+        Given the database is running
+        And the database "gptransfer_test_db_one" does not exist
+        And the user runs "psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer/gptransfer_test_db_one_data.sql -d template1"
+        Then psql should return a return code of 0 
+        And the user runs "gptransfer -t 'gptransfer_test_db_one.public.table1' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        Then gptransfer should return a return code of 0 
+        And verify that table "table1" in "gptransfer_test_db_one" has same data on source and destination system with order by "id" 
+        And verify that the query "select count(*) from table1 where address is NULL" in database "gptransfer_test_db_one" returns "1"
+        And verify that the query "select count(*) from table1 where address=''" in database "gptransfer_test_db_one" returns "1"
+
+    Scenario: Empty spaces and NULL values are getting transferred correctly in TEXT format
+        Given the database is running
+        And the database "gptransfer_test_db_one" does not exist
+        And the user runs "psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer/gptransfer_test_db_one_data.sql -d template1"
+        Then psql should return a return code of 0 
+        And the user runs "gptransfer -t 'gptransfer_test_db_one.public.table1' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a --delimiter '\001' --format=text"
+        Then gptransfer should return a return code of 0 
+        And verify that table "table1" in "gptransfer_test_db_one" has same data on source and destination system with order by "id"
+        And verify that the query "select count(*) from table1 where address is NULL" in database "gptransfer_test_db_one" returns "1"
+        And verify that the query "select count(*) from table1 where address=''" in database "gptransfer_test_db_one" returns "1"
 
     Scenario: gptransfer cleanup
         Given the database is running
