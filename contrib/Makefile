@@ -8,7 +8,6 @@ WANTED_DIRS = \
 		gp_filedump \
 		xlogdump \
 		pgbench \
-		orafce \
 		changetrackingdump \
 		formatter \
 		formatter_fixedwidth \
