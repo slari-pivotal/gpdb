@@ -29,10 +29,6 @@ DIRS = initdb ipcclean pg_basebackup pg_ctl pg_dump \
 	gp_workfile_mgr \
 	gp_session_state
 
-ifeq ($(enable_snmp),yes)
-DIRS+=gpsnmpd
-endif
-
 ifeq ($(PORTNAME), win32)
 DIRS+=pgevent
 endif

@@ -1,1 +1,0 @@
-For PostgreSQL version 8.0.x the rdbmsDbInfoSize* fields are returned as 0, because that information is unavailable. 
