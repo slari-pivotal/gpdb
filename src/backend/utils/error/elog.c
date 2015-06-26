@@ -2587,33 +2587,34 @@ unpack_sql_state(int sql_state)
     return buf;
 }
 
-#define NUM_RETRIES 1000
+#define WRITE_PIPE_CHUNK_TIMEOUT 1000
 
 /*
  * Send the data through the pipe.
  */
 static inline void
-gp_write_pipe_chunk(const char *buffer, int len, bool check_interrupts)
+gp_write_pipe_chunk(const char *buffer, int len)
 {
-    int retval = -1;
-    fd_set wfds;
-    struct timeval tv;
-	int retry_no = 0;
+	int			retval;
+	fd_set		wfds;
+	struct timeval tv;
+	int			retry_no;
 
-	while (retry_no < NUM_RETRIES)
+	/*
+	 * Wait until stderr becomes available for write. If it doesn't become
+	 * available for WRITE_PIPE_CHUNK_TIMEOUT seconds, give up and ignore the
+	 * error message. This could happen e.g. when the logger process crashes.
+	 *
+	 * We perform the wait in one second intervals, so that interrupts don't
+	 * reset the wait.
+	 *
+	 * XXX: We really should use non-blocking mode here. Currently, it's
+	 * possible that the another process writes to the pipe just after we've
+	 * determined that it's writeable, and by the time we call write(),
+	 * the buffer might be full and we block.
+	 */
+	for (retry_no = 0; retry_no < WRITE_PIPE_CHUNK_TIMEOUT; retry_no++)
 	{
-		if (check_interrupts && pthread_equal(main_tid, pthread_self()))
-		{
-			CHECK_FOR_INTERRUPTS();
-		}
-
-		retry_no++;
-
-		/*
-		 * Wait up to 1 second to see if stderr is available for write.
-		 * If not, we ignore the error message. This could happen when
-		 * the logger process crashes.
-		 */
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
 
@@ -2624,7 +2625,7 @@ gp_write_pipe_chunk(const char *buffer, int len, bool check_interrupts)
 
 		if (retval == 0 || (retval < 0 && errno == EINTR))
 		{
-			/* select() timeout or interruptted. Retry */
+			/* select() timeout or interrupted. Retry */
 			continue;
 		}
 		else
@@ -2637,7 +2638,7 @@ gp_write_pipe_chunk(const char *buffer, int len, bool check_interrupts)
 		}
 	}
 
-	Assert((retval == 1) || (retval < 0 && errno != EINTR) || (retry_no == NUM_RETRIES));
+	Assert((retval == 1) || (retval < 0 && errno != EINTR) || (retry_no == WRITE_PIPE_CHUNK_TIMEOUT));
 
 	if (retval == 1)
 	{
@@ -2703,7 +2704,7 @@ append_string_to_pipe_chunk(PipeProtoChunk *buffer, const char* input)
 		Assert(bytes + buffer->hdr.len == PIPE_MAX_PAYLOAD);
 		buffer->hdr.len = PIPE_MAX_PAYLOAD;
 		
-		gp_write_pipe_chunk((char *)buffer, PIPE_CHUNK_SIZE, true);
+		gp_write_pipe_chunk((char *) buffer, PIPE_CHUNK_SIZE);
 
 		buffer->hdr.len = 0;
 		buffer->hdr.chunk_no++;
@@ -3248,7 +3249,7 @@ write_message_to_server_log(int elevel,
 
     /* Send the last chunk */
     buffer.hdr.is_last = 't';
-    gp_write_pipe_chunk((char *)&buffer, buffer.hdr.len + PIPE_HEADER_SIZE, true);
+    gp_write_pipe_chunk((char *) &buffer, buffer.hdr.len + PIPE_HEADER_SIZE);
 }
 
 /*
@@ -4482,7 +4483,7 @@ StandardHandlerForSigillSigsegvSigbus_OnMainThread(char *processName, SIGNAL_ARG
 		MAXALIGN(sizeof(GpSegvErrorData)) +
 		errorData->frame_depth * sizeof(void *);
 
-	gp_write_pipe_chunk((char *)&buffer, buffer.hdr.len + PIPE_HEADER_SIZE, false);
+	gp_write_pipe_chunk((char *) &buffer, buffer.hdr.len + PIPE_HEADER_SIZE);
 
 	/* re-raise the signal to OS */
 	raise(postgres_signal_arg);
