@@ -2214,7 +2214,6 @@ HeapTupleSatisfiesSnapshot(Relation relation, HeapTupleHeader tuple, Snapshot sn
 	return false;
 }
 
-
 /*
  * HeapTupleSatisfiesVacuum
  *

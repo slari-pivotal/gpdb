@@ -41,6 +41,7 @@ int		MaxAppendOnlyTables;		/* Max # of tables */
  */
 static HTAB *AppendOnlyHash;			/* Hash of AO tables */
 AppendOnlyWriterData	*AppendOnlyWriter;
+static bool appendOnlyInsertXact = false;
 
 /*
  * local functions
@@ -54,6 +55,7 @@ static bool *GetFileSegStateInfoFromSegments(Relation parentrel,
 				AppendOnlyEntry *aoEntry);
 static int64 *GetTotalTupleCountFromSegments(Oid aoRelid,
 				Snapshot appendOnlyMetaDataSnapshot, int segno);
+
 /*
  * AppendOnlyWriterShmemSize -- estimate size the append only writer structures
  * will need in shared memory.
@@ -709,6 +711,7 @@ DeregisterSegnoForCompactionDrop(Oid relid, List *compactedSegmentFileList)
 
 			Assert(segfilestat->state == COMPACTED_AWAITING_DROP);
 			segfilestat->xid = CurrentXid;
+			appendOnlyInsertXact = true;
 			segfilestat->state = COMPACTED_DROP_SKIPPED;
 		}
 	}
@@ -754,6 +757,7 @@ RegisterSegnoForCompactionDrop(Oid relid, List *compactedSegmentFileList)
 
 			Assert(segfilestat->state == COMPACTED_AWAITING_DROP);
 			segfilestat->xid = CurrentXid;
+			appendOnlyInsertXact = true;
 			segfilestat->state = DROP_USE;
 		}
 	}
@@ -913,6 +917,7 @@ List *SetSegnoForCompaction(Oid relid,
 
 		}
 		aoentry->relsegfiles[usesegno].xid = CurrentXid;
+		appendOnlyInsertXact = true;
 
 		ereportif(Debug_appendonly_print_segfile_choice, LOG,
 			(errmsg("Compaction segment chosen for append-only relation \"%s\" (%d) "
@@ -1040,6 +1045,7 @@ int SetSegnoForCompactionInsert(Oid relid,
 	aoentry->relsegfiles[usesegno].xid = CurrentXid;
 
 	LWLockRelease(AOSegFileLock);
+	appendOnlyInsertXact = true;
 
 	Assert(usesegno >= 0);
 	Assert(usesegno != RESERVED_SEGNO);
@@ -1188,6 +1194,7 @@ int SetSegnoForWrite(int existingsegno, Oid relid)
 			aoentry->relsegfiles[usesegno].xid = CurrentXid;
 
 			LWLockRelease(AOSegFileLock);
+			appendOnlyInsertXact = true;
 
 			Assert(usesegno >= 0);
 			Assert(usesegno != RESERVED_SEGNO);
@@ -1717,7 +1724,12 @@ AtCommit_AppendOnly(void)
 
 	if (Gp_role != GP_ROLE_DISPATCH)
 		return;
-	
+
+	if (!appendOnlyInsertXact)
+	{
+		return;
+	}
+
 	hash_seq_init(&status, AppendOnlyHash);
 
 	LWLockAcquire(AOSegFileLock, LW_EXCLUSIVE);
@@ -1800,6 +1812,11 @@ AtAbort_AppendOnly(void)
 
 	if (Gp_role != GP_ROLE_DISPATCH)
 		return;
+
+	if (!appendOnlyInsertXact)
+	{
+		return;
+	}
 
 	hash_seq_init(&status, AppendOnlyHash);
 
@@ -2006,6 +2023,11 @@ AtEOXact_AppendOnly(void)
 	if (Gp_role != GP_ROLE_DISPATCH)
 		return;
 
+	if (!appendOnlyInsertXact)
+	{
+		return;
+	}
+
 	hash_seq_init(&status, AppendOnlyHash);
 
 	LWLockAcquire(AOSegFileLock, LW_EXCLUSIVE);
@@ -2019,6 +2041,8 @@ AtEOXact_AppendOnly(void)
 	}
 
 	LWLockRelease(AOSegFileLock);
+
+	appendOnlyInsertXact = false;
 }
 
 void ValidateAppendOnlyMetaDataSnapshot(
