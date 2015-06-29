@@ -257,6 +257,11 @@ bool gHaveInitializedLocalState = false;
 
 static int isAbsolutePath(const char *path);
 
+static int numFilerepStartupPrint = 0;
+static int numDatabaseStartupPrint = 0;
+
+#define PRINT_BATCH_SIZE 500
+
 /**
  * Extra result information that can be returned to the calling script so it
  *       can choose to take a different action besides just standard, generic handling
@@ -2049,7 +2054,14 @@ applyStepForTransitionToPrimarySegmentMode(PrimaryMirrorModeTransitionArguments 
 				return stepDoFilerepStartup(TSAwaitingFilerepStartup, stateInOut);
 			}
 		case TSAwaitingFilerepStartup:
-			elog(LOG, "TransitiontoPrimary: waiting for filerep startup");
+			if (numFilerepStartupPrint == 0) {
+				elog(LOG, "TransitiontoPrimary: waiting for filerep startup");
+			}
+			else if (numFilerepStartupPrint > PRINT_BATCH_SIZE)
+			{
+				numFilerepStartupPrint = -1;
+			}
+			++numFilerepStartupPrint;
 			return stepWaitForFilerepStartup(TSDoneFilerepStartup, stateInOut, extraResultInfoOut);
 		case TSDoneFilerepStartup:
 			elog(LOG, "TransitiontoPrimary: completed filerep startup");
@@ -2079,7 +2091,16 @@ applyStepForTransitionToPrimarySegmentMode(PrimaryMirrorModeTransitionArguments 
 			return PMTransitionSuccess;
 
 		case TSAwaitingDatabaseStartup:
-			elog(LOG, "TransitiontoPrimary: waiting for database startup");
+			if (numDatabaseStartupPrint == 0)
+			{
+				elog(LOG, "TransitiontoPrimary: waiting for database startup");
+			}
+			else if (numDatabaseStartupPrint > PRINT_BATCH_SIZE)
+			{
+				numDatabaseStartupPrint = -1;
+			}
+		    ++numDatabaseStartupPrint;
+			
 			if (IsDatabaseInRunMode())
 			{
 				*stateInOut = TSDoneDatabaseStartup;
@@ -2166,8 +2187,16 @@ applyStepForTransitionToMirrorSegmentMode(PrimaryMirrorModeTransitionArguments *
 			return stepDoFilerepStartup(TSAwaitingFilerepStartup, stateInOut);
 
 		case TSAwaitingFilerepStartup:
-			elog(LOG, "TransitiontoMirror: waiting for filerep startup");
-			return stepWaitForFilerepStartup(TSDoneFilerepStartup, stateInOut, extraResultInfoOut);
+			if (numFilerepStartupPrint == 0) 
+			{
+				elog(LOG, "TransitiontoMirror: waiting for filerep startup");
+			} 
+			else if (numFilerepStartupPrint > PRINT_BATCH_SIZE)
+			{
+				numFilerepStartupPrint = -1;
+			}
+			++numFilerepStartupPrint;
+		 	return stepWaitForFilerepStartup(TSDoneFilerepStartup, stateInOut, extraResultInfoOut);
 
 		case TSDoneFilerepStartup:
 			elog(LOG, "TransitiontoMirror: completed filerep startup");
