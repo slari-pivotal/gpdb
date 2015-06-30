@@ -62,6 +62,11 @@ typedef struct
 		List *cand_cons;
 	} ConstraintEntry;
 
+typedef struct
+{
+	Node *entry;
+} ConNodeEntry;
+
 static void
 record_constraints(Relation pgcon, MemoryContext context, 
 				   HTAB *hash_tbl, Relation rel, 
@@ -78,6 +83,11 @@ static void add_template_encoding_clauses(Oid relid, Oid paroid, List *stenc);
 static PartitionNode *
 findPartitionNodeEntry(PartitionNode *partitionNode, Oid partOid);
 
+static uint32
+constrNodeHash(const void *keyPtr, Size keysize);
+
+static int
+constrNodeMatch(const void *keyPtr1, const void *keyPtr2, Size keysize);
 /*
  * Hash keys are null-terminated C strings assumed to be stably 
  * allocated. We accomplish this by allocating them in a context 
@@ -167,6 +177,9 @@ get_opfuncid_by_opname(List *opname, Oid lhsid, Oid rhsid);
 
 static PgPartRule *
 get_pprule_from_ATC(Relation rel, AlterTableCmd *cmd);
+
+static List*
+get_partition_rules(PartitionNode *pn);
 
 static bool
 relation_has_supers(Oid relid);
@@ -2497,6 +2510,279 @@ all_partition_relids(PartitionNode *pn)
 		}
 		return out;
 	}
+}
+
+/*
+ * getPartConstraintsContainsKeys
+ *   Given an OID, returns a Node that represents the check constraints
+ *   on the table having constraint keys from the given key list.
+ *   If there are multiple constraints they are AND'd together.
+ */
+static Node *
+getPartConstraintsContainsKeys(Oid partOid, Oid rootOid, List *partKey)
+{
+	cqContext       *pcqCtx;
+	cqContext       cqc;
+	Relation        conRel;
+	HeapTuple       conTup;
+	Node            *conExpr;
+	Node            *result = NULL;
+	Datum           conBinDatum;
+	Datum			conKeyDatum;
+	char            *conBin;
+	bool            conbinIsNull = false;
+	bool			conKeyIsNull = false;
+	AttrMap		*map;
+
+	/* create the map needed for mapping attnums */
+	Relation rootRel = heap_open(rootOid, AccessShareLock);
+	Relation partRel = heap_open(partOid, AccessShareLock);
+
+	map_part_attrs(partRel, rootRel, &map, false);
+
+	heap_close(rootRel, AccessShareLock);
+	heap_close(partRel, AccessShareLock);
+
+	/* Fetch the pg_constraint row. */
+	conRel = heap_open(ConstraintRelationId, AccessShareLock);
+
+	pcqCtx = caql_beginscan(
+			caql_addrel(cqclr(&cqc), conRel),
+			cql("SELECT * FROM pg_constraint "
+				" WHERE conrelid = :1",
+				ObjectIdGetDatum(partOid)));
+
+	while (HeapTupleIsValid(conTup = caql_getnext(pcqCtx)))
+	{
+		/* we defer the filter on contype to here in order to take advantage of
+		 * the index on conrelid in the above CAQL query */
+		Form_pg_constraint conEntry = (Form_pg_constraint) GETSTRUCT(conTup);
+		if (conEntry->contype != 'c')
+		{
+			continue;
+		}
+		/* Fetch the constraint expression in parsetree form */
+		conBinDatum = heap_getattr(conTup, Anum_pg_constraint_conbin,
+				RelationGetDescr(conRel), &conbinIsNull);
+
+		Assert (!conbinIsNull);
+		/* map the attnums in constraint expression to root attnums */
+		conBin = TextDatumGetCString(conBinDatum);
+		conExpr = stringToNode(conBin);
+		conExpr = attrMapExpr(map, conExpr);
+
+		// fetch the key associated with this constraint
+		conKeyDatum = heap_getattr(conTup, Anum_pg_constraint_conkey,
+				RelationGetDescr(conRel), &conKeyIsNull);
+		Datum *dats = NULL;
+		int numKeys = 0;
+
+		bool found = false;
+		// extract key elements
+		deconstruct_array(DatumGetArrayTypeP(conKeyDatum), INT2OID, 2, true, 's', &dats, NULL, &numKeys);
+		for (int i = 0; i < numKeys; i++)
+		{
+			int16 key_elem =  DatumGetInt16(dats[i]);
+			if (list_find_int(partKey, key_elem) >= 0)
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (found)
+		{
+			if (result)
+				result = (Node *)make_andclause(list_make2(result, conExpr));
+			else
+				result = conExpr;
+		}
+	}
+
+	caql_endscan(pcqCtx);
+	heap_close(conRel, AccessShareLock);
+
+	return result;
+}
+
+/*
+ * Create a hash table with both key and hash entry as a constraint Node*
+ * Input:
+ * 	nEntries - estimated number of elements in the hash table
+ * Outout:
+ * 	a pointer to the created hash table
+ */
+static HTAB*
+createConstraintHashTable(unsigned int nEntries)
+{
+	HASHCTL	hash_ctl;
+	MemSet(&hash_ctl, 0, sizeof(hash_ctl));
+
+	hash_ctl.keysize = sizeof(Node**);
+	hash_ctl.entrysize = sizeof(ConNodeEntry);
+	hash_ctl.hash = constrNodeHash;
+	hash_ctl.match = constrNodeMatch;
+
+	return hash_create("ConstraintHashTable", nEntries, &hash_ctl, HASH_ELEM | HASH_FUNCTION | HASH_COMPARE);
+}
+
+/*
+ * Hash function for a constraint node
+ * Input:
+ * 	keyPtr - pointer to hash key
+ * 	keysize - not used, hash function must have this signature
+ * Output:
+ * 	result - hash value as an unsigned integer
+ */
+static uint32
+constrNodeHash(const void *keyPtr, Size keysize)
+{
+	uint32 result = 0;
+	Node *constr = *((Node **) keyPtr);
+	int con_len = 0;
+	if (constr)
+	{
+		char* constr_bin = nodeToBinaryStringFast(constr, &con_len);
+		Assert(con_len > 0);
+		result = tag_hash(constr_bin, con_len);
+		pfree(constr_bin);
+	}
+
+	return result;
+}
+
+/**
+ * Match function for two constraint nodes.
+ * Input:
+ * 	keyPtr1, keyPtr2 - pointers to two hash keys
+ * 	keysize - not used, hash function must have this signature
+ * Output:
+ * 	0 if two hash keys match, 1 otherwise
+ */
+static int
+constrNodeMatch(const void *keyPtr1, const void *keyPtr2, Size keysize)
+{
+	Node *left = *((Node **) keyPtr1);
+	Node *right = *((Node **) keyPtr2);
+	return equal(left, right) ? 0 : 1;
+}
+
+/*
+ * Check if a partitioning hierarchy is uniform, i.e. for each partitioning level,
+ * all the partition nodes should have the same number of children, AND the child nodes
+ * at the same position w.r.t the subtree should have the same constraint on the partition
+ * key of that level.
+ * The time complexity of this check is linear to the number of nodes in the partitioning
+ * hierarchy.
+ */
+bool
+rel_partitioning_is_uniform(Oid rootOid)
+{
+	Assert(OidIsValid(rootOid));
+	Assert(rel_is_partitioned(rootOid));
+
+	bool result = true;
+
+	MemoryContext uniformityMemoryContext = AllocSetContextCreate(CurrentMemoryContext,
+			"PartitioningIsUniform",
+			ALLOCSET_DEFAULT_MINSIZE,
+			ALLOCSET_DEFAULT_INITSIZE,
+			ALLOCSET_DEFAULT_MAXSIZE);
+	MemoryContext callerMemoryContext = MemoryContextSwitchTo(uniformityMemoryContext);
+
+	PartitionNode *pnRoot = RelationBuildPartitionDescByOid(rootOid, false /*inctemplate*/);
+	List *queue = list_make1(pnRoot);
+
+	while (result)
+	{
+		/* we process the partitioning tree level by level, each outer loop corresponds to one level */
+		int size = list_length(queue);
+		if (0 == size)
+		{
+			break;
+		}
+
+		/* Look ahead to get the number of children of the first partition node in this level.
+		 * This allows us to initialize a hash table on the constraints which each partition node
+		 * in this level will be compared to.
+		 */
+		PartitionNode *pn_ahead = (PartitionNode*) linitial(queue);
+		int nChildren = list_length(pn_ahead->rules) + (pn_ahead->default_part ? 1 : 0);
+		HTAB* conHash = createConstraintHashTable(nChildren);
+
+		/* get the list of part keys for this level */
+		List *lpartkey = NIL;
+		for (int i = 0; i < pn_ahead->part->parnatts; i++)
+		{
+			lpartkey = lappend_int(lpartkey, pn_ahead->part->paratts[i]);
+		}
+
+		/* now iterate over all partition nodes on this level */
+		bool fFirstNode = true;
+		while (size > 0 && result)
+		{
+			PartitionNode *pn = (PartitionNode*) linitial(queue);
+			List *lrules = get_partition_rules(pn);
+			int curr_nChildren = list_length(lrules);
+
+			if (curr_nChildren != nChildren)
+			{
+				result = false;
+				break;
+			}
+
+			/* loop over the children's constraints of this node */
+			ListCell *lc = NULL;
+			foreach(lc, lrules)
+			{
+				PartitionRule *pr = (PartitionRule*) lfirst(lc);
+				Node *curr_con = getPartConstraintsContainsKeys(pr->parchildrelid, rootOid, lpartkey);
+				bool found = false;
+
+				/* we populate the hash table with the constraints of the children of the
+				 * first node in this level */
+				if (fFirstNode)
+				{
+					/* add current constraint to hash table */
+					void *con_entry = hash_search(conHash, &curr_con, HASH_ENTER, &found);
+					if (con_entry == NULL)
+					{
+						ereport(ERROR, (errcode(ERRCODE_OUT_OF_MEMORY), errmsg("out of memory")));
+					}
+					((ConNodeEntry*) con_entry)->entry = curr_con;
+				}
+
+				/* starting from the second node in this level, we probe the children's constraints */
+				else
+				{
+					hash_search(conHash, &curr_con, HASH_FIND, &found);
+					if (!found)
+					{
+						result = false;
+						break;
+					}
+				}
+
+				if (pr->children)
+				{
+					queue = lappend(queue, pr->children);
+				}
+			}
+			size--;
+			fFirstNode = false;
+			queue = list_delete_first(queue);
+			pfree(lrules);
+		}
+
+		hash_destroy(conHash);
+		pfree(lpartkey);
+
+	}
+
+	MemoryContextSwitchTo(callerMemoryContext);
+	MemoryContextDelete(uniformityMemoryContext);
+
+	return result;
 }
 
 /* Return the pg_class Oids of the relations representing leaf parts of the
@@ -8396,6 +8682,25 @@ static bool IsLeafPartitionNode(PartitionNode *p)
 	}
 
 	return true;
+}
+
+/*
+ * Given a partition node, return all the associated rules, including the default partition rule if present
+ */
+static List*
+get_partition_rules(PartitionNode *pn)
+{
+	Assert(pn);
+
+	List *result = NIL;
+	if (pn->default_part)
+	{
+		result = lappend(result, pn->default_part);
+	}
+
+	result = list_concat(result, pn->rules);
+
+	return result;
 }
 
 /**

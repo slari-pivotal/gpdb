@@ -191,7 +191,7 @@
 #define ALLOW_static_part_selection
 #define ALLOW_isMotionGather
 #define ALLOW_estimate_rel_size
-#define ALLOW_has_subpartition_template
+#define ALLOW_rel_partitioning_is_uniform
 
 #include "gpopt/utils/gpdbdefs.h"
 
@@ -1768,6 +1768,20 @@ gpdb::FMotionGather
 	GP_WRAP_START;
 	{
 		return isMotionGather(pmotion);
+	}
+	GP_WRAP_END;
+	return false;
+}
+
+bool
+gpdb::FMultilevelPartitionUniform
+	(
+	Oid rootOid
+	)
+{
+	GP_WRAP_START;
+	{
+		return rel_partitioning_is_uniform(rootOid);
 	}
 	GP_WRAP_END;
 	return false;

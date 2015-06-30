@@ -377,6 +377,9 @@ namespace gpdb {
 	// is this a Gather motion
 	bool FMotionGather(const Motion *pmotion);
 	
+	// does a multi-level partitioned table have uniform partitioning hierarchy
+	bool FMultilevelPartitionUniform(Oid rootOid);
+
 	// lookup type cache
 	TypeCacheEntry *PtceLookup(Oid type_id, int flags);
 

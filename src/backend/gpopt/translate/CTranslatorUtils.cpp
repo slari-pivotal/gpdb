@@ -311,21 +311,6 @@ CTranslatorUtils::Pdxltabdesc
 	CMDIdGPDB *pmdid = CDXLUtils::Pmdid(pmp, oidRel);
 
 	const IMDRelation *pmdrel = pmda->Pmdrel(pmdid);
-
-	if (!pmdrel->FPartitioned() && gpdb::FHasSubclass(oidRel))
-	{
-		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Inherited tables"));
-	}
-	
-	if (!optimizer_multilevel_partitioning && 1 < pmdrel->UlPartColumns())
-	{
-		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Multi-level partitioned tables"));
-	}
-
-	if (gpdb::FRelPartIsInterior(oidRel))
-	{
-		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Query on intermediate partition"));
-	}
 	
 	// look up table name
 	const CWStringConst *pstrTblName = pmdrel->Mdname().Pstr();

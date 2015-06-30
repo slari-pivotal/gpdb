@@ -466,6 +466,47 @@ CTranslatorRelcacheToDXL::PdrgpmdidCheckConstraints
 
 //---------------------------------------------------------------------------
 //	@function:
+//		CTranslatorRelcacheToDXL::CheckUnsupportedRelation
+//
+//	@doc:
+//		Check and fall back to planner for unsupported relations
+//
+//---------------------------------------------------------------------------
+void
+CTranslatorRelcacheToDXL::CheckUnsupportedRelation
+	(
+	OID oidRel
+	)
+{
+	if (gpdb::FRelPartIsInterior(oidRel))
+	{
+		GPOS_RAISE(gpdxl::ExmaMD, gpdxl::ExmiMDObjUnsupported, GPOS_WSZ_LIT("Query on intermediate partition"));
+	}
+
+	List *plPartKeys = gpdb::PlPartitionAttrs(oidRel);
+	ULONG ulLevels = gpdb::UlListLength(plPartKeys);
+
+	if (0 == ulLevels && gpdb::FHasSubclass(oidRel))
+	{
+		GPOS_RAISE(gpdxl::ExmaMD, gpdxl::ExmiMDObjUnsupported, GPOS_WSZ_LIT("Inherited tables"));
+	}
+
+	if (1 < ulLevels)
+	{
+		if (!optimizer_multilevel_partitioning)
+		{
+			GPOS_RAISE(gpdxl::ExmaMD, gpdxl::ExmiMDObjUnsupported, GPOS_WSZ_LIT("Multi-level partitioned tables"));
+		}
+
+		if (!gpdb::FMultilevelPartitionUniform(oidRel))
+		{
+			GPOS_RAISE(gpdxl::ExmaMD, gpdxl::ExmiMDObjUnsupported, GPOS_WSZ_LIT("Multi-level partitioned tables with non-uniform partitioning structure"));
+		}
+	}
+}
+
+//---------------------------------------------------------------------------
+//	@function:
 //		CTranslatorRelcacheToDXL::Pmdrel
 //
 //	@doc:
@@ -481,8 +522,9 @@ CTranslatorRelcacheToDXL::Pmdrel
 	)
 {
 	OID oid = CMDIdGPDB::PmdidConvert(pmdid)->OidObjectId();
-
 	GPOS_ASSERT(InvalidOid != oid);
+
+	CheckUnsupportedRelation(oid);
 
 	Relation rel = gpdb::RelGetRelation(oid);
 

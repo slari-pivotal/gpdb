@@ -810,7 +810,6 @@ getPartConstraints(Oid partOid, Oid rootOid, List *partKey)
 	char            *conBin;
 	bool            conbinIsNull = false;
 	bool			conKeyIsNull = false;
-	char            conType = 'c';
 	AttrMap		*map;
 
 	/* create the map needed for mapping attnums */
@@ -828,14 +827,21 @@ getPartConstraints(Oid partOid, Oid rootOid, List *partKey)
 	pcqCtx = caql_beginscan(
 			caql_addrel(cqclr(&cqc), conRel),
 			cql("SELECT * FROM pg_constraint "
-				" WHERE conrelid = :1 AND contype = :2",
-				ObjectIdGetDatum(partOid), CharGetDatum(conType)));
+				" WHERE conrelid = :1",
+				ObjectIdGetDatum(partOid)));
 
 	// list of keys referenced in the found constraints
 	List *keys = NIL;
 
 	while (HeapTupleIsValid(conTup = caql_getnext(pcqCtx)))
 	{
+		/* we defer the filter on contype to here in order to take advantage of
+		 * the index on conrelid in the above CAQL query */
+		Form_pg_constraint conEntry = (Form_pg_constraint) GETSTRUCT(conTup);
+		if (conEntry->contype != 'c')
+		{
+			continue;
+		}
 		/* Fetch the constraint expression in parsetree form */
 		conBinDatum = heap_getattr(conTup, Anum_pg_constraint_conbin,
 				RelationGetDescr(conRel), &conbinIsNull);

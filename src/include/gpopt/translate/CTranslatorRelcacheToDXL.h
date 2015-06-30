@@ -171,6 +171,10 @@ namespace gpdxl
 				BOOL *fReturnsSet // output: does function return set?
 				);
 
+			// check and fall back for unsupported relations
+			static
+			void CheckUnsupportedRelation(OID oidRel);
+
 			// get type name from the relcache
 			static
 			CMDName *PmdnameType(IMemoryPool *pmp, IMDId *pmdid);

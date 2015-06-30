@@ -90,6 +90,8 @@ extern bool rel_is_child_partition(Oid relid);
 
 extern bool rel_is_leaf_partition(Oid relid);
 
+extern bool rel_partitioning_is_uniform(Oid rootOid);
+
 extern PartStatus rel_part_status(Oid relid);
 
 extern List *
