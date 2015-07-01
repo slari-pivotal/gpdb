@@ -18,35 +18,40 @@
 #include "utils/memutils.h"
 #include "access/genam.h"
 
-static bool
-IndexScan_RemapLogicalIndexInfo(IndexScanState *indexScanState);
+static Oid
+DynamicScan_GetOriginalRelationOid(ScanState *scanState);
+
+static ScanStatus
+DynamicScan_Controller(ScanState *scanState, ScanStatus desiredState, PartitionInitMethod *partitionInitMethod,
+		PartitionEndMethod *partitionEndMethod, PartitionReScanMethod *partitionReScanMethod);
 
 static bool
-DynamicScan_RemapIndexScanVars(IndexScanState *indexScanState, bool initQual, bool initTargetList);
+DynamicScan_InitNextRelation(ScanState *scanState, PartitionInitMethod *partitionInitMethod, PartitionEndMethod *partitionEndMethod, PartitionReScanMethod *partitionReScanMethod);
 
-static inline DynamicPartitionIterator*
+static DynamicPartitionIterator*
 DynamicScan_GetIterator(ScanState *scanState);
 
 static Oid
-DynamicScan_GetNextPartitionOid(ScanState *scanState, DynamicPartitionIterator *iterator, int32 numSelectors);
+DynamicScan_AdvanceIterator(ScanState *scanState, int32 numSelectors);
 
 static void
-DynamicScan_UpdateIteratorPartitionState(DynamicPartitionIterator *iterator, Oid newOid);
+DynamicScan_InitExpr(ScanState* scanState);
 
 static void
-DynamicScan_InitScanStateForNewPartition(ScanState *scanState, DynamicPartitionIterator *iterator);
+DynamicScan_ObtainRelations(ScanState *scanState, Oid newOid, Relation *outOldRelation, Relation *outNewRelation);
+
+static AttrNumber*
+DynamicScan_MapRelationColumns(ScanState *scanState, Relation oldRelation, Relation newRelation);
 
 static void
-DynamicScan_InitExpressions(ScanState *scanState, DynamicPartitionIterator *iterator);
-
-static void
-DynamicScan_FinishInitialization(ScanState *scanState, PartitionInitMethod *partitionInitMethod);
+DynamicScan_UpdateScanStateForNewPart(ScanState *scanState, Relation newRelation);
 
 static bool
-DynamicScan_InitNextPartition(ScanState *scanState, PartitionInitMethod *partitionInitMethod);
+DynamicScan_InitNextPartition(ScanState *scanState, PartitionInitMethod *partitionInitMethod,
+		PartitionEndMethod *partitionEndMethod, PartitionReScanMethod *partitionReScanMethod);
 
 static bool
-DynamicScan_InitSingleRelation(ScanState *scanState, PartitionInitMethod *partitionInitMethod);
+DynamicScan_InitSingleRelation(ScanState *scanState, PartitionInitMethod *partitionInitMethod, PartitionReScanMethod *partitionReScanMethod);
 
 static void
 DynamicScan_CreateIterator(ScanState *scanState, Scan *scan);
@@ -55,37 +60,7 @@ static void
 DynamicScan_EndIterator(ScanState *scanState);
 
 static inline void
-DynamicScan_CleanupOneRelation(ScanState *scanState, PartitionEndMethod *partitionEndMethod);
-
-static void
-DynamicScan_EndCurrentScan(ScanState *scanState, PartitionEndMethod *partitionEndMethod);
-
-static bool
-DynamicScan_RemapExpression(ScanState *scanState, Node *expr);
-
-static void
-DynamicScan_CleanupOneIndexRelation(IndexScanState *indexScanState);
-
-static Oid
-DynamicScan_GetIndexOid(IndexScanState *indexScanState, Oid tableOid);
-
-static Oid
-DynamicScan_GetTableOid(ScanState *scanState);
-
-static bool
-DynamicScan_OpenIndexRelation(IndexScanState *scanState, Oid tableOid);
-
-static void
-DynamicScan_InitIndexExpressions(IndexScanState *indexScanState, bool initQual, bool initTargetList);
-
-static void
-DynamicScan_PrepareIndexScanKeys(IndexScanState *indexScanState, bool initQual, bool initTargetList, bool supportsArrayKeys);
-
-static void
-DynamicScan_PrepareExpressionContext(IndexScanState *indexScanState);
-
-static void
-DynamicScan_InitRuntimeKeys(IndexScanState *indexScanState);
+DynamicScan_CleanupOneRelation(ScanState *scanState, Relation relation, PartitionEndMethod *partitionEndMethod);
 
 /*
  * -------------------------------------
@@ -94,64 +69,16 @@ DynamicScan_InitRuntimeKeys(IndexScanState *indexScanState);
  */
 
 /*
- * DynamicScan_RemapIndexScanVars
- * 		Remaps the columns in the logical index descriptor, target list,
- * 		and qual to handle column alignment issues because of dropped columns.
- *
- * 		Returns true if remapping was needed.
- */
-static bool
-DynamicScan_RemapIndexScanVars(IndexScanState *indexScanState, bool initQual, bool initTargetList)
-{
-	IndexScan *indexScan = (IndexScan *) indexScanState->ss.ps.plan;
-
-	bool remappedLogicalIndexInfo = IndexScan_RemapLogicalIndexInfo(indexScanState);
-
-	if (remappedLogicalIndexInfo)
-	{
-		DynamicScan_RemapExpression((ScanState *)indexScanState, (Node*)indexScan->indexqual);
-
-		if (initQual)
-		{
-			DynamicScan_RemapExpression((ScanState *)indexScanState, (Node*)indexScan->scan.plan.qual);
-		}
-
-		if (initTargetList)
-		{
-			DynamicScan_RemapExpression((ScanState *)indexScanState, (Node*)indexScan->scan.plan.targetlist);
-		}
-	}
-
-	return remappedLogicalIndexInfo;
-}
-
-/*
- * DynamicScan_GetIterator
- * 		Returns the current iterator for the scanState's partIndex.
- */
-static inline DynamicPartitionIterator*
-DynamicScan_GetIterator(ScanState *scanState)
-{
-	Assert(isDynamicScan((Scan *)scanState->ps.plan));
-	Assert(NULL != scanState->ps.state->dynamicTableScanInfo);
-
-	int partIndex = ((Scan*)scanState->ps.plan)->partIndex;
-	Assert(partIndex <= scanState->ps.state->dynamicTableScanInfo->numScans);
-
-	DynamicPartitionIterator *iterator = scanState->ps.state->dynamicTableScanInfo->iterators[partIndex - 1];
-
-	Assert(NULL != iterator);
-
-	return iterator;
-}
-
-/*
- * DynamicScan_GetNextPartitionOid
+ * DynamicScan_AdvanceIterator
  * 		Returns the oid of the next partition.
  */
 static Oid
-DynamicScan_GetNextPartitionOid(ScanState *scanState, DynamicPartitionIterator *iterator, int32 numSelectors)
+DynamicScan_AdvanceIterator(ScanState *scanState, int32 numSelectors)
 {
+	DynamicPartitionIterator *iterator = DynamicScan_GetIterator(scanState);
+
+	Assert(NULL != iterator);
+
 	Oid pid = InvalidOid;
 	while (InvalidOid == pid)
 	{
@@ -160,16 +87,14 @@ DynamicScan_GetNextPartitionOid(ScanState *scanState, DynamicPartitionIterator *
 		if (NULL == partOidEntry)
 		{
 			iterator->shouldCallHashSeqTerm = false;
-			iterator->attMapRelOid = InvalidOid;
-
-			scanState->scan_state = SCAN_DONE;
-
+			iterator->curRelOid = InvalidOid;
 			return InvalidOid;
 		}
 
 		if (list_length(partOidEntry->selectorList) == numSelectors)
 		{
 			pid = partOidEntry->partOid;
+			iterator->curRelOid = pid;
 		}
 	}
 
@@ -177,65 +102,115 @@ DynamicScan_GetNextPartitionOid(ScanState *scanState, DynamicPartitionIterator *
 }
 
 /*
- * DynamicScan_UpdateIteratorPartitionState
- * 		Saves the relation that we need to scan in the iterator state. We also
- * 		save the column map to reconcile column alignment because of dropped columns.
+ * DynamicScan_InitExpr
+ * 		Initialize ExprState for a new partition from the plan's expressions
  */
 static void
-DynamicScan_UpdateIteratorPartitionState(DynamicPartitionIterator *iterator, Oid newOid)
+DynamicScan_InitExpr(ScanState* scanState)
 {
-	Oid oldOid = iterator->attMapRelOid;
-
-	Assert(OidIsValid(newOid));
-
-	/* Make sure we haven't already updated the column mapping of the iterator */
-	Assert(oldOid != newOid);
-
-	/* We must have cleaned the current relation before starting another one */
-	Assert(NULL == iterator->currentRelation);
-
-	iterator->currentRelation = OpenScanRelationByOid(newOid);
-
-	TupleDesc newTupDesc = RelationGetDescr(iterator->currentRelation);
-
-	Relation lastScannedRel = OpenScanRelationByOid(oldOid);
-	TupleDesc oldTupDesc = RelationGetDescr(lastScannedRel);
-	CloseScanRelation(lastScannedRel);
-
-	AttrNumber	*attMap = varattnos_map(oldTupDesc, newTupDesc);
-
-	if (NULL != iterator->attMap)
+	MemoryContext oldCxt = NULL;
+	MemoryContext partCxt = DynamicScan_GetPartitionMemoryContext(scanState);
+	if (NULL != partCxt)
 	{
-		pfree(iterator->attMap);
+		MemoryContextReset(partCxt);
+		/*
+		 * Switch to partition memory context to prevent memory leak for
+		 * per-partition data structures.
+		 */
+		oldCxt = MemoryContextSwitchTo(partCxt);
 	}
 
-	iterator->attMap = attMap;
-	iterator->attMapRelOid = newOid;
+	/*
+	 * We might have reset the memory context. Set these dangling
+	 * pointers to NULL so that we don't try to pfree them later
+	 */
+	scanState->ps.ps_ProjInfo = NULL;
+	scanState->ps.qual = NULL;
+	scanState->ps.targetlist = NULL;
+	/* Initialize child expressions */
+	scanState->ps.qual = (List*) ExecInitExpr((Expr*) scanState->ps.plan->qual,
+			(PlanState*) scanState);
+	scanState->ps.targetlist = (List*) ExecInitExpr(
+			(Expr*) scanState->ps.plan->targetlist, (PlanState*) scanState);
+	ExecAssignScanProjectionInfo(scanState);
+
+	if (NULL != oldCxt)
+	{
+		MemoryContextSwitchTo(oldCxt);
+	}
 }
 
 /*
- * DynamicScan_InitScanStateForNewPartition
- * 		Initializes various properties of the scan state for a new
- * 		partition such as opening the relation, mapping dropped attributes
- * 		for qual and targetlist, setting the tuple slot's properties and
- * 		updating the tableType of the scanState.
+ * DynamicScan_ObtainRelations
+ * 		Returns old and new relations for a new part oid
  */
 static void
-DynamicScan_InitScanStateForNewPartition(ScanState *scanState, DynamicPartitionIterator *iterator)
+DynamicScan_ObtainRelations(ScanState *scanState, Oid newOid, Relation *outOldRelation, Relation *outNewRelation)
 {
-	Assert(NULL == scanState->ss_currentRelation);
+	Relation oldRelation = NULL;
+	Relation newRelation = NULL;
+	Oid oldOid = InvalidOid;
+	if (NULL != scanState->ss_currentRelation)
+	{
+		oldOid = RelationGetRelid(scanState->ss_currentRelation);
+		oldRelation = scanState->ss_currentRelation;
+	}
+	else
+	{
+		/* Must be the initial state */
+		Assert(SCAN_INIT == scanState->scan_state);
+		oldOid = DynamicScan_GetOriginalRelationOid(scanState);
+		Assert(OidIsValid(oldOid));
+		oldRelation = OpenScanRelationByOid(oldOid);
+	}
 
-	scanState->ss_currentRelation = iterator->currentRelation;
+	if (oldOid == newOid)
+	{
+		newRelation = oldRelation;
+	}
+	else
+	{
+		newRelation = OpenScanRelationByOid(newOid);
+	}
 
-	TupleDesc newTupDesc = RelationGetDescr(scanState->ss_currentRelation);
+	Assert(NULL != oldRelation);
+	Assert(NULL != newRelation);
 
-	ExecAssignScanType(scanState, newTupDesc);
+	*outOldRelation = oldRelation;
+	*outNewRelation = newRelation;
+}
 
-	DynamicScan_RemapExpression(scanState, (Node*)scanState->ps.plan->qual);
-	DynamicScan_RemapExpression(scanState, (Node*)scanState->ps.plan->targetlist);
+/*
+ * DynamicScan_MapRelationColumns
+ * 		Returns dropped column mapping between two relations. Returns NULL if
+ * 		no mapping is necessary.
+ */
+static AttrNumber*
+DynamicScan_MapRelationColumns(ScanState *scanState, Relation oldRelation, Relation newRelation)
+{
+	AttrNumber *attMap = NULL;
 
-	Oid newOid = RelationGetRelid(iterator->currentRelation);
+	if (isDynamicScan((Scan *)scanState->ps.plan) && (oldRelation != newRelation))
+	{
+		TupleDesc oldTupDesc = RelationGetDescr(oldRelation);
+		TupleDesc newTupDesc = RelationGetDescr(newRelation);
 
+		attMap = varattnos_map(oldTupDesc, newTupDesc);
+	}
+
+	return attMap;
+}
+
+/*
+ * DynamicScan_UpdateScanStateForNewPart
+ * 		Updates ScanState properties for a new part
+ */
+static void
+DynamicScan_UpdateScanStateForNewPart(ScanState *scanState, Relation newRelation)
+{
+	scanState->ss_currentRelation = newRelation;
+	ExecAssignScanType(scanState, RelationGetDescr(newRelation));
+	Oid newOid = RelationGetRelid(newRelation);
 	/*
 	 * Inside ExecInitScanTupleSlot() we set the tuple table slot's oid
 	 * to range table entry's relid, which for partitioned table always set
@@ -254,96 +229,73 @@ DynamicScan_InitScanStateForNewPartition(ScanState *scanState, DynamicPartitionI
 }
 
 /*
- * DynamicScan_InitExpressions
- *		Initializes the expression.
- *
- *		Note: we have qual and targetlist in the plan which
- *		we need to initialize to create plan state's qual
- *		and eval to evaluate the expression.
- */
-static void
-DynamicScan_InitExpressions(ScanState *scanState, DynamicPartitionIterator *iterator)
-{
-	/*
-	 * We only initialize expression if this is the first partition
-	 * or if the column mapping changes between two partitions.
-	 * Otherwise, we reuse the previously initialized expression.
-	 */
-	if (iterator->firstPartition || NULL != iterator->attMap)
-	{
-		MemoryContextReset(iterator->partitionMemoryContext);
-
-		/* We just reset the memory context, set these dangling pointers to NULL so that we don't try to pfree them later */
-		scanState->ps.ps_ProjInfo = NULL;
-		scanState->ps.qual = NULL;
-		scanState->ps.targetlist = NULL;
-
-		/*
-		 * Switch to partition memory context to prevent memory leak for
-		 * per-partition data structures.
-		 */
-		MemoryContext oldCxt = MemoryContextSwitchTo(iterator->partitionMemoryContext);
-
-		/* Initialize child expressions */
-		scanState->ps.qual = (List *)ExecInitExpr((Expr *)scanState->ps.plan->qual, (PlanState*)scanState);
-		scanState->ps.targetlist = (List *)ExecInitExpr((Expr *)scanState->ps.plan->targetlist, (PlanState*)scanState);
-		ExecAssignScanProjectionInfo(scanState);
-
-		MemoryContextSwitchTo(oldCxt);
-	}
-}
-
-/*
- * DynamicScan_FinishInitialization
- *		Finishes the initialization phase and advances the scan_state
- *		to SCAN_NEXT. Note: for non-partitioned case we don't do anything
- *		extra here. For partitioned case, however, we create the partition
- *		iterator.
- */
-static void
-DynamicScan_FinishInitialization(ScanState *scanState, PartitionInitMethod *partitionInitMethod)
-{
-	Assert(SCAN_INIT == scanState->scan_state);
-
-	Scan *scan = (Scan *)scanState->ps.plan;
-	if (isDynamicScan(scan))
-	{
-		DynamicScan_CreateIterator(scanState, scan);
-	}
-
-	scanState->scan_state = SCAN_NEXT;
-}
-
-/*
  * DynamicScan_InitNextPartition
  *		Prepares the next partition for scanning by calling various
  *		helper methods to open relation, map dropped attributes,
  *		initialize expressions etc.
  */
 static bool
-DynamicScan_InitNextPartition(ScanState *scanState, PartitionInitMethod *partitionInitMethod)
+DynamicScan_InitNextPartition(ScanState *scanState, PartitionInitMethod *partitionInitMethod, PartitionEndMethod *partitionEndMethod, PartitionReScanMethod *partitionReScanMethod)
 {
 	Assert(isDynamicScan((Scan *)scanState->ps.plan));
+	AssertImply(scanState->scan_state != SCAN_INIT, NULL != scanState->ss_currentRelation);
 
 	Scan *scan = (Scan *)scanState->ps.plan;
-
-	Assert(SCAN_NEXT == scanState->scan_state);
-
 	DynamicTableScanInfo *partitionInfo = scanState->ps.state->dynamicTableScanInfo;
-
 	Assert(partitionInfo->numScans >= scan->partIndex);
-
-	DynamicPartitionIterator *iterator = partitionInfo->iterators[scan->partIndex - 1];
 	int32 numSelectors = list_nth_int(partitionInfo->numSelectorsPerScanId, scan->partIndex);
 
-	Assert(NULL != iterator);
+	Oid newOid = DynamicScan_AdvanceIterator(scanState, numSelectors);
 
-	Oid partOid = DynamicScan_GetNextPartitionOid(scanState, iterator, numSelectors);
-
-	if (!OidIsValid(partOid))
+	if (!OidIsValid(newOid))
 	{
-		Assert(SCAN_DONE == scanState->scan_state);
 		return false;
+	}
+
+	Relation oldRelation = NULL;
+	Relation newRelation = NULL;
+
+	DynamicScan_ObtainRelations(scanState, newOid, &oldRelation, &newRelation);
+	/* Either we have a new relation or this is the first relation */
+	if (oldRelation != newRelation || NULL == scanState->ss_currentRelation)
+	{
+		AttrNumber *attMap = DynamicScan_MapRelationColumns(scanState, oldRelation, newRelation);
+
+		DynamicScan_RemapExpression(scanState, attMap, (Node*)scanState->ps.plan->qual);
+		DynamicScan_RemapExpression(scanState, attMap, (Node*)scanState->ps.plan->targetlist);
+
+		/*
+		 * We only initialize expression if this is the first partition
+		 * or if the column mapping changes between two partitions.
+		 * Otherwise, we reuse the previously initialized expression.
+		 */
+		bool initExpressions = (NULL != attMap || SCAN_INIT == scanState->scan_state);
+
+		if (newRelation != oldRelation)
+		{
+			/* Close the old relation */
+			DynamicScan_CleanupOneRelation(scanState, oldRelation, partitionEndMethod);
+		}
+
+		DynamicScan_UpdateScanStateForNewPart(scanState, newRelation);
+
+		if (initExpressions)
+		{
+			DynamicScan_InitExpr(scanState);
+		}
+
+		partitionInitMethod(scanState, attMap);
+
+		if (NULL != attMap)
+		{
+			pfree(attMap);
+			attMap = NULL;
+		}
+	}
+	else
+	{
+		/* Rescan of the same part */
+		partitionReScanMethod(scanState);
 	}
 
 	/* Collect number of partitions scanned in EXPLAIN ANALYZE */
@@ -352,16 +304,6 @@ DynamicScan_InitNextPartition(ScanState *scanState, PartitionInitMethod *partiti
 		Instrumentation *instr = scanState->ps.instrument;
 		instr->numPartScanned ++;
 	}
-
-	DynamicScan_UpdateIteratorPartitionState(iterator, partOid);
-	DynamicScan_InitScanStateForNewPartition(scanState, iterator);
-	DynamicScan_InitExpressions(scanState, iterator);
-
-	bool initExpressions = iterator->firstPartition || iterator->attMap;
-
-	partitionInitMethod(scanState, initExpressions);
-
-	scanState->scan_state = SCAN_SCAN;
 
 	return true;
 }
@@ -372,32 +314,44 @@ DynamicScan_InitNextPartition(ScanState *scanState, PartitionInitMethod *partiti
  *		helper methods to open relation, initialize expressions etc.
  *
  *		Note: this is for the non-partitioned relations.
+ *
+ *		Returns true upon success.
  */
 static bool
-DynamicScan_InitSingleRelation(ScanState *scanState, PartitionInitMethod *partitionInitMethod)
+DynamicScan_InitSingleRelation(ScanState *scanState, PartitionInitMethod *partitionInitMethod, PartitionReScanMethod *partitionReScanMethod)
 {
 	Assert(!isDynamicScan((Scan *)scanState->ps.plan));
 
-	Assert(SCAN_SCAN != scanState->scan_state);
-	Assert(SCAN_END != scanState->scan_state);
-
-	if (SCAN_DONE != scanState->scan_state)
+	if (NULL == scanState->ss_currentRelation)
 	{
-		Assert(SCAN_NEXT == scanState->scan_state);
-		/* In non-partitioned case, we only begin scan if we aren't already scanning it or we are not done */
-
 		/* Open the relation and initalize the expressions (targetlist, qual etc.) */
 		InitScanStateRelationDetails(scanState, scanState->ps.plan, scanState->ps.state);
-
-		partitionInitMethod(scanState, true);
-		scanState->scan_state = SCAN_SCAN;
-
-		return true;
+		partitionInitMethod(scanState, NULL /* No dropped column mapping */);
+	}
+	else
+	{
+		Insist(scanState->scan_state == SCAN_RESCAN);
+		partitionReScanMethod(scanState);
 	}
 
-	Assert(SCAN_DONE == scanState->scan_state);
-	/* The non-partitioned table is already scanned, so nothing more to scan */
-	return false;
+	return true;
+}
+
+/*
+ * DynamicScan_GetOriginalRelationOid
+ *		Returns the original relation as stored in the estate range table
+ *		by the optimizer
+ */
+static Oid
+DynamicScan_GetOriginalRelationOid(ScanState *scanState)
+{
+	EState *estate = scanState->ps.state;
+	Scan *scan = (Scan *) scanState->ps.plan;
+
+	Oid reloid = getrelid(scan->scanrelid, estate->es_range_table);
+	Assert(OidIsValid(reloid));
+
+	return reloid;
 }
 
 /*
@@ -409,9 +363,7 @@ static void
 DynamicScan_CreateIterator(ScanState *scanState, Scan *scan)
 {
 	EState *estate = scanState->ps.state;
-
 	Assert(NULL != estate);
-
 	DynamicTableScanInfo *partitionInfo = estate->dynamicTableScanInfo;
 
 	/*
@@ -420,17 +372,12 @@ DynamicScan_CreateIterator(ScanState *scanState, Scan *scan)
 	 */
 	InsertPidIntoDynamicTableScanInfo(scan->partIndex, InvalidOid, InvalidPartitionSelectorId);
 
-	Assert(NULL != estate->dynamicTableScanInfo->pidIndexes);
+	Assert(NULL != partitionInfo && NULL != partitionInfo->pidIndexes);
 	Assert(partitionInfo->numScans >= scan->partIndex);
 	Assert(NULL == partitionInfo->iterators[scan->partIndex - 1]);
 
-	Oid reloid = getrelid(scan->scanrelid, estate->es_range_table);
-	Assert(OidIsValid(reloid));
-
 	DynamicPartitionIterator *iterator = palloc(sizeof(DynamicPartitionIterator));
-	iterator->firstPartition = true;
-	iterator->currentRelation = NULL;
-	iterator->attMapRelOid = reloid;
+	iterator->curRelOid = InvalidOid;
 	iterator->partitionMemoryContext = AllocSetContextCreate(CurrentMemoryContext,
 			 "DynamicTableScanPerPartition",
 			 ALLOCSET_DEFAULT_MINSIZE,
@@ -438,7 +385,6 @@ DynamicScan_CreateIterator(ScanState *scanState, Scan *scan)
 			 ALLOCSET_DEFAULT_MAXSIZE);
 	iterator->partitionOids = partitionInfo->pidIndexes[scan->partIndex - 1];
 	Assert(iterator->partitionOids != NULL);
-	iterator->attMap = NULL;
 	iterator->shouldCallHashSeqTerm = true;
 
 	HASH_SEQ_STATUS *partitionIterator = palloc(sizeof(HASH_SEQ_STATUS));
@@ -484,11 +430,6 @@ DynamicScan_EndIterator(ScanState *scanState)
 
 	pfree(iterator->partitionIterator);
 
-	if (NULL != iterator->attMap)
-	{
-		pfree(iterator->attMap);
-	}
-
 	MemoryContextDelete(iterator->partitionMemoryContext);
 
 	pfree(iterator);
@@ -501,79 +442,40 @@ DynamicScan_EndIterator(ScanState *scanState)
  *		Cleans up a relation and releases all locks.
  */
 static inline void
-DynamicScan_CleanupOneRelation(ScanState *scanState, PartitionEndMethod *partitionEndMethod)
+DynamicScan_CleanupOneRelation(ScanState *scanState, Relation relation, PartitionEndMethod *partitionEndMethod)
 {
 	Assert(NULL != scanState);
-	Scan *scan = (Scan *)scanState->ps.plan;
+	Assert(scanState->ss_currentRelation == relation || NULL == scanState->ss_currentRelation);
 
-	if (0 != (scanState->scan_state & SCAN_SCAN))
+	if (NULL == relation)
+	{
+		return;
+	}
+
+	if (NULL != scanState->ss_currentRelation)
 	{
 		partitionEndMethod(scanState);
-
-		Assert(NULL != scanState->ss_currentRelation);
-		ExecCloseScanRelation(scanState->ss_currentRelation);
 		scanState->ss_currentRelation = NULL;
-
-		if (isDynamicScan(scan))
-		{
-			DynamicPartitionIterator *iterator = DynamicScan_GetIterator(scanState);
-			iterator->currentRelation = NULL;
-			iterator->firstPartition = false;
-
-			scanState->scan_state = SCAN_NEXT;
-		}
-		else
-		{
-			/* No partition, so no more to scan */
-			scanState->scan_state = SCAN_DONE;
-		}
-	}
-}
-
-/*
- * DynamicScan_EndCurrentScan
- *		Ends the current scan by cleaning up current relation
- *		and freeing up iterator states.
- */
-static void
-DynamicScan_EndCurrentScan(ScanState *scanState, PartitionEndMethod *partitionEndMethod)
-{
-	Assert(NULL != scanState);
-	Assert(NULL != partitionEndMethod);
-	Assert(SCAN_END != scanState->scan_state);
-
-	Scan *scan = (Scan *)scanState->ps.plan;
-
-	DynamicScan_CleanupOneRelation(scanState, partitionEndMethod);
-
-	if (isDynamicScan(scan))
-	{
-		DynamicScan_EndIterator(scanState);
 	}
 
-	scanState->scan_state = SCAN_END;
+	ExecCloseScanRelation(relation);
 }
 
 /*
  * DynamicScan_RemapExpression
- * 		Re-maps the expression using the attMap of the partition iterator.
+ * 		Re-maps the expression using the provided attMap.
  */
-static bool
-DynamicScan_RemapExpression(ScanState *scanState, Node *expr)
+bool
+DynamicScan_RemapExpression(ScanState *scanState, AttrNumber *attMap, Node *expr)
 {
 	if (!isDynamicScan((Scan *)scanState->ps.plan))
 	{
 		return false;
 	}
 
-	DynamicPartitionIterator *iterator = DynamicScan_GetIterator(scanState);
-
-	Assert(NULL != iterator);
-
-	if (NULL != iterator->attMap)
+	if (NULL != attMap)
 	{
-		change_varattnos_of_a_varno((Node*)expr, iterator->attMap, ((Scan *)scanState->ps.plan)->scanrelid);
-
+		change_varattnos_of_a_varno((Node*)expr, attMap, ((Scan *)scanState->ps.plan)->scanrelid);
 		return true;
 	}
 
@@ -581,360 +483,23 @@ DynamicScan_RemapExpression(ScanState *scanState, Node *expr)
 }
 
 /*
- * DynamicScan_GetIndexOid
- * 		Returns the Oid of a suitable index for the IndexScan.
- *
- * 		Note: this assumes that the indexScan->logicalIndexInfo varattno
- * 		are already mapped.
- *
- * 		This method will return the indexScan->indexid if called during
- * 		the SCAN_INIT state or for non-partitioned case.
+ * DynamicScan_GetIterator
+ * 		Returns the current iterator for the scanState's partIndex.
  */
-static Oid
-DynamicScan_GetIndexOid(IndexScanState *indexScanState, Oid tableOid)
+DynamicPartitionIterator*
+DynamicScan_GetIterator(ScanState *scanState)
 {
-	IndexScan *indexScan = (IndexScan *) indexScanState->ss.ps.plan;
+	Assert(isDynamicScan((Scan *)scanState->ps.plan));
+	Assert(NULL != scanState->ps.state->dynamicTableScanInfo);
 
-	/*
-	 * We return the plan node's indexid for non-partitioned case.
-	 * For partitioned case, we also return the plan node's indexid
-	 * if we are in the initialization phase (i.e., we don't yet know
-	 * which partitions to scan).
-	 */
-	if (!isDynamicScan(&indexScan->scan) || SCAN_INIT == indexScanState->ss.scan_state)
-	{
-		return indexScan->indexid;
-	}
+	int partIndex = ((Scan*)scanState->ps.plan)->partIndex;
+	Assert(partIndex <= scanState->ps.state->dynamicTableScanInfo->numScans);
 
-	Assert(NULL != indexScan->logicalIndexInfo);
-	Assert(OidIsValid(tableOid));
+	DynamicPartitionIterator *iterator = scanState->ps.state->dynamicTableScanInfo->iterators[partIndex - 1];
 
-	/*
-	 * The is the oid of the partition of an *index*. Note: a partitioned table
-	 * has a root and a set of partitions (may be multi-level). An index
-	 * on a partitioned table also has a root and a set of index partitions.
-	 * We started at table level, and now we are fetching the oid of an index
-	 * partition.
-	 */
-	Oid indexOid = getPhysicalIndexRelid(indexScan->logicalIndexInfo, tableOid);
-
-	Assert(OidIsValid(indexOid));
-
-	return indexOid;
-}
-
-/*
- * DynamicScan_GetTableOid
- * 		Returns the Oid of the table/partition to scan.
- *
- *		For partitioned case this method returns InvalidOid
- *		if the partition iterator hasn't been initialized yet.
- */
-static Oid
-DynamicScan_GetTableOid(ScanState *scanState)
-{
-	/* For non-partitioned scan, just lookup the RTE */
-	if (!isDynamicScan((Scan *)scanState->ps.plan))
-	{
-		return getrelid(((Scan *)scanState->ps.plan)->scanrelid, scanState->ps.state->es_range_table);
-	}
-
-	/* We are yet to initialize the iterator, so return InvalidOid */
-	if (SCAN_INIT == scanState->scan_state)
-	{
-		return InvalidOid;
-	}
-
-	/* Get the iterator and look up the oid of the current relation */
-	DynamicPartitionIterator *iterator = DynamicScan_GetIterator(scanState);
-	Assert(NULL != iterator);
-	Assert(OidIsValid(iterator->attMapRelOid));
-
-	return iterator->attMapRelOid;
-}
-
-/*
- * DynamicScan_OpenIndexRelation
- * 		Opens the index relation of the scanState using proper locks.
- *
- * 		Returns false if the previously opened index relation can be
- * 		reused.
- *
- * 		Otherwise it closes the previously opened index relation and
- * 		opens the newly requested one, and returns true.
- */
-static bool
-DynamicScan_OpenIndexRelation(IndexScanState *scanState, Oid tableOid)
-{
-	/* Look up the correct index oid for the provided tableOid */
-	Oid indexOid = DynamicScan_GetIndexOid(scanState, tableOid);
-	Assert(OidIsValid(indexOid));
-
-	/*
-	 * If we already have an open index, and that index's relation
-	 * oid is the same as the newly determined one, then we don't
-	 * open any new relation and we just return false.
-	 */
-	if (NULL != scanState->iss_RelationDesc &&
-			indexOid == RelationGetRelid(scanState->iss_RelationDesc))
-	{
-		/*
-		 * Put the tableOid as we may not have a valid
-		 * tableOid, if the original relation was opened
-		 * during initialization based on indexScan->indexid.
-		 */
-		scanState->tableOid = tableOid;
-		return false;
-	}
-
-	/* We cannot reuse, therefore, clean up previously opened index */
-	DynamicScan_CleanupOneIndexRelation(scanState);
-
-	Assert(NULL == scanState->iss_RelationDesc);
-	Assert(!OidIsValid(scanState->tableOid));
-
-	LOCKMODE lockMode = AccessShareLock;
-
-	if (!isDynamicScan((Scan *)&scanState->ss.ps.plan) &&
-			ExecRelationIsTargetRelation(scanState->ss.ps.state, ((Scan *)scanState->ss.ps.plan)->scanrelid))
-	{
-		lockMode = NoLock;
-	}
-
-	Assert(NULL == scanState->iss_RelationDesc);
-	scanState->iss_RelationDesc = index_open(indexOid, lockMode);
-	scanState->tableOid = tableOid;
-
-	return true;
-}
-
-/*
- * DynamicScan_InitIndexExpressions
- * 		Initializes the plan state's qual and target list from the
- * 		corresponding plan's qual and targetlist for an index.
- */
-static void
-DynamicScan_InitIndexExpressions(IndexScanState *indexScanState, bool initQual, bool initTargetList)
-{
-	ScanState *scanState = (ScanState *)indexScanState;
-
-	Plan *plan = scanState->ps.plan;
-
-	if (initQual)
-	{
-		scanState->ps.qual = (List *)ExecInitExpr((Expr *)plan->qual, (PlanState*)scanState);
-	}
-
-	if (initTargetList)
-	{
-		scanState->ps.targetlist = (List *)ExecInitExpr((Expr *)plan->targetlist, (PlanState*)scanState);
-	}
-}
-
-/*
- * DynamicScan_PrepareIndexScanKeys
- * 		Prepares the various scan keys for an index, such
- * 		as scan keys, runtime keys and array keys.
- */
-static void
-DynamicScan_PrepareIndexScanKeys(IndexScanState *indexScanState, bool initQual, bool initTargetList, bool supportsArrayKeys)
-{
-	IndexScan *plan = (IndexScan *)indexScanState->ss.ps.plan;
-
-	MemoryContext oldCxt = NULL;
-
-	MemoryContext partitionContext = DynamicScan_GetPartitionMemoryContext((ScanState*)indexScanState);
-
-	if (NULL != partitionContext)
-	{
-		oldCxt = MemoryContextSwitchTo(partitionContext);
-	}
-
-	IndexArrayKeyInfo **arrayKeys = supportsArrayKeys ? &indexScanState->iss_ArrayKeys : NULL;
-	int *numArrayKeys = supportsArrayKeys ? &indexScanState->iss_NumArrayKeys : NULL;
-
-	/*
-	 * initialize child expressions
-	 *
-	 * We don't need to initialize targetlist or qual since neither are used.
-	 *
-	 * Note: we don't initialize all of the indexqual expression, only the
-	 * sub-parts corresponding to runtime keys (see below).
-	 *
-	 * TODO rahmaf2 [JIRA: MPP-23297] we need to change indexqual
-	 * varattno mapping. (Do we need to change other varattno
-	 * mapping too?).
-	 *
-	 * build the index scan keys from the index qualification
-	 */
-	ExecIndexBuildScanKeys((PlanState *) indexScanState,
-						   indexScanState->iss_RelationDesc,
-						   plan->indexqual,
-						   plan->indexstrategy,
-						   plan->indexsubtype,
-						   &indexScanState->iss_ScanKeys,
-						   &indexScanState->iss_NumScanKeys,
-						   &indexScanState->iss_RuntimeKeys,
-						   &indexScanState->iss_NumRuntimeKeys,
-						   arrayKeys,
-						   numArrayKeys);
-
-	if (NULL != oldCxt)
-	{
-		MemoryContextSwitchTo(oldCxt);
-	}
-}
-
-/*
- * DynamicScan_PrepareExpressionContext
- * 		Prepares a new expression context for the evaluation of the
- * 		runtime keys of an index.
- */
-static void
-DynamicScan_PrepareExpressionContext(IndexScanState *indexScanState)
-{
-	Assert(NULL == indexScanState->iss_RuntimeContext);
-
-	ExprContext *stdecontext = indexScanState->ss.ps.ps_ExprContext;
-
-	ExecAssignExprContext(indexScanState->ss.ps.state, &indexScanState->ss.ps);
-	indexScanState->iss_RuntimeContext = indexScanState->ss.ps.ps_ExprContext;
-	indexScanState->ss.ps.ps_ExprContext = stdecontext;
-}
-
-/*
- * DynamicScan_InitRuntimeKeys
- * 		Initializes the runtime keys and array keys for an index scan
- * 		by evaluating them.
- */
-static void
-DynamicScan_InitRuntimeKeys(IndexScanState *indexScanState)
-{
-	ExprContext *econtext = indexScanState->iss_RuntimeContext;		/* context for runtime keys */
-
-	indexScanState->iss_RuntimeKeysReady = true;
-
-	if (0 != indexScanState->iss_NumRuntimeKeys)
-	{
-		Assert(NULL != econtext);
-		Assert(NULL != indexScanState->iss_RuntimeKeys);
-
-		ExecIndexEvalRuntimeKeys(econtext,
-				indexScanState->iss_RuntimeKeys,
-				indexScanState->iss_NumRuntimeKeys);
-	}
-
-	if (0 != indexScanState->iss_NumArrayKeys)
-	{
-		Assert(NULL != econtext);
-		Assert(NULL != indexScanState->iss_ArrayKeys);
-
-		indexScanState->iss_RuntimeKeysReady =
-			ExecIndexEvalArrayKeys(econtext,
-								   indexScanState->iss_ArrayKeys,
-								   indexScanState->iss_NumArrayKeys);
-	}
-}
-
-/*
- * IndexScan_ReMapLogicalIndexInfo
- * 		Remaps the columns of the expressions of a the logicalIndexInfo
- * 		in a IndexScanState.
- *
- * 		Returns true if remapping was done.
- */
-static bool
-IndexScan_RemapLogicalIndexInfo(IndexScanState *indexScanState)
-{
-	IndexScan *indexScan = (IndexScan*)indexScanState->ss.ps.plan;
-
-	if (!isDynamicScan((Scan *)(&indexScan->scan.plan)))
-	{
-		return false;
-	}
-
-	LogicalIndexInfo *logicalIndexInfo = indexScan->logicalIndexInfo;
-
-	Assert(NULL != logicalIndexInfo);
-
-	DynamicPartitionIterator *iterator = DynamicScan_GetIterator((ScanState *)indexScanState);
 	Assert(NULL != iterator);
 
-	AttrNumber *attMap = iterator->attMap;
-
-	return IndexScan_MapLogicalIndexInfo(logicalIndexInfo, attMap, indexScan->scan.scanrelid);
-}
-
-/*
- * DynamicScan_CleanupOneIndexRelation
- * 		Cleans up one index relation by closing the scan
- * 		descriptor and the index relation.
- */
-static void
-DynamicScan_CleanupOneIndexRelation(IndexScanState *indexScanState)
-{
-	Assert(NULL != indexScanState);
-
-	Assert(SCAN_SCAN != indexScanState->ss.scan_state);
-	Assert(SCAN_END != indexScanState->ss.scan_state);
-
-	/*
-	 * For SCAN_INIT and SCAN_FIRST we don't yet have any open
-	 * scan descriptor.
-	 */
-	Assert(NULL != indexScanState->iss_ScanDesc ||
-			SCAN_FIRST == indexScanState->ss.scan_state ||
-			SCAN_INIT == indexScanState->ss.scan_state);
-
-	if (NULL != indexScanState->iss_ScanDesc)
-	{
-		index_endscan(indexScanState->iss_ScanDesc);
-		indexScanState->iss_ScanDesc = NULL;
-	}
-
-	if (NULL != indexScanState->iss_RelationDesc)
-	{
-		index_close(indexScanState->iss_RelationDesc, NoLock);
-		indexScanState->iss_RelationDesc = NULL;
-	}
-
-	/*
-	 * We use the tableOid to figure out if we can reuse an
-	 * existing open relation. So, we set this field to InvalidOid
-	 * when we clean up an open relation.
-	 */
-	indexScanState->tableOid = InvalidOid;
-}
-
-/*
- * DynamicScan_GetCurrentRelation
- * 		Returns the current relation to scan.
- */
-Relation
-DynamicScan_GetCurrentRelation(ScanState *scanState)
-{
-	Assert(T_BitmapTableScanState == scanState->ps.type
-			|| T_BitmapIndexScanState == scanState->ps.type);
-
-	Scan *scan = (Scan *)scanState->ps.plan;
-
-	if (isDynamicScan(scan))
-	{
-		DynamicTableScanInfo *partitionInfo = scanState->ps.state->dynamicTableScanInfo;
-
-		Assert(partitionInfo->numScans >= scan->partIndex);
-		DynamicPartitionIterator *iterator = partitionInfo->iterators[scan->partIndex - 1];
-
-		if (NULL == iterator)
-		{
-			/* We haven't started iterating any partition yet */
-			return NULL;
-		}
-
-		return iterator->currentRelation;
-	}
-
-	return scanState->ss_currentRelation;
+	return iterator;
 }
 
 /*
@@ -957,48 +522,36 @@ DynamicScan_Begin(ScanState *scanState, Plan *plan, EState *estate, int eflags)
  *		Prepares for the rescanning of one or more relations (partitions).
  */
 void
-DynamicScan_ReScan(ScanState *scanState, PartitionEndMethod *partitionEndMethod, ExprContext *exprCtxt)
+DynamicScan_ReScan(ScanState *scanState, ExprContext *exprCtxt)
 {
 	/* Only BitmapTableScanState supports this unified iteration of partitions */
 	Assert(T_BitmapTableScanState == scanState->ps.type);
 
-	if (SCAN_SCAN == scanState->scan_state)
-	{
-		DynamicScan_CleanupOneRelation(scanState, partitionEndMethod);
-	}
-
-	Assert(SCAN_SCAN != scanState->scan_state && SCAN_END != scanState->scan_state);
-
-	Scan *scan = (Scan *)scanState->ps.plan;
-
-	if (isDynamicScan(scan) && SCAN_INIT != scanState->scan_state)
-	{
-		/*
-		 * TODO rahmaf2: May be consider just resetting the iterator position,
-		 * instead of destroying prev iterator and creating a new one.
-		 */
-		DynamicScan_EndIterator(scanState);
-		DynamicScan_CreateIterator(scanState, (Scan *)scanState->ps.plan);
-	}
-	else
-	{
-		/*
-		 * Non-partitioned case. Nothing to do. The table is already
-		 * closed during the last scan, which should have finished.
-		 * Now, we are just going to reopen the relation when the
-		 * DynamicScan_PartitionIterator_Next will be called.
-		 */
-	}
+	Assert(scanState->tableType >= 0 && scanState->tableType < TableTypeInvalid);
 
 	/*
-	 * If ReScan was called even before we finish our initialization
-	 * during our first partition processing, then we still need to
-	 * maintain SCAN_INIT. Otherwise, just prepare for the next scan.
+	 * If we are being passed an outer tuple, link it into the "regular"
+	 * per-tuple econtext for possible qual eval.
 	 */
-	if (SCAN_INIT != scanState->scan_state)
+	if (exprCtxt != NULL)
 	{
-		scanState->scan_state = SCAN_NEXT;
+		ExprContext *stdecontext = scanState->ps.ps_ExprContext;
+		stdecontext->ecxt_outertuple = exprCtxt->ecxt_outertuple;
 	}
+
+	EState *estate = scanState->ps.state;
+	Index scanrelid = ((Scan *)(scanState->ps.plan))->scanrelid;
+
+	/* If this is re-scanning of PlanQual ... */
+	if (estate->es_evTuple != NULL &&
+		estate->es_evTuple[scanrelid - 1] != NULL)
+	{
+		estate->es_evTupleNull[scanrelid - 1] = false;
+	}
+
+	/* Notify controller about the request for rescan */
+	DynamicScan_Controller(scanState, SCAN_RESCAN, NULL /* PartitionInitMethod */,
+			NULL /* PartitionEndMethod */, NULL /* PartitionReScanMethod */);
 }
 
 /*
@@ -1008,6 +561,7 @@ DynamicScan_ReScan(ScanState *scanState, PartitionEndMethod *partitionEndMethod,
 void
 DynamicScan_End(ScanState *scanState, PartitionEndMethod *partitionEndMethod)
 {
+	Assert(NULL != scanState);
 	Assert(T_BitmapTableScanState == scanState->ps.type);
 
 	if (SCAN_END == scanState->scan_state)
@@ -1015,9 +569,18 @@ DynamicScan_End(ScanState *scanState, PartitionEndMethod *partitionEndMethod)
 		return;
 	}
 
-	DynamicScan_EndCurrentScan(scanState, partitionEndMethod);
+	Scan *scan = (Scan *)scanState->ps.plan;
+
+	DynamicScan_CleanupOneRelation(scanState, scanState->ss_currentRelation, partitionEndMethod);
+
+	if (isDynamicScan(scan))
+	{
+		DynamicScan_EndIterator(scanState);
+	}
 
 	FreeScanRelationInternal(scanState, false /* Do not close the relation. We closed it in DynamicScan_CleanupOneRelation */);
+
+	scanState->scan_state = SCAN_END;
 }
 
 /*
@@ -1030,33 +593,169 @@ DynamicScan_End(ScanState *scanState, PartitionEndMethod *partitionEndMethod)
  *
  *		Returns false if we don't have any more partition to iterate.
  */
-bool
-DynamicScan_InitNextRelation(ScanState *scanState, PartitionEndMethod *partitionEndMethod, PartitionInitMethod *partitionInitMethod)
+static bool
+DynamicScan_InitNextRelation(ScanState *scanState, PartitionInitMethod *partitionInitMethod, PartitionEndMethod *partitionEndMethod, PartitionReScanMethod *partitionReScanMethod)
 {
 	Assert(T_BitmapTableScanState == scanState->ps.type);
 
-	if (SCAN_DONE == scanState->scan_state || SCAN_END == scanState->scan_state)
+	Scan *scan = (Scan *)scanState->ps.plan;
+
+	if (isDynamicScan(scan))
 	{
-		return false;
+		return DynamicScan_InitNextPartition(scanState, partitionInitMethod, partitionEndMethod, partitionReScanMethod);
+	}
+
+	return DynamicScan_InitSingleRelation(scanState, partitionInitMethod, partitionReScanMethod);
+}
+
+/*
+ * DynamicScan_StateToString
+ *		Returns string representation of an ScanStatus enum
+ */
+static char*
+DynamicScan_StateToString(ScanStatus status)
+{
+	switch (status)
+	{
+		case SCAN_INIT:
+			return "Init";
+		case SCAN_FIRST:
+			return "First";
+		case SCAN_SCAN:
+			return "Scan";
+		case SCAN_MARKPOS:
+			return "MarkPos";
+		case SCAN_NEXT:
+			return "Next";
+		case SCAN_DONE:
+			return "Done";
+		case SCAN_RESCAN:
+			return "ReScan";
+		case SCAN_END:
+			return "End";
+		default:
+			return "Unknown";
+	}
+}
+
+/*
+ * DynamicScan_RewindIterator
+ *		Rewinds the iterator for a new scan of all the parts
+ */
+static void
+DynamicScan_RewindIterator(ScanState *scanState)
+{
+	if (!isDynamicScan((Scan *)scanState->ps.plan))
+	{
+		return;
+	}
+
+	/*
+	 * For EXPLAIN of a plan, we may never finish the initialization,
+	 * and end up calling the End method directly.In such cases, we
+	 * don't have any iterator to end.
+	 */
+	if (SCAN_INIT == scanState->scan_state)
+	{
+		DynamicScan_CreateIterator(scanState, (Scan *)scanState->ps.plan);
+		return;
 	}
 
 	Scan *scan = (Scan *)scanState->ps.plan;
 
-	if (SCAN_INIT == scanState->scan_state)
+	DynamicTableScanInfo *partitionInfo = scanState->ps.state->dynamicTableScanInfo;
+
+	Assert(partitionInfo->numScans >= scan->partIndex);
+	DynamicPartitionIterator *iterator = partitionInfo->iterators[scan->partIndex - 1];
+
+	Assert(NULL != iterator);
+
+	if (iterator->shouldCallHashSeqTerm)
 	{
-		DynamicScan_FinishInitialization(scanState, partitionInitMethod);
+		hash_seq_term(iterator->partitionIterator);
 	}
 
-	DynamicScan_CleanupOneRelation(scanState, partitionEndMethod);
+	pfree(iterator->partitionIterator);
 
-	Assert(SCAN_NEXT == scanState->scan_state || SCAN_DONE == scanState->scan_state);
+	iterator->partitionOids = partitionInfo->pidIndexes[scan->partIndex - 1];
+	Assert(iterator->partitionOids != NULL);
+	iterator->shouldCallHashSeqTerm = true;
 
-	if (isDynamicScan(scan))
+	HASH_SEQ_STATUS *partitionIterator = palloc(sizeof(HASH_SEQ_STATUS));
+	hash_seq_init(partitionIterator, iterator->partitionOids);
+
+	iterator->partitionIterator = partitionIterator;
+
+	Assert(iterator == partitionInfo->iterators[scan->partIndex - 1]);
+}
+
+/*
+ * DynamicScan_StateTransitionError
+ *		Errors out for an invalid state transition
+ */
+static void
+DynamicScan_StateTransitionError(ScanStatus startState, ScanStatus endState)
+{
+	elog(ERROR, "Unknown state transition: %s to %s", \
+	DynamicScan_StateToString(startState), DynamicScan_StateToString(endState));
+
+}
+
+/*
+ * DynamicScan_Controller
+ *		Controller function to transition from one scan status to another.
+ *
+ *		This function does not handle SCAN_END, which is exclusively controlled
+ *		by the DynamicScan_End method
+ */
+static ScanStatus
+DynamicScan_Controller(ScanState *scanState, ScanStatus desiredState, PartitionInitMethod *partitionInitMethod,
+		PartitionEndMethod *partitionEndMethod, PartitionReScanMethod *partitionReScanMethod)
+{
+	ScanStatus startState = scanState->scan_state;
+
+	/* Controller doesn't handle any state transition related to SCAN_END */
+	if (SCAN_END == desiredState || SCAN_END == startState)
 	{
-		return DynamicScan_InitNextPartition(scanState, partitionInitMethod);
+		DynamicScan_StateTransitionError(startState, desiredState);
 	}
 
-	return DynamicScan_InitSingleRelation(scanState, partitionInitMethod);
+	if (SCAN_SCAN == desiredState && (SCAN_INIT == startState || SCAN_NEXT == startState || SCAN_RESCAN == startState))
+	{
+		Assert(SCAN_DONE != startState || SCAN_END != startState);
+		if (SCAN_INIT == startState || SCAN_RESCAN == startState)
+		{
+			DynamicScan_RewindIterator(scanState);
+		}
+
+		if (DynamicScan_InitNextRelation(scanState, partitionInitMethod, partitionEndMethod, partitionReScanMethod))
+		{
+			scanState->scan_state = SCAN_SCAN;
+		}
+		else
+		{
+			scanState->scan_state = SCAN_DONE;
+		}
+	}
+	else if (SCAN_RESCAN == desiredState && SCAN_END != startState)
+	{
+		Assert(SCAN_END != startState);
+		/* RESCAN shouldn't affect INIT, as nothing to rewind yet */
+		if (SCAN_INIT != startState)
+		{
+			scanState->scan_state = SCAN_RESCAN;
+		}
+	}
+	else if (SCAN_NEXT == desiredState && SCAN_SCAN == startState)
+	{
+		scanState->scan_state = isDynamicScan((Scan *)scanState->ps.plan) ? SCAN_NEXT : SCAN_DONE;
+	}
+	else
+	{
+		DynamicScan_StateTransitionError(scanState->scan_state, desiredState);
+	}
+
+	return scanState->scan_state;
 }
 
 /*
@@ -1069,13 +768,15 @@ DynamicScan_InitNextRelation(ScanState *scanState, PartitionEndMethod *partition
  *		if it exhausts all the relations/partitions.
  */
 TupleTableSlot *
-DynamicScan_GetNextTuple(ScanState *scanState, PartitionEndMethod *partitionEndMethod,
-		PartitionInitMethod *partitionInitMethod, PartitionScanTupleMethod *partitionScanTupleMethod)
+DynamicScan_GetNextTuple(ScanState *scanState, PartitionInitMethod *partitionInitMethod,
+		PartitionEndMethod *partitionEndMethod, PartitionReScanMethod *partitionReScanMethod,
+		PartitionScanTupleMethod *partitionScanTupleMethod)
 {
 	TupleTableSlot *slot = NULL;
 
 	while (TupIsNull(slot) && (SCAN_SCAN == scanState->scan_state ||
-			DynamicScan_InitNextRelation(scanState, partitionEndMethod, partitionInitMethod)))
+			SCAN_SCAN == DynamicScan_Controller(scanState, SCAN_SCAN, partitionInitMethod,
+					partitionEndMethod, partitionReScanMethod)))
 	{
 		slot = partitionScanTupleMethod(scanState);
 
@@ -1084,9 +785,8 @@ DynamicScan_GetNextTuple(ScanState *scanState, PartitionEndMethod *partitionEndM
 			/* The underlying scanner should not change the scan status */
 			Assert(SCAN_SCAN == scanState->scan_state);
 
-			bool morePartition = DynamicScan_InitNextRelation(scanState, partitionEndMethod, partitionInitMethod);
-
-			if (!morePartition)
+			if (SCAN_DONE == DynamicScan_Controller(scanState, SCAN_NEXT, partitionInitMethod, partitionEndMethod, partitionReScanMethod) ||
+					SCAN_SCAN != DynamicScan_Controller(scanState, SCAN_SCAN, partitionInitMethod, partitionEndMethod, partitionReScanMethod))
 			{
 				break;
 			}
@@ -1121,71 +821,12 @@ DynamicScan_GetPartitionMemoryContext(ScanState *scanState)
 		return NULL;
 	}
 
-	DynamicTableScanInfo *partitionInfo = scanState->ps.state->dynamicTableScanInfo;
-	Assert(NULL != partitionInfo);
-
-	Assert(partitionInfo->numScans >= scan->partIndex);
-	DynamicPartitionIterator *iterator = partitionInfo->iterators[scan->partIndex - 1];
+	DynamicPartitionIterator *iterator = DynamicScan_GetIterator(scanState);
 
 	Assert(NULL != iterator);
 	return iterator->partitionMemoryContext;
 }
 
-
-/*
- * IndexScan_ReMapLogicalIndexInfoDirect
- * 		Remaps the columns of the expressions of a provided logicalIndexInfo
- * 		using attMap for a given varno.
- *
- * 		 Returns true if mapping was done.
- */
-bool
-IndexScan_MapLogicalIndexInfo(LogicalIndexInfo *logicalIndexInfo, AttrNumber *attMap, Index varno)
-{
-	if (NULL == attMap)
-	{
-		/* Columns are already aligned, and therefore, no mapping is necessary */
-		return false;
-	}
-	/* map the attrnos if necessary */
-	for (int i = 0; i < logicalIndexInfo->nColumns; i++)
-	{
-		if (logicalIndexInfo->indexKeys[i] != 0)
-		{
-			logicalIndexInfo->indexKeys[i] = attMap[(logicalIndexInfo->indexKeys[i]) - 1];
-		}
-	}
-
-	/* map the attrnos in the indExprs and indPred */
-	change_varattnos_of_a_varno((Node *)logicalIndexInfo->indPred, attMap, varno);
-	change_varattnos_of_a_varno((Node *)logicalIndexInfo->indExprs, attMap, varno);
-
-	return true;
-}
-
-/*
- * DynamicScan_GetColumnMapping
- * 		Finds the mapping of columns between two relations because of
- * 		dropped attributes.
- */
-AttrNumber*
-DynamicScan_GetColumnMapping(Oid oldOid, Oid newOid)
-{
-	AttrNumber	*attMap = NULL;
-
-	Relation oldRel = heap_open(oldOid, AccessShareLock);
-	Relation newRel = heap_open(newOid, AccessShareLock);
-
-	TupleDesc oldTupDesc = oldRel->rd_att;
-	TupleDesc newTupDesc = newRel->rd_att;
-
-	heap_close(oldRel, AccessShareLock);
-	heap_close(newRel, AccessShareLock);
-
-	attMap = varattnos_map(oldTupDesc, newTupDesc);
-
-	return attMap;
-}
 
 /*
  * isDynamicScan
@@ -1199,319 +840,31 @@ isDynamicScan(const Scan *scan)
 }
 
 /*
- * DynamicScan_BeginIndexScan
- * 		Prepares the index scan state for a new index scan by calling
- * 		various helper methods.
- */
-void
-DynamicScan_BeginIndexScan(IndexScanState *indexScanState, bool initQual, bool initTargetList, bool supportsArrayKeys)
-{
-	Assert(NULL == indexScanState->iss_RelationDesc);
-	Assert(NULL == indexScanState->iss_ScanDesc);
-
-	Assert(SCAN_INIT == indexScanState->ss.scan_state);
-
-	/*
-	 * Create the expression context now, so that we can save any passed
-	 * tuple in ReScan call for later runtime key evaluation. Note: a ReScan
-	 * call may precede any BeginIndexPartition call.
-	 */
-	DynamicScan_PrepareExpressionContext(indexScanState);
-
-	DynamicScan_OpenIndexRelation(indexScanState, InvalidOid /* SCAN_INIT doesn't need any valid table Oid */);
-	Assert(NULL != indexScanState->iss_RelationDesc);
-
-	DynamicScan_PrepareIndexScanKeys(indexScanState, initQual, initTargetList, supportsArrayKeys);
-	DynamicScan_InitIndexExpressions(indexScanState, initQual, initTargetList);
-
-	/*
-	 * SCAN_FIRST implies that we haven't scanned any
-	 * relation yet. Therefore, a call to scan the very
-	 * same relation would not result in a SCAN_DONE.
-	 */
-	indexScanState->ss.scan_state = SCAN_FIRST;
-}
-
-/*
- * DynamicScan_BeginIndexPartition
- * 		Prepares index scan state for scanning an index relation
- * 		(possibly a dynamically determined relation).
+ * DynamicScan_GetTableOid
+ * 		Returns the Oid of the table/partition to scan.
  *
- * Parameters:
- * 		indexScanState: The scan state for this index scan node
- *		initQual: Should we initialize qualifiers? BitmapIndexScan
- *			doesn't evaluate qualifiers, as it depends on BitmapTableScan
- *			to do so. However, Btree index scan (i.e., regular DynamicIndexScan)
- *			would initialize and evaluate qual.
- *		initTargetList: Similar to initQual, it indicates whether to evaluate
- *			target list expressions. Again, BitmapIndexScan doesn't have
- *			target list, while DynamicIndexScan does have.
- *		supportArrayKeys: Whether to calculate array keys from scan keys. Bitmap
- *		index has array keys, while Btree doesn't.
- *
- * 		Returns true if we have a valid relation to scan.
+ *		For partitioned case this method returns InvalidOid
+ *		if the partition iterator hasn't been initialized yet.
  */
-bool
-DynamicScan_BeginIndexPartition(IndexScanState *indexScanState, bool initQual, bool initTargetList, bool supportsArrayKeys, bool isMultiScan)
+Oid
+DynamicScan_GetTableOid(ScanState *scanState)
 {
-	/*
-	 * Either the SCAN_INIT should open the relation during SCAN_INIT -> SCAN_FIRST
-	 * transition or we already have an open relation from SCAN_SCAN state of the
-	 * last scanned relation.
-	 */
-	Assert(NULL != indexScanState->iss_RelationDesc);
-	Assert(NULL != indexScanState->iss_ScanDesc ||
-			SCAN_FIRST == indexScanState->ss.scan_state);
-
-	/*
-	 * Once the previous scan is done, we don't allow any
-	 * further scanning of this relation. Note, we don't
-	 * close the relation yet, and we hope that a rescan
-	 * call would be able to reuse this relation.
-	 */
-	if (SCAN_DONE == indexScanState->ss.scan_state)
+	/* For non-partitioned scan, just lookup the RTE */
+	if (!isDynamicScan((Scan *)scanState->ps.plan))
 	{
-		return false;
+		return getrelid(((Scan *)scanState->ps.plan)->scanrelid, scanState->ps.state->es_range_table);
 	}
 
-	/*
-	 * We already have a scan in progress. So, we don't initalize
-	 * any new relation.
-	 */
-	if (SCAN_SCAN == indexScanState->ss.scan_state)
+	/* We are yet to initialize the iterator, so return InvalidOid */
+	if (SCAN_INIT == scanState->scan_state)
 	{
-		return true;
+		return InvalidOid;
 	}
 
-	/* These are the valid ancestor state of the SCAN_SCAN */
-	Assert(SCAN_FIRST == indexScanState->ss.scan_state ||
-			SCAN_NEXT == indexScanState->ss.scan_state ||
-			SCAN_RESCAN == indexScanState->ss.scan_state);
+	/* Get the iterator and look up the oid of the current relation */
+	DynamicPartitionIterator *iterator = DynamicScan_GetIterator(scanState);
+	Assert(NULL != iterator);
+	Assert(OidIsValid(iterator->curRelOid));
 
-	bool isNewRelation = false;
-	bool isDynamic = isDynamicScan((Scan *)indexScanState->ss.ps.plan);
-
-	if (isDynamic)
-	{
-		Oid newTableOid = DynamicScan_GetTableOid((ScanState *)indexScanState);
-		Assert(OidIsValid(indexScanState->tableOid) ||
-				SCAN_FIRST == indexScanState->ss.scan_state);
-
-		if (!OidIsValid(newTableOid))
-		{
-			indexScanState->ss.scan_state = SCAN_DONE;
-			return false;
-		}
-
-		if ((newTableOid != indexScanState->tableOid))
-		{
-			/* We have a new relation, so ensure proper column mapping */
-			bool remappedVars = DynamicScan_RemapIndexScanVars(indexScanState, initQual, initTargetList);
-			/*
-			 * During SCAN_INIT -> SCAN_FIRST we opened a relation based on
-			 * optimizer provided indexid. However, the corresponding tableOid
-			 * of the indexid was set to invalid. Therefore, it is possible to
-			 * assume that we have a new index, while in reality, after resolving
-			 * logicalIndexInfo, we may not have a new index relation.
-			 */
-			isNewRelation = DynamicScan_OpenIndexRelation(indexScanState, newTableOid);
-
-			AssertImply(remappedVars, isNewRelation);
-
-			if (remappedVars)
-			{
-				/*
-				 * If remapping is necessary, we also need to prepare the scan keys,
-				 * and initialize the expressions one more time.
-				 */
-				DynamicScan_PrepareIndexScanKeys(indexScanState, initQual, initTargetList, supportsArrayKeys);
-				DynamicScan_InitIndexExpressions(indexScanState, initQual, initTargetList);
-			}
-
-			/*
-			 * Either a rescan requires recomputation of runtime keys (if an expression context is
-			 * provided during rescan) or we have a new relation that must recompute index's runtime
-			 * keys. Therefore, we need to preserve an already outstanding request for recomputation
-			 * [MPP-24628] even if we don't have a new relation.
-			 */
-			if (indexScanState->iss_RuntimeKeysReady)
-			{
-				/* A new relation would require us to recompute runtime keys */
-				indexScanState->iss_RuntimeKeysReady = !isNewRelation;
-			}
-		}
-	}
-	else if (SCAN_FIRST != indexScanState->ss.scan_state &&
-			SCAN_RESCAN != indexScanState->ss.scan_state)
-	{
-		/*
-		 * For non-partitioned case, if we already scanned
-		 * the relation, and we don't have a rescan request
-		 * we flag the scan as "done".
-		 */
-		indexScanState->ss.scan_state = SCAN_DONE;
-		return false;
-	}
-
-	Assert(NULL != indexScanState->iss_RelationDesc);
-
-	if (!indexScanState->iss_RuntimeKeysReady)
-	{
-		DynamicScan_InitRuntimeKeys(indexScanState);
-	}
-
-	Assert(indexScanState->iss_RuntimeKeysReady);
-
-	/*
-	 * If this is the first relation to scan or if we
-	 * had to open a new relation, then we also need
-	 * a new scan descriptor.
-	 */
-	if (SCAN_FIRST == indexScanState->ss.scan_state ||
-			isNewRelation)
-	{
-		Assert(NULL == indexScanState->iss_ScanDesc);
-		/*
-		 * Initialize scan descriptor.
-		 */
-		indexScanState->iss_ScanDesc =
-				index_beginscan_generic(
-					indexScanState->ss.ss_currentRelation,
-					indexScanState->iss_RelationDesc,
-					indexScanState->ss.ps.state->es_snapshot,
-					indexScanState->iss_NumScanKeys,
-					indexScanState->iss_ScanKeys, isMultiScan);
-	}
-	else
-	{
-		Assert(NULL != indexScanState->iss_ScanDesc);
-		/* We already have a reusable scan descriptor, so just initiate a rescan */
-		index_rescan(indexScanState->iss_ScanDesc, indexScanState->iss_ScanKeys);
-	}
-
-	Assert(NULL != indexScanState->iss_ScanDesc);
-	indexScanState->ss.scan_state = SCAN_SCAN;
-
-	return true;
-}
-
-/*
- * DynamicScan_EndIndexPartition
- * 		Ends scanning of *one* partition.
- */
-void
-DynamicScan_EndIndexPartition(IndexScanState *indexScanState)
-{
-	Assert(NULL != indexScanState);
-	Assert(SCAN_SCAN == indexScanState->ss.scan_state);
-
-	/* For non-partitioned case, we flag the scan as "done" */
-	if (!isDynamicScan((Scan *)indexScanState->ss.ps.plan))
-	{
-		indexScanState->ss.scan_state = SCAN_DONE;
-	}
-	else
-	{
-		/*
-		 * For dynamic scan, we decide if the scanning is done
-		 * during fetching of the next partition.
-		 */
-		indexScanState->ss.scan_state = SCAN_NEXT;
-	}
-}
-
-/*
- * DynamicScan_RescanIndex
- * 		Prepares for a rescan of an index by saving the
- * 		outer tuple (if any) and starting a new index scan.
- *
- * Parameters:
- * 		indexScanState: The scan state for this index scan node
- *		exprCtxt: The expression context that might contain the
- *			outer tuple during rescanning (e.g., NLJ)
- *		initQual: Should we initialize qualifiers? BitmapIndexScan
- *			doesn't evaluate qualifiers, as it depends on BitmapTableScan
- *			to do so. However, Btree index scan (i.e., regular DynamicIndexScan)
- *			would initialize and evaluate qual.
- *		initTargetList: Similar to initQual, it indicates whether to evaluate
- *			target list expressions. Again, BitmapIndexScan doesn't have
- *			target list, while DynamicIndexScan does have.
- *		supportArrayKeys: Whether to calculate array keys from scan keys. Bitmap
- *		index has array keys, while Btree doesn't.
- */
-void
-DynamicScan_RescanIndex(IndexScanState *indexScanState, ExprContext *exprCtxt, bool initQual, bool initTargetList, bool supportsArrayKeys)
-{
-	/*
-	 * Rescan should only be called after we passed ExecInit
-	 * or after we are done scanning one relation or after
-	 * we are done with all relations.
-	 */
-	Assert(SCAN_FIRST == indexScanState->ss.scan_state ||
-			SCAN_NEXT == indexScanState->ss.scan_state ||
-			SCAN_DONE == indexScanState->ss.scan_state ||
-			SCAN_RESCAN == indexScanState->ss.scan_state);
-
-	Assert(NULL != indexScanState->iss_RuntimeContext);
-
-	/* Context for runtime keys */
-	ExprContext *econtext = indexScanState->iss_RuntimeContext;
-
-	Assert(NULL != econtext);
-
-	/*
-	 * If we are being passed an outer tuple, save it for runtime key
-	 * calc.
-	 */
-	if (NULL != exprCtxt)
-	{
-		econtext->ecxt_outertuple = exprCtxt->ecxt_outertuple;
-	}
-
-	/* There might be a change of parameter values. Therefore, recompute the runtime keys */
-	indexScanState->iss_RuntimeKeysReady = false;
-
-	/*
-	 * Reset the runtime-key context so we don't leak memory as each outer
-	 * tuple is scanned.  Note this assumes that we will recalculate *all*
-	 * runtime keys on each call.
-	 */
-	ResetExprContext(econtext);
-
-	/*
-	 * If we have already passed SCAN_FIRST (i.e., have a valid scan descriptor)
-	 * then don't trigger a "forced" re-initialization.
-	 */
-	if (SCAN_FIRST != indexScanState->ss.scan_state)
-	{
-		indexScanState->ss.scan_state = SCAN_RESCAN;
-	}
-}
-
-/*
- * DynamicScan_RescanIndex
- * 		Prepares for a rescan of an index by saving the
- * 		outer tuple (if any) and starting a new index scan
- * 		to evaluate the runtime keys.
- */
-void
-DynamicScan_EndIndexScan(IndexScanState *indexScanState)
-{
-	if (SCAN_END == indexScanState->ss.scan_state)
-	{
-		Assert(NULL == indexScanState->iss_RelationDesc);
-		Assert(NULL == indexScanState->iss_ScanDesc);
-		Assert(NULL == indexScanState->iss_RuntimeContext);
-		return;
-	}
-
-	DynamicScan_CleanupOneIndexRelation(indexScanState);
-	Assert(NULL == indexScanState->iss_RelationDesc);
-	Assert(NULL == indexScanState->iss_ScanDesc);
-
-	Assert(NULL != indexScanState->iss_RuntimeContext);
-	FreeRuntimeKeysContext(indexScanState);
-	Assert(NULL == indexScanState->iss_RuntimeContext);
-
-	indexScanState->ss.scan_state = SCAN_END;
+	return iterator->curRelOid;
 }

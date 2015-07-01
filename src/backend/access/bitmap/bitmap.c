@@ -383,6 +383,7 @@ bmendscan(PG_FUNCTION_ARGS)
 			 _bitmap_cleanup_batchwords(so->bm_currPos->bm_batchWords);
 		_bitmap_cleanup_scanpos(so->bm_currPos->posvecs,
 								so->bm_currPos->nvec);
+		pfree(so->bm_currPos);
 		so->bm_currPos = NULL;
 	}
 

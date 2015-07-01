@@ -10,6 +10,7 @@
 #ifndef EXECDYNAMICSCAN_H
 #define EXECDYNAMICSCAN_H
 
+#include "access/attnum.h"
 #include "nodes/execnodes.h"
 #include "utils/hsearch.h"
 #include "utils/palloc.h"
@@ -18,8 +19,9 @@
 
 #define DYNAMIC_SCAN_NSLOTS 2
 
-typedef void (PartitionInitMethod)(ScanState *scanState, bool initExpressions);
+typedef void (PartitionInitMethod)(ScanState *scanState, AttrNumber *attMap);
 typedef void (PartitionEndMethod)(ScanState *scanState);
+typedef void (PartitionReScanMethod)(ScanState *scanState);
 typedef TupleTableSlot * (PartitionScanTupleMethod)(ScanState *scanState);
 
 extern void
@@ -29,40 +31,23 @@ extern void
 DynamicScan_End(ScanState *scanState, PartitionEndMethod *partitionEndMethod);
 
 extern void
-DynamicScan_ReScan(ScanState *scanState, PartitionEndMethod *partitionEndMethod, ExprContext *exprCtxt);
-
-extern bool
-DynamicScan_InitNextRelation(ScanState *scanState, PartitionEndMethod *partitionEndMethod, PartitionInitMethod *partitionInitMethod);
+DynamicScan_ReScan(ScanState *scanState, ExprContext *exprCtxt);
 
 extern TupleTableSlot *
-DynamicScan_GetNextTuple(ScanState *scanState, PartitionEndMethod *partitionEndMethod,
-		PartitionInitMethod *partitionInitMethod, PartitionScanTupleMethod *partitionScanTupleMethod);
+DynamicScan_GetNextTuple(ScanState *scanState, PartitionInitMethod *partitionInitMethod,
+		PartitionEndMethod *partitionEndMethod, PartitionReScanMethod *partitionReScanMethod,
+		PartitionScanTupleMethod *partitionScanTupleMethod);
 
 extern MemoryContext
 DynamicScan_GetPartitionMemoryContext(ScanState *scanState);
 
-extern AttrNumber*
-DynamicScan_GetColumnMapping(Oid oldOid, Oid newOid);
-
 extern Relation
 DynamicScan_GetCurrentRelation(ScanState *scanState);
 
-extern bool
-IndexScan_MapLogicalIndexInfo(LogicalIndexInfo *logicalIndexInfo, AttrNumber *attMap, Index varno);
-
-extern void
-DynamicScan_BeginIndexScan(IndexScanState *indexScanState, bool initQual, bool initTargetList, bool supportsArrayKeys);
+extern Oid
+DynamicScan_GetTableOid(ScanState *scanState);
 
 extern bool
-DynamicScan_BeginIndexPartition(IndexScanState *indexScanState, bool initQual, bool initTargetList, bool supportsArrayKeys, bool isMultiScan);
-
-extern void
-DynamicScan_EndIndexPartition(IndexScanState *indexScanState);
-
-extern void
-DynamicScan_RescanIndex(IndexScanState *indexScanState, ExprContext *exprCtxt, bool initQual, bool initTargetList, bool supportsArrayKeys);
-
-extern void
-DynamicScan_EndIndexScan(IndexScanState *indexScanState);
+DynamicScan_RemapExpression(ScanState *scanState, AttrNumber *attMap, Node *expr);
 
 #endif   /* EXECDYNAMICSCAN_H */

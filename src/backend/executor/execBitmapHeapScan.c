@@ -70,10 +70,16 @@ void
 BitmapHeapScanEnd(ScanState *scanState)
 {
 	BitmapTableScanState *node = (BitmapTableScanState *)scanState;
-	Assert(node->ss.scan_state == SCAN_SCAN);
 
-	heap_endscan((HeapScanDesc)node->scanDesc);
-	node->scanDesc = NULL;
+	/*
+	 * We might call "End" method before even calling init method,
+	 * in case we had an ERROR. Ignore scanDesc cleanup in such cases
+	 */
+	if (NULL != node->scanDesc)
+	{
+		heap_endscan((HeapScanDesc)node->scanDesc);
+		node->scanDesc = NULL;
+	}
 
 	if (NULL != node->iterator)
 	{

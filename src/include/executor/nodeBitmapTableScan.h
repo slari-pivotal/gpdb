@@ -20,8 +20,9 @@ extern TupleTableSlot *ExecBitmapTableScan(BitmapTableScanState *node);
 extern void ExecEndBitmapTableScan(BitmapTableScanState *node);
 extern void ExecBitmapTableReScan(BitmapTableScanState *node, ExprContext *exprCtxt);
 extern void ExecEagerFreeBitmapTableScan(BitmapTableScanState *node);
-extern void BitmapTableScanBeginPartition(ScanState *node, bool initExpressions);
+extern void BitmapTableScanBeginPartition(ScanState *node, AttrNumber *attMap);
 extern void BitmapTableScanEndPartition(ScanState *node);
+extern void BitmapTableScanReScanPartition(ScanState *node);
 extern TupleTableSlot *BitmapTableScanFetchNext(ScanState *node);
 
 

@@ -17,7 +17,7 @@
 #include "nodes/execnodes.h"
 #include "executor/execIndexscan.h"
 #include "executor/nodeIndexscan.h"
-#include "executor/execDynamicScan.h"
+#include "executor/execDynamicIndexScan.h"
 #include "executor/nodeDynamicIndexscan.h"
 #include "cdb/cdbpartition.h"
 #include "parser/parsetree.h"
@@ -115,7 +115,7 @@ DynamicIndexScan_ReMapColumns(DynamicIndexScanState *scanState, Oid newOid)
 		return false;
 	}
 
-	AttrNumber	*attMap = DynamicScan_GetColumnMapping(oldOid, newOid);
+	AttrNumber	*attMap = IndexScan_GetColumnMapping(oldOid, newOid);
 
 	scanState->columnLayoutOid = newOid;
 

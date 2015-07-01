@@ -26,7 +26,7 @@
 #include "cdb/cdbvars.h"
 #include "cdb/cdbpartition.h"
 #include "executor/execdebug.h"
-#include "executor/execDynamicScan.h"
+#include "executor/execDynamicIndexScan.h"
 #include "executor/instrument.h"
 #include "executor/nodeBitmapIndexscan.h"
 #include "executor/nodeIndexscan.h"
@@ -48,64 +48,64 @@ MultiExecBitmapIndexScan(BitmapIndexScanState *node)
 
 	Node 		*bitmap = NULL;
 
+	/* Make sure we are not leaking a previous bitmap */
+	AssertImply(node->indexScanState.ss.ps.state->es_plannedstmt->planGen == PLANGEN_OPTIMIZER, NULL == node->bitmap);
+
 	/* must provide our own instrumentation support */
 	if (scanState->ss.ps.instrument)
 	{
 		InstrStartNode(scanState->ss.ps.instrument);
 	}
-	bool partitionIsReady = DynamicScan_BeginIndexPartition(scanState, false /* initQual */,
+	bool partitionIsReady = IndexScan_BeginIndexPartition(scanState, node->partitionMemoryContext, false /* initQual */,
 			false /* initTargetList */, true /* supportsArrayKeys */,
 			true /* isMultiScan */);
 
 	Assert(partitionIsReady);
 
-	if (!partitionIsReady)
+	if (partitionIsReady)
 	{
-		DynamicScan_EndIndexPartition(scanState);
-		return NULL;
-	}
+		bool doscan = node->indexScanState.iss_RuntimeKeysReady;
 
-	bool doscan = node->indexScanState.iss_RuntimeKeysReady;
+		IndexScanDesc scandesc = scanState->iss_ScanDesc;
 
-	IndexScanDesc scandesc = scanState->iss_ScanDesc;
-
-	/* Get bitmap from index */
-	while (doscan)
-	{
-		bitmap = index_getmulti(scandesc, node->bitmap);
-
-		if ((NULL != bitmap) &&
-			!(IsA(bitmap, HashBitmap) || IsA(bitmap, StreamBitmap)))
+		/* Get bitmap from index */
+		while (doscan)
 		{
-			elog(ERROR, "unrecognized result from bitmap index scan");
-		}
+			bitmap = index_getmulti(scandesc, node->bitmap);
 
-		CHECK_FOR_INTERRUPTS();
+			if ((NULL != bitmap) &&
+				!(IsA(bitmap, HashBitmap) || IsA(bitmap, StreamBitmap)))
+			{
+				elog(ERROR, "unrecognized result from bitmap index scan");
+			}
 
-		if (QueryFinishPending)
-			break;
+			CHECK_FOR_INTERRUPTS();
 
-        /* CDB: If EXPLAIN ANALYZE, let bitmap share our Instrumentation. */
-        if (scanState->ss.ps.instrument)
-        {
-            tbm_bitmap_set_instrument(bitmap, scanState->ss.ps.instrument);
-        }
+			if (QueryFinishPending)
+				break;
 
-		if(node->bitmap == NULL)
-		{
-			node->bitmap = (Node *)bitmap;
-		}
+	        /* CDB: If EXPLAIN ANALYZE, let bitmap share our Instrumentation. */
+	        if (scanState->ss.ps.instrument)
+	        {
+	            tbm_bitmap_set_instrument(bitmap, scanState->ss.ps.instrument);
+	        }
 
-		doscan = ExecIndexAdvanceArrayKeys(scanState->iss_ArrayKeys,
-											   scanState->iss_NumArrayKeys);
-		if (doscan)
-		{
-			/* reset index scan */
-			index_rescan(scanState->iss_ScanDesc, scanState->iss_ScanKeys);
+			if(node->bitmap == NULL)
+			{
+				node->bitmap = (Node *)bitmap;
+			}
+
+			doscan = ExecIndexAdvanceArrayKeys(scanState->iss_ArrayKeys,
+												   scanState->iss_NumArrayKeys);
+			if (doscan)
+			{
+				/* reset index scan */
+				index_rescan(scanState->iss_ScanDesc, scanState->iss_ScanKeys);
+			}
 		}
 	}
 
-	DynamicScan_EndIndexPartition(scanState);
+	IndexScan_EndIndexPartition(scanState);
 
 	/* must provide our own instrumentation support */
 	if (scanState->ss.ps.instrument)
@@ -128,7 +128,7 @@ ExecBitmapIndexReScan(BitmapIndexScanState *node, ExprContext *exprCtxt)
 {
 	IndexScanState *scanState = (IndexScanState*)node;
 
-	DynamicScan_RescanIndex(scanState, exprCtxt, false, false, true);
+	IndexScan_RescanIndex(scanState, exprCtxt, false, false, true);
 
 	/* Sanity check */
 	if ((node->bitmap) && (!IsA(node->bitmap, HashBitmap) && !IsA(node->bitmap, StreamBitmap)))
@@ -138,18 +138,29 @@ ExecBitmapIndexReScan(BitmapIndexScanState *node, ExprContext *exprCtxt)
 				 errmsg("the returning bitmap in nodeBitmapIndexScan is invalid.")));
 	}
 
-	/* reset hashBitmap */
-	if(node->bitmap && IsA(node->bitmap, HashBitmap))
+	if(NULL != node->bitmap)
 	{
-        tbm_free((HashBitmap *)node->bitmap);
+		/* Only for optimizer BitmapIndexScan is in charge to free the bitmap */
+		if (PLANGEN_OPTIMIZER == node->indexScanState.ss.ps.state->es_plannedstmt->planGen)
+		{
+			tbm_bitmap_free(node->bitmap);
+		}
+		else
+		{
+			/* reset hashBitmap */
+			if(node->bitmap && IsA(node->bitmap, HashBitmap))
+			{
+				tbm_bitmap_free(node->bitmap);
+			}
+			else
+			{
+				/* XXX: we leak here */
+				/* XXX: put in own memory context? */
+			}
+		}
 		node->bitmap = NULL;
 	}
-	else
-	{
-		/* XXX: we leak here */
-		/* XXX: put in own memory context? */
-		node->bitmap = NULL;
-	}
+
 	Gpmon_M_Incr(GpmonPktFromBitmapIndexScanState(node), GPMON_BITMAPINDEXSCAN_RESCAN);
 	CheckSendPlanStateGpmonPkt(&scanState->ss.ps);
 }
@@ -163,8 +174,18 @@ ExecEndBitmapIndexScan(BitmapIndexScanState *node)
 {
 	IndexScanState *scanState = (IndexScanState*)node;
 
-	DynamicScan_EndIndexScan(scanState);
+	IndexScan_EndIndexScan(scanState);
 	Assert(SCAN_END == scanState->ss.scan_state);
+
+	/* Only for optimizer BitmapIndexScan is in charge to free the bitmap */
+	if(PLANGEN_OPTIMIZER == node->indexScanState.ss.ps.state->es_plannedstmt->planGen)
+	{
+		tbm_bitmap_free(node->bitmap);
+	}
+	node->bitmap = NULL;
+
+	MemoryContextDelete(node->partitionMemoryContext);
+	node->partitionMemoryContext = NULL;
 
 	EndPlanStateGpmonPkt(&scanState->ss.ps);
 }
@@ -187,13 +208,18 @@ ExecInitBitmapIndexScan(BitmapIndexScan *node, EState *estate, int eflags)
 	 * create state structure
 	 */
 	indexstate = makeNode(BitmapIndexScanState);
+	indexstate->partitionMemoryContext = AllocSetContextCreate(CurrentMemoryContext,
+			 "BitmapIndexScanPerPartition",
+			 ALLOCSET_DEFAULT_MINSIZE,
+			 ALLOCSET_DEFAULT_INITSIZE,
+			 ALLOCSET_DEFAULT_MAXSIZE);
 
 	IndexScanState *scanState = (IndexScanState*)indexstate;
 
 	scanState->ss.ps.plan = (Plan *) node;
 	scanState->ss.ps.state = estate;
 
-	DynamicScan_BeginIndexScan(scanState, false, false, true);
+	IndexScan_BeginIndexScan(scanState, indexstate->partitionMemoryContext, false, false, true);
 
 	/*
 	 * We do not open or lock the base relation here.  We assume that an

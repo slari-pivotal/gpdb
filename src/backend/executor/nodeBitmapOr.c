@@ -139,8 +139,11 @@ MultiExecBitmapOr(BitmapOrState *node)
 		PlanState  *subnode = bitmapplans[i];
 		Node	   *subresult = NULL;
 
-		if (IsA(subnode, BitmapIndexScanState))
+		if (IsA(subnode, BitmapIndexScanState) &&
+				(PLANGEN_PLANNER == node->ps.state->es_plannedstmt->planGen))
+		{
 			((BitmapIndexScanState *) subnode)->bitmap = node->bitmap;
+		}
 
 		subresult = MultiExecProcNode(subnode);
 
@@ -158,12 +161,17 @@ MultiExecBitmapOr(BitmapOrState *node)
 			else
 			{
 				tbm_union(hbm, (HashBitmap *)subresult);
-				tbm_free((HashBitmap *)subresult);
 
-				/* Since we release the space for subresult, we want to
-				 * reset the bitmaps in subnode tree to NULL.
-				 */
-				tbm_reset_bitmaps(subnode);
+				/* For optimizer BitmapIndexScan would free all bitmaps */
+				if (PLANGEN_PLANNER == node->ps.state->es_plannedstmt->planGen)
+				{
+					tbm_free((HashBitmap *)subresult);
+
+					/* Since we release the space for subresult, we want to
+					 * reset the bitmaps in subnode tree to NULL.
+					 */
+					tbm_reset_bitmaps(subnode);
+				}
 			}
 		}
 		else
@@ -175,6 +183,12 @@ MultiExecBitmapOr(BitmapOrState *node)
 					StreamBitmap *s = (StreamBitmap *)subresult;
 					stream_add_node((StreamBitmap *)node->bitmap, 
 									s->streamNode, BMS_OR);
+
+					/*
+					 * Don't free subresult here, as we are still using the StreamNode inside it.
+					 * For Planner, this would introduce memory leak. For optimizer, however,
+					 * BitmapIndexScan would free the bitmap at the end of the scan of the part
+					 */
 				}
 			}
 			else
@@ -235,6 +249,16 @@ ExecEndBitmapOr(BitmapOrState *node)
 void
 ExecReScanBitmapOr(BitmapOrState *node, ExprContext *exprCtxt)
 {
+	/*
+	 * For optimizer a rescan call on BitmapIndexScan could free up the bitmap. So,
+	 * we voluntarily set our bitmap to NULL to ensure that we don't have an out
+	 * of scope pointer
+	 */
+	if (PLANGEN_OPTIMIZER == node->ps.state->es_plannedstmt->planGen)
+	{
+		node->bitmap = NULL;
+	}
+
 	int			i;
 
 	for (i = 0; i < node->nplans; i++)

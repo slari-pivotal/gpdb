@@ -9149,6 +9149,360 @@ select enable_xform('CXformDynamicGet2DynamicTableScan');
 (1 row)
 
 reset optimizer_enable_bitmapscan;
+-----------------------------------------------
+-- More BitmapTableScan & BitmapIndexScan tests
+-----------------------------------------------
+set optimizer_enable_bitmapscan=on;
+create schema bm;
+-- Bitmap index scan on Heterogeneous parts with dropped columns
+drop table if exists bm.het_bm;
+NOTICE:  table "het_bm" does not exist, skipping
+create table bm.het_bm (i int, to_be_dropped char(5), j int, t text) distributed by (i) partition by list(j)
+  (partition part0 values(0) with (appendonly=true, compresslevel=5, orientation=column),
+   partition part1 values(1),
+   partition part2 values(2) with (appendonly=true, compresslevel=5, orientation=row),
+   partition part3 values(3), partition part4 values(4));
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part0" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part1" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part2" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part3" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part4" for table "het_bm"
+insert into bm.het_bm select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+create index het_bm_idx on bm.het_bm using bitmap (i);
+NOTICE:  building index for child partition "het_bm_1_prt_part0"
+NOTICE:  building index for child partition "het_bm_1_prt_part1"
+NOTICE:  building index for child partition "het_bm_1_prt_part2"
+NOTICE:  building index for child partition "het_bm_1_prt_part3"
+NOTICE:  building index for child partition "het_bm_1_prt_part4"
+alter table bm.het_bm drop column to_be_dropped;
+alter table bm.het_bm add partition part5 values(5);
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part5" for table "het_bm"
+insert into bm.het_bm values(2, 5, '2');
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where i=2 and t='2';
+ i_sum | j_sum | t_sum 
+-------+-------+-------
+    22 |    25 |    22
+(1 row)
+
+-- Bitmap index scan on heap parts with dropped columns
+drop table if exists bm.hom_bm_heap;
+NOTICE:  table "hom_bm_heap" does not exist, skipping
+create table bm.hom_bm_heap (i int, to_be_dropped char(5), j int, t text) distributed by (i) partition by list(j)
+  (partition part0 values(0),
+   partition part1 values(1),
+   partition part2 values(2),
+   partition part3 values(3), 
+   partition part4 values(4));
+NOTICE:  CREATE TABLE will create partition "hom_bm_heap_1_prt_part0" for table "hom_bm_heap"
+NOTICE:  CREATE TABLE will create partition "hom_bm_heap_1_prt_part1" for table "hom_bm_heap"
+NOTICE:  CREATE TABLE will create partition "hom_bm_heap_1_prt_part2" for table "hom_bm_heap"
+NOTICE:  CREATE TABLE will create partition "hom_bm_heap_1_prt_part3" for table "hom_bm_heap"
+NOTICE:  CREATE TABLE will create partition "hom_bm_heap_1_prt_part4" for table "hom_bm_heap"
+insert into bm.hom_bm_heap select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+create index hom_bm_heap_idx on bm.hom_bm_heap using bitmap (i);
+NOTICE:  building index for child partition "hom_bm_heap_1_prt_part0"
+NOTICE:  building index for child partition "hom_bm_heap_1_prt_part1"
+NOTICE:  building index for child partition "hom_bm_heap_1_prt_part2"
+NOTICE:  building index for child partition "hom_bm_heap_1_prt_part3"
+NOTICE:  building index for child partition "hom_bm_heap_1_prt_part4"
+alter table bm.hom_bm_heap drop column to_be_dropped;
+alter table bm.hom_bm_heap add partition part5 values(5);
+NOTICE:  CREATE TABLE will create partition "hom_bm_heap_1_prt_part5" for table "hom_bm_heap"
+insert into bm.hom_bm_heap values(2, 5, '2');
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.hom_bm_heap where i=2 and t='2';
+ i_sum | j_sum | t_sum 
+-------+-------+-------
+    22 |    25 |    22
+(1 row)
+
+-- Bitmap index scan on AO parts with dropped columns
+drop table if exists bm.hom_bm_ao;
+NOTICE:  table "hom_bm_ao" does not exist, skipping
+create table bm.hom_bm_ao (i int, to_be_dropped char(5), j int, t text) 
+with (appendonly=true, compresslevel=5, orientation=row)
+distributed by (i) partition by list(j)
+  (partition part0 values(0),
+   partition part1 values(1),
+   partition part2 values(2),
+   partition part3 values(3), 
+   partition part4 values(4));
+NOTICE:  CREATE TABLE will create partition "hom_bm_ao_1_prt_part0" for table "hom_bm_ao"
+NOTICE:  CREATE TABLE will create partition "hom_bm_ao_1_prt_part1" for table "hom_bm_ao"
+NOTICE:  CREATE TABLE will create partition "hom_bm_ao_1_prt_part2" for table "hom_bm_ao"
+NOTICE:  CREATE TABLE will create partition "hom_bm_ao_1_prt_part3" for table "hom_bm_ao"
+NOTICE:  CREATE TABLE will create partition "hom_bm_ao_1_prt_part4" for table "hom_bm_ao"
+insert into bm.hom_bm_ao select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+create index hom_bm_ao_idx on bm.hom_bm_ao using bitmap (i);
+NOTICE:  building index for child partition "hom_bm_ao_1_prt_part0"
+NOTICE:  building index for child partition "hom_bm_ao_1_prt_part1"
+NOTICE:  building index for child partition "hom_bm_ao_1_prt_part2"
+NOTICE:  building index for child partition "hom_bm_ao_1_prt_part3"
+NOTICE:  building index for child partition "hom_bm_ao_1_prt_part4"
+alter table bm.hom_bm_ao drop column to_be_dropped;
+alter table bm.hom_bm_ao add partition part5 values(5);
+NOTICE:  CREATE TABLE will create partition "hom_bm_ao_1_prt_part5" for table "hom_bm_ao"
+insert into bm.hom_bm_ao values(2, 5, '2');
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.hom_bm_ao where i=2 and t='2';
+ i_sum | j_sum | t_sum 
+-------+-------+-------
+    22 |    25 |    22
+(1 row)
+
+-- Bitmap index scan on AOCO parts with dropped columns
+drop table if exists bm.hom_bm_aoco;
+NOTICE:  table "hom_bm_aoco" does not exist, skipping
+create table bm.hom_bm_aoco (i int, to_be_dropped char(5), j int, t text) 
+with (appendonly=true, compresslevel=5, orientation=column)
+distributed by (i) partition by list(j)
+  (partition part0 values(0),
+   partition part1 values(1),
+   partition part2 values(2),
+   partition part3 values(3), 
+   partition part4 values(4));
+NOTICE:  CREATE TABLE will create partition "hom_bm_aoco_1_prt_part0" for table "hom_bm_aoco"
+NOTICE:  CREATE TABLE will create partition "hom_bm_aoco_1_prt_part1" for table "hom_bm_aoco"
+NOTICE:  CREATE TABLE will create partition "hom_bm_aoco_1_prt_part2" for table "hom_bm_aoco"
+NOTICE:  CREATE TABLE will create partition "hom_bm_aoco_1_prt_part3" for table "hom_bm_aoco"
+NOTICE:  CREATE TABLE will create partition "hom_bm_aoco_1_prt_part4" for table "hom_bm_aoco"
+insert into bm.hom_bm_aoco select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+create index hom_bm_aoco_idx on bm.hom_bm_aoco using bitmap (i);
+NOTICE:  building index for child partition "hom_bm_aoco_1_prt_part0"
+NOTICE:  building index for child partition "hom_bm_aoco_1_prt_part1"
+NOTICE:  building index for child partition "hom_bm_aoco_1_prt_part2"
+NOTICE:  building index for child partition "hom_bm_aoco_1_prt_part3"
+NOTICE:  building index for child partition "hom_bm_aoco_1_prt_part4"
+alter table bm.hom_bm_aoco drop column to_be_dropped;
+alter table bm.hom_bm_aoco add partition part5 values(5);
+NOTICE:  CREATE TABLE will create partition "hom_bm_aoco_1_prt_part5" for table "hom_bm_aoco"
+insert into bm.hom_bm_aoco values(2, 5, '2');
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.hom_bm_aoco where i=2 and t='2';
+ i_sum | j_sum | t_sum 
+-------+-------+-------
+    22 |    25 |    22
+(1 row)
+
+-- Create index before dropped column
+drop table if exists bm.het_bm;
+create table bm.het_bm (i int, to_be_dropped char(5), j int, t text) distributed by (i) partition by list(j)
+  (partition part0 values(0) with (appendonly=true, compresslevel=5, orientation=column),
+   partition part1 values(1),
+   partition part2 values(2) with (appendonly=true, compresslevel=5, orientation=row),
+   partition part3 values(3), partition part4 values(4));
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part0" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part1" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part2" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part3" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part4" for table "het_bm"
+insert into bm.het_bm select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+-- Create index before dropping a column
+create index het_bm_i_idx on bm.het_bm using bitmap (i);
+NOTICE:  building index for child partition "het_bm_1_prt_part0"
+NOTICE:  building index for child partition "het_bm_1_prt_part1"
+NOTICE:  building index for child partition "het_bm_1_prt_part2"
+NOTICE:  building index for child partition "het_bm_1_prt_part3"
+NOTICE:  building index for child partition "het_bm_1_prt_part4"
+create index het_bm_j_idx on bm.het_bm using bitmap (j);
+NOTICE:  building index for child partition "het_bm_1_prt_part0"
+NOTICE:  building index for child partition "het_bm_1_prt_part1"
+NOTICE:  building index for child partition "het_bm_1_prt_part2"
+NOTICE:  building index for child partition "het_bm_1_prt_part3"
+NOTICE:  building index for child partition "het_bm_1_prt_part4"
+alter table bm.het_bm drop column to_be_dropped;
+alter table bm.het_bm add partition part5 values(5);
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part5" for table "het_bm"
+insert into bm.het_bm values(2, 5, '2');
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where i=2 and j=2;
+ i_sum | j_sum | t_sum 
+-------+-------+-------
+    20 |    20 |    20
+(1 row)
+
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where i=2 and t='2';
+ i_sum | j_sum | t_sum 
+-------+-------+-------
+    22 |    25 |    22
+(1 row)
+
+-- Drop and recreate index after we dropped column
+drop index bm.het_bm_i_idx;
+WARNING:  Only dropped the index "het_bm_i_idx"
+HINT:  To drop other indexes on child partitions, drop each one explicitly.
+drop index bm.het_bm_j_idx;
+WARNING:  Only dropped the index "het_bm_j_idx"
+HINT:  To drop other indexes on child partitions, drop each one explicitly.
+create index het_bm_i_idx on bm.het_bm using bitmap (i);
+NOTICE:  building index for child partition "het_bm_1_prt_part0"
+NOTICE:  building index for child partition "het_bm_1_prt_part1"
+NOTICE:  building index for child partition "het_bm_1_prt_part2"
+NOTICE:  building index for child partition "het_bm_1_prt_part3"
+NOTICE:  building index for child partition "het_bm_1_prt_part4"
+NOTICE:  building index for child partition "het_bm_1_prt_part5"
+create index het_bm_j_idx on bm.het_bm using bitmap (j);
+NOTICE:  building index for child partition "het_bm_1_prt_part0"
+NOTICE:  building index for child partition "het_bm_1_prt_part1"
+NOTICE:  building index for child partition "het_bm_1_prt_part2"
+NOTICE:  building index for child partition "het_bm_1_prt_part3"
+NOTICE:  building index for child partition "het_bm_1_prt_part4"
+NOTICE:  building index for child partition "het_bm_1_prt_part5"
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where j=2 or j=3;
+ i_sum | j_sum | t_sum 
+-------+-------+-------
+   200 |   100 |   200
+(1 row)
+
+-- Create index after dropped column
+drop table if exists bm.het_bm;
+create table bm.het_bm (i int, to_be_dropped char(5), j int, t text) distributed by (i) partition by list(j)
+  (partition part0 values(0) with (appendonly=true, compresslevel=5, orientation=column),
+   partition part1 values(1),
+   partition part2 values(2) with (appendonly=true, compresslevel=5, orientation=row),
+   partition part3 values(3), partition part4 values(4));
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part0" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part1" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part2" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part3" for table "het_bm"
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part4" for table "het_bm"
+insert into bm.het_bm select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+alter table bm.het_bm drop column to_be_dropped;
+alter table bm.het_bm add partition part5 values(5);
+NOTICE:  CREATE TABLE will create partition "het_bm_1_prt_part5" for table "het_bm"
+-- Create index after dropping a column but before we insert into newly created part
+create index het_bm_i_idx on bm.het_bm using bitmap (i);
+NOTICE:  building index for child partition "het_bm_1_prt_part0"
+NOTICE:  building index for child partition "het_bm_1_prt_part1"
+NOTICE:  building index for child partition "het_bm_1_prt_part2"
+NOTICE:  building index for child partition "het_bm_1_prt_part3"
+NOTICE:  building index for child partition "het_bm_1_prt_part4"
+NOTICE:  building index for child partition "het_bm_1_prt_part5"
+create index het_bm_j_idx on bm.het_bm using bitmap (j);
+NOTICE:  building index for child partition "het_bm_1_prt_part0"
+NOTICE:  building index for child partition "het_bm_1_prt_part1"
+NOTICE:  building index for child partition "het_bm_1_prt_part2"
+NOTICE:  building index for child partition "het_bm_1_prt_part3"
+NOTICE:  building index for child partition "het_bm_1_prt_part4"
+NOTICE:  building index for child partition "het_bm_1_prt_part5"
+insert into bm.het_bm values(2, 5, '2');
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where j=2 or j=3;
+ i_sum | j_sum | t_sum 
+-------+-------+-------
+   200 |   100 |   200
+(1 row)
+
+-- Rescan bitmap index
+drop table if exists bm.outer_tab;
+NOTICE:  table "outer_tab" does not exist, skipping
+create table bm.outer_tab
+(
+id serial,
+code character varying(25),
+name character varying(40)
+);
+NOTICE:  CREATE TABLE will create implicit sequence "outer_tab_id_seq" for serial column "outer_tab.id"
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'id' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+insert into bm.outer_tab select i % 10, i % 5, i % 2 from generate_series(1, 100) i;
+select disable_xform('CXformInnerJoin2HashJoin');
+            disable_xform             
+--------------------------------------
+ CXformInnerJoin2HashJoin is disabled
+(1 row)
+
+select disable_xform('CXformLeftSemiJoin2HashJoin');
+              disable_xform              
+-----------------------------------------
+ CXformLeftSemiJoin2HashJoin is disabled
+(1 row)
+
+select count(1) from bm.outer_tab;
+ count 
+-------
+   100
+(1 row)
+
+select count(1) from bm.het_bm;
+ count 
+-------
+   101
+(1 row)
+
+select sum(id) id_sum, sum(i) i_sum, sum(j) j_sum from bm.outer_tab as ot join bm.het_bm as het_bm on ot.id = het_bm.j
+where het_bm.i between 2 and 5;
+ id_sum | i_sum | j_sum 
+--------+-------+-------
+    950 |  1420 |   950
+(1 row)
+
+drop schema bm cascade;
+NOTICE:  drop cascades to table bm.outer_tab
+NOTICE:  drop cascades to default for table bm.outer_tab column id
+NOTICE:  drop cascades to table bm.het_bm_1_prt_part5
+NOTICE:  drop cascades to constraint het_bm_1_prt_part5_check on table bm.het_bm_1_prt_part5
+NOTICE:  drop cascades to table bm.het_bm_1_prt_part4
+NOTICE:  drop cascades to constraint het_bm_1_prt_part4_check on table bm.het_bm_1_prt_part4
+NOTICE:  drop cascades to table bm.het_bm_1_prt_part3
+NOTICE:  drop cascades to constraint het_bm_1_prt_part3_check on table bm.het_bm_1_prt_part3
+NOTICE:  drop cascades to append only table bm.het_bm_1_prt_part2
+NOTICE:  drop cascades to constraint het_bm_1_prt_part2_check on append only table bm.het_bm_1_prt_part2
+NOTICE:  drop cascades to table bm.het_bm_1_prt_part1
+NOTICE:  drop cascades to constraint het_bm_1_prt_part1_check on table bm.het_bm_1_prt_part1
+NOTICE:  drop cascades to append only columnar table bm.het_bm_1_prt_part0
+NOTICE:  drop cascades to constraint het_bm_1_prt_part0_check on append only columnar table bm.het_bm_1_prt_part0
+NOTICE:  drop cascades to table bm.het_bm
+NOTICE:  drop cascades to table bm.hom_bm_aoco_1_prt_part5
+NOTICE:  drop cascades to constraint hom_bm_aoco_1_prt_part5_check on table bm.hom_bm_aoco_1_prt_part5
+NOTICE:  drop cascades to append only columnar table bm.hom_bm_aoco_1_prt_part4
+NOTICE:  drop cascades to constraint hom_bm_aoco_1_prt_part4_check on append only columnar table bm.hom_bm_aoco_1_prt_part4
+NOTICE:  drop cascades to append only columnar table bm.hom_bm_aoco_1_prt_part3
+NOTICE:  drop cascades to constraint hom_bm_aoco_1_prt_part3_check on append only columnar table bm.hom_bm_aoco_1_prt_part3
+NOTICE:  drop cascades to append only columnar table bm.hom_bm_aoco_1_prt_part2
+NOTICE:  drop cascades to constraint hom_bm_aoco_1_prt_part2_check on append only columnar table bm.hom_bm_aoco_1_prt_part2
+NOTICE:  drop cascades to append only columnar table bm.hom_bm_aoco_1_prt_part1
+NOTICE:  drop cascades to constraint hom_bm_aoco_1_prt_part1_check on append only columnar table bm.hom_bm_aoco_1_prt_part1
+NOTICE:  drop cascades to append only columnar table bm.hom_bm_aoco_1_prt_part0
+NOTICE:  drop cascades to constraint hom_bm_aoco_1_prt_part0_check on append only columnar table bm.hom_bm_aoco_1_prt_part0
+NOTICE:  drop cascades to append only columnar table bm.hom_bm_aoco
+NOTICE:  drop cascades to table bm.hom_bm_ao_1_prt_part5
+NOTICE:  drop cascades to constraint hom_bm_ao_1_prt_part5_check on table bm.hom_bm_ao_1_prt_part5
+NOTICE:  drop cascades to append only table bm.hom_bm_ao_1_prt_part4
+NOTICE:  drop cascades to constraint hom_bm_ao_1_prt_part4_check on append only table bm.hom_bm_ao_1_prt_part4
+NOTICE:  drop cascades to append only table bm.hom_bm_ao_1_prt_part3
+NOTICE:  drop cascades to constraint hom_bm_ao_1_prt_part3_check on append only table bm.hom_bm_ao_1_prt_part3
+NOTICE:  drop cascades to append only table bm.hom_bm_ao_1_prt_part2
+NOTICE:  drop cascades to constraint hom_bm_ao_1_prt_part2_check on append only table bm.hom_bm_ao_1_prt_part2
+NOTICE:  drop cascades to append only table bm.hom_bm_ao_1_prt_part1
+NOTICE:  drop cascades to constraint hom_bm_ao_1_prt_part1_check on append only table bm.hom_bm_ao_1_prt_part1
+NOTICE:  drop cascades to append only table bm.hom_bm_ao_1_prt_part0
+NOTICE:  drop cascades to constraint hom_bm_ao_1_prt_part0_check on append only table bm.hom_bm_ao_1_prt_part0
+NOTICE:  drop cascades to append only table bm.hom_bm_ao
+NOTICE:  drop cascades to table bm.hom_bm_heap_1_prt_part5
+NOTICE:  drop cascades to constraint hom_bm_heap_1_prt_part5_check on table bm.hom_bm_heap_1_prt_part5
+NOTICE:  drop cascades to table bm.hom_bm_heap_1_prt_part4
+NOTICE:  drop cascades to constraint hom_bm_heap_1_prt_part4_check on table bm.hom_bm_heap_1_prt_part4
+NOTICE:  drop cascades to table bm.hom_bm_heap_1_prt_part3
+NOTICE:  drop cascades to constraint hom_bm_heap_1_prt_part3_check on table bm.hom_bm_heap_1_prt_part3
+NOTICE:  drop cascades to table bm.hom_bm_heap_1_prt_part2
+NOTICE:  drop cascades to constraint hom_bm_heap_1_prt_part2_check on table bm.hom_bm_heap_1_prt_part2
+NOTICE:  drop cascades to table bm.hom_bm_heap_1_prt_part1
+NOTICE:  drop cascades to constraint hom_bm_heap_1_prt_part1_check on table bm.hom_bm_heap_1_prt_part1
+NOTICE:  drop cascades to table bm.hom_bm_heap_1_prt_part0
+NOTICE:  drop cascades to constraint hom_bm_heap_1_prt_part0_check on table bm.hom_bm_heap_1_prt_part0
+NOTICE:  drop cascades to table bm.hom_bm_heap
+select enable_xform('CXformInnerJoin2HashJoin');
+            enable_xform             
+-------------------------------------
+ CXformInnerJoin2HashJoin is enabled
+(1 row)
+
+select enable_xform('CXformLeftSemiJoin2HashJoin');
+              enable_xform              
+----------------------------------------
+ CXformLeftSemiJoin2HashJoin is enabled
+(1 row)
+
+reset optimizer_enable_bitmapscan;
+-------------------------------------------------
+-- End of BitmapTableScan & BitmapIndexScan tests
+-------------------------------------------------
 set optimizer_enable_constant_expression_evaluation=on;
 CREATE TABLE my_tt_agg_opt (
     symbol character(16),

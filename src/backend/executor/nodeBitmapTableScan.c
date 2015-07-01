@@ -93,8 +93,8 @@ ExecBitmapTableScan(BitmapTableScanState *node)
 {
 	ScanState *scanState = (ScanState *)node;
 
-	TupleTableSlot *slot = DynamicScan_GetNextTuple(scanState, BitmapTableScanEndPartition,
-			BitmapTableScanBeginPartition, BitmapTableScanFetchNext);
+	TupleTableSlot *slot = DynamicScan_GetNextTuple(scanState, BitmapTableScanBeginPartition,
+			BitmapTableScanEndPartition, BitmapTableScanReScanPartition, BitmapTableScanFetchNext);
 
 	if (!TupIsNull(slot))
 	{

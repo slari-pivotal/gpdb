@@ -41,7 +41,7 @@ OBJS = execAmi.o execGrouping.o execJunk.o execMain.o \
        execDML.o \
        nodePartitionSelector.o \
        execBitmapTableScan.o execBitmapHeapScan.o execBitmapAOScan.o \
-       execDynamicScan.o \
+       execDynamicScan.o execDynamicIndexScan.o \
        execIndexscan.o \
        execHHashagg.o execGpmon.o execWorkfile.o execHeapScan.o execAOScan.o \
        execAOCSScan.o nodeBitmapAppendOnlyscan.o

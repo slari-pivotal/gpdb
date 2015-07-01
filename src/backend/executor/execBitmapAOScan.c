@@ -111,25 +111,31 @@ void
 BitmapAOScanEnd(ScanState *scanState)
 {
 	BitmapTableScanState *node = (BitmapTableScanState *)scanState;
-	Assert(node->ss.scan_state == SCAN_SCAN);
 
-	if (scanState->tableType == TableTypeAppendOnly)
+	/*
+	 * We might call "End" method before even calling init method,
+	 * in case we had an ERROR. Ignore scanDesc cleanup in such cases
+	 */
+	if (NULL != node->scanDesc)
 	{
-		appendonly_fetch_finish((AppendOnlyFetchDesc)node->scanDesc);
+		if (scanState->tableType == TableTypeAppendOnly)
+		{
+			appendonly_fetch_finish((AppendOnlyFetchDesc)node->scanDesc);
+		}
+		else if (scanState->tableType == TableTypeAOCS)
+		{
+			pfree(((AOCSFetchDesc)node->scanDesc)->proj);
+			aocs_fetch_finish(node->scanDesc);
+		}
+		else
+		{
+			Assert(!"Invalid table type");
+		}
+		pfree(node->scanDesc);
+		node->scanDesc = NULL;
 	}
-	else if (scanState->tableType == TableTypeAOCS)
-	{
-		pfree(((AOCSFetchDesc)node->scanDesc)->proj);
-		aocs_fetch_finish(node->scanDesc);
-	}
-	else
-	{
-		Assert(!"Invalid table type");
-	}
-	pfree(node->scanDesc);
-	node->scanDesc = NULL;
 
-	if (node->iterator)
+	if (NULL != node->iterator)
 	{
 		pfree(node->iterator);
 		node->iterator = NULL;

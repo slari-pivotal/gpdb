@@ -87,27 +87,15 @@ initBitmapState(BitmapTableScanState *scanstate)
 static inline void
 freeBitmapState(BitmapTableScanState *scanstate)
 {
-	if (scanstate->tbm != NULL)
-	{
-		if(IsA(scanstate->tbm, HashBitmap))
-		{
-			tbm_free((HashBitmap *)scanstate->tbm);
-		}
-		else
-		{
-            tbm_bitmap_free(scanstate->tbm);
-		}
+	/* BitmapIndexScan is the owner of the bitmap memory. Don't free it here */
+	scanstate->tbm = NULL;
 
-		scanstate->tbm = NULL;
-	}
-
+	/* BitmapTableScan created the iterator, so it is responsible to free its iterator */
 	if (scanstate->tbmres != NULL)
 	{
 		pfree(scanstate->tbmres);
 		scanstate->tbmres = NULL;
 	}
-
-	tbm_reset_bitmaps(outerPlanState(scanstate));
 }
 
 static TupleTableSlot*
@@ -170,16 +158,6 @@ readBitmap(BitmapTableScanState *scanState)
 						  IsA(tbm, StreamBitmap))))
 	{
 		elog(ERROR, "unrecognized result from subplan");
-	}
-
-	/*
-	 * When a HashBitmap is returned, set the returning bitmaps
-	 * in the subplan to NULL, so that the subplan nodes do not
-	 * mistakenly try to release the space during the rescan.
-	 */
-	if (tbm != NULL && IsA(tbm, HashBitmap))
-	{
-		tbm_reset_bitmaps(outerPlanState(scanState));
 	}
 
 	scanState->tbm = tbm;
@@ -291,21 +269,35 @@ BitmapTableScanBegin(BitmapTableScanState *scanState, Plan *plan, EState *estate
  * Prepares for scanning of a new partition/relation.
  */
 void
-BitmapTableScanBeginPartition(ScanState *node, bool initExpressions)
+BitmapTableScanBeginPartition(ScanState *node, AttrNumber *attMap)
 {
-	Assert(node != NULL);
+	Assert(NULL != node);
 	BitmapTableScanState *scanState = (BitmapTableScanState *)node;
-
-	Assert(SCAN_NEXT == scanState->ss.scan_state);
+	BitmapTableScan *plan = (BitmapTableScan*)(node->ps.plan);
 
 	initBitmapState(scanState);
 
-	if (scanState->bitmapqualorig == NULL || initExpressions)
+	/* Remap the bitmapqualorig as we might have dropped column problem */
+	DynamicScan_RemapExpression(node, attMap, (Node *) plan->bitmapqualorig);
+
+	if (NULL == scanState->bitmapqualorig || NULL != attMap)
 	{
-		/* TODO rahmaf2 [JIRA: MPP-23293]: remap columns per-partition to handle dropped columns */
+		/* Always initialize new expressions in the per-partition memory context to prevent leaking */
+		MemoryContext partitionContext = DynamicScan_GetPartitionMemoryContext(node);
+		MemoryContext oldCxt = NULL;
+		if (NULL != partitionContext)
+		{
+			oldCxt = MemoryContextSwitchTo(partitionContext);
+		}
+
 		scanState->bitmapqualorig = (List *)
-			ExecInitExpr((Expr *) ((BitmapTableScan*)(node->ps.plan))->bitmapqualorig,
+			ExecInitExpr((Expr *) plan->bitmapqualorig,
 						 (PlanState *) scanState);
+
+		if (NULL != oldCxt)
+		{
+			MemoryContextSwitchTo(oldCxt);
+		}
 	}
 
 	scanState->needNewBitmapPage = true;
@@ -321,13 +313,29 @@ BitmapTableScanBeginPartition(ScanState *node, bool initExpressions)
 }
 
 /*
+ * ReScan a partition
+ */
+void
+BitmapTableScanReScanPartition(ScanState *node)
+{
+	BitmapTableScanState *scanState = (BitmapTableScanState *) node;
+
+	freeBitmapState(scanState);
+	Assert(scanState->tbm == NULL);
+
+	initBitmapState(scanState);
+	scanState->needNewBitmapPage = true;
+	scanState->recheckTuples = true;
+
+	getBitmapTableScanMethod(node->tableType)->reScanMethod(node);
+}
+
+/*
  * Cleans up once scanning of a partition/relation is done.
  */
 void
 BitmapTableScanEndPartition(ScanState *node)
 {
-	Assert(SCAN_SCAN == node->scan_state);
-
 	BitmapTableScanState *scanState = (BitmapTableScanState *) node;
 
 	freeBitmapState(scanState);
@@ -385,29 +393,6 @@ void
 BitmapTableScanReScan(BitmapTableScanState *node, ExprContext *exprCtxt)
 {
 	ScanState *scanState = &node->ss;
-	Assert(scanState->tableType >= 0 && scanState->tableType < TableTypeInvalid);
-
-	/*
-	 * If we are being passed an outer tuple, link it into the "regular"
-	 * per-tuple econtext for possible qual eval.
-	 */
-	if (exprCtxt != NULL)
-	{
-		ExprContext *stdecontext = node->ss.ps.ps_ExprContext;
-		stdecontext->ecxt_outertuple = exprCtxt->ecxt_outertuple;
-	}
-
-	EState	   *estate = node->ss.ps.state;
-	Index scanrelid = ((Scan *)(scanState->ps.plan))->scanrelid;
-
-	/* If this is re-scanning of PlanQual ... */
-	if (estate->es_evTuple != NULL &&
-		estate->es_evTuple[scanrelid - 1] != NULL)
-	{
-		estate->es_evTupleNull[scanrelid - 1] = false;
-	}
-
-	DynamicScan_ReScan((ScanState *)node, BitmapTableScanEndPartition, exprCtxt);
-
+	DynamicScan_ReScan(scanState, exprCtxt);
 	ExecReScan(outerPlanState(node), exprCtxt);
 }

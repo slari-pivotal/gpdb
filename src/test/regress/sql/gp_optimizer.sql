@@ -1012,6 +1012,157 @@ select * from orca.bm_dyn_test_onepart where i=2 and t='2';
 select enable_xform('CXformDynamicGet2DynamicTableScan');
 reset optimizer_enable_bitmapscan;
 
+-----------------------------------------------
+-- More BitmapTableScan & BitmapIndexScan tests
+-----------------------------------------------
+
+set optimizer_enable_bitmapscan=on;
+create schema bm;
+-- Bitmap index scan on Heterogeneous parts with dropped columns
+drop table if exists bm.het_bm;
+create table bm.het_bm (i int, to_be_dropped char(5), j int, t text) distributed by (i) partition by list(j)
+  (partition part0 values(0) with (appendonly=true, compresslevel=5, orientation=column),
+   partition part1 values(1),
+   partition part2 values(2) with (appendonly=true, compresslevel=5, orientation=row),
+   partition part3 values(3), partition part4 values(4));
+insert into bm.het_bm select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+create index het_bm_idx on bm.het_bm using bitmap (i);
+
+alter table bm.het_bm drop column to_be_dropped;
+alter table bm.het_bm add partition part5 values(5);
+insert into bm.het_bm values(2, 5, '2');
+
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where i=2 and t='2';
+
+-- Bitmap index scan on heap parts with dropped columns
+drop table if exists bm.hom_bm_heap;
+create table bm.hom_bm_heap (i int, to_be_dropped char(5), j int, t text) distributed by (i) partition by list(j)
+  (partition part0 values(0),
+   partition part1 values(1),
+   partition part2 values(2),
+   partition part3 values(3), 
+   partition part4 values(4));
+insert into bm.hom_bm_heap select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+create index hom_bm_heap_idx on bm.hom_bm_heap using bitmap (i);
+
+alter table bm.hom_bm_heap drop column to_be_dropped;
+alter table bm.hom_bm_heap add partition part5 values(5);
+insert into bm.hom_bm_heap values(2, 5, '2');
+
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.hom_bm_heap where i=2 and t='2';
+
+-- Bitmap index scan on AO parts with dropped columns
+drop table if exists bm.hom_bm_ao;
+create table bm.hom_bm_ao (i int, to_be_dropped char(5), j int, t text) 
+with (appendonly=true, compresslevel=5, orientation=row)
+distributed by (i) partition by list(j)
+  (partition part0 values(0),
+   partition part1 values(1),
+   partition part2 values(2),
+   partition part3 values(3), 
+   partition part4 values(4));
+insert into bm.hom_bm_ao select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+create index hom_bm_ao_idx on bm.hom_bm_ao using bitmap (i);
+
+alter table bm.hom_bm_ao drop column to_be_dropped;
+alter table bm.hom_bm_ao add partition part5 values(5);
+insert into bm.hom_bm_ao values(2, 5, '2');
+
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.hom_bm_ao where i=2 and t='2';
+
+-- Bitmap index scan on AOCO parts with dropped columns
+drop table if exists bm.hom_bm_aoco;
+create table bm.hom_bm_aoco (i int, to_be_dropped char(5), j int, t text) 
+with (appendonly=true, compresslevel=5, orientation=column)
+distributed by (i) partition by list(j)
+  (partition part0 values(0),
+   partition part1 values(1),
+   partition part2 values(2),
+   partition part3 values(3), 
+   partition part4 values(4));
+insert into bm.hom_bm_aoco select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+create index hom_bm_aoco_idx on bm.hom_bm_aoco using bitmap (i);
+
+alter table bm.hom_bm_aoco drop column to_be_dropped;
+alter table bm.hom_bm_aoco add partition part5 values(5);
+insert into bm.hom_bm_aoco values(2, 5, '2');
+
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.hom_bm_aoco where i=2 and t='2';
+
+-- Create index before dropped column
+drop table if exists bm.het_bm;
+create table bm.het_bm (i int, to_be_dropped char(5), j int, t text) distributed by (i) partition by list(j)
+  (partition part0 values(0) with (appendonly=true, compresslevel=5, orientation=column),
+   partition part1 values(1),
+   partition part2 values(2) with (appendonly=true, compresslevel=5, orientation=row),
+   partition part3 values(3), partition part4 values(4));
+insert into bm.het_bm select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+
+-- Create index before dropping a column
+create index het_bm_i_idx on bm.het_bm using bitmap (i);
+create index het_bm_j_idx on bm.het_bm using bitmap (j);
+
+alter table bm.het_bm drop column to_be_dropped;
+alter table bm.het_bm add partition part5 values(5);
+insert into bm.het_bm values(2, 5, '2');
+
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where i=2 and j=2;
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where i=2 and t='2';
+
+-- Drop and recreate index after we dropped column
+drop index bm.het_bm_i_idx;
+drop index bm.het_bm_j_idx;
+create index het_bm_i_idx on bm.het_bm using bitmap (i);
+create index het_bm_j_idx on bm.het_bm using bitmap (j);
+
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where j=2 or j=3;
+
+-- Create index after dropped column
+drop table if exists bm.het_bm;
+create table bm.het_bm (i int, to_be_dropped char(5), j int, t text) distributed by (i) partition by list(j)
+  (partition part0 values(0) with (appendonly=true, compresslevel=5, orientation=column),
+   partition part1 values(1),
+   partition part2 values(2) with (appendonly=true, compresslevel=5, orientation=row),
+   partition part3 values(3), partition part4 values(4));
+insert into bm.het_bm select i % 10, 'drop', i % 5, (i % 10)::text  from generate_series(1, 100) i;
+
+alter table bm.het_bm drop column to_be_dropped;
+alter table bm.het_bm add partition part5 values(5);
+
+-- Create index after dropping a column but before we insert into newly created part
+create index het_bm_i_idx on bm.het_bm using bitmap (i);
+create index het_bm_j_idx on bm.het_bm using bitmap (j);
+insert into bm.het_bm values(2, 5, '2');
+
+select sum(i) i_sum, sum(j) j_sum, sum(t::integer) t_sum from bm.het_bm where j=2 or j=3;
+
+-- Rescan bitmap index
+drop table if exists bm.outer_tab;
+create table bm.outer_tab
+(
+id serial,
+code character varying(25),
+name character varying(40)
+);
+
+insert into bm.outer_tab select i % 10, i % 5, i % 2 from generate_series(1, 100) i;
+
+select disable_xform('CXformInnerJoin2HashJoin');
+select disable_xform('CXformLeftSemiJoin2HashJoin');
+
+select count(1) from bm.outer_tab;
+select count(1) from bm.het_bm;
+
+select sum(id) id_sum, sum(i) i_sum, sum(j) j_sum from bm.outer_tab as ot join bm.het_bm as het_bm on ot.id = het_bm.j
+where het_bm.i between 2 and 5;
+
+drop schema bm cascade;
+select enable_xform('CXformInnerJoin2HashJoin');
+select enable_xform('CXformLeftSemiJoin2HashJoin');
+reset optimizer_enable_bitmapscan;
+-------------------------------------------------
+-- End of BitmapTableScan & BitmapIndexScan tests
+-------------------------------------------------
 set optimizer_enable_constant_expression_evaluation=on;
 
 CREATE TABLE my_tt_agg_opt (
