@@ -128,7 +128,6 @@ DESCR("Reserved schema for Append Only segment list and eof tables");
 	 namespaceId == PG_PUBLIC_NAMESPACE || \
 	 namespaceId == PG_AOSEGMENT_NAMESPACE)
 
-
 /*
  * prototypes for functions in pg_namespace.c
  */

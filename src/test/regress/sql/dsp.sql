@@ -315,6 +315,11 @@ show gp_default_storage_options;
 create table ao12 (a int, b int) with (appendonly=true) distributed by (a);
 \d ao12
 
+--bitmap index
+set gp_default_storage_options='appendonly=true';
+create table bitmap_table(a int, b int, c varchar);
+create index bitmap_i on bitmap_table using bitmap(b);
+
 -- cleanup
 \c postgres
 drop database dsp1;

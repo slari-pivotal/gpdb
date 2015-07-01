@@ -163,7 +163,7 @@ _bitmap_create_lov_heapandindex(Relation rel,
 								 rel->rd_rel->relisshared, false, /* bufferPoolBulkLoad */ false, 0,
 								 ONCOMMIT_NOOP, NULL /* GP Policy */,
 								 (Datum)0, true,
-								 /* valid_opts */ false,
+								 /* valid_opts */ true,
 								 &lovComptypeOid,
 						 		 /* persistentTid */ NULL,
 						 		 /* persistentSerialNum */ NULL);
