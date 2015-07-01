@@ -1009,9 +1009,9 @@ def impl(context, filename):
 
 @then('the temporary table file "{filename}" is removed')
 def impl(context, filename):
-    file = os.path.join(os.path.expanduser('~/'),filename)
-    if os.path.exists(file):
-        os.remove(file)
+    table_file = 'gppylib/test/behave/mgmt_utils/steps/data/gptransfer/%s' % filename
+    if os.path.exists(table_file):
+        os.remove(table_file)
 
 def create_table_file_locally(context, filename, table_list, location=os.getcwd()):
     tables = table_list.split(',')
@@ -3502,7 +3502,7 @@ def impl(context, dirname):
 @given('a table is created containing rows of length "{length}" with connection "{dbconn}"')
 def impl(context, length, dbconn):
     length = int(length)
-    wide_row_file = os.path.join(os.path.expanduser('~/'),'wide_row_%s.sql'%length)
+    wide_row_file = 'gppylib/test/behave/mgmt_utils/steps/data/gptransfer/wide_row_%s.sql' % length
     tablename = 'public.wide_row_%s' % length
     entry = "x" * length
     with open (wide_row_file, 'w') as sql_file:
