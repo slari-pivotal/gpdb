@@ -310,19 +310,6 @@ Feature: gptransfer tests
         Then gptransfer should return a return code of 0
         And verify that table "t0" in "gptransfer_testdb1" has "100" rows
 
-    @T339951
-    Scenario: gptransfer with -t and -d
-        Given the database is running
-        And the database "gptransfer_destdb" does not exist
-        And the database "gptransfer_testdb1" does not exist
-        And the database "gptransfer_testdb2" does not exist
-        And the database "gptransfer_testdb3" does not exist
-        And the database "gptransfer_testdb4" does not exist
-        And the database "gptransfer_testdb5" does not exist
-        And the user runs "gptransfer -d gptransfer_testdb1 -t gptransfer_testdb2.public.t3 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate md5"
-        Then gptransfer should return a return code of 0
-        And verify that table "t0" in "gptransfer_testdb1" has "100" rows
-
     @T339952
     Scenario: gptransfer input file
         Given the database is running
@@ -412,19 +399,6 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb4" does not exist
         And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer -t gptransfer_testdb1.public.t0 -t gptransfer_testdb3.public.t0 --dest-database gptransfer_destdb --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate md5"
-        Then gptransfer should return a return code of 2
-        And gptransfer should print Multiple tables map to gptransfer_destdb.public.t0.  Remove one of the tables from the list or do not use the --dest-database option. to stdout
-
-    @T339954
-    Scenario: gptransfer database and table to single destination database with conflict
-        Given the database is running
-        And the database "gptransfer_destdb" does not exist
-        And the database "gptransfer_testdb1" does not exist
-        And the database "gptransfer_testdb2" does not exist
-        And the database "gptransfer_testdb3" does not exist
-        And the database "gptransfer_testdb4" does not exist
-        And the database "gptransfer_testdb5" does not exist
-        And the user runs "gptransfer -d gptransfer_testdb1 -t gptransfer_testdb3.public.t0 --dest-database gptransfer_destdb --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate md5"
         Then gptransfer should return a return code of 2
         And gptransfer should print Multiple tables map to gptransfer_destdb.public.t0.  Remove one of the tables from the list or do not use the --dest-database option. to stdout
 
@@ -662,51 +636,6 @@ Feature: gptransfer tests
         Then gptransfer should return a return code of 2
         And gptransfer should print Invalid value for --batch-size.  --batch-size must be greater than 0 and less than 10 to stdout
 
-    @T339964
-    Scenario: gptransfer should not allow --full and -t
-        Given the database is running
-        And the database "gptest" does not exist
-        And the database "gptransfer_destdb" does not exist
-        And the database "gptransfer_testdb1" does not exist
-        And the database "gptransfer_testdb2" does not exist
-        And the database "gptransfer_testdb3" does not exist
-        And the database "gptransfer_testdb4" does not exist
-        And the database "gptransfer_testdb5" does not exist
-        And database "gptransfer_destdb" exists
-        And the user runs "gptransfer --full -t gptransfer_testdb1.public.t0 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
-        Then gptransfer should return a return code of 2
-        And gptransfer should print Cannot specify -t and --full options together to stdout
-
-    @T339965
-    Scenario: gptransfer should not allow --full and -d
-        Given the database is running
-        And the database "gptest" does not exist
-        And the database "gptransfer_destdb" does not exist
-        And the database "gptransfer_testdb1" does not exist
-        And the database "gptransfer_testdb2" does not exist
-        And the database "gptransfer_testdb3" does not exist
-        And the database "gptransfer_testdb4" does not exist
-        And the database "gptransfer_testdb5" does not exist
-        And database "gptransfer_destdb" exists
-        And the user runs "gptransfer --full -d gptransfer_testdb1 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
-        Then gptransfer should return a return code of 2
-        And gptransfer should print Cannot specify -d and --full options together to stdout
-
-    @T339966
-    Scenario: gptransfer should not allow --full and -f
-        Given the database is running
-        And the database "gptest" does not exist
-        And the database "gptransfer_destdb" does not exist
-        And the database "gptransfer_testdb1" does not exist
-        And the database "gptransfer_testdb2" does not exist
-        And the database "gptransfer_testdb3" does not exist
-        And the database "gptransfer_testdb4" does not exist
-        And the database "gptransfer_testdb5" does not exist
-        And database "gptransfer_destdb" exists
-        And the user runs "gptransfer --full -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_infile --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
-        Then gptransfer should return a return code of 2
-        And gptransfer should print Cannot specify -f and --full options together to stdout
-
     @T339967
     Scenario: gptransfer should not allow --truncate and --skip-existing
         Given the database is running
@@ -746,6 +675,25 @@ Feature: gptransfer tests
         Then gptransfer should return a return code of 2
         And gptransfer should print Cannot specify --drop and --skip-existing together to stdout
 
+    @T99999999
+    Scenario: gptransfer should not allow --full, -f, -t, or -d to be called together
+        Given the database is running
+        And the user runs "gptransfer -d gptransfer_testdb1 -t gptransfer_testdb1.public.temp_table --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate=md5"
+        Then gptransfer should return a return code of 2
+        And gptransfer should print Only one of --full, -f, -t, or -d can be specified to stdout
+        And the user runs "gptransfer -d gptransfer_testdb1 -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_infile --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate=md5"
+        Then gptransfer should return a return code of 2
+        And gptransfer should print Only one of --full, -f, -t, or -d can be specified to stdout
+        And the user runs "gptransfer -t gptransfer_testdb1.public.temp_table -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_infile --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate=md5"
+        Then gptransfer should return a return code of 2
+        And gptransfer should print Only one of --full, -f, -t, or -d can be specified to stdout
+        And the user runs "gptransfer --full -d gptransfer_testdb1 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate=md5"
+        Then gptransfer should return a return code of 2
+        And gptransfer should print Only one of --full, -f, -t, or -d can be specified to stdout
+        And the user runs "gptransfer --full -d gptransfer_testdb1 -t gptransfer_testdb1.public.temp_table -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_infile --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate=md5"
+        Then gptransfer should return a return code of 2
+        And gptransfer should print Only one of --full, -f, -t, or -d can be specified to stdout
+
     @T339970
     Scenario: gptransfer missing one of --full, -f, -t or -d
         Given the database is running
@@ -758,7 +706,7 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
         Then gptransfer should return a return code of 2
-        And gptransfer should print At least one of --full, -f, -t or -d must be specified to stdout
+        And gptransfer should print One of --full, -f, -t, or -d must be specified to stdout
 
     Scenario: gptransfer invalid set of options, pass in unkown of unsupported options, eg: -o
         Given the database is running

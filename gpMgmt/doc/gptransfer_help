@@ -217,10 +217,10 @@ OPTIONS
  If the source database does not exist, gptransfer returns an error and 
  quits. If a destination database does not exist a database is created.
  
- Alternatively, specify the -t or -f option to copy a specified set of 
- tables. 
+ Not valid with the --full, -f, or -t options.
 
- Not valid with the --full option. 
+ Alternatively, specify the -t or -f option to copy a specified set of 
+ tables.
 
 
 --delimiter=<delim> 
@@ -309,7 +309,7 @@ OPTIONS
  If you specify the -d option to copy all the tables from a database, you 
  do not need to specify individual tables from the database. 
  
- Not valid with the --full option. 
+ Not valid with the --full, -d, or -t options.
 
 
 --full 
@@ -448,7 +448,7 @@ OPTIONS
  If you specify the -d option to copy all the tables from a database, you 
  do not need to specify individual tables from the database. 
 
- Not valid with the --full option. 
+ Not valid with the --full, -d, or -f options.
 
 
 --timeout <seconds> 

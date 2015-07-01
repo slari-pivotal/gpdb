@@ -2258,6 +2258,7 @@ class GpTransfer(object):
         _args: args from the options parser.  Not used.
         """
         self._options = options
+
         self._work_dir = os.path.join(self._options.work_base_dir,
                                       GPTRANSFER_TMP_DIR)
 
@@ -2736,18 +2737,6 @@ class GpTransfer(object):
                                    'Must be greater than 0 and less than %s'
                                    % MAX_SUB_BATCH_SIZE)
 
-        if self._options.full and len(self._options.tables) != 0:
-            raise ProgramArgumentValidationException('Cannot specify -t and --full options '
-                                   'together')
-
-        if self._options.full and len(self._options.databases) != 0:
-            raise ProgramArgumentValidationException('Cannot specify -d and --full options '
-                                   'together')
-
-        if self._options.full and self._options.input_file:
-            raise ProgramArgumentValidationException('Cannot specify -f and --full options '
-                                   'together')
-
         if self._options.full and (self._options.truncate or self._options.drop or
                                    self._options.skip_existing):
             raise ProgramArgumentValidationException('Cannot specify --drop, --truncate or '
@@ -2785,8 +2774,13 @@ class GpTransfer(object):
         if not self._options.full and len(self._options.tables) == 0 \
             and len(self._options.databases) == 0 \
             and not self._options.input_file:
-            raise ProgramArgumentValidationException('At least one of --full, -f, -t or -d must'
-                                   ' be specified')
+            raise ProgramArgumentValidationException('One of --full, -f, -t, or -d must be specified')
+
+        if sum(bool(option) for option in (self._options.full,
+                                           self._options.databases,
+                                           self._options.tables,
+                                           self._options.input_file)) != 1:
+            raise ProgramArgumentValidationException('Only one of --full, -f, -t, or -d can be specified')
 
         if self._options.full and self._dest_databases != None and len(self._dest_databases) != 0:
             raise ProgramArgumentValidationException('--full option specified but databases exist '
