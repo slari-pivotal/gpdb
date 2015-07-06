@@ -413,7 +413,7 @@ def truncate_restore_tables(restore_tables, master_port, dbname):
             execSQL(conn, qry)
             conn.commit()
         except Exception as e:
-            raise Exception("Could not truncate table %s\n. Error: %s" (table, str(e)))
+            raise Exception("Could not truncate table %s.%s: %s" % (dbname, table, str(e).replace('\n', '')))
 
 class RestoreDatabase(Operation):
     def __init__(self, restore_timestamp, no_analyze, drop_db, restore_global, master_datadir, backup_dir, 

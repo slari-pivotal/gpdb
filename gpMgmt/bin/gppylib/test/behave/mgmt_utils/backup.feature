@@ -4967,6 +4967,25 @@ Feature: Validate command line arguments
         And gpdbrestore should return a return code of 0
         And verify that there is a "ao" table "public.ao_index_table" in "testdb" with data
 
+    Scenario: (RR) Full backup and restore with -T and --truncate
+        Given the database is running
+        And the database "fullbkdb" does not exist
+        And database "fullbkdb" exists
+        And the database "testdb" does not exist
+        And there is a "ao" table "ao_index_table" with compression "None" in "fullbkdb" with data
+        When the user runs "gpcrondump -a -x fullbkdb"
+        Then gpcrondump should return a return code of 0
+        And the timestamp from gpcrondump is stored
+        And all the data from "fullbkdb" is saved for verification
+        And the user runs "gpdbrestore -T public.ao_index_table --redirect=testdb --truncate -a" with the stored timestamp
+        And gpdbrestore should return a return code of 2
+        And gpdbrestore should print Could not truncate table testdb.public.ao_index_table to stdout
+        And there is a "ao" table "ao_index_table" with compression "None" in "testdb" with data
+        And the user runs "gpdbrestore -T public.ao_index_table --redirect=testdb --truncate -a" with the stored timestamp
+        And gpdbrestore should return a return code of 0
+        And verify that there is a "ao" table "public.ao_index_table" in "testdb" with data
+        And verify that there is a "ao" table "public.ao_index_table" in "fullbkdb" with data
+
     Scenario: (RR) Incremental restore with table filter
         Given the database is running
         And the database "schematestdb" does not exist
