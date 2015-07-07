@@ -10,27 +10,30 @@ SYNOPSIS
 
 gptransfer  { --full | [-d <database1> [ -d <database2> ... ]]
   [-t <db.schema.table> [ -t <db1.schema1.table1> ... ]]
-  [-f <table_file> ] } 
-  [--delimiter <delim> ]
-  [--skip-existing | --truncate | --drop] 
-  [--analyze] [--validate=<type> ] [-x] [--dry-run] 
-  [--schema-only ]
+  [-f <table_file> ] }
 
-  [--source-host=<source_host> [--source-port=<source_port>] 
-  [--source-user=<source_user>] ]
+  [--skip-existing | --truncate | --drop]
+  [--analyze] [--validate=<type>] [-x] [--dry-run]
+  [--schema-only]
+
+  [--source-host=<source_host> [--source-port=<source_port>]
+  [--source-user=<source_user>]]
   [--base-port=<base_gpfdist_port>]
-  [--dest-host=<dest_host> --source-map-file=<host_map_file> 
-  [--dest-port=<dest_port>] [--dest-user=<dest_user>] ]
-  [--dest-database=<dest_database_name>] 
+  [--dest-host=<dest_host> --source-map-file=<host_map_file>
+  [--dest-port=<dest_port>] [--dest-user=<dest_user>]]
+  [--dest-database=<dest_database_name>]
 
   [--batch-size=<batch_size>] [--sub-batch-size=<sub_batch_size>]
   [--timeout <seconds>]
-  [--max-line-length=<length>] 
-  [--work-base-dir=<work_dir>] [-l <log_dir>] 
+  [--max-line-length=<length>]
+  [--work-base-dir=<work_dir>] [-l <log_dir>]
+  [--delimiter=<delim>]
+  [--format=[CSV|TEXT]]
+  [--quote=<character>]
 
-  [-v | --verbose] 
-  [-q |--quiet] 
-  [-a] 
+  [-v | --verbose]
+  [-q | --quiet]
+  [-a]
 
 gptransfer --version 
 
@@ -90,6 +93,14 @@ writable external table > gpfidst > named pipe > gpfdist > readable external tab
 *****************************************************
 NOTES
 *****************************************************
+
+The gptransfer utility efficiently transfers tables with large amounts 
+of data. Because of the overhead required to set up parallel transfers,
+the utility is not recommended for transferring tables with small
+amounts of data. It might be more efficient to copy the scehma and
+smaller tables to the destination database using other methods, such as
+the SQL COPY command, and then use gptransfer to transfer large tables
+in batches.
 
 When copying database data between different Greenplum Database systems, 
 gptransfer requires a text file that lists all the source segment host 
@@ -212,7 +223,20 @@ OPTIONS
  A source database to copy. This option can be specified multiple times 
  to copy multiple databases to the destination system. All the user 
  defined tables and table data are copied to the destination system. 
- Wildcard characters are not supported. 
+
+ A set of databases can be specified using the Python regular expression
+ syntax. The regular expression pattern must be enclosed in slashes
+ (/RE_pattern/). If you use a regular expression, the name must be
+ enclosed in double quotes ("). This example -d "demo/.*/" specifies
+ all databases in the Greenplum Database installation that begin with
+ demo.
+
+ NOTE: Note the following two examples for the -d option are equivalent.
+ They both specify a set of databases that begins with demo and ends
+ with zero or more digits.
+
+  -d "demo/[0-9]*/"
+  -d "/demo[0-9]*/"
 
  If the source database does not exist, gptransfer returns an error and 
  quits. If a destination database does not exist a database is created.
@@ -225,9 +249,24 @@ OPTIONS
 
 --delimiter=<delim> 
 
- Delimiter to use for external tables. Specify a single ASCII character 
- that separates columns within each row of data. The default is octal 
- character \001, the SOH character. 
+ Delimiter to use for writable external tables created by gptransfer.
+ Specify a single ASCII character that separates columns within each
+ row of data. The default value is a comma (,). If delim is a comma (,)
+ or if this option is not specified, gptransfer uses the CSV format for
+ writable external tables. Otherwise, gptransfer uses the TEXT format.
+
+ If --delimiter, --format, and --quote options are not specified, these
+ are settings for writable external tables:
+
+  FORMAT 'CSV' ( DELIMITER ',' QUOTE E'\001' )
+
+ You can specify a delimiter character such as a non-printing character
+ with the format "\digits" (octal). A backslash followed by the octal
+ value for the character. The octal format must be enclosed in double
+ quotes. This example specifies the octal character \001, the SOH
+ character:
+
+  --delimiter="\001"
 
 
 --dest-database=<dest_database_name> 
@@ -289,12 +328,11 @@ OPTIONS
 
  The location and name of file containing list of fully qualified table 
  names to copy from the Greenplum Database source system. In the text 
- file, you specify a single fully qualified table per line. Wildcard 
- characters are not supported. 
+ file, you specify a single fully qualified table per line.
 
-  sales.public.clients
-  sales.public.merchants
-  demo.test.lineitem 
+ A set of tables can be specified using the Python regular expression
+ syntax. See the -d option for information about using regular
+ expressions.
 
  If the source table does not exist, gptransfer returns an error and 
  quits. If the destination database or table does not exist, it is 
@@ -310,6 +348,24 @@ OPTIONS
  do not need to specify individual tables from the database. 
  
  Not valid with the --full, -d, or -t options.
+
+
+--format=[CSV|TEXT]
+
+ Specify the format of the writable external tables that are created by
+ gptransfer to transfer data. Values are CSV for comma separated values,
+ or TEXT for plain text. The default value is CSV.
+
+ If the options --delimiter, --format, and --quote are not specified,
+ these are default settings for writable external tables:
+
+  FORMAT 'CSV' ( DELIMITER ',' QUOTE E'\001' )
+
+ If you specify TEXT, you must also specify a non-comma delimiter with
+ the --delimiter=delim option. These are settings for writable external
+ tables:
+
+  FORMAT 'TEXT' ( DELIMITER delim ESCAPE 'off' )
 
 
 --full 
@@ -330,11 +386,19 @@ OPTIONS
  postgres, template0 and template1 databases, gptransfer returns an error 
  and quits. 
 
+ NOTE: The --full option is recommended only when the databases contain a
+ large number of tables with large amounts of data. Because of the  overhead
+ required to set up parallel transfers, the utility is not recommended when
+ the databases contain tables with small amounts of data. It might be more
+ efficient to copy the schema and smaller tables to the destination database
+ using other methods, such as the SQL COPY command, and then use gptransfer
+ to transfer large tables in batches.
+
 
 -l <log_dir> 
 
  Specify the gptransfer log file directory. If not specified, the default 
- is ~/AdminLogs. 
+ is ~/gpAdminLogs. 
 
  
 --max-line-length=<length> 
@@ -354,6 +418,18 @@ OPTIONS
  log file. 
 
 
+--quote=character
+
+ The quotation character when gptransfer creates writable external tables
+ with the CSV format. Specify a single ASCII character that is used to
+ enclose column data. The default value is the octal character \001, the
+ SOH character.
+
+ You can specify a delimiter character such as a non-printing character
+ with the format "\digits" (octal). A backlash followed by the octal value
+ for the character. The octal value must be enclosed in double quotes.
+
+
 --schema-only 
 
  Create only the schemas specified by the command. Data is not transferred. 
@@ -367,6 +443,10 @@ OPTIONS
  gptransfer creates only the tables and indexes. No data is transferred. 
 
  Not valid with the --truncate option. 
+
+ NOTE: Because of the overhead required to set up parallel transfers, the
+ --schema-only option not recommended when transferring information for a
+ large number of tables.
 
 
 --skip-existing 
@@ -435,7 +515,10 @@ OPTIONS
 
  A table from the source database system to copy. The fully qualified 
  table name must be specified, for example -t sales.public.clients. 
- Wildcard characters are not supported. 
+
+ A set of tables can be specified using the Python regular expression
+ syntax. See the -d option for information about using regular
+ expressions.
 
  If the destination table or database does not exist, it is created. This 
  option can be specified multiple times to include multiple tables. Only 
