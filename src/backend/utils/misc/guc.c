@@ -356,6 +356,7 @@ bool		Debug_datumstream_read_print_varlena_info = false;
 bool		Debug_datumstream_write_use_small_initial_buffers = false;
 bool		gp_temporary_files_filespace_repair = false;
 bool		gp_create_table_random_default_distribution = true;
+bool		gp_allow_non_uniform_partitioning_ddl = true;
 
 int			explain_memory_verbosity = 0;
 char* 		memory_profiler_run_id = "none";
@@ -3715,6 +3716,16 @@ static struct config_bool ConfigureNamesBool[] =
 		},
 		&gp_create_table_random_default_distribution,
 		false, NULL, NULL
+	},
+
+	{
+		{"gp_allow_non_uniform_partitioning_ddl", PGC_USERSET, COMPAT_OPTIONS,
+			gettext_noop("Allow DDL that will create multi-level partition table with non-uniform hierarchy."),
+			NULL,
+			GUC_SUPERUSER_ONLY | GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+		},
+		&gp_allow_non_uniform_partitioning_ddl,
+		true, NULL, NULL
 	},
 
 	{

@@ -5249,12 +5249,19 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			}
 			pass = AT_PASS_MISC;
 			break;				
-			
+
+		case AT_PartSetTemplate:		/* Set Subpartition Template */
+			if (!gp_allow_non_uniform_partitioning_ddl)
+			{
+				ereport(ERROR,
+					   (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+						errmsg("Cannot modify subpartition template for partitioned table")));
+			}
 		case AT_PartAdd:				/* Add */
 		case AT_PartCoalesce:			/* Coalesce */
 		case AT_PartDrop:				/* Drop */
 		case AT_PartRename:				/* Rename */
-		case AT_PartSetTemplate:		/* Set Subpartition Template */
+
 		case AT_PartTruncate:			/* Truncate */
 		case AT_PartAddInternal:		/* internal partition creation */
 		case AT_PartModify:             /* Modify */
@@ -14513,20 +14520,25 @@ ATPExecPartAlter(List **wqueue, AlteredTableInfo *tab, Relation rel,
 		case AT_PartAdd:				/* Add */
 		case AT_PartCoalesce:			/* Coalesce */
 		case AT_PartDrop:				/* Drop */
-		case AT_PartExchange:			/* Exchange */
+		case AT_PartSplit:				/* Split */
 		case AT_PartMerge:				/* Merge */
 		case AT_PartModify:				/* Modify */
-		case AT_PartRename:	 			/* Rename */
-
+		case AT_PartSetTemplate:		/* Set Subpartition Template */
+				if (!gp_allow_non_uniform_partitioning_ddl)
+				{
+					ereport(ERROR,
+						   (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+							errmsg("Cannot modify multi-level partitioned table to have non-uniform partitioning hierarchy.")));
+				}
+				break;
 				/* XXX XXX: treat set subpartition template special:
 
 				need to pass the pNode to ATPExecPartSetTemplate and bypass
 				ATExecCmd ...
 
 				*/
-		case AT_PartSetTemplate:		/* Set Subpartition Template */
-
-		case AT_PartSplit:				/* Split */
+		case AT_PartRename:	 			/* Rename */
+		case AT_PartExchange:			/* Exchange */
 		case AT_PartTruncate:			/* Truncate */
 				break;
 

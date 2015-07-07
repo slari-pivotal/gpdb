@@ -8474,6 +8474,13 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 							 parser_errposition(pstate, psubBy->location)));
 				}
 
+				if (!((PartitionSpec *) pElem->subSpec)->istemplate && !gp_allow_non_uniform_partitioning_ddl)
+				{
+					ereport(ERROR,
+						   (errcode(ERRCODE_INVALID_TABLE_DEFINITION),
+						    errmsg("Multi-level partitioned tables without templates are not supported")));
+				}
+
 				newSub = makeNode(PartitionBy);
 
 				newSub->partType  = psubBy->partType;
