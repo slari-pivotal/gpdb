@@ -786,6 +786,7 @@ bool		optimizer_dml_triggers;
 bool		optimizer_dml_constraints;
 bool 		optimizer_enable_master_only_queries;
 bool 		optimizer_multilevel_partitioning;
+bool		optimizer_explain_show_status;
 
 /* Security */
 bool		gp_reject_internal_tcp_conn = true;
@@ -4075,6 +4076,16 @@ static struct config_bool ConfigureNamesBool[] =
                 },
                 &optimizer_multilevel_partitioning,
                 false, NULL, NULL
+        },
+
+        {
+                {"optimizer_explain_show_status", PGC_USERSET, DEVELOPER_OPTIONS,
+                        gettext_noop("Display optimizer version information in explain messages."),
+                        NULL,
+                        GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+                },
+                &optimizer_explain_show_status,
+                true, NULL, NULL
         },
 
         {
@@ -11328,11 +11339,6 @@ gp_guc_list_init(void)
     {
         list_free(gp_guc_list_for_explain);
         gp_guc_list_for_explain = NIL;
-    }
-    if (gp_guc_list_for_no_plan)
-    {
-        list_free(gp_guc_list_for_no_plan);
-        gp_guc_list_for_no_plan = NIL;
     }
     if (gp_guc_list_for_no_plan)
     {

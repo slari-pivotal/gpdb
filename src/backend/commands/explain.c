@@ -47,6 +47,7 @@
 
 #ifdef USE_ORCA
 extern char *SzDXLPlan(Query *parse);
+extern StringInfo OptVersion();
 #endif
 
 typedef struct ExplainState
@@ -743,6 +744,26 @@ ExplainOnePlan_internal(PlannedStmt *plannedstmt,
         truncateStringInfo(buf, buf->len - 2);  /* drop final "; " */
         appendStringInfoChar(buf, '\n');
     }
+
+#ifdef USE_ORCA
+    /* Display optimizer status: either 'legacy query optimizer' or Orca version number */
+    if (optimizer_explain_show_status)
+    {
+
+    	appendStringInfo(buf, "Optimizer status: ");
+    	if (queryDesc->plannedstmt->planGen == PLANGEN_PLANNER)
+    	{
+    		appendStringInfo(buf, "legacy query optimizer\n");
+    	}
+    	else /* PLANGEN_OPTIMIZER */
+    	{
+    		StringInfo str = OptVersion();
+    		appendStringInfo(buf, "PQO version %s\n", str->data);
+			pfree(str->data);
+			pfree(str);
+    	}
+    }
+#endif
 
     /*
      * Display final elapsed time.

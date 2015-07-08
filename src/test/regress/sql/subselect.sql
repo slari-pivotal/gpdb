@@ -679,9 +679,9 @@ drop table if exists t2;
 create table t1(a int);
 create table t2(b int);
 
-explain select * from t1 where a=1 and a=2 and a > (select t2.b from t2);
-
 select * from t1 where a=1 and a=2 and a > (select t2.b from t2);
+
+explain select * from t1 where a=1 and a=2 and a > (select t2.b from t2);
 
 explain select * from t1 where a=1 and a=2 and a > (select t2.b from t2)
 union all

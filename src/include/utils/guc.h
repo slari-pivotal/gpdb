@@ -365,6 +365,8 @@ extern char  *data_directory;
 #define OPTIMIZER_GPDB_CALIBRATED       1       /* GPDB's calibrated cost model */
 
 // ORCA-related gucs
+extern bool	optimizer;
+extern bool	optimizer_log;
 extern bool optimizer_minidump;
 extern int  optimizer_cost_model;
 extern bool optimizer_print_query;
@@ -438,6 +440,7 @@ extern bool optimizer_direct_dispatch;
 extern bool optimizer_control;	/* controls whether the user can change the setting of the "optimizer" guc */
 extern bool optimizer_enable_master_only_queries;
 extern bool optimizer_multilevel_partitioning;
+extern bool optimizer_explain_show_status;
 
 /**
  * Enable logging of DPE match in optimizer.

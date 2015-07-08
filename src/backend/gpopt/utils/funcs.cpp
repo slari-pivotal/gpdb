@@ -1188,6 +1188,16 @@ LibraryVersion()
 }
 }
 
+extern "C" {
+StringInfo
+OptVersion()
+{
+	StringInfo str = gpdb::SiMakeStringInfo();
+	appendStringInfo(str, "%s", GPOPT_VERSION);
+
+	return str;
+}
+}
 
 //---------------------------------------------------------------------------
 //	@function:

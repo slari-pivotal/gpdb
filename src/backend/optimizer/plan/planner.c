@@ -70,9 +70,6 @@ planner_hook_type planner_hook = NULL;
 
 ParamListInfo PlannerBoundParamList = NULL;		/* current boundParams */
 
-extern bool		optimizer; /* Enable the optimizer */
-extern bool		optimizer_log; /* Enable logging of the optimizer */
-
 /* Expression kind codes for preprocess_expression */
 #define EXPRKIND_QUAL			0
 #define EXPRKIND_TARGET			1

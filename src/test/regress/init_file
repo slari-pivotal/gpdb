@@ -7,6 +7,9 @@ s/^WARNING:  gpmon:.*Connection refused.*//
 m/^WARNING:  gpmon:.*No buffer space available socket.*/
 s/^WARNING:  gpmon:.*No buffer space available socket.*//
 
+m/^ Optimizer status:.*/
+s/^ Optimizer status:.*//
+
 -- end_matchignore
 
 -- start_matchsubs
