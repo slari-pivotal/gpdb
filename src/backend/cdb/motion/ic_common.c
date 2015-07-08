@@ -1090,7 +1090,7 @@ SendDummyPacket(void)
 	while (counter < 10)
 	{
 		counter++;
-		ret = sendto(sockfd, dummy_pkt, sizeof(dummy_pkt), 0, rp->ai_addr, rp->ai_addrlen);
+		ret = sendto(sockfd, dummy_pkt, strlen(dummy_pkt), 0, rp->ai_addr, rp->ai_addrlen);
 		if(ret < 0)
 		{
 			if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
