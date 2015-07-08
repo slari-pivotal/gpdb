@@ -893,6 +893,10 @@ getPartConstraints(Oid partOid, Oid rootOid, List *partKey)
 		}
 	}
 
+	if (map)
+	{
+		pfree(map);
+	}
 	list_free(keys);
 	return result;
 }

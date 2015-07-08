@@ -2599,6 +2599,10 @@ getPartConstraintsContainsKeys(Oid partOid, Oid rootOid, List *partKey)
 		}
 	}
 
+	if (map)
+	{
+		pfree(map);
+	}
 	caql_endscan(pcqCtx);
 	heap_close(conRel, AccessShareLock);
 
