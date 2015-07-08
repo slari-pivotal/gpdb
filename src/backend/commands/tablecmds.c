@@ -767,6 +767,9 @@ DefineRelation_int(CreateStmt *stmt,
              stmt->relation->schemaname ? stmt->relation->schemaname : "",
              shouldDispatch);
 
+	bool valid_opts = (relstorage == RELSTORAGE_EXTERNAL) ||
+			stmt->is_error_table;
+
 	relationId = heap_create_with_catalog(relname,
 										  namespaceId,
 										  tablespaceId,
@@ -784,7 +787,7 @@ DefineRelation_int(CreateStmt *stmt,
                                           stmt->policy,  /*CDB*/
                                           reloptions,
 										  allowSystemTableModsDDL,
-										  /* valid_opts */ false,
+										  valid_opts,
 										  &stmt->oidInfo.comptypeOid,
 										  &persistentTid,
 										  &persistentSerialNum);

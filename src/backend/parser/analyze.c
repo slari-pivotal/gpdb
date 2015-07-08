@@ -12747,6 +12747,7 @@ transformSingleRowErrorHandling(ParseState *pstate, CreateStmtContext *cxt,
 		createStmt->relKind = RELKIND_RELATION;
 		createStmt->relStorage = RELSTORAGE_HEAP;
 		createStmt->distributedBy = list_make1(NULL); /* DISTRIBUTED RANDOMLY */
+		createStmt->is_error_table = true;
 
 
 		cxt->blist = lappend(cxt->blist, createStmt);

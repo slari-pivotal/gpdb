@@ -3278,7 +3278,8 @@ CreateStmt:	CREATE OptTemp TABLE qualified_name '(' OptTableElementList ')'
 					n->relKind = RELKIND_RELATION;
 					n->policy = 0;
 					n->postCreate = NULL;
-					
+					n->is_error_table = false;
+
 					$$ = (Node *)n;
 				}
 		| CREATE OptTemp TABLE qualified_name OF qualified_name
@@ -3306,7 +3307,8 @@ CreateStmt:	CREATE OptTemp TABLE qualified_name '(' OptTableElementList ')'
 					n->relKind = RELKIND_RELATION;
 					n->policy = 0;
                     n->postCreate = NULL;
-					
+					n->is_error_table = false;
+
 					$$ = (Node *)n;
 				}
 		;
@@ -13247,6 +13249,7 @@ makeAddPartitionCreateStmt(Node *n, Node *subSpec)
     ct->relKind = RELKIND_RELATION;
     ct->policy = 0;
     ct->postCreate = NULL;
+	ct->is_error_table = false;
 
     return (Node *)ct;
 }
