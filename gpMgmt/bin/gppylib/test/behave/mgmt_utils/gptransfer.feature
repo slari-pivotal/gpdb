@@ -1472,6 +1472,19 @@ Feature: gptransfer tests
         And verify that the query "select count(*) from table1 where address is NULL" in database "gptransfer_test_db_one" returns "1"
         And verify that the query "select count(*) from table1 where address=''" in database "gptransfer_test_db_one" returns "1"
 
+    Scenario: Table count with tablefile -f option
+       Given the database is running
+       And the database "gptransfer_testdb_table_count_one" does not exist
+       And the database "gptransfer_testdb_table_count_two" does not exist
+       And the user runs "psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer/gptransfer_test_table_count_data.sql -d template1"
+       Then psql should return a return code of 0
+       And the user runs "gptransfer --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer/tablefiles.txt> /tmp/table_count_stdout.txt"
+       Then gptransfer should return a return code of 0
+       And verify that the file "/tmp/table_count_stdout.txt" contains "Number of tables to transfer: 3"
+       And verify that the file "/tmp/table_count_stdout.txt" contains "remaining 2 of 3 tables"
+       And verify that the file "/tmp/table_count_stdout.txt" contains "remaining 1 of 3 tables"
+       And verify that the file "/tmp/table_count_stdout.txt" contains "remaining 0 of 3 tables"
+
     Scenario: gptransfer cleanup
         Given the database is running
         And the user runs "psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_cleanup.sql -d template1"

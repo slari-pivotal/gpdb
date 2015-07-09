@@ -27,7 +27,7 @@ import signal
 import inspect
 import hashlib
 import datetime
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 import thread
 from optparse import OptionGroup, SUPPRESS_HELP
 
@@ -79,6 +79,8 @@ DEFAULT_BASE_WORKDIR=os.path.expanduser('~/')
 GPTRANSFER_TMP_DIR = 'gptransfer_%d' % os.getpid()
 
 now = datetime.datetime.now()
+tableCountLock = Lock()
+remaining_tables = 0
 GPTRANSFER_FAILED_TABLES_FILE = 'failed_transfer_tables_%s.txt' % now.strftime(
     '%Y%m%d_%H%M%S')
 
@@ -482,7 +484,7 @@ def create_parser():
         '--truncate',
         default=False,
         action='store_true',
-        help='Truncate destination table if it exists prior to transfering data'
+        help='Truncate destination table if it exists prior to transferring data'
     )
 
     # drop tables that exist
@@ -490,7 +492,7 @@ def create_parser():
         '--drop',
         default=False,
         action='store_true',
-        help='Drop destination table if it exists prior to transfering data'
+        help='Drop destination table if it exists prior to transferring data'
     )
 
     # analyze destination table after transfer
@@ -1377,7 +1379,7 @@ class GpTransferCommand(Command):
         fast_mode, exclusive_lock, schema_only, work_dir,
         host_map, source_config, batch_size, gpfdist_port, gpfdist_last_port, 
         gpfdist_instance_count, max_line_length, timeout, wait_time, 
-        delimiter, validator, format, quote):
+        delimiter, validator, format, quote, table_transfer_set_total):
         """
         name: name of the command
         src_host: source GPDB host
@@ -1408,6 +1410,7 @@ class GpTransferCommand(Command):
         validator: validator to use
         format: transfer data in CSV(default) or TEXT format
         quote: specifies the quotation character for CSV mode
+        table_transfer_set_total: Number of tables need to be transferred
         """
 
         self._src_host = src_host
@@ -1437,6 +1440,7 @@ class GpTransferCommand(Command):
         self._delimiter = delimiter
         self._format = format
         self._quote = quote
+        self._table_transfer_set_total = table_transfer_set_total
         # _used_ports is a dict where key is hostname and val is list of
         # ints (ports used)
         self._pipe = os.path.join(work_dir,
@@ -1476,7 +1480,8 @@ class GpTransferCommand(Command):
         """
         Runs the full table transfer, executing all steps needed.
         """
-
+        global tableCountLock
+        global remaining_tables
         try:
             if not canceled:
                 self._pool = WorkerPool(self._batch_size)
@@ -1559,8 +1564,10 @@ class GpTransferCommand(Command):
 
             if not canceled:
                 if self._success:
+            	    with tableCountLock:
+                    	remaining_tables = remaining_tables - 1
                     logger.info(
-                        "Finished transfering table %s", str(self._table_pair.source))
+                        "Finished transferring table %s, remaining %s of %s tables", str(self._table_pair.source), remaining_tables, self._table_transfer_set_total)
                 else:
                     logger.error(
                         "Failed to transfer table %s", str(self._table_pair.source))
@@ -1568,6 +1575,7 @@ class GpTransferCommand(Command):
                         logger.error(self._src_exception)
                     if self._dest_exception:
                         logger.error(self._dest_exception)
+                    logger.info('Remaining %s of %s tables', remaining_tables, self._table_transfer_set_total)
 
 
     def _get_distributed_by(self):
@@ -2258,7 +2266,6 @@ class GpTransfer(object):
         _args: args from the options parser.  Not used.
         """
         self._options = options
-
         self._work_dir = os.path.join(self._options.work_base_dir,
                                       GPTRANSFER_TMP_DIR)
 
@@ -2300,6 +2307,7 @@ class GpTransfer(object):
 
         # build up table pairs to transfer and validate them
         self._table_transfer_set = self._build_table_transfer_set()
+        self._table_transfer_set_total = len(self._table_transfer_set)
 
         self._fast_mode = \
             True if (self._dest_config.numPrimarySegments >= self._src_config.numPrimarySegments and
@@ -2340,6 +2348,8 @@ class GpTransfer(object):
         """
         Runs the data transfer based on the options provided.
         """
+        global remaining_tables
+        remaining_tables = len(self._table_transfer_set)
         if not self._options.dry_run:
             self.setup()
 
@@ -2366,7 +2376,6 @@ class GpTransfer(object):
                 drop = (True if self._options.drop
                         and table_pair.dest
                         in self._dest_tables else False)
-
                 cmd = GpTransferCommand(
                     'transfer of %s' % table_pair.source,
                     self._options.source_host,
@@ -2398,6 +2407,7 @@ class GpTransfer(object):
                     self._options.validator,
                     self._options.format,
                     self._options.quote,
+                    self._table_transfer_set_total,
                 )
                 self._pool.addCommand(cmd)
                 cmds_queued += 1
@@ -2414,7 +2424,7 @@ class GpTransfer(object):
                         failed_file.write("%s%s%s%s%s\n" %
                                          (table.database, SCHEMA_DELIMITER, table.schema, SCHEMA_DELIMITER, table.table))
                 logger.warn(
-                    'Some tables failed to transfer.  A list of these tables')
+                    '%s tables failed to transfer.  A list of these tables', len(failed_tables))
                 logger.warn(
                     'has been written to the file %s', GPTRANSFER_FAILED_TABLES_FILE)
                 logger.warn(
@@ -2452,7 +2462,7 @@ class GpTransfer(object):
         self._pool.join()
         self._pool.check_results()
 
-        # if transfering entire system, dumpall and execute on destination
+        # if transferring entire system, dumpall and execute on destination
         if self._options.full:
             logger.info('Restoring full schema...')
             dump_schema_cmd = GpSchemaDump('dump full schema',
@@ -3069,6 +3079,7 @@ class GpTransfer(object):
                                     GpTransferTable(
                                         (self._options.dest_database if self._options.dest_database else src_table.database),
                                          src_table.schema, src_table.table, src_table.external)))
+        logger.info('Number of tables to transfer: %s', len(table_pairs))
         return table_pairs
 
 

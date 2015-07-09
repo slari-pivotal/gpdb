@@ -3664,3 +3664,8 @@ def impl(context, dbname, table_name, column_name, info):
 @then('verify that the query "{query}" in database "{dbname}" returns "{nrows}"')
 def impl(context, dbname, query, nrows):
     check_count_for_specific_query(dbname, query, int(nrows))
+
+@then('verify that the file "{filepath}" contains "{line}"')
+def impl(context, filepath, line):
+    if line not in open(filepath).read():
+        raise Exception("The file '%s' does not contain '%s'" % (filepath, line))
