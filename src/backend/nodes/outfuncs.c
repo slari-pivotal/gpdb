@@ -396,6 +396,7 @@ _outPlannedStmt(StringInfo str, PlannedStmt *node)
 	WRITE_NODE_FIELD(result_aosegnos);
 	WRITE_NODE_FIELD(queryPartOids);
 	WRITE_NODE_FIELD(queryPartsMetadata);
+	WRITE_NODE_FIELD(numSelectorsPerScanId);
 	WRITE_NODE_FIELD(rowMarks);
 	WRITE_NODE_FIELD(relationOids);
 	WRITE_NODE_FIELD(invalItems);
@@ -1023,6 +1024,7 @@ _outPartitionSelector(StringInfo str, PartitionSelector *node)
 	WRITE_INT_FIELD(relid);
 	WRITE_INT_FIELD(nLevels);
 	WRITE_INT_FIELD(scanId);
+	WRITE_INT_FIELD(selectorId);
 	WRITE_NODE_FIELD(levelEqExpressions);
 	WRITE_NODE_FIELD(levelExpressions);
 	WRITE_NODE_FIELD(residualPredicate);

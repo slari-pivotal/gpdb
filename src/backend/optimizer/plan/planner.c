@@ -506,6 +506,7 @@ standard_planner(Query *parse, int cursorOptions, ParamListInfo boundParams)
 	result->intoPolicy = GpPolicyCopy(CurrentMemoryContext, parse->intoPolicy);
 	result->queryPartOids = NIL;
 	result->queryPartsMetadata = NIL;
+	result->numSelectorsPerScanId = NIL;
 	
 	Assert(result->utilityStmt == NULL || IsA(result->utilityStmt, DeclareCursorStmt));
 	

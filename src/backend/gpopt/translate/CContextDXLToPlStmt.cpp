@@ -52,6 +52,7 @@ CContextDXLToPlStmt::CContextDXLToPlStmt
 	m_pidgtorParam(pidgtorParam),
 	m_pplRTable(plRTable),
 	m_plPartitionTables(NULL),
+	m_pdrgpulNumSelectors(NULL),
 	m_pplSubPlan(plSubPlan),
 	m_ulResultRelation(0),
 	m_pintocl(NULL),
@@ -59,6 +60,7 @@ CContextDXLToPlStmt::CContextDXLToPlStmt
 {
 	m_phmuldxltrctxSharedScan = New(m_pmp) HMUlDxltrctx(m_pmp);
 	m_phmulcteconsumerinfo = New(m_pmp) HMUlCTEConsumerInfo(m_pmp);
+	m_pdrgpulNumSelectors = New(m_pmp) DrgPul(m_pmp);
 }
 
 //---------------------------------------------------------------------------
@@ -73,6 +75,7 @@ CContextDXLToPlStmt::~CContextDXLToPlStmt()
 {
 	m_phmuldxltrctxSharedScan->Release();
 	m_phmulcteconsumerinfo->Release();
+	m_pdrgpulNumSelectors->Release();
 }
 
 //---------------------------------------------------------------------------
@@ -277,6 +280,54 @@ CContextDXLToPlStmt::AddPartitionedTable
 	{
 		m_plPartitionTables = gpdb::PlAppendOid(m_plPartitionTables, oid);
 	}
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CContextDXLToPlStmt::IncrementPartitionSelectors
+//
+//	@doc:
+//		Increment the number of partition selectors for the given scan id
+//
+//---------------------------------------------------------------------------
+void
+CContextDXLToPlStmt::IncrementPartitionSelectors
+	(
+	ULONG ulScanId
+	)
+{
+	// add extra elements to the array if necessary
+	const ULONG ulLen = m_pdrgpulNumSelectors->UlLength();
+	for (ULONG ul = ulLen; ul <= ulScanId; ul++)
+	{
+		ULONG *pul = New(m_pmp) ULONG(0);
+		m_pdrgpulNumSelectors->Append(pul);
+	}
+
+	ULONG *pul = (*m_pdrgpulNumSelectors)[ulScanId];
+	(*pul) ++;
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CContextDXLToPlStmt::PlNumPartitionSelectors
+//
+//	@doc:
+//		Return list containing number of partition selectors for every scan id
+//
+//---------------------------------------------------------------------------
+List *
+CContextDXLToPlStmt::PlNumPartitionSelectors() const
+{
+	List *pl = NIL;
+	const ULONG ulLen = m_pdrgpulNumSelectors->UlLength();
+	for (ULONG ul = 0; ul < ulLen; ul++)
+	{
+		ULONG *pul = (*m_pdrgpulNumSelectors)[ul];
+		pl = gpdb::PlAppendInt(pl, *pul);
+	}
+
+	return pl;
 }
 
 //---------------------------------------------------------------------------

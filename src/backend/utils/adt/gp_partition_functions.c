@@ -97,7 +97,7 @@ createPidIndex(int index)
 	HASHCTL hashCtl;
 	MemSet(&hashCtl, 0, sizeof(HASHCTL));
 	hashCtl.keysize = sizeof(Oid);
-	hashCtl.entrysize = sizeof(Oid);
+	hashCtl.entrysize = sizeof(PartOidEntry);
 	hashCtl.hash = oid_hash;
 	hashCtl.hcxt = dynamicTableScanInfo->memoryContext;
 
@@ -115,7 +115,7 @@ createPidIndex(int index)
  * 		exists at the index position in dynamicTableScanInfo.
  */
 void
-InsertPidIntoDynamicTableScanInfo(int32 index, Oid partOid)
+InsertPidIntoDynamicTableScanInfo(int32 index, Oid partOid, int32 selectorId)
 {
 	Assert(dynamicTableScanInfo != NULL &&
 		   dynamicTableScanInfo->memoryContext != NULL);
@@ -140,13 +140,22 @@ InsertPidIntoDynamicTableScanInfo(int32 index, Oid partOid)
 	
 	if (partOid != InvalidOid)
 	{
-#ifdef USE_ASSERT_CHECKING
-		Oid *pidInHash =
-#endif
+		bool found = false;
+		PartOidEntry *hashEntry =
 			hash_search(dynamicTableScanInfo->pidIndexes[index - 1],
-						&partOid, HASH_ENTER, NULL /* foundPtr */);
+						&partOid, HASH_ENTER, &found);
 
-		Assert(*pidInHash == partOid);
+		if (found)
+		{
+			Assert(hashEntry->partOid == partOid);
+			Assert(NIL != hashEntry->selectorList);
+			hashEntry->selectorList = list_append_unique_int(hashEntry->selectorList, selectorId);
+		}
+		else
+		{
+			hashEntry->partOid = partOid;
+			hashEntry->selectorList = list_make1_int(selectorId);
+		}
 	}
 
 	MemoryContextSwitchTo(oldCxt);
@@ -164,7 +173,7 @@ gp_partition_propagation(PG_FUNCTION_ARGS)
 	int32 index = PG_GETARG_INT32(0);
 	Oid partOid = PG_GETARG_OID(1);
 
-	InsertPidIntoDynamicTableScanInfo(index, partOid);
+	InsertPidIntoDynamicTableScanInfo(index, partOid, InvalidPartitionSelectorId);
 
 	PG_RETURN_VOID();
 }

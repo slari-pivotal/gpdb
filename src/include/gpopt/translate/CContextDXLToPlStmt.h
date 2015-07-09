@@ -118,6 +118,9 @@ namespace gpdxl
 			// list of oids of partitioned tables
 			List *m_plPartitionTables;
 
+			// number of partition selectors for each dynamic scan
+			DrgPul *m_pdrgpulNumSelectors;
+
 			// list of all subplan entries
 			List **m_pplSubPlan;
 
@@ -183,6 +186,9 @@ namespace gpdxl
 				return m_plPartitionTables;
 			}
 
+			// return list containing number of partition selectors for every scan id
+			List *PlNumPartitionSelectors() const;
+
 			List *PlPplanSubplan();
 
 			// index of result relation in the rtable
@@ -196,6 +202,9 @@ namespace gpdxl
 
 			// add a partitioned table index
 			void AddPartitionedTable(OID oid);
+
+			// increment the number of partition selectors for the given scan id
+			void IncrementPartitionSelectors(ULONG ulScanId);
 
 			void AddSubplan(Plan * );
 				

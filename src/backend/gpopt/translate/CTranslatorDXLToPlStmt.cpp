@@ -117,7 +117,8 @@ CTranslatorDXLToPlStmt::CTranslatorDXLToPlStmt
 	m_fTargetTableDistributed(false),
 	m_plResultRelations(NULL),
 	m_ulExternalScanCounter(0),
-	m_ulSegments(ulSegments)
+	m_ulSegments(ulSegments),
+	m_ulPartitionSelectorCounter(0)
 {
 	m_pdxlsctranslator = New (m_pmp) CTranslatorDXLToScalar(m_pmp, m_pmda, m_ulSegments);
 	InitTranslators();
@@ -251,6 +252,7 @@ CTranslatorDXLToPlStmt::PplstmtFromDXL
 	pplstmt->queryPartOids = m_pctxdxltoplstmt->PlPartitionedTables();
 	pplstmt->canSetTag = true;
 	pplstmt->relationOids = plOids;
+	pplstmt->numSelectorsPerScanId = m_pctxdxltoplstmt->PlNumPartitionSelectors();
 
 	pplan->nMotionNodes  = m_pctxdxltoplstmt->UlCurrentMotionId()-1;
 	pplstmt->nMotionNodes =  m_pctxdxltoplstmt->UlCurrentMotionId()-1;
@@ -3333,6 +3335,7 @@ CTranslatorDXLToPlStmt::PplanPartitionSelector
 	ppartsel->nLevels = ulLevels;
 	ppartsel->scanId = pdxlopPartSel->UlScanId();
 	ppartsel->relid = CMDIdGPDB::PmdidConvert(pdxlopPartSel->PmdidRel())->OidObjectId();
+	ppartsel->selectorId = m_ulPartitionSelectorCounter++;
 
 	// translate operator costs
 	TranslatePlanCosts
@@ -3427,6 +3430,9 @@ CTranslatorDXLToPlStmt::PplanPartitionSelector
 		// to the planned stmt so we can ship the constraints with the plan
 		m_pctxdxltoplstmt->AddPartitionedTable(ppartsel->relid);
 	}
+
+	// increment the number of partition selectors for the given scan id
+	m_pctxdxltoplstmt->IncrementPartitionSelectors(ppartsel->scanId);
 
 	SetParamIds(pplan);
 

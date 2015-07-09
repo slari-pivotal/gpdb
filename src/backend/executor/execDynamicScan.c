@@ -28,7 +28,7 @@ static inline DynamicPartitionIterator*
 DynamicScan_GetIterator(ScanState *scanState);
 
 static Oid
-DynamicScan_GetNextPartitionOid(ScanState *scanState, DynamicPartitionIterator *iterator);
+DynamicScan_GetNextPartitionOid(ScanState *scanState, DynamicPartitionIterator *iterator, int32 numSelectors);
 
 static void
 DynamicScan_UpdateIteratorPartitionState(DynamicPartitionIterator *iterator, Oid newOid);
@@ -150,21 +150,30 @@ DynamicScan_GetIterator(ScanState *scanState)
  * 		Returns the oid of the next partition.
  */
 static Oid
-DynamicScan_GetNextPartitionOid(ScanState *scanState, DynamicPartitionIterator *iterator)
+DynamicScan_GetNextPartitionOid(ScanState *scanState, DynamicPartitionIterator *iterator, int32 numSelectors)
 {
-	Oid *pid = hash_seq_search(iterator->partitionIterator);
-
-	if (NULL == pid)
+	Oid pid = InvalidOid;
+	while (InvalidOid == pid)
 	{
-		iterator->shouldCallHashSeqTerm = false;
-		iterator->attMapRelOid = InvalidOid;
+		PartOidEntry *partOidEntry = hash_seq_search(iterator->partitionIterator);
 
-		scanState->scan_state = SCAN_DONE;
+		if (NULL == partOidEntry)
+		{
+			iterator->shouldCallHashSeqTerm = false;
+			iterator->attMapRelOid = InvalidOid;
 
-		return InvalidOid;
+			scanState->scan_state = SCAN_DONE;
+
+			return InvalidOid;
+		}
+
+		if (list_length(partOidEntry->selectorList) == numSelectors)
+		{
+			pid = partOidEntry->partOid;
+		}
 	}
 
-	return *pid;
+	return pid;
 }
 
 /*
@@ -325,10 +334,11 @@ DynamicScan_InitNextPartition(ScanState *scanState, PartitionInitMethod *partiti
 	Assert(partitionInfo->numScans >= scan->partIndex);
 
 	DynamicPartitionIterator *iterator = partitionInfo->iterators[scan->partIndex - 1];
+	int32 numSelectors = list_nth_int(partitionInfo->numSelectorsPerScanId, scan->partIndex);
 
 	Assert(NULL != iterator);
 
-	Oid partOid = DynamicScan_GetNextPartitionOid(scanState, iterator);
+	Oid partOid = DynamicScan_GetNextPartitionOid(scanState, iterator, numSelectors);
 
 	if (!OidIsValid(partOid))
 	{
@@ -408,7 +418,7 @@ DynamicScan_CreateIterator(ScanState *scanState, Scan *scan)
 	 * Ensure that the dynahash exists even if the partition selector
 	 * didn't choose any partition for current scan node [MPP-24169].
 	 */
-	InsertPidIntoDynamicTableScanInfo(scan->partIndex, InvalidOid);
+	InsertPidIntoDynamicTableScanInfo(scan->partIndex, InvalidOid, InvalidPartitionSelectorId);
 
 	Assert(NULL != estate->dynamicTableScanInfo->pidIndexes);
 	Assert(partitionInfo->numScans >= scan->partIndex);

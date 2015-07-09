@@ -28,6 +28,11 @@
 #include "gpmon/gpmon.h"                /* gpmon_packet_t */
 #include "utils/memaccounting.h"
 
+/*
+ * partition selector ids start from 1. Sometimes we use 0 to initialize variables
+ */
+#define InvalidPartitionSelectorId  0
+
 struct CdbDispatchResults;              /* in cdbdispatchresult.h */
 struct CdbExplain_ShowStatCtx;          /* private, in "cdb/cdbexplain.c" */
 struct ChunkTransportState;             /* #include "cdb/cdbinterconnect.h" */
@@ -341,6 +346,19 @@ typedef struct PartitionMetadata
 } PartitionMetadata;
 
 /*
+ * PartOidEntry
+ *   Defines an entry in the shared partOid hash table.
+ */
+typedef struct PartOidEntry
+{
+	/* oid of an individual leaf partition */
+	Oid partOid;
+
+	/* list of partition selectors that produced the above part oid */
+	List *selectorList;
+} PartOidEntry;
+
+/*
  * DynamicPartitionIterator
  *   Defines the iterator state to iterate over a set of partitions.
  */
@@ -393,6 +411,12 @@ typedef struct DynamicTableScanInfo
 	 * The total number of unique dynamic table scans in the plan.
 	 */
 	int numScans;
+
+	/*
+	 * List containing the number of partition selectors for every scan id.
+	 * Element #i in the list corresponds to scan id i
+	 */
+	List *numSelectorsPerScanId;
 
 	/*
 	 * An array of pid indexes, one for each unique dynamic table scans.

@@ -174,6 +174,7 @@ _copyPlannedStmt(PlannedStmt *from)
 	COPY_NODE_FIELD(result_aosegnos);
 	COPY_NODE_FIELD(queryPartOids);
 	COPY_NODE_FIELD(queryPartsMetadata);
+	COPY_NODE_FIELD(numSelectorsPerScanId);
 	COPY_NODE_FIELD(rowMarks);
 	COPY_NODE_FIELD(relationOids);
 	COPY_SCALAR_FIELD(invalItems);
@@ -1144,6 +1145,7 @@ _copyPartitionSelector(const PartitionSelector *from)
 	COPY_SCALAR_FIELD(relid);
 	COPY_SCALAR_FIELD(nLevels);
 	COPY_SCALAR_FIELD(scanId);
+	COPY_SCALAR_FIELD(selectorId);
 	COPY_NODE_FIELD(levelEqExpressions);
 	COPY_NODE_FIELD(levelExpressions);
 	COPY_NODE_FIELD(residualPredicate);

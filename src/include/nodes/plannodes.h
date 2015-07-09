@@ -125,6 +125,11 @@ typedef struct PlannedStmt
 		 */
 		List *queryPartOids;
 		List *queryPartsMetadata;
+		/*
+		 * List containing the number of partition selectors for every scan id.
+		 * Element #i in the list corresponds to scan id i
+		 */
+		List *numSelectorsPerScanId;
 		
 		List	   *rowMarks;		/* a list of RowMarkClause's */
 		
@@ -1185,6 +1190,7 @@ typedef struct PartitionSelector
 	Oid 		relid;  				/* OID of target relation */
 	int 		nLevels;				/* number of partition levels */
 	int32 		scanId; 				/* id of the corresponding dynamic scan */
+	int32		selectorId;				/* id of this partition selector */
 	List		*levelEqExpressions;	/* equality expressions used for individual levels */
 	List		*levelExpressions;  	/* predicates used for individual levels */
 	Node		*residualPredicate; 	/* residual predicate (to be applied at the end) */

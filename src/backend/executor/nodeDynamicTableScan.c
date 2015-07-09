@@ -187,7 +187,7 @@ setPidIndex(DynamicTableScanState *node)
 	 * Ensure that the dynahash exists even if the partition selector
 	 * didn't choose any partition for current scan node [MPP-24169].
 	 */
-	InsertPidIntoDynamicTableScanInfo(plan->partIndex, InvalidOid);
+	InsertPidIntoDynamicTableScanInfo(plan->partIndex, InvalidOid, InvalidPartitionSelectorId);
 
 	Assert(NULL != estate->dynamicTableScanInfo->pidIndexes);
 	Assert(estate->dynamicTableScanInfo->numScans >= plan->partIndex);

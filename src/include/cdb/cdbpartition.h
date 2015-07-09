@@ -75,7 +75,6 @@ typedef struct LogicalIndexes
 	LogicalIndexInfo	**logicalIndexInfo;
 } LogicalIndexes;
 
-
 #define parkindIsHash(c)   ((c) == 'h')
 #define parkindIsRange(c)  ((c) == 'r')
 #define parkindIsList(c)   ((c) == 'l')
@@ -259,7 +258,7 @@ extern Node *makeBoolConst(bool value, bool isnull);
 
 extern LogicalIndexInfo *logicalIndexInfoForIndexOid(Oid rootOid, Oid indexOid);
 
-extern void InsertPidIntoDynamicTableScanInfo(int32 index, Oid partOid);
+extern void InsertPidIntoDynamicTableScanInfo(int32 index, Oid partOid, int32 selectorId);
 
 extern char *
 DebugPartitionOid(Datum *elements, int n);

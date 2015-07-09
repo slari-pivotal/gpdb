@@ -332,6 +332,11 @@ freeDynamicTableScanInfo(DynamicTableScanInfo *scanInfo)
 		list_free_deep(scanInfo->partsMetadata);
 	}
 	
+	if (scanInfo->numSelectorsPerScanId != NIL)
+	{
+		list_free(scanInfo->numSelectorsPerScanId);
+	}
+
 	pfree(scanInfo);
 }
 

@@ -2741,6 +2741,7 @@ _readPlannedStmt(const char ** str)
 	READ_NODE_FIELD(result_aosegnos);
 	READ_NODE_FIELD(queryPartOids);
 	READ_NODE_FIELD(queryPartsMetadata);
+	READ_NODE_FIELD(numSelectorsPerScanId);
 	READ_NODE_FIELD(rowMarks);
 	READ_NODE_FIELD(relationOids);
 	READ_NODE_FIELD(invalItems);
@@ -3523,6 +3524,7 @@ _readPartitionSelector(const char ** str)
 	READ_INT_FIELD(relid);
 	READ_INT_FIELD(nLevels);
 	READ_INT_FIELD(scanId);
+	READ_INT_FIELD(selectorId);
 	READ_NODE_FIELD(levelEqExpressions);
 	READ_NODE_FIELD(levelExpressions);
 	READ_NODE_FIELD(residualPredicate);

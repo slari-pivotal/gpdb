@@ -161,6 +161,9 @@ namespace gpdxl
 			// number of segments
 			ULONG m_ulSegments;
 
+			// partition selector counter
+			ULONG m_ulPartitionSelectorCounter;
+
 			// private copy ctor
 			CTranslatorDXLToPlStmt(const CTranslatorDXLToPlStmt&);
 

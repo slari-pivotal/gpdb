@@ -22,7 +22,7 @@
 #include "utils/memutils.h"
 
 static void
-partition_propagation(List *partOids, List *scanIds);
+partition_propagation(List *partOids, List *scanIds, int32 selectorId);
 
 /* PartitionSelector Slots */
 #define PARTITIONSELECTOR_NSLOTS 1
@@ -120,7 +120,7 @@ ExecPartitionSelector(PartitionSelectorState *node)
 	if (ps->staticSelection)
 	{
 		/* propagate the part oids obtained via static partition selection */
-		partition_propagation(ps->staticPartOids, ps->staticScanIds);
+		partition_propagation(ps->staticPartOids, ps->staticScanIds, ps->selectorId);
 		*node->acceptedLeafPart = NULL;
 		return NULL;
 	}
@@ -164,7 +164,7 @@ ExecPartitionSelector(PartitionSelectorState *node)
 	/* partition propagation */
 	if (NULL != ps->propagationExpression)
 	{
-		partition_propagation(selparts->partOids, selparts->scanIds);
+		partition_propagation(selparts->partOids, selparts->scanIds, ps->selectorId);
 	}
 
 	list_free(selparts->partOids);
@@ -267,7 +267,7 @@ ExecEndPartitionSelector(PartitionSelectorState *node)
  * ----------------------------------------------------------------
  */
 static void
-partition_propagation(List *partOids, List *scanIds)
+partition_propagation(List *partOids, List *scanIds, int32 selectorId)
 {
 	Assert (list_length(partOids) == list_length(scanIds));
 
@@ -278,7 +278,7 @@ partition_propagation(List *partOids, List *scanIds)
 		Oid partOid = lfirst_oid(lcOid);
 		int scanId = lfirst_int(lcScanId);
 
-		InsertPidIntoDynamicTableScanInfo(scanId, partOid);
+		InsertPidIntoDynamicTableScanInfo(scanId, partOid, selectorId);
 	}
 }
 

@@ -1636,6 +1636,11 @@ InitPlan(QueryDesc *queryDesc, int eflags)
 	InitializeQueryPartsMetadata(plannedstmt, estate);
 
 	/*
+	 * set the number of partition selectors for every dynamic scan id
+	 */
+	estate->dynamicTableScanInfo->numSelectorsPerScanId = plannedstmt->numSelectorsPerScanId;
+
+	/*
 	 * Detect whether we're doing SELECT INTO.  If so, set the es_into_oids
 	 * flag appropriately so that the plan tree will be initialized with the
 	 * correct tuple descriptors.  (Other SELECT INTO stuff comes later.)
