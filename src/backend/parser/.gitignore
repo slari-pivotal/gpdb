@@ -1,5 +1,5 @@
-gram.c
-parse.h
-scan.c
-gram.h
-gram.output
+/gram.h
+/gram.c
+/scan.c
+/parse.h
+/gram.output

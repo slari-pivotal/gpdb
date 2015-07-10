@@ -1,20 +1,4 @@
-GNUmakefile
-config.status
-a.out.dSYM
-confdefs.h
-conftest.c
-conftest.err
-config.cache
-config.status.lineno
-config.log
-configure.lineno
-.config.log.swp
-Debug
-Release
-*.log
-pgsql.sln
-*.vcproj
-autom4te.cache
+# Global excludes across all subdirectories
 *.o
 *.so
 *.so.[0-9]
@@ -28,6 +12,8 @@ autom4te.cache
 *.mo
 objfiles.txt
 .deps/
+*.log
+*.vcproj
 *.gcno
 *.gcda
 *.gcov
@@ -40,3 +26,20 @@ lib*dll.defautom4te.cache
 **/test/*.t
 **/tags
 *.pyc
+
+# Local excludes in root directory
+/GNUmakefile
+/config.log
+/config.status
+a.out.dSYM
+confdefs.h
+conftest.c
+conftest.err
+config.cache
+config.status.lineno
+autom4te.cache
+configure.lineno
+.config.log.swp
+Debug
+Release
+pgsql.sln

@@ -1,8 +1,8 @@
-cdb_schema.sql
-postgres.bki
-postgres.description
-postgres.shdescription
-cdb_init.sql
-cdb_util.sql
-gp_toolkit.sql
-gp_toolkit_test.sql
+/postgres.bki
+/postgres.description
+/postgres.shdescription
+/cdb_schema.sql
+/cdb_init.sql
+/cdb_util.sql
+/gp_toolkit.sql
+/gp_toolkit_test.sql

@@ -1,7 +1,8 @@
-dumputils.c
-psql
-psqlscan.c
-sql_help.h
-kwlookup.c
-keywords.c
-sql_help.c
+/psqlscan.c
+/sql_help.h
+/sql_help.c
+/dumputils.c
+/keywords.c
+/kwlookup.c
+
+/psql
