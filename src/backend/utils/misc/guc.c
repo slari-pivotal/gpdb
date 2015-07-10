@@ -750,10 +750,11 @@ bool		optimizer_enable_materialize;
 bool		optimizer_enable_partition_propagation;
 bool		optimizer_enable_partition_selection;
 bool		optimizer_enable_outerjoin_rewrite;
-bool        optimizer_enable_space_pruning;
-bool        optimizer_prefer_multistage_agg;
+bool    optimizer_enable_space_pruning;
+bool    optimizer_prefer_multistage_agg;
 bool		optimizer_enable_multiple_distinct_aggs;
 bool		optimizer_prefer_expanded_distinct_aggs;
+bool    optimizer_nary_union_union_all;
 bool		optimizer_push_requirements_from_consumer_to_producer;
 bool		optimizer_direct_dispatch;
 bool		optimizer_enable_hashjoin_redistribute_broadcast_children;
@@ -4128,6 +4129,16 @@ static struct config_bool ConfigureNamesBool[] =
                 &optimizer_prefer_expanded_distinct_aggs,
                 true, NULL, NULL
         },
+
+		{
+				{"optimizer_nary_union_union_all", PGC_USERSET, DEVELOPER_OPTIONS,
+						gettext_noop("Support collapsing of cascaded union/union all into n-ary union/union all."),
+						NULL,
+						GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+		        },
+				&optimizer_nary_union_union_all,
+				true, NULL, NULL
+		},
 
         {
         		{"optimizer_push_requirements_from_consumer_to_producer", PGC_USERSET, DEVELOPER_OPTIONS,
