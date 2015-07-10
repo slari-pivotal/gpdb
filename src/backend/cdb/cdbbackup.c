@@ -23,12 +23,9 @@
 #include "cdb/cdbtimer.h"
 #include "miscadmin.h"
 #include "postmaster/postmaster.h"
+#include "utils/guc.h"
 
 #define EMPTY_STR '\0'
-#ifdef USE_DDBOOST
-#include "ddp_api.h"
-#include "utils/guc.h"
-#endif
 
 #define DUMP_PREFIX (dump_prefix==NULL?"":dump_prefix)
 
