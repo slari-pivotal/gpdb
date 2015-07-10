@@ -19,6 +19,7 @@
 #include "utils/memutils.h"
 #include "utils/resowner.h"
 
+
 /*
  * We track all of a backend's active scans on hash indexes using a list
  * of HashScanListData structs, which are allocated in TopMemoryContext.
@@ -29,7 +30,6 @@
  * clean up the list.  (XXX seems like there should be a better way to
  * manage this...)
  */
-
 typedef struct HashScanListData
 {
 	IndexScanDesc hashsl_scan;

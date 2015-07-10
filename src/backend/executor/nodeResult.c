@@ -129,7 +129,9 @@ static TupleTableSlot *NextInputSlot(ResultState *node)
 TupleTableSlot *
 ExecResult(ResultState *node)
 {
-	ExprContext *econtext = node->ps.ps_ExprContext;
+	ExprContext *econtext;
+
+	econtext = node->ps.ps_ExprContext;
 
 	/*
 	 * check constant qualifications like (2 > 1), if not already done

@@ -563,7 +563,7 @@ extern PGDLLIMPORT Node *newNodeMacroHolder;
 #endif   /* __GNUC__ */
 
 
-#define makeNode(_type_) 		((_type_ *) newNode(sizeof(_type_),T_##_type_))
+#define makeNode(_type_)		((_type_ *) newNode(sizeof(_type_),T_##_type_))
 #define NodeSetTag(nodeptr,t)	(((Node*)(nodeptr))->type = (t))
 
 #define IsA(nodeptr,_type_)		(nodeTag(nodeptr) == T_##_type_)
@@ -683,7 +683,7 @@ typedef enum JoinType
 #define IS_OUTER_JOIN(jointype) \
 	((jointype) == JOIN_LEFT || \
 	 (jointype) == JOIN_FULL || \
-	 (jointype) == JOIN_RIGHT) 
+	 (jointype) == JOIN_RIGHT)
 
 
 
@@ -731,4 +731,3 @@ typedef enum DispatchMethod
 #define INVALID_PART_INDEX 0
 
 #endif   /* NODES_H */
-

@@ -429,7 +429,7 @@ DropProceduralLanguage(DropPLangStmt *stmt)
 	char	   *languageName;
 	int			fetchCount;
 	Oid			langOid;
-	ObjectAddress object;	
+	ObjectAddress object;
 
 	/*
 	 * Check permission

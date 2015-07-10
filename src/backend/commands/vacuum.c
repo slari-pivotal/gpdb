@@ -305,7 +305,8 @@ static void vacuum_appendonly_index(Relation indexRelation,
  * 	vacstmt - vacuum statement.
  * 	relids  - list of relations (used by autovacuum)
  */
-void vacuum(VacuumStmt *vacstmt, List *relids)
+void
+vacuum(VacuumStmt *vacstmt, List *relids)
 {
 	VacuumStmt *analyzeStmt = copyObject(vacstmt);
 	bool doAnalyze = vacstmt->analyze;
@@ -2536,6 +2537,7 @@ scan_heap_for_truncate(VRelStats *vacrelstats, Relation onerel,
 	}
 }
 
+
 /*
  *	scan_heap() -- scan an open heap relation
  *
@@ -2608,10 +2610,10 @@ scan_heap(VRelStats *vacrelstats, Relation onerel,
 		int			nfrozen;
 
 		vacuum_delay_point();
-		
+
 		// -------- MirroredLock ----------
 		MIRROREDLOCK_BUFMGR_LOCK;
-		
+
 		buf = ReadBuffer(onerel, blkno);
 		page = BufferGetPage(buf);
 
@@ -4754,7 +4756,7 @@ PageGetFreeSpaceWithFillFactor(Relation relation, Page page)
  * typically once per page processed.
  */
 void
-vacuum_delay_point()
+vacuum_delay_point(void)
 {
 	/* Always check for interrupts */
 	CHECK_FOR_INTERRUPTS();

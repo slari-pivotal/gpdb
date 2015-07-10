@@ -532,5 +532,4 @@ RemoveView(const RangeVar *view, DropBehavior behavior)
 	}
 
 	performDeletion(&object, behavior);
-
 }

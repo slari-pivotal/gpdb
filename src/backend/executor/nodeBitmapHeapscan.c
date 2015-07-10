@@ -49,6 +49,7 @@
 #include "cdb/cdbfilerepprimary.h"
 #include "nodes/tidbitmap.h"
 
+
 static TupleTableSlot *BitmapHeapNext(BitmapHeapScanState *node);
 static void bitgetpage(HeapScanDesc scan, TBMIterateResult *tbmres);
 

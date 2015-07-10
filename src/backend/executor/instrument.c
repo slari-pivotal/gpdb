@@ -91,7 +91,7 @@ InstrEndLoop(Instrumentation *instr)
     if (instr->nloops == 0)
         instr->startup = instr->firsttuple;
 
-    instr->total += totaltime;
+	instr->total += totaltime;
 	instr->ntuples += instr->tuplecount;
 	instr->nloops += 1;
 

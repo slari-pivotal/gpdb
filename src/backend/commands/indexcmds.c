@@ -514,9 +514,9 @@ DefineIndex(RangeVar *heapRelation,
 			AlterTableInternal(relationId, cmds, false);
 	}
 
-  	/*
- 	 * Parse AM-specific options, convert to text array form, validate
- 	 *
+	/*
+	 * Parse AM-specific options, convert to text array form, validate
+	 *
 	 * However, accept and only accept tidycat option during upgrade.
 	 * During bootstrap, we don't have any storage option. So, during
 	 * upgrade, we don't need it as well because we're just creating
@@ -524,7 +524,7 @@ DefineIndex(RangeVar *heapRelation,
 	 * the index oid. So, if we don't strip it out, it'll appear in
 	 * the pg_class.reloptions, and we don't want that.
 	 */
- 	reloptions = transformRelOptions((Datum) 0, options, false, false);
+	reloptions = transformRelOptions((Datum) 0, options, false, false);
 	if (gp_upgrade_mode)
  	{
  		TidycatOptions *tidycatoptions = (TidycatOptions*) tidycat_reloptions(reloptions);
@@ -1327,10 +1327,10 @@ ChooseRelationName(const char *name1, const char *name2,
 				   const char *label, Oid namespace,
 				   HTAB *cache)
 {
-	int			 pass	 = 0;
-	char		*relname = NULL;
-	char		 modlabel[NAMEDATALEN];
-	bool		 found	 = false;
+	int			pass = 0;
+	char	   *relname = NULL;
+	char		modlabel[NAMEDATALEN];
+	bool		found = false;
 
 	/* try the unmodified label first */
 	StrNCpy(modlabel, label, sizeof(modlabel));

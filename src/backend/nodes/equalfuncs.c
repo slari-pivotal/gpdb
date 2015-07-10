@@ -739,7 +739,7 @@ _equalInClauseInfo(InClauseInfo *a, InClauseInfo *b)
 	COMPARE_BITMAPSET_FIELD(righthand);
 	COMPARE_NODE_FIELD(sub_targetlist);
 
-    return true;
+	return true;
 }
 
 static bool
@@ -755,7 +755,6 @@ _equalAppendRelInfo(AppendRelInfo *a, AppendRelInfo *b)
 
 	return true;
 }
-
 
 
 /*

@@ -14,15 +14,14 @@
  *		index_open		- open an index relation by relation OID
  *		index_close		- close an index relation
  *		index_beginscan - start a scan of an index with amgettuple
- *      index_beginscan_multi - start a scan of an index with 
- *                               amgetmulti
+ *		index_beginscan_multi - start a scan of an index with amgetmulti
  *		index_rescan	- restart a scan of an index
  *		index_endscan	- end a scan
  *		index_insert	- insert an index tuple into a relation
  *		index_markpos	- mark a scan position
  *		index_restrpos	- restore a scan position
  *		index_getnext	- get the next tuple from a scan
- *      index_getmulti - get the next bitmap from a scan
+ *		index_getmulti	- get the next bitmap from a scan
  *		index_bulk_delete	- bulk deletion of index tuples
  *		index_vacuum_cleanup	- post-deletion cleanup of an index
  *		index_getprocid - get a support procedure OID
@@ -552,7 +551,7 @@ index_getmulti(IndexScanDesc scan, Node *bitmap)
 	scan->kill_prior_tuple = false;
 
 	/*
-	 * have the am's getmulti proc do all the work. 
+	 * have the am's getmulti proc do all the work.
 	 * index_beginscan_multi already set up fn_getmulti.
 	 */
 	bm = (Node *)DatumGetPointer(FunctionCall2(procedure,

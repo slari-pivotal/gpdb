@@ -25,6 +25,7 @@
 #include "nodes/plannerconfig.h"
 #include "cdb/cdbpathlocus.h"
 
+
 /*
  * Relids
  *		Set of relation identifiers (indexes into the rangetable).
@@ -212,10 +213,10 @@ typedef struct PlannerInfo
     Relids      currlevel_relids;   /* CDB: all relids of current query level,
                                      * omitting any pulled-up subquery relids */
 
-    /*
-     * Outer join info
-     */
-    List	   *left_join_clauses;		/* list of RestrictInfos for outer
+	/*
+	 * Outer join info
+	 */
+	List	   *left_join_clauses;		/* list of RestrictInfos for outer
 										 * join clauses w/nonnullable var on
 										 * left */
 

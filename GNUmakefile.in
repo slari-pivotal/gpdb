@@ -26,7 +26,7 @@ all:
 	$(MAKE) -C contrib/indexscan all
 	@echo "All of Greenplum Database successfully made. Ready to install."
 
-install: 
+install:
 #	$(MAKE) -C doc $@
 	$(MAKE) -C src $@
 	$(MAKE) -C config $@

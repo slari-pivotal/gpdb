@@ -3951,7 +3951,6 @@ exec_eval_expr(PLpgSQL_execstate *estate,
 {
 	int			rc;
 
-	
 	/*
 	 * If not already done create a plan for this expression
 	 */

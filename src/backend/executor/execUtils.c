@@ -443,7 +443,7 @@ CreateExprContext(EState *estate)
 	 * Create working memory for expression evaluation in this context.
 	 */
 	econtext->ecxt_per_tuple_memory =
-	    AllocSetContextCreate(estate->es_query_cxt,
+		AllocSetContextCreate(estate->es_query_cxt,
 							  "ExprContext",
 							  ALLOCSET_DEFAULT_MINSIZE,
 							  ALLOCSET_DEFAULT_INITSIZE,

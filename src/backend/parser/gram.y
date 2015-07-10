@@ -53,7 +53,6 @@
 #include <ctype.h>
 #include <limits.h>
 
-
 #include "catalog/index.h"
 #include "catalog/namespace.h"
 #include "commands/defrem.h"
@@ -216,7 +215,7 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 %type <node>	alter_table_cmd alter_rel_cmd alter_table_partition_id_spec
 				alter_table_partition_cmd
 				alter_table_partition_id_spec_with_opt_default
-%type <list>	alter_table_cmds alter_rel_cmds 
+%type <list>	alter_table_cmds alter_rel_cmds
 				part_values_clause multi_spec_value_list part_values_single
 %type <ival>	opt_table_partition_exchange_validate partition_hash_keyword
 				partition_coalesce_keyword
@@ -1252,7 +1251,7 @@ opt_with:	WITH									{}
  */
 OptRoleList:
 			OptRoleList OptRoleElem					{ $$ = lappend($1, $2); }
-			| /*EMPTY*/								{ $$ = NIL; }
+			| /* EMPTY */							{ $$ = NIL; }
 		;
 
 OptRoleElem:
@@ -1683,12 +1682,12 @@ CreateSchemaStmt:
 
 OptSchemaName:
 			ColId									{ $$ = $1; }
-			| /*EMPTY*/								{ $$ = NULL; }
+			| /* EMPTY */							{ $$ = NULL; }
 		;
 
 OptSchemaEltList:
 			OptSchemaEltList schema_stmt			{ $$ = lappend($1, $2); }
-			| /*EMPTY*/								{ $$ = NIL; }
+			| /* EMPTY */							{ $$ = NIL; }
 		;
 
 /*
@@ -3058,13 +3057,15 @@ alter_column_default:
 opt_drop_behavior:
 			CASCADE						{ $$ = DROP_CASCADE; }
 			| RESTRICT					{ $$ = DROP_RESTRICT; }
-			| /*EMPTY*/					{ $$ = DROP_RESTRICT; /* default */ }
+			| /* EMPTY */				{ $$ = DROP_RESTRICT; /* default */ }
 		;
 
 alter_using:
 			USING a_expr				{ $$ = $2; }
-			| /*EMPTY*/					{ $$ = NULL; }
+			| /* EMPTY */				{ $$ = NULL; }
 		;
+
+
 
 /*****************************************************************************
  *
@@ -3159,7 +3160,7 @@ copy_file_name:
 
 copy_opt_list:
 			copy_opt_list copy_opt_item				{ $$ = lappend($1, $2); }
-			| /*EMPTY*/								{ $$ = NIL; }
+			| /* EMPTY */							{ $$ = NIL; }
 		;
 
 
@@ -3585,7 +3586,7 @@ TableLikeClause:
 
 TableLikeOptionList:
 				TableLikeOptionList TableLikeOption	{ $$ = lappend_int($1, $2); }
-				| /*EMPTY*/							{ $$ = NIL; }
+				| /* EMPTY */						{ $$ = NIL; }
 		;
 
 TableLikeOption:
@@ -4416,7 +4417,7 @@ TabSubPartitionBy:
  * Note: CREATE TABLE ... AS SELECT ... is just another spelling for
  * SELECT ... INTO.
  */
-	
+
 CreateAsStmt:
 		CREATE OptTemp TABLE create_as_target AS SelectStmt opt_with_data OptDistributedBy OptTabPartitionBy
 				{
@@ -4920,7 +4921,7 @@ OptSeqElem: CACHE NumericOnly
 		;
 
 opt_by:		BY				{}
-			| /*EMPTY*/		{}
+			| /* empty */	{}
 	  ;
 
 NumericOnly:
@@ -5540,7 +5541,7 @@ TriggerForSpec:
 				{
 					$$ = $3;
 				}
-			| /*EMPTY*/
+			| /* EMPTY */
 				{
 					/*
 					 * If ROW/STATEMENT not specified, default to
@@ -5749,7 +5750,7 @@ DefineStmt:
 					n->newOid = 0;
 					$$ = (Node *)n;
 				}
-			| CREATE TYPE_P any_name 
+			| CREATE TYPE_P any_name
 				{
 					/* Shell type (identified by lack of definition) */
 					DefineStmt *n = makeNode(DefineStmt);
@@ -7076,7 +7077,7 @@ alterfunc_opt_list:
 /* Ignored, merely for SQL compliance */
 opt_restrict:
 			RESTRICT
-			| /*EMPTY*/
+			| /* EMPTY */
 		;
 
 
@@ -7281,7 +7282,7 @@ reindex_type:
 		;
 
 opt_force:	FORCE									{  $$ = TRUE; }
-			| /*EMPTY*/								{  $$ = FALSE; }
+			| /* EMPTY */							{  $$ = FALSE; }
 		;
 
 /*
@@ -7921,7 +7922,7 @@ transaction_mode_list:
 
 transaction_mode_list_or_empty:
 			transaction_mode_list
-			| /*EMPTY*/
+			| /* EMPTY */
 					{ $$ = NIL; }
 		;
 
@@ -7982,7 +7983,7 @@ opt_check_option:
 							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 							 errmsg("WITH CHECK OPTION is not implemented")));
 				}
-		| /*EMPTY*/							{ $$ = NIL; }
+		| /* EMPTY */							{ $$ = NIL; }
 		;
 
 /*****************************************************************************
@@ -8020,7 +8021,7 @@ CreatedbStmt:
 
 createdb_opt_list:
 			createdb_opt_list createdb_opt_item		{ $$ = lappend($1, $2); }
-			| /*EMPTY*/							{ $$ = NIL; }
+			| /* EMPTY */							{ $$ = NIL; }
 		;
 
 createdb_opt_item:
@@ -8121,7 +8122,7 @@ AlterDatabaseSetStmt:
 
 alterdb_opt_list:
 			alterdb_opt_list alterdb_opt_item		{ $$ = lappend($1, $2); }
-			| /*EMPTY*/							{ $$ = NIL; }
+			| /* EMPTY */							{ $$ = NIL; }
 		;
 
 alterdb_opt_item:
@@ -8222,7 +8223,7 @@ AlterDomainStmt:
 			;
 
 opt_as:		AS										{}
-			| /*EMPTY*/							{}
+			| /* EMPTY */							{}
 		;
 
 
@@ -8395,6 +8396,7 @@ opt_name_list:
 			| /*EMPTY*/								{ $$ = NIL; }
 		;
 
+
 /*****************************************************************************
  *
  *		QUERY:
@@ -8440,7 +8442,7 @@ opt_dxl:	DXL										{ $$ = TRUE; }
 
 opt_analyze:
 			analyze_keyword			{ $$ = TRUE; }
-			| /*EMPTY*/			{ $$ = FALSE; }
+			| /* EMPTY */			{ $$ = FALSE; }
 		;
 
 /*****************************************************************************
@@ -8461,7 +8463,7 @@ PrepareStmt: PREPARE name prep_type_clause AS PreparableStmt
 		;
 
 prep_type_clause: '(' prep_type_list ')'	{ $$ = $2; }
-				| /*EMPTY*/				{ $$ = NIL; }
+				| /* EMPTY */				{ $$ = NIL; }
 		;
 
 prep_type_list: Typename			{ $$ = list_make1($1); }
@@ -8509,7 +8511,7 @@ ExecuteStmt: EXECUTE name execute_param_clause
 		;
 
 execute_param_clause: '(' expr_list ')'				{ $$ = $2; }
-					| /*EMPTY*/					{ $$ = NIL; }
+					| /* EMPTY */					{ $$ = NIL; }
 					;
 
 /*****************************************************************************
@@ -8610,7 +8612,7 @@ insert_column_item:
 
 returning_clause:
 			RETURNING target_list		{ $$ = $2; }
-			| /*EMPTY*/				{ $$ = NIL; }
+			| /* EMPTY */				{ $$ = NIL; }
 		;
 
 
@@ -8787,7 +8789,7 @@ cursor_options: /*EMPTY*/					{ $$ = 0; }
 			| cursor_options INSENSITIVE	{ $$ = $1 | CURSOR_OPT_INSENSITIVE; }
 		;
 
-opt_hold: /*EMPTY*/						{ $$ = FALSE; }
+opt_hold: /* EMPTY */						{ $$ = FALSE; }
 			| WITH HOLD						{ $$ = TRUE; }
 			| WITHOUT HOLD					{ $$ = FALSE; }
 		;
@@ -8867,13 +8869,15 @@ select_no_parens:
 			| select_clause opt_sort_clause for_locking_clause opt_select_limit
 				{
 					insertSelectOptions((SelectStmt *) $1, $2, $3,
-										list_nth($4, 0), list_nth($4, 1), NULL);
+										list_nth($4, 0), list_nth($4, 1),
+										NULL);
 					$$ = $1;
 				}
 			| select_clause opt_sort_clause select_limit opt_for_locking_clause
 				{
 					insertSelectOptions((SelectStmt *) $1, $2, $4,
-										list_nth($3, 0), list_nth($3, 1), NULL);
+										list_nth($3, 0), list_nth($3, 1),
+										NULL);
 					$$ = $1;
 				}
 			| with_clause select_clause
@@ -9160,7 +9164,7 @@ select_limit:
 
 opt_select_limit:
 			select_limit							{ $$ = $1; }
-			| /*EMPTY*/
+			| /* EMPTY */
 					{ $$ = list_make2(NULL,NULL); }
 		;
 
@@ -9420,7 +9424,7 @@ for_locking_clause:
 
 opt_for_locking_clause:
 			for_locking_clause						{ $$ = $1; }
-			| /*EMPTY*/							{ $$ = NIL; }
+			| /* EMPTY */							{ $$ = NIL; }
 		;
 
 for_locking_items:
@@ -9449,7 +9453,7 @@ for_locking_item:
 
 locked_rels_list:
 			OF name_list							{ $$ = $2; }
-			| /*EMPTY*/							{ $$ = NIL; }
+			| /* EMPTY */							{ $$ = NIL; }
 		;
 
 
@@ -9800,7 +9804,7 @@ where_clause:
 		;
 
 /* variant for UPDATE and DELETE */
-where_or_current_clause: 
+where_or_current_clause:
 			where_clause							{ $$ = $1; }
 			| WHERE CURRENT OF name
 				{
@@ -10747,7 +10751,7 @@ a_expr:		c_expr									{ $$ = $1; }
 						n->subLinkType = ANY_SUBLINK;
 						n->testexpr = $1;
 						n->operName = list_make1(makeString("="));
-    					n->location = @2;
+						n->location = @2;
 						$$ = (Node *)n;
 					}
 					else
@@ -10767,7 +10771,7 @@ a_expr:		c_expr									{ $$ = $1; }
 						n->subLinkType = ANY_SUBLINK;
 						n->testexpr = $1;
 						n->operName = list_make1(makeString("="));
-    					n->location = @3;
+						n->location = @3;
 						/* Stick a NOT on top */
 						$$ = (Node *) makeA_Expr(AEXPR_NOT, NIL, NULL, (Node *) n, @2);
 					}
@@ -10870,7 +10874,6 @@ b_expr:		c_expr
 				{
 					$$ = (Node *) makeSimpleA_Expr(AEXPR_OF, "<>", $1, (Node *) $6, @2);
 				}
-
 		;
 
 /*
@@ -11905,10 +11908,10 @@ when_clause:
 					CaseWhen *w = makeNode(CaseWhen);
 					w->expr = (Expr *) $2;
 					w->result = (Expr *) $4;
-					$$ = (Node *) w;
+					$$ = (Node *)w;
 				}
 			;
-			
+
 when_operand:
 			a_expr							{ $$ = $1; }
 			| IS NOT DISTINCT FROM a_expr	{ $$ = makeIsNotDistinctFromNode($5,@2); }
@@ -12117,7 +12120,6 @@ target_el:	a_expr AS ColLabel
 					$$->val = (Node *)n;
 					$$->location = @1;
 				}
-			
 		;
 
 
@@ -12670,7 +12672,6 @@ unreserved_keyword:
 			| WRITE
 			| YEAR_P
 			| ZONE
-
 		;
 
 /*
@@ -12987,7 +12988,6 @@ PartitionIdentKeyword: ABORT_P
  * The type names appearing here are not usable as function names
  * because they can be followed by '(' in typename productions, which
  * looks too much like a function call for an LR(1) parser.
- * 
  */
 col_name_keyword:
 			  BIGINT

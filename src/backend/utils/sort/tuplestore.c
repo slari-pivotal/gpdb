@@ -186,7 +186,7 @@ struct Tuplestorestate
 #define WRITETUP(state,pos, tup) ((*(state)->writetup) (state, pos, tup))
 #define READTUP(state,pos,len)	((*(state)->readtup) (state, pos, len))
 #define LACKMEM(state)		((state)->availMem < 0)
-#define USEMEM(state,amt)	((state)->availMem -= (amt)) 
+#define USEMEM(state,amt)	((state)->availMem -= (amt))
 
 static inline void
 FREEMEM(Tuplestorestate *state, int amt)
@@ -210,7 +210,7 @@ FREEMEM(Tuplestorestate *state, int amt)
  * If state->backward is true, then the stored representation of
  * the tuple must be followed by another "unsigned int" that is a copy of the
  * length --- so the total tape space used is actually sizeof(unsigned int)
- * more than the stored length value.  This allows read-backwards.	When
+ * more than the stored length value.  This allows read-backwards.  When
  * state->backward is not set, the write/read routines may omit the extra
  * length word.
  *
@@ -329,7 +329,7 @@ tuplestore_begin_heap(bool randomAccess, bool interXact, int maxKBytes)
 {
 	Tuplestorestate *state;
 
-	state = tuplestore_begin_common(randomAccess, interXact, maxKBytes); 
+	state = tuplestore_begin_common(randomAccess, interXact, maxKBytes);
 
 	state->copytup = copytup_heap;
 	state->writetup = writetup_heap;
@@ -361,7 +361,7 @@ tuplestore_set_instrument(Tuplestorestate          *state,
  *	Release resources and clean up.
  */
 void
-tuplestore_end(Tuplestorestate *state) 
+tuplestore_end(Tuplestorestate *state)
 {
 	int			i;
 
@@ -902,6 +902,7 @@ tuplestore_restorepos_pos(Tuplestorestate *state, TuplestorePos *pos)
 			break;
 	}
 }
+
 void
 tuplestore_restorepos(Tuplestorestate *state)
 {

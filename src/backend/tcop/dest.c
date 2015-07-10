@@ -130,7 +130,8 @@ CreateDestReceiver(CommandDest dest, Portal portal)
 			if (portal->holdStore == NULL ||
 				portal->holdContext == NULL)
 				elog(ERROR, "portal has no holdStore");
-			return CreateTuplestoreDestReceiver(portal->holdStore, portal->holdContext);
+			return CreateTuplestoreDestReceiver(portal->holdStore,
+												portal->holdContext);
 
 		case DestIntoRel:
 			return CreateIntoRelDestReceiver();

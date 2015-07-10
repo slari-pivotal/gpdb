@@ -684,7 +684,7 @@ XLogDropDatabase(Oid tblspc, Oid dbid)
 				RelationCloseSmgr(&(rdesc->reldata));
 		}
 	}
- 
+
 	forget_invalid_pages_db(tblspc, dbid);
 }
 

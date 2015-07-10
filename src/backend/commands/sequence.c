@@ -493,21 +493,21 @@ DefineSequence(CreateSeqStmt *seq)
 
 	seqoid = DefineRelation(stmt, RELKIND_SEQUENCE, RELSTORAGE_HEAP);
 
-    /*
-     * Open and lock the new sequence.  (This lock is redundant; an
-     * AccessExclusiveLock was acquired above by DefineRelation and
-     * won't be released until end of transaction.)
-     *
-     * CDB: Acquire lock on qDisp before dispatching to qExecs, so
-     * qDisp can detect and resolve any deadlocks.
-     */
-    rel = heap_open(seqoid, AccessExclusiveLock);
+	/*
+	 * Open and lock the new sequence.  (This lock is redundant; an
+	 * AccessExclusiveLock was acquired above by DefineRelation and
+	 * won't be released until end of transaction.)
+	 *
+	 * CDB: Acquire lock on qDisp before dispatching to qExecs, so
+	 * qDisp can detect and resolve any deadlocks.
+	 */
+	rel = heap_open(seqoid, AccessExclusiveLock);
 	tupDesc = RelationGetDescr(rel);
 
 	stmt->oidInfo.relOid = seq->relOid = seqoid;
 
 	/* Initialize first page of relation with special magic number */
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
 	
@@ -555,10 +555,10 @@ DefineSequence(CreateSeqStmt *seq)
 	 * page and sequence magic number would be lost.  This means two log
 	 * records instead of one :-(
 	 */
-		
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	LockBuffer(buf, BUFFER_LOCK_EXCLUSIVE);
 
 	START_CRIT_SECTION();
@@ -622,10 +622,10 @@ DefineSequence(CreateSeqStmt *seq)
 	END_CRIT_SECTION();
 
 	UnlockReleaseBuffer(buf);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	/* process OWNED BY if given */
 	if (owned_by)
 		process_owned_by(rel, owned_by);
@@ -651,18 +651,18 @@ AlterSequence(AlterSeqStmt *stmt)
 {
 	MIRROREDLOCK_BUFMGR_DECLARE;
 
-	Oid							 relid;
-	SeqTable					 elm;
-	Relation					 seqrel;
-	Buffer						 buf;
-	Page						 page;
-	Form_pg_sequence			 seq;
-	FormData_pg_sequence		 new;
-	List						*owned_by;
-	int64						 save_increment;
-	bool		 bSeqIsTemp	   = false;
-	int			 numopts	   = 0;
-	char		*alter_subtype = "";	/* metadata tracking: kind of
+	Oid			relid;
+	SeqTable	elm;
+	Relation	seqrel;
+	Buffer		buf;
+	Page		page;
+	Form_pg_sequence seq;
+	FormData_pg_sequence new;
+	List	   *owned_by;
+	int64		save_increment;
+	bool		bSeqIsTemp	   = false;
+	int			numopts	   = 0;
+	char	   *alter_subtype = "";		/* metadata tracking: kind of
 										   redundant to say "role" */
 
 	/* open and AccessShareLock sequence */
@@ -750,10 +750,10 @@ AlterSequence(AlterSeqStmt *stmt)
 	END_CRIT_SECTION();
 
 	UnlockReleaseBuffer(buf);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	/* process OWNED BY if given */
 	if (owned_by)
 		process_owned_by(seqrel, owned_by);
@@ -1293,10 +1293,10 @@ do_setval(Oid relid, int64 next, bool iscalled)
 	END_CRIT_SECTION();
 
 	UnlockReleaseBuffer(buf);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	relation_close(seqrel, NoLock);
 }
 
@@ -1937,4 +1937,3 @@ cdb_sequence_nextval_server(Oid    tablespaceid,
     /* Cleanup. */
     cdb_sequence_relation_term(seqrel);
 }                               /* cdb_sequence_server_nextval */
-

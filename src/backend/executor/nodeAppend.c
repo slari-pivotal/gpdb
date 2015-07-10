@@ -170,7 +170,7 @@ static bool append_need_prj(Append *node)
 AppendState *
 ExecInitAppend(Append *node, EState *estate, int eflags)
 {
-	AppendState *appendstate;
+	AppendState *appendstate = makeNode(AppendState);
 	PlanState **appendplanstates;
 	int			nplans;
 	int			i;
@@ -179,15 +179,12 @@ ExecInitAppend(Append *node, EState *estate, int eflags)
 	/* check for unsupported flags */
 	Assert(!(eflags & EXEC_FLAG_MARK));
 
-	nplans = list_length(node->appendplans);
-
-	appendstate = makeNode(AppendState);
-
 	appendstate->eflags = eflags;
 
 	/*
 	 * Set up empty vector of subplan states
 	 */
+	nplans = list_length(node->appendplans);
 
 	appendplanstates = (PlanState **) palloc0(nplans * sizeof(PlanState *));
 

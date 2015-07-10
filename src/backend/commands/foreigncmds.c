@@ -524,7 +524,7 @@ AlterForeignDataWrapper(AlterFdwStmt *stmt)
 
 		/*
 		 * It could be that the options for the FDW, SERVER and USER MAPPING
-		 * are no longer valid with the new validator.	Warn about this.
+		 * are no longer valid with the new validator.  Warn about this.
 		 */
 		if (stmt->validator)
 			ereport(WARNING,

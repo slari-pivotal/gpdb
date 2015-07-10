@@ -66,9 +66,10 @@
 #define AUTH_TIME_FLAT_FILE "global/pg_auth_time_constraint"
 
 /* Info bits in a flatfiles 2PC record */
-#define FF_BIT_DATABASE 	1
-#define FF_BIT_AUTH			2
-#define FF_BIT_AUTH_TIME	4
+#define FF_BIT_DATABASE 1
+#define FF_BIT_AUTH		2
+#define FF_BIT_AUTH_TIME 4
+
 
 /*
  * The need-to-update-files flags are SubTransactionIds that show
@@ -178,7 +179,6 @@ sputs_quote(StringInfo buffer, const char *str)
 	appendStringInfoChar(buffer, '"');
 }
 
-
 /*
  * name_okay
  *
@@ -209,12 +209,12 @@ name_okay(const char *str)
 static void
 write_database_file(Relation drel, bool startup)
 {
-	StringInfoData			buffer;
-	HeapScanDesc			scan;
-	HeapTuple				tuple;
-	NameData				oldest_datname;
-	TransactionId			oldest_datfrozenxid = InvalidTransactionId;
-	MirroredFlatFileOpen	mirroredOpen;
+	StringInfoData buffer;
+	HeapScanDesc scan;
+	HeapTuple	tuple;
+	NameData	oldest_datname;
+	TransactionId oldest_datfrozenxid = InvalidTransactionId;
+	MirroredFlatFileOpen mirroredOpen;
 
 	initStringInfo(&buffer);
 
@@ -387,6 +387,7 @@ mem_compar(const void *a, const void *b)
 	return 0;
 }
 
+
 /*
  * load_auth_entries: read pg_authid into auth_entry[]
  *
@@ -418,10 +419,10 @@ load_auth_entries(Relation rel_authid, auth_entry **auth_info_out, int *total_ro
 	{
 		Form_pg_authid aform = (Form_pg_authid) GETSTRUCT(tuple);
 		HeapTupleHeader tup = tuple->t_data;
-		char       *tp;         /* ptr to tuple data */
-		long        off;        /* offset in tuple data */
-		bits8      *bp = tup->t_bits;   /* ptr to null bitmask in tuple */
-		Datum       datum;
+		char	   *tp;			/* ptr to tuple data */
+		long		off;		/* offset in tuple data */
+		bits8	   *bp = tup->t_bits;	/* ptr to null bitmask in tuple */
+		Datum		datum;
 
 		if (curr_role >= est_rows)
 		{
@@ -511,7 +512,7 @@ load_auth_entries(Relation rel_authid, auth_entry **auth_info_out, int *total_ro
 
 	*auth_info_out = auth_info;
 	*total_roles_out = total_roles;
-} 
+}
 
 /*
  * write_auth_file: update the flat auth file
@@ -920,7 +921,7 @@ BuildFlatFiles(bool database_only)
 	RelFileNode rnode;
 	Relation	rel_db,
 				rel_authid,
-				rel_authmem,	
+				rel_authmem,
 				rel_authtime;
 
 	/*
@@ -1292,4 +1293,3 @@ FlatFilesTemporaryResynchronizeMirror(void)
 	
 	return retval;
 }	
-	

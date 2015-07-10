@@ -310,6 +310,7 @@ ExecSort(SortState *node)
 		/*
 		 * Scan the subplan and feed all the tuples to tuplesort.
 		 */
+
 		for (;;)
 		{
 			slot = ExecProcNode(outerNode);
@@ -604,9 +605,7 @@ ExecSortMarkPos(SortState *node)
 	 * if we haven't sorted yet, just return
 	 */
 	if (!node->sort_Done)
-	{
 		return;
-	}
 
 	if(gp_enable_mk_sort)
 	{
@@ -631,9 +630,7 @@ ExecSortRestrPos(SortState *node)
 	 * if we haven't sorted yet, just return.
 	 */
 	if (!node->sort_Done)
-	{
 		return;
-	}
 
 	/*
 	 * restore the scan to the previously marked position
@@ -657,9 +654,7 @@ ExecReScanSort(SortState *node, ExprContext *exprCtxt)
 	 * re-scan it at all.
 	 */
 	if (!node->sort_Done)
-	{
 		return;
-	}
 
 	/* must drop pointer to sort result tuple */
 	ExecClearTuple(node->ss.ps.ps_ResultTupleSlot);
@@ -812,4 +807,3 @@ ExecSortResetWorkfileState(SortState *node)
 	node->cached_workfiles_found = false;
 	node->cached_workfiles_loaded = false;
 }
-

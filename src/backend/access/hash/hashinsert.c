@@ -68,10 +68,10 @@ _hash_doinsert(Relation rel, IndexTuple itup)
 	 * Acquire shared split lock so we can compute the target bucket safely
 	 * (see README).
 	 */
-	 
+
 	 // -------- MirroredLock ----------
 	 MIRROREDLOCK_BUFMGR_LOCK;
-	 
+
 	_hash_getlock(rel, 0, HASH_SHARE);
 
 	/* Read the metapage */
@@ -182,10 +182,10 @@ _hash_doinsert(Relation rel, IndexTuple itup)
 
 	/* Write out the metapage and drop lock, but keep pin */
 	_hash_chgbufaccess(rel, metabuf, HASH_WRITE, HASH_NOLOCK);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	/* Attempt to split if a split is needed */
 	if (do_expand)
 		_hash_expandtable(rel, metabuf);

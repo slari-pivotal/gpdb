@@ -392,25 +392,25 @@ SPI_pop(void)
 bool
 SPI_push_conditional(void)
 {
-        bool    pushed = (_SPI_curid != _SPI_connected);
+	bool		pushed = (_SPI_curid != _SPI_connected);
 
-        if (pushed)
-        {
-                _SPI_curid++;
-                /* We should now be in a state where SPI_connect would succeed */
-                Assert(_SPI_curid == _SPI_connected);
-        }
-        return pushed;
+	if (pushed)
+	{
+		_SPI_curid++;
+		/* We should now be in a state where SPI_connect would succeed */
+		Assert(_SPI_curid == _SPI_connected);
+	}
+	return pushed;
 }
 
 /* Conditional pop: pop only if SPI_push_conditional pushed */
 void
 SPI_pop_conditional(bool pushed)
 {
-        /* We should be in a state where SPI_connect would succeed */
-        Assert(_SPI_curid == _SPI_connected);
-        if (pushed)
-                _SPI_curid--;
+	/* We should be in a state where SPI_connect would succeed */
+	Assert(_SPI_curid == _SPI_connected);
+	if (pushed)
+		_SPI_curid--;
 }
 
 /* Restore state of SPI stack after aborting a subtransaction */
@@ -828,7 +828,7 @@ SPI_getvalue(HeapTuple tuple, TupleDesc tupdesc, int fnumber)
 }
 
 Datum
-SPI_getbinval(HeapTuple tuple, TupleDesc tupdesc, int fnumber, bool * isnull)
+SPI_getbinval(HeapTuple tuple, TupleDesc tupdesc, int fnumber, bool *isnull)
 {
 	SPI_result = 0;
 
@@ -954,7 +954,7 @@ SPI_freetuple(HeapTuple tuple)
 }
 
 void
-SPI_freetuptable(SPITupleTable * tuptable)
+SPI_freetuptable(SPITupleTable *tuptable)
 {
 	if (tuptable != NULL)
 		MemoryContextDelete(tuptable->tuptabcxt);
@@ -1036,14 +1036,14 @@ SPI_cursor_open(const char *name, SPIPlanPtr plan,
 
 		foreach(lc, qtlist)
 		{
-			Query	   *qry = (Query *) lfirst(lc);
+			Query  *qry = (Query *) lfirst(lc);
 
 			if (!QueryIsReadOnly(qry))
 				ereport(ERROR,
 						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				/* translator: %s is a SQL statement name */
-					   errmsg("%s is not allowed in a non-volatile function",
-							  CreateCommandTag((Node*)qry))));
+						 /* translator: %s is a SQL statement name */
+						 errmsg("%s is not allowed in a non-volatile function",
+								CreateCommandTag((Node*)qry))));
 		}
 	}
 
@@ -1729,9 +1729,7 @@ _SPI_execute_plan(_SPI_plan * plan, Datum *Values, const char *Nulls,
 				 * each command.
 				 */
 				if (!read_only)
-				{
 					CommandCounterIncrement();
-				}
 
 				dest = CreateDestReceiver(queryTree->canSetTag ? DestSPI : DestNone,
 										  NULL);

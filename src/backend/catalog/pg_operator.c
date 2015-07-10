@@ -497,7 +497,6 @@ OperatorCreateWithOid(const char *operatorName,
 				 errmsg("operator %s already exists",
 						operatorName)));
 
-
 	/*
 	 * At this point, if operatorObjectId is not InvalidOid then we are
 	 * filling in a previously-created shell.

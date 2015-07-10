@@ -463,7 +463,7 @@ DefineType(List *names, List *parameters, Oid newOid, Oid shadowOid)
 				   typeNamespace,		/* namespace */
 				   InvalidOid,	/* relation oid (n/a here) */
 				   0,			/* relation kind (ditto) */
-				   GetUserId(), /* owner's ID */
+				   GetUserId(),	/* owner's ID */
 				   internalLength,		/* internal size */
 				   typtype,		/* type-type (base type) */
 				   delimiter,	/* array element delimiter */
@@ -502,7 +502,7 @@ DefineType(List *names, List *parameters, Oid newOid, Oid shadowOid)
 			   typeNamespace,	/* namespace */
 			   InvalidOid,		/* relation oid (n/a here) */
 			   0,				/* relation kind (ditto) */
-			   GetUserId(), /* owner's ID */
+			   GetUserId(),		/* owner's ID */
 			   -1,				/* internal size */
 			   TYPTYPE_BASE,	/* type-type (base type) */
 			   delimiter,		/* array element delimiter */
@@ -614,7 +614,6 @@ RemoveType(List *names, DropBehavior behavior, bool missing_ok)
 	object.objectSubId = 0;
 
 	performDeletion(&object, behavior);
-
 }
 
 
@@ -819,7 +818,7 @@ DefineDomain(CreateDomainStmt *stmt)
 
 					/*
 					 * Cook the constr->raw_expr into an expression.
-					 * Note: Name is strictly for error message
+					 * Note: name is strictly for error message
 					 */
 					defaultExpr = cookDefault(pstate, constr->raw_expr,
 											  basetypeoid,
@@ -918,7 +917,7 @@ DefineDomain(CreateDomainStmt *stmt)
 				   domainNamespace,		/* namespace */
 				   InvalidOid,	/* relation oid (n/a here) */
 				   0,			/* relation kind (ditto) */
-				   GetUserId(), /* owner's ID */
+				   GetUserId(),	/* owner's ID */
 				   internalLength,		/* internal size */
 				   TYPTYPE_DOMAIN,		/* type-type (domain type) */
 				   delimiter,	/* array element delimiter */

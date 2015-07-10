@@ -98,7 +98,7 @@ typedef enum LWLockId
 	FirstBufMappingLock = FirstWorkfileQuerySpaceLock + NUM_WORKFILE_QUERYSPACE_PARTITIONS,
 	FirstLockMgrLock = FirstBufMappingLock + NUM_BUFFER_PARTITIONS,
 	SessionStateLock = FirstLockMgrLock + NUM_LOCK_PARTITIONS,
-	
+
 	/* must be last except for MaxDynamicLWLock: */
 	NumFixedLWLocks,
 

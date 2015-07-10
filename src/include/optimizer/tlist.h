@@ -17,6 +17,7 @@
 
 #include "nodes/relation.h"
 
+
 // return the first target entries that match the node expression
 extern TargetEntry *tlist_member(Node *node, List *targetlist);
 

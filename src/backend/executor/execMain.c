@@ -128,8 +128,7 @@ static TupleTableSlot *ExecutePlan(EState *estate, PlanState *planstate,
 			ScanDirection direction,
 			DestReceiver *dest);
 static void ExecSelect(TupleTableSlot *slot,
-		   DestReceiver *dest,
-		   EState *estate);
+		   DestReceiver *dest, EState *estate);
 
 static TupleTableSlot *EvalPlanQualNext(EState *estate);
 static void EndEvalPlanQual(EState *estate);
@@ -2078,7 +2077,6 @@ initResultRelInfo(ResultRelInfo *resultRelInfo,
 	resultRelInfo->ri_NumIndices = 0;
 	resultRelInfo->ri_IndexRelationDescs = NULL;
 	resultRelInfo->ri_IndexRelationInfo = NULL;
-
 	/* make a copy so as not to depend on relcache info not changing... */
 	resultRelInfo->ri_TrigDesc = CopyTriggerDesc(resultRelationDesc->trigdesc);
 	if (resultRelInfo->ri_TrigDesc)
@@ -2114,9 +2112,11 @@ initResultRelInfo(ResultRelInfo *resultRelInfo,
 	 * DELETE, however, since deletion doesn't affect indexes.
 	 */
 	if (needLock) /* only needed by the root slice who will do the actual updating */
+	{
 		if (resultRelationDesc->rd_rel->relhasindex &&
 			operation != CMD_DELETE)
 			ExecOpenIndices(resultRelInfo);
+	}
 }
 
 /*
@@ -2757,9 +2757,7 @@ lnext:	;
 		 */
 		current_tuple_count++;
 		if (numberTuples && numberTuples == current_tuple_count)
-		{
 			break;
-		}
 	}
 
 	/*
@@ -2783,6 +2781,7 @@ lnext:	;
 				break;
 		}
 	}
+
 	/*
 	 * here, result is either a slot containing a tuple in the case of a
 	 * SELECT or NULL otherwise.
@@ -3613,7 +3612,7 @@ OpenIntoRel(QueryDesc *queryDesc)
 	if (aclresult != ACLCHECK_OK)
 		aclcheck_error(aclresult, ACL_KIND_NAMESPACE,
 					   get_namespace_name(namespaceId));
-	
+
 	/*
 	 * Select tablespace to use.  If not specified, use default_tablespace
 	 * (which may in turn default to database's default).
@@ -3638,20 +3637,20 @@ OpenIntoRel(QueryDesc *queryDesc)
 		/* MPP-10329 - must dispatch tablespace */
 		intoClause->tableSpaceName = get_tablespace_name(tablespaceId);
 	}
-	
+
 	/* Check permissions except when using the database's default space */
 	if (tablespaceId != MyDatabaseTableSpace)
 	{
 		AclResult	aclresult;
-		
+
 		aclresult = pg_tablespace_aclcheck(tablespaceId, GetUserId(),
 										   ACL_CREATE);
-		
+
 		if (aclresult != ACLCHECK_OK)
 			aclcheck_error(aclresult, ACL_KIND_TABLESPACE,
 						   get_tablespace_name(tablespaceId));
 	}
-	
+
 	/* Parse and validate any reloptions */
 	reloptions = transformRelOptions((Datum) 0, intoClause->options, true, false);
 	
@@ -3706,13 +3705,13 @@ OpenIntoRel(QueryDesc *queryDesc)
 						 					  &persistentSerialNum);
 
 	FreeTupleDesc(tupdesc);
-	
+
 	/*
 	 * Advance command counter so that the newly-created relation's catalog
 	 * tuples will be visible to heap_open.
 	 */
 	CommandCounterIncrement();
-	
+
 	/*
 	 * If necessary, create a TOAST table for the new relation, or an Append
 	 * Only segment table. Note that AlterTableCreateXXXTable ends with
@@ -4678,5 +4677,3 @@ ClearPartitionState(EState *estate)
 	}
 	/* No need for hash_seq_term() since we iterated to end. */
 }
-
-

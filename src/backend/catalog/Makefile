@@ -10,14 +10,17 @@ subdir = src/backend/catalog
 top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 
-OBJS = catalog.o dependency.o heap.o hiddencat.o index.o indexing.o namespace.o \
-	   aclchk.o gp_global_sequence.o gp_persistent.o \
-       pg_aggregate.o pg_appendonly.o pg_constraint.o pg_conversion.o pg_depend.o \
-       pg_exttable.o pg_extprotocol.o pg_largeobject.o pg_namespace.o \
-       pg_operator.o pg_proc.o pg_proc_callback.o pg_shdepend.o \
-       pg_type.o toasting.o aoseg.o aoblkdir.o gp_fastsequence.o \
-	   pg_attribute_encoding.o pg_compression.o aovisimap.o \
-	   aocatalog.o
+OBJS = catalog.o dependency.o heap.o index.o indexing.o namespace.o aclchk.o \
+       pg_aggregate.o pg_constraint.o pg_conversion.o pg_depend.o \
+       pg_largeobject.o pg_namespace.o pg_operator.o pg_proc.o pg_shdepend.o \
+       pg_type.o toasting.o \
+       pg_exttable.o pg_extprotocol.o \
+       pg_proc_callback.o \
+       aoseg.o aoblkdir.o gp_fastsequence.o \
+       pg_attribute_encoding.o pg_compression.o aovisimap.o \
+       gp_global_sequence.o gp_persistent.o pg_appendonly.o \
+       aocatalog.o hiddencat.o
+
 SUBDIRS = caql core
 
 BKIFILES = postgres.bki postgres.description postgres.shdescription
@@ -28,7 +31,7 @@ all: cdb_init.sql cdb_util.sql cdb_schema.sql gp_toolkit.sql gp_toolkit_test.sql
 
 cdb_init.sql: cdb_schema.sql
 	cat $(call vpathsearch,cdb_schema.sql) $(call vpathsearch,cdb_external_extensions.sql) > cdb_init.sql
-	
+
 cdb_schema.sql: cdb_schema.in
 			sed -e 's,@pkglibdir@,$(pkglibdir),g' \
                 -e 's,@dlsuffix@,$(DLSUFFIX),g' \

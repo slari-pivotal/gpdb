@@ -18,6 +18,7 @@
 #include "nodes/relation.h"
 #include "cdb/cdbdef.h"                 /* CdbVisitOpt */
 
+
 /*
  * prototypes for pathnode.c
  */

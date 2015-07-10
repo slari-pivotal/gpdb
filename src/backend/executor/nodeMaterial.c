@@ -60,7 +60,7 @@ ExecMaterial(MaterialState *node)
 	bool		eof_tuplestore;
 	TupleTableSlot *slot;
 	Material *ma;
-	
+
 	/*
 	 * get state info from node
 	 */
@@ -643,7 +643,6 @@ ExecMaterialReScan(MaterialState *node, ExprContext *exprCtxt)
 
 	if (node->randomAccess)
 	{
-
 		/*
 		 * If tuple store is empty, then either we have not materialized yet
 		 * or tuple store was destroyed after a previous execution of materialize.
@@ -740,4 +739,3 @@ ExecEagerFreeMaterial(MaterialState *node)
 		DestroyTupleStore(node);
 	}
 }
-

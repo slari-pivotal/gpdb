@@ -614,10 +614,10 @@ ExecInitIndexScan(IndexScan *node, EState *estate, int eflags)
 						   &indexstate->iss_NumRuntimeKeys,
 						   NULL,	/* no ArrayKeys */
 						   NULL);
-	
+
 	InitRuntimeKeysContext(indexstate);
 	Assert(NULL != indexstate->iss_RuntimeContext);
-		
+
 	/*
 	 * Initialize index-specific scan state
 	 */

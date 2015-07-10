@@ -169,7 +169,7 @@ CreateRole(CreateRoleStmt *stmt)
 	cqContext	cqc;
 	cqContext	cqc2;
 	cqContext  *pcqCtx;
-	
+
 	/* The defaults can vary depending on the original statement type */
 	switch (stmt->stmt_type)
 	{
@@ -609,50 +609,49 @@ CreateRole(CreateRoleStmt *stmt)
 void
 AlterRole(AlterRoleStmt *stmt)
 {
-	Datum		 new_record[Natts_pg_authid];
-	bool		 new_record_nulls[Natts_pg_authid];
-	bool		 new_record_repl[Natts_pg_authid];
-	Relation	 pg_authid_rel;
-	TupleDesc	 pg_authid_dsc;
-	HeapTuple	 tuple,
-				 new_tuple;
-	ListCell	*option;
-	char		*password	   = NULL;	/* user password */
-	bool		 encrypt_password 
-							   = Password_encryption;	/* encrypt password? */
-	char		 encrypted_password[MAX_PASSWD_HASH_LEN + 1];
-	int			 issuper	   = -1;	/* Make the user a superuser? */
-	int			 inherit	   = -1;	/* Auto inherit privileges? */
-	int			 createrole	   = -1;	/* Can this user create roles? */
-	int			 createdb	   = -1;	/* Can the user create databases? */
-	int			 canlogin	   = -1;	/* Can this user login? */
-	int			 connlimit	   = -1;	/* maximum connections allowed */
-	char		*resqueue	   = NULL;	/* resource queue for this role */
-	List		*rolemembers   = NIL;	/* roles to be added/removed */
-	List	    *exttabcreate  = NIL;	/* external table create privileges being added  */
-	List	    *exttabnocreate = NIL;	/* external table create privileges being removed */
-	char		*validUntil	   = NULL;	/* time the login is valid until */
-	DefElem		*dpassword	   = NULL;
-	DefElem		*dresqueue	   = NULL;
-	DefElem		*dissuper	   = NULL;
-	DefElem		*dinherit	   = NULL;
-	DefElem		*dcreaterole   = NULL;
-	DefElem		*dcreatedb	   = NULL;
-	DefElem		*dcanlogin	   = NULL;
-	DefElem		*dconnlimit	   = NULL;
-	DefElem		*drolemembers  = NULL;
-	DefElem		*dvalidUntil   = NULL;
-	Oid			 roleid;
-	bool		 bWas_super	   = false;	/* Was the user a superuser? */
-	int			 numopts	   = 0;
-	char		*alter_subtype = "";	/* metadata tracking: kind of
+	Datum		new_record[Natts_pg_authid];
+	bool		new_record_nulls[Natts_pg_authid];
+	bool		new_record_repl[Natts_pg_authid];
+	Relation	pg_authid_rel;
+	TupleDesc	pg_authid_dsc;
+	HeapTuple	tuple,
+				new_tuple;
+	ListCell   *option;
+	char	   *password = NULL;	/* user password */
+	bool		encrypt_password = Password_encryption; /* encrypt password? */
+	char		encrypted_password[MAX_PASSWD_HASH_LEN + 1];
+	int			issuper = -1;	/* Make the user a superuser? */
+	int			inherit = -1;	/* Auto inherit privileges? */
+	int			createrole = -1;	/* Can this user create roles? */
+	int			createdb = -1;	/* Can the user create databases? */
+	int			canlogin = -1;	/* Can this user login? */
+	int			connlimit = -1; /* maximum connections allowed */
+	char	   *resqueue = NULL;	/* resource queue for this role */
+	List	   *rolemembers = NIL;	/* roles to be added/removed */
+	List	   *exttabcreate = NIL;	/* external table create privileges being added  */
+	List	   *exttabnocreate = NIL;	/* external table create privileges being removed */
+	char	   *validUntil = NULL;		/* time the login is valid until */
+	DefElem    *dpassword = NULL;
+	DefElem    *dresqueue = NULL;
+	DefElem    *dissuper = NULL;
+	DefElem    *dinherit = NULL;
+	DefElem    *dcreaterole = NULL;
+	DefElem    *dcreatedb = NULL;
+	DefElem    *dcanlogin = NULL;
+	DefElem    *dconnlimit = NULL;
+	DefElem    *drolemembers = NULL;
+	DefElem    *dvalidUntil = NULL;
+	Oid			roleid;
+	bool		bWas_super = false;	/* Was the user a superuser? */
+	int			numopts = 0;
+	char	   *alter_subtype = "";	/* metadata tracking: kind of
 										   redundant to say "role" */
-	bool		 createrextgpfd;
-	bool 		 createrexthttp;
-	bool		 createwextgpfd;
-	bool 		 createrexthdfs;
-	bool		 createwexthdfs;
-	List		*addintervals = NIL;    /* list of time intervals for which login should be denied */
+	bool		createrextgpfd;
+	bool 		createrexthttp;
+	bool		createwextgpfd;
+	bool 		createrexthdfs;
+	bool		createwexthdfs;
+	List	   *addintervals = NIL;    /* list of time intervals for which login should be denied */
 	List		*dropintervals = NIL;    /* list of time intervals for which matching rules should be dropped */
 
 	cqContext	 cqc;
@@ -888,19 +887,17 @@ AlterRole(AlterRoleStmt *stmt)
 	}
 	else if (!have_createrole_privilege())
 	{
-		bool is_createrol_required = !(inherit < 0 &&
-									   createrole < 0 &&
-									   createdb < 0 &&
-									   canlogin < 0 &&
-									   !dconnlimit &&
-									   !rolemembers &&
-									   !validUntil &&
-									   dpassword &&
-									   !exttabcreate &&
-									   !exttabnocreate &&
-									   roleid == GetUserId());
-		
-		if (is_createrol_required)
+		if (!(inherit < 0 &&
+			  createrole < 0 &&
+			  createdb < 0 &&
+			  canlogin < 0 &&
+			  !dconnlimit &&
+			  !rolemembers &&
+			  !validUntil &&
+			  dpassword &&
+			  !exttabcreate &&
+			  !exttabnocreate &&
+			  roleid == GetUserId()))
 			ereport(ERROR,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 					 errmsg("permission denied"),
@@ -1665,10 +1662,10 @@ RenameRole(const char *oldname, const char *newname)
 void
 GrantRole(GrantRoleStmt *stmt)
 {
-	Relation	 pg_authid_rel;
-	Oid			 grantor;
-	List		*grantee_ids;
-	ListCell	*item;
+	Relation	pg_authid_rel;
+	Oid			grantor;
+	List	   *grantee_ids;
+	ListCell   *item;
 
 	if (stmt->grantor)
 		grantor = get_roleid_checked(stmt->grantor);
@@ -1693,17 +1690,13 @@ GrantRole(GrantRoleStmt *stmt)
 		Oid			roleid = get_roleid_checked(rolename);
 
 		if (stmt->is_grant)
-		{
 			AddRoleMems(rolename, roleid,
 						stmt->grantee_roles, grantee_ids,
 						grantor, stmt->admin_opt);
-		}
 		else
-		{
 			DelRoleMems(rolename, roleid,
 						stmt->grantee_roles, grantee_ids,
 						stmt->admin_opt);
-		}
 
 		/* MPP-6929: metadata tracking */
 		if (Gp_role == GP_ROLE_DISPATCH)

@@ -280,8 +280,6 @@ typedef struct
 	 (VARATT_IS_1B(PTR) ? VARSIZE_1B(PTR)-VARHDRSZ_SHORT : \
 	  VARSIZE_4B(PTR)-VARHDRSZ))
 
-
-
 /* caution: this will not work on an external or compressed-in-line Datum */
 /* caution: this will return a possibly unaligned pointer */
 #define VARDATA_ANY(PTR) \
@@ -301,8 +299,7 @@ typedef struct
 
 /*
  * Port Notes:
- * 
- * 	Postgres makes the following assumption about machines:
+ *	Postgres makes the following assumption about machines:
  *
  *	sizeof(Datum) == sizeof(long) >= sizeof(void *) >= 4
  *

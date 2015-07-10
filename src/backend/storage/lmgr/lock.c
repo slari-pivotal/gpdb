@@ -1279,9 +1279,9 @@ WaitOnLock(LOCALLOCK *locallock, ResourceOwner owner)
 	/* Report change to waiting status */
 	if (update_process_title)
 	{
- 		const char *old_status;
- 		int			len;
- 
+		const char *old_status;
+		int			len;
+
 		old_status = get_real_act_ps_display(&len);
 		new_status = (char *) palloc(len + 8 + 1);
 		memcpy(new_status, old_status, len);
@@ -1524,7 +1524,7 @@ LockRelease(const LOCKTAG *locktag, LOCKMODE lockmode, bool sessionLock)
 
 	if (locallock->nLocks > 0)
 		return TRUE;
-		
+
 	/*
 	 * Otherwise we've got to mess with the shared lock table.
 	 */
@@ -2280,15 +2280,15 @@ LockShmemSize(void)
 {
 	Size		size = 0;
 	long		max_table_size;
-	
+
 	/* lock hash table */
 	max_table_size = NLOCKENTS();
-	
+
 	if (Gp_role == GP_ROLE_DISPATCH && ResourceScheduler)
 	{
 		add_size(max_table_size, NRESLOCKENTS() );
 	}
-	
+
 	size = add_size(size, hash_estimate_size(max_table_size, sizeof(LOCK)));
 	
 	if (Gp_role == GP_ROLE_DISPATCH && ResourceScheduler)
@@ -2299,9 +2299,6 @@ LockShmemSize(void)
 	/* proclock hash table */
 	max_table_size *= 2;
 	size = add_size(size, hash_estimate_size(max_table_size, sizeof(PROCLOCK)));
-	
-
-	
 
 	/*
 	 * Since NLOCKENTS is only an estimate, add 10% safety margin.

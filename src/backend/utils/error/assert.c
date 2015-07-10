@@ -33,7 +33,7 @@ int
 ExceptionalCondition(const char *conditionName,
 					 const char *errorType,
 					 const char *fileName,
-					 int         lineNumber)
+					 int lineNumber)
 {
     /* CDB: Try to tell the QD or client what happened. */
     if (errstart(FATAL, fileName, lineNumber, NULL,TEXTDOMAIN))
@@ -54,9 +54,8 @@ ExceptionalCondition(const char *conditionName,
 				
 		/* Usually this shouldn't be needed, but make sure the msg went out */
 		fflush(stderr);
-		
 	}
-	
-    abort();
+
+	abort();
 	return 0;
 }

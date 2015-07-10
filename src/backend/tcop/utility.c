@@ -158,12 +158,12 @@ DropErrorMsgNonExistent(RangeVar *rel, char rightkind, bool missing_ok)
 	{
 		if (rentry->kind == rightkind)
 		{
-	        if (! missing_ok)
+			if (!missing_ok)
 	        {
 				ereport(ERROR,
-					(errcode(rentry->nonexistent_code),
-					 errmsg(rentry->nonexistent_msg, rel->relname),
-					 errOmitLocation(true)));
+						(errcode(rentry->nonexistent_code),
+						 errmsg(rentry->nonexistent_msg, rel->relname),
+						 errOmitLocation(true)));
 			}
             else
             {
@@ -172,8 +172,7 @@ DropErrorMsgNonExistent(RangeVar *rel, char rightkind, bool missing_ok)
 									 errOmitLocation(true)));
                 break;
             }
-    	}
-
+		}
 	}
 
 	Assert(rentry->kind != '\0');		/* Should be impossible */
@@ -699,16 +698,16 @@ ProcessDropStatement(DropStmt *stmt)
  */
 void
 ProcessUtility(Node *parsetree,
-		   	   const char *queryString,
-		       ParamListInfo params,
-		       bool isTopLevel,
-		       DestReceiver *dest,
-		       char *completionTag)
+			   const char *queryString,
+			   ParamListInfo params,
+			   bool isTopLevel,
+			   DestReceiver *dest,
+			   char *completionTag)
 {
 	Assert(queryString != NULL);	/* required as of 8.4 */
-	
+
 	check_xact_readonly(parsetree);
-	
+
 	if (completionTag)
 		completionTag[0] = '\0';
 
@@ -733,7 +732,6 @@ ProcessUtility(Node *parsetree,
 							ListCell   *lc;
 
 							BeginTransactionBlock();
-
 							foreach(lc, stmt->options)
 							{
 								DefElem    *item = (DefElem *) lfirst(lc);
@@ -760,7 +758,6 @@ ProcessUtility(Node *parsetree,
 							/* report unsuccessful commit in completionTag */
 							if (completionTag)
 								strcpy(completionTag, "ROLLBACK");
-							break;
 						}
 						break;
 
@@ -1660,7 +1657,6 @@ ProcessUtility(Node *parsetree,
 			break;
 
 		default:
-			Assert(false);
 			elog(ERROR, "unrecognized node type: %d",
 				 (int) nodeTag(parsetree));
 			break;
@@ -2508,6 +2504,7 @@ CreateCommandTag(Node *parsetree)
 
 	return tag;
 }
+
 
 /*
  * GetCommandLogLevel

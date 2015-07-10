@@ -53,7 +53,7 @@
  *	  transaction.
  *
  * Like NOTIFY, LISTEN and UNLISTEN just add the desired action to a list
- * of pending actions.	If we reach transaction commit, the changes are
+ * of pending actions.  If we reach transaction commit, the changes are
  * applied to pg_listener just before executing any pending NOTIFYs.  This
  * method is necessary because to avoid race conditions, we must hold lock
  * on pg_listener from when we insert a new listener tuple until we commit.

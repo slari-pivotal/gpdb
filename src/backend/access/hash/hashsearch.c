@@ -223,9 +223,7 @@ _hash_first(IndexScanDesc scan, ScanDirection dir)
 
 	/* Now find the first tuple satisfying the qualification */
 	if (!_hash_step(scan, &buf, dir))
-	{
 		return false;
-	}
 
 	/* if we're here, _hash_step found a valid tuple */
 	offnum = ItemPointerGetOffsetNumber(current);

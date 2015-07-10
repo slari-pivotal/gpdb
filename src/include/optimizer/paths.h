@@ -105,6 +105,7 @@ select_mergejoin_clauses(RelOptInfo *outerrel,
 						 RelOptInfo *innerrel,
 						 List *restrictlist,
 						 JoinType jointype);
+
 /*
  * joinrels.c
  *	  routines to determine which relations to join
@@ -209,4 +210,5 @@ extern List *construct_equivalencekey_list(List *equi_key_list,
 										   List *new_tlist);
 extern List *remove_pathkey_item(List *equi_key_list,
 								 Node *key);
+
 #endif   /* PATHS_H */

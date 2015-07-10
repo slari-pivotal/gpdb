@@ -14,7 +14,6 @@
 #ifndef BOOTSTRAP_H
 #define BOOTSTRAP_H
 
-
 #include "catalog/index.h"
 #include "nodes/execnodes.h"
 

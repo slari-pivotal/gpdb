@@ -265,7 +265,6 @@ init_sql_fcache(FmgrInfo *finfo)
 		elog(ERROR, "cache lookup failed for function %u", foid);
 	procedureStruct = (Form_pg_proc) GETSTRUCT(procedureTuple);
 
-	
 	/*
 	 * get the result type from the procedure tuple, and check for polymorphic
 	 * result type; if so, find out the actual result type.
@@ -487,13 +486,13 @@ postquel_start(execution_state *es, SQLFunctionCachePtr fcache)
 			AfterTriggerBeginQuery();
 		
 		
-    	if (gp_resqueue_memory_policy != RESQUEUE_MEMORY_POLICY_NONE
-    			&& SPI_IsMemoryReserved())
-    	{
-    		es->qd->plannedstmt->query_mem = SPI_GetMemoryReservation();                		
-    	}
+		if (gp_resqueue_memory_policy != RESQUEUE_MEMORY_POLICY_NONE
+			&& SPI_IsMemoryReserved())
+		{
+			es->qd->plannedstmt->query_mem = SPI_GetMemoryReservation();
+		}
 
-    	ExecutorStart(es->qd, 0);
+		ExecutorStart(es->qd, 0);
 	}
 
 	es->status = F_EXEC_RUN;

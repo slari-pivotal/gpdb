@@ -1128,9 +1128,7 @@ BTreeShmemInit(void)
 		btvacinfo->max_vacuums = MaxBackends;
 	}
 	else
-	{
 		Assert(found);
-	}
 }
 
 Datum

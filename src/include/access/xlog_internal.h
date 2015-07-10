@@ -24,6 +24,7 @@
 #include "storage/relfilenode.h"
 #include "postmaster/primary_mirror_mode.h"
 
+
 /*
  * Header info for a backup block appended to an XLOG record.
  *

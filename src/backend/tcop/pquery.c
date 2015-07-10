@@ -86,7 +86,7 @@ CreateQueryDesc(PlannedStmt *plannedstmt,
 				bool doInstrument)
 {
 	QueryDesc  *qd = (QueryDesc *) palloc(sizeof(QueryDesc));
-	
+
 	qd->operation = plannedstmt->commandType;	/* operation */
 	qd->plannedstmt = plannedstmt;		/* plan */
 	qd->utilitystmt = plannedstmt->utilityStmt; /* in case DECLARE CURSOR */
@@ -215,7 +215,7 @@ ProcessQuery(Portal portal,
 	 * caller will take care of restoring ActiveSnapshot on exit/error.
 	 */
 	ActiveSnapshot = CopySnapshot(GetTransactionSnapshot());
-	
+
 	/*
 	 * Create the QueryDesc object
 	 */
@@ -1253,9 +1253,7 @@ PortalRunSelect(Portal portal,
 			count = 0;
 
 		if (portal->holdStore)
-		{
 			nprocessed = RunFromStore(portal, direction, count, dest);
-		}
 		else
 		{
 			ActiveSnapshot = queryDesc->snapshot;
@@ -1579,7 +1577,7 @@ PortalRunMulti(Portal portal, bool isTopLevel,
 			
 			if (log_executor_stats)
 				ResetUsage();
-			
+
 			if (pstmt->canSetTag)
 			{
 				/* statement can set tag string */
@@ -1594,7 +1592,7 @@ PortalRunMulti(Portal portal, bool isTopLevel,
 							 portal->portalParams,
 							 altdest, NULL);
 			}
-			
+
 			if (log_executor_stats)
 				ShowUsage("EXECUTOR STATISTICS");
 		}
@@ -1738,7 +1736,7 @@ PortalRunFetch(Portal portal,
 		/* Uncaught error while executing portal: mark it dead */
 		PortalSetStatus(portal, PORTAL_FAILED);
 
-        /* Restore global vars and propagate error */
+		/* Restore global vars and propagate error */
 		ActivePortal = saveActivePortal;
 		ActiveSnapshot = saveActiveSnapshot;
 		CurrentResourceOwner = saveResourceOwner;
@@ -2002,7 +2000,7 @@ DoPortalRewind(Portal portal)
 		MemoryContext oldcontext;
 
 		oldcontext = MemoryContextSwitchTo(portal->holdContext);
-		tuplestore_rescan(portal->holdStore); 
+		tuplestore_rescan(portal->holdStore);
 		MemoryContextSwitchTo(oldcontext);
 	}
 	if (PortalGetQueryDesc(portal))

@@ -642,8 +642,8 @@ typedef struct SubPlan
 	/* Fields copied from original SubLink: */
 	SubLinkType subLinkType;	/* see above */
 	/* The combining operators, transformed to an executable expression: */
-	Node	   *testexpr;		/* OpExpr or RowCompareExpr expression tree */ 
- 	List	   *paramIds;		/* IDs of Params embedded in the above */
+	Node	   *testexpr;		/* OpExpr or RowCompareExpr expression tree */
+	List	   *paramIds;		/* IDs of Params embedded in the above */
  	
     int         qDispSliceId;   /* CDB: slice# of initplan's root slice, or 0 */
  	

@@ -310,7 +310,7 @@ create_scan_plan(CreatePlanContext *ctx, Path *best_path)
 	}
 	else
 		tlist = build_relation_tlist(rel);
-	
+
 	/*
 	 * Extract the relevant restriction clauses from the parent relation. The
 	 * executor must apply all these restrictions during the scan, except for
@@ -799,7 +799,6 @@ create_material_plan(CreatePlanContext *ctx, MaterialPath *best_path)
 
 	return plan;
 }
-
 
 /*
  * create_unique_plan

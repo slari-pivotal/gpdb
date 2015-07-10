@@ -36,7 +36,7 @@
 #include "utils/syscache.h"
 
 
-/* #define CACHEDEBUG */	/* turns DEBUG elogs on */
+ /* #define CACHEDEBUG */	/* turns DEBUG elogs on */
 
 /*
  * Given a hash value and the size of the hash table, find the bucket
@@ -957,26 +957,26 @@ IndexScanOK(CatCache *cache, ScanKey cur_skey)
 	{
 		case INDEXRELID:
 
-		/*
+			/*
 			 * Rather than tracking exactly which indexes have to be loaded
 			 * before we can use indexscans (which changes from time to time),
 			 * just force all pg_index searches to be heap scans until we've
 			 * built the critical relcaches.
-		 */
-		if (!criticalRelcachesBuilt)
-			return false;
-		break;
+			 */
+			if (!criticalRelcachesBuilt)
+				return false;
+			break;
 
 		case AMOID:
 		case AMNAME:
 
-		    /*
+			/*
 			 * Always do heap scans in pg_am, because it's so small there's
 			 * not much point in an indexscan anyway.  We *must* do this when
 			 * initially building critical relcache entries, but we might as
 			 * well just always do it.
-		     */
-		return false;
+			 */
+			return false;
 
 		case AUTHNAME:
 		case AUTHOID:
@@ -988,7 +988,7 @@ IndexScanOK(CatCache *cache, ScanKey cur_skey)
 			 */
 			if (!criticalSharedRelcachesBuilt)
 				return false;
-		break;
+			break;
 
 		case OPEROID:
 		

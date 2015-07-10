@@ -100,7 +100,6 @@
 #include "utils/syscache.h"
 
 
-
 /*
  * To minimize palloc traffic, we keep pending requests in successively-
  * larger chunks (a slightly more sophisticated version of an expansible

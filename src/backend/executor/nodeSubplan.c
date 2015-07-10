@@ -456,7 +456,7 @@ buildSubPlanHash(SubPlanState *node, ExprContext *econtext)
 	 * need to store subplan output rows that contain NULL.
 	 */
 	ExecEagerFreeSubPlan(node);
-	
+
 	nbuckets = (int) ceil(planstate->plan->plan_rows);
 	if (nbuckets < 1)
 		nbuckets = 1;
@@ -731,8 +731,7 @@ ExecInitSubPlan(SubPlanState *node, EState *estate, int eflags)
 		{
 			int			paramid = lfirst_int(lst);
 			ParamExecData *prmExec = &(estate->es_param_exec_vals[paramid]);
-			
-			
+
 			/**
 			 * Has this parameter been already 
 			 * evaluated as part of preprocess_initplan()? If so,
@@ -802,13 +801,12 @@ ExecInitSubPlan(SubPlanState *node, EState *estate, int eflags)
 								  ALLOCSET_DEFAULT_INITSIZE,
 								  ALLOCSET_DEFAULT_MAXSIZE);
 		/* and a small one for the hash tables to use as temp storage */
- 		node->hashtempcxt =
- 			AllocSetContextCreate(CurrentMemoryContext,
- 								  "Subplan HashTable Temp Context",
- 								  ALLOCSET_SMALL_MINSIZE,
- 								  ALLOCSET_SMALL_INITSIZE,
- 								  ALLOCSET_SMALL_MAXSIZE);
-
+		node->hashtempcxt =
+			AllocSetContextCreate(CurrentMemoryContext,
+								  "Subplan HashTable Temp Context",
+								  ALLOCSET_SMALL_MINSIZE,
+								  ALLOCSET_SMALL_INITSIZE,
+								  ALLOCSET_SMALL_MAXSIZE);
 		/* and a short-lived exprcontext for function evaluation */
 		node->innerecontext = CreateExprContext(estate);
 		/* Silly little array of column numbers 1..n */
@@ -1374,14 +1372,14 @@ ExecSetParamPlan(SubPlanState *node, ExprContext *econtext, QueryDesc *gbl_query
 	}
 	PG_END_TRY();
 
-    /* If EXPLAIN ANALYZE, collect local execution stats. */
-    if (planstate->instrument)
-        cdbexplain_localExecStats(planstate, econtext->ecxt_estate->showstatctx);
+	/* If EXPLAIN ANALYZE, collect local execution stats. */
+	if (planstate->instrument)
+		cdbexplain_localExecStats(planstate, econtext->ecxt_estate->showstatctx);
 
-    /* Restore memory high-water mark for root slice of main query. */
-    MemoryContextSetPeakSpace(planstate->state->es_query_cxt, savepeakspace);
+	/* Restore memory high-water mark for root slice of main query. */
+	MemoryContextSetPeakSpace(planstate->state->es_query_cxt, savepeakspace);
 
-    MemoryContextSwitchTo(oldcontext);
+	MemoryContextSwitchTo(oldcontext);
 }
 
 /* ----------------------------------------------------------------

@@ -1448,7 +1448,7 @@ explain_outNode(StringInfo str,
 						 PlanStateOperatorMemKB(planstate));
 	}
 
-    appendStringInfoChar(str, '\n');
+	appendStringInfoChar(str, '\n');
 
 #ifdef DEBUG_EXPLAIN
 				appendStringInfo(str, "plan->targetlist=%s\n", nodeToString(plan->targetlist));
@@ -1457,7 +1457,7 @@ explain_outNode(StringInfo str,
 	if (es->printTList)
 		show_plan_tlist(plan, str, indent, es);
 
-    /* quals, sort keys, etc */
+	/* quals, sort keys, etc */
 	switch (nodeTag(plan))
 	{
 		case T_IndexScan:
@@ -1882,9 +1882,7 @@ explain_outNode(StringInfo str,
 			Plan	   *subnode = (Plan *) lfirst(lst);
 
 			for (i = 0; i < indent; i++)
-			{
 				appendStringInfo(str, "  ");
-			}
 
 			appendStringInfo(str, "  ->  ");
 
@@ -2030,13 +2028,14 @@ explain_outNode(StringInfo str,
 /*
  * Show the targetlist of a plan node
  */
-static void show_plan_tlist(Plan *plan, StringInfo str, int indent,
-		ExplainState *es)
+static void
+show_plan_tlist(Plan *plan,
+				StringInfo str, int indent, ExplainState *es)
 {
-	List *context;
-	bool useprefix;
-	ListCell *lc;
-	int i;
+	List	   *context;
+	bool		useprefix;
+	ListCell   *lc;
+	int			i;
 
 	/* No work if empty tlist (this occurs eg in bitmap indexscans) */
 	if (plan->targetlist == NIL)
@@ -2070,8 +2069,9 @@ static void show_plan_tlist(Plan *plan, StringInfo str, int indent,
 			continue;
 		if (i++ > 0)
 			appendStringInfo(str, ", ");
-		appendStringInfoString(str, deparse_expression((Node *) tle->expr,
-				context, useprefix, false));
+		appendStringInfoString(str,
+							   deparse_expression((Node *) tle->expr, context,
+												  useprefix, false));
 	}
 
 	appendStringInfoChar(str, '\n');
@@ -2310,13 +2310,15 @@ show_sort_keys(Plan *sortplan, int nkeys, AttrNumber *keycols,
 			   StringInfo str, int indent, ExplainState *es)
 {
 	List	   *context;
-    bool		useprefix = list_length(es->rtable) > 1;    /*CDB*/
+	bool		useprefix;
 	int			keyno;
 	char	   *exprstr;
 	int			i;
 
 	if (nkeys <= 0)
 		return;
+
+	useprefix = list_length(es->rtable) > 1;    /*CDB*/
 
 	for (i = 0; i < indent; i++)
 		appendStringInfo(str, "  ");
@@ -2493,5 +2495,3 @@ explain_get_index_name(Oid indexId)
 	}
 	return result;
 }
-
-

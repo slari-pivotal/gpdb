@@ -227,7 +227,7 @@ btree_xlog_insert(bool isleaf, bool ismeta,
 		return;					/* nothing to do */
 
 	reln = XLogOpenRelation(xlrec->target.node);
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
 	
@@ -265,7 +265,7 @@ btree_xlog_insert(bool isleaf, bool ismeta,
 		_bt_restore_meta(reln, lsn,
 						 md.root, md.level,
 						 md.fastroot, md.fastlevel);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
 	
@@ -296,10 +296,10 @@ btree_xlog_split(bool onleft, bool isroot,
 	targetoff = ItemPointerGetOffsetNumber(&(xlrec->target.tid));
 	leftsib = (onleft) ? targetblk : xlrec->otherblk;
 	rightsib = (onleft) ? xlrec->otherblk : targetblk;
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	/* Left (original) sibling */
 	buffer = XLogReadBuffer(reln, leftsib, true);
 	Assert(BufferIsValid(buffer));
@@ -395,10 +395,10 @@ btree_xlog_split(bool onleft, bool isroot,
 			}
 		}
 	}
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	/* Forget any split this insertion completes */
 	if (xlrec->level > 0)
 		forget_matching_split(xlrec->target.node, downlink, false);
@@ -424,10 +424,10 @@ btree_xlog_delete(XLogRecPtr lsn, XLogRecord *record)
 
 	xlrec = (xl_btree_delete *) XLogRecGetData(record);
 	reln = XLogOpenRelation(xlrec->btreenode.node);
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	buffer = XLogReadBuffer(reln, xlrec->block, false);
 	REDO_PRINT_READ_BUFFER_NOT_FOUND(reln, xlrec->block, buffer, lsn);
 	if (!BufferIsValid(buffer))
@@ -495,10 +495,10 @@ btree_xlog_delete_page(uint8 info, XLogRecPtr lsn, XLogRecord *record)
 	target = xlrec->deadblk;
 	leftsib = xlrec->leftblk;
 	rightsib = xlrec->rightblk;
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	/* parent page */
 	if (!(record->xl_info & XLR_BKP_BLOCK_1))
 	{
@@ -632,10 +632,10 @@ btree_xlog_delete_page(uint8 info, XLogRecPtr lsn, XLogRecord *record)
 						 md.root, md.level,
 						 md.fastroot, md.fastlevel);
 	}
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	/* Forget any completed deletion */
 	forget_matching_deletion(xlrec->target.node, target);
 
@@ -696,10 +696,10 @@ btree_xlog_newroot(XLogRecPtr lsn, XLogRecord *record)
 	_bt_restore_meta(reln, lsn,
 					 xlrec->rootblk, xlrec->level,
 					 xlrec->rootblk, xlrec->level);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	/* Check to see if this satisfies any incomplete insertions */
 	if (record->xl_len > SizeOfBtreeNewroot)
 		forget_matching_split(xlrec->btreenode.node, downlink, true);

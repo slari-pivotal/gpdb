@@ -368,10 +368,10 @@ gistRedoPageSplitRecord(XLogRecPtr lsn, XLogRecord *record)
 	for (i = 0; i < xlrec.data->npage; i++)
 	{
 		NewPage    *newpage = xlrec.page + i;
-		
+
 		// -------- MirroredLock ----------
 		MIRROREDLOCK_BUFMGR_LOCK;
-		
+
 		buffer = XLogReadBuffer(reln, newpage->header->blkno, true);
 		Assert(BufferIsValid(buffer));
 		page = (Page) BufferGetPage(buffer);
@@ -672,10 +672,10 @@ gistContinueInsert(gistIncompleteInsert *insert)
 
 	for (i = 0; i < insert->lenblk; i++)
 		itup[i] = gist_form_invalid_tuple(insert->blkno[i]);
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	/*
 	 * any insertion of itup[] should make LOG message about
 	 */
@@ -855,10 +855,10 @@ gistContinueInsert(gistIncompleteInsert *insert)
 			}
 		}
 	}
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	ereport(LOG,
 			(errmsg("index %u/%u/%u needs VACUUM FULL or REINDEX to finish crash recovery",
 			insert->node.spcNode, insert->node.dbNode, insert->node.relNode),

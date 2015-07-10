@@ -75,7 +75,8 @@
 /* Use this if it's already known varlena */
 #define VARLENA_ATT_IS_PACKABLE(att) \
 	((att)->attstorage != 'p')
-	
+
+
 /* ----------------------------------------------------------------
  *						misc support routines
  * ----------------------------------------------------------------

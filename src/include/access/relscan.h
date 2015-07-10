@@ -21,6 +21,7 @@
 #include "storage/bufpage.h"
 #include "utils/tqual.h"
 
+
 typedef struct HeapScanDescData
 {
 	/* scan parameters */
@@ -74,7 +75,6 @@ typedef struct IndexScanDescData
 
 	/* index access method's private state */
 	void	   *opaque;			/* access-method-specific info */
-	
 	/* these fields are used by some but not all AMs: */
 	ItemPointerData currentItemData;	/* current index pointer */
 	ItemPointerData currentMarkData;	/* marked position, if any */

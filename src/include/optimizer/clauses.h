@@ -28,9 +28,9 @@
 
 typedef struct
 {
-	int		numAggs;		/* total number of aggregate calls */
- 	int		numDistinctAggs;	/* number that use DISTINCT */
-	Size	transitionSpace;	/* for pass-by-ref transition data */
+	int			numAggs;		/* total number of aggregate calls */
+	int			numDistinctAggs;	/* number that use DISTINCT */
+	Size		transitionSpace;	/* for pass-by-ref transition data */
 	bool	canHashAgg;		/*CDB: Could use HashAgg except for DQA(s). */
 	List   *dqaArgs;	/* CDB: List of distinct DQA argument exprs. */
 	List   *aggOrder;   /* CDB: List of AggOrder clauses */

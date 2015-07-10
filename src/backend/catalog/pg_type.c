@@ -73,7 +73,6 @@ add_type_encoding(Oid typid, Datum typoptions)
  *		with correct ones, and "typisdefined" will be set to true.
  * ----------------------------------------------------------------
  */
- 
 Oid
 TypeShellMake(const char *typeName, Oid typeNamespace, Oid ownerId,
 			  Oid shelloid)

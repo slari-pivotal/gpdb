@@ -51,7 +51,7 @@ CreateConversionCommand(CreateConversionStmt *stmt)
 	const char *to_encoding_name = stmt->to_encoding_name;
 	List	   *func_name = stmt->func_name;
 	static Oid	funcargs[] = {INT4OID, INT4OID, CSTRINGOID, INTERNALOID, INT4OID};
-	char        result[1];
+	char		result[1];
 
 	/* Convert list of names to a name and namespace */
 	namespaceId = QualifiedNameGetCreationNamespace(stmt->conversion_name,
@@ -105,11 +105,11 @@ CreateConversionCommand(CreateConversionStmt *stmt)
 	 * can't perform the requested conversion.
 	 */
 	OidFunctionCall5(funcoid,
-			Int32GetDatum(from_encoding),
-			Int32GetDatum(to_encoding),
-			CStringGetDatum(""),
-			CStringGetDatum(result),
-			Int32GetDatum(0));
+					 Int32GetDatum(from_encoding),
+					 Int32GetDatum(to_encoding),
+					 CStringGetDatum(""),
+					 CStringGetDatum(result),
+					 Int32GetDatum(0));
 	/*
 	 * All seem ok, go ahead (possible failure would be a duplicate conversion
 	 * name)

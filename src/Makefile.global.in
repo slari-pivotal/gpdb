@@ -1,5 +1,6 @@
 # -*-makefile-*-
 # $PostgreSQL: pgsql/src/Makefile.global.in,v 1.232 2006/10/08 17:15:33 tgl Exp $
+
 #------------------------------------------------------------------------------
 # All PostgreSQL makefiles include this file and use the variables it sets,
 # which in turn are put here by the configure script. There is no need for
@@ -377,6 +378,7 @@ WANTED_LANGUAGES = @WANTED_LANGUAGES@
 
 # catdump json
 catdump_json = $(abs_top_srcdir)/../gpMgmt/bin/gppylib/data/$(GP_MAJORVERSION).json
+
 
 
 ##########################################################################

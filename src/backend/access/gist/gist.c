@@ -106,10 +106,10 @@ gistbuild(PG_FUNCTION_ARGS)
 
 	/* no locking is needed */
 	initGISTstate(&buildstate.giststate, index);
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	/* initialize the root page */
 	buffer = gistNewBuffer(index);
 	Assert(BufferGetBlockNumber(buffer) == GIST_ROOT_BLKNO);
@@ -136,10 +136,10 @@ gistbuild(PG_FUNCTION_ARGS)
 		PageSetLSN(page, XLogRecPtrForTemp);
 
 	UnlockReleaseBuffer(buffer);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	END_CRIT_SECTION();
 
 	/* build the index */
@@ -281,10 +281,10 @@ gistdoinsert(Relation r, IndexTuple itup, Size freespace, GISTSTATE *giststate)
 
 	state.stack = (GISTInsertStack *) palloc0(sizeof(GISTInsertStack));
 	state.stack->blkno = GIST_ROOT_BLKNO;
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	gistfindleaf(&state, giststate);
 	gistmakedeal(&state, giststate);
 	

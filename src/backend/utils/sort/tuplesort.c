@@ -688,7 +688,7 @@ tuplesort_begin_heap(TupleDesc tupDesc,
 
 	for (i = 0; i < nkeys; i++)
 	{
-		RegProcedure sortFunction = 0;
+		RegProcedure sortFunction;
 
 		AssertArg(sortOperators[i] != 0);
 		AssertArg(attNums[i] != 0);
@@ -833,7 +833,7 @@ tuplesort_begin_datum(Oid datumType,
 {
 	Tuplesortstate *state = tuplesort_begin_common(workMem, randomAccess, true);
 	MemoryContext oldcontext;
-	RegProcedure sortFunction = 0;
+	RegProcedure sortFunction;
 	int16		typlen;
 	bool		typbyval;
 
@@ -1080,15 +1080,15 @@ tuplesort_putdatum(Tuplesortstate *state, Datum val, bool isNull)
 	 */
 	if (isNull || state->datumTypeByVal)
 	{
-		stup.datum1 = val;	
+		stup.datum1 = val;
 		stup.isnull1 = isNull;
-		stup.tuple = NULL;   /* No separate storage */
+		stup.tuple = NULL;		/* no separate storage */
 	}
 	else
 	{
 		stup.datum1 = datumCopy(val, false, state->datumTypeLen);
 		stup.isnull1 = false;
-		stup.tuple = DatumGetPointer(stup.datum1); 
+		stup.tuple = DatumGetPointer(stup.datum1);
 		USEMEM(state, GetMemoryChunkSpace(DatumGetPointer(stup.datum1))); 
 	}
 
@@ -1186,7 +1186,6 @@ puttuple_common(Tuplesortstate *state, SortTuple *tuple)
 			 * Dump tuples until we are back under the limit.
 			 */
 			dumptuples(state, false);
-
 			break;
 		case TSS_BUILDRUNS:
 
@@ -1213,7 +1212,6 @@ puttuple_common(Tuplesortstate *state, SortTuple *tuple)
 			 * If we are over the memory limit, dump tuples till we're under.
 			 */
 			dumptuples(state, false);
-
 			break;
 		default:
 			elog(ERROR, "invalid tuplesort state");
@@ -1224,14 +1222,14 @@ puttuple_common(Tuplesortstate *state, SortTuple *tuple)
 /*
  * All tuples have been provided; finish the sort.
  */
-	void
+void
 tuplesort_performsort(Tuplesortstate *state)
 {
 	MemoryContext oldcontext = MemoryContextSwitchTo(state->sortcontext);
 
 	if (trace_sort)
 		elog(LOG, "performsort starting: %s",
-				pg_rusage_show(&state->ru_start));
+			 pg_rusage_show(&state->ru_start));
 
 	switch (state->status)
 	{
@@ -1537,21 +1535,22 @@ tuplesort_gettupleslot_pos(Tuplesortstate *state, TuplesortPos *pos,
 	bool		should_free = false;
 
 	if (!tuplesort_gettuple_common_pos(state, pos, forward, &stup, &should_free))
-		stup.tuple = NULL; 
+		stup.tuple = NULL;
 
 	MemoryContextSwitchTo(oldcontext);
 
-	if (stup.tuple) 
+	if (stup.tuple)
 	{
 		ExecStoreMemTuple(stup.tuple, slot, should_free);
-          	if (state->gpmon_pkt)
-           	Gpmon_M_Incr_Rows_Out(state->gpmon_pkt);
+		if (state->gpmon_pkt)
+			Gpmon_M_Incr_Rows_Out(state->gpmon_pkt);
 		return true;
 	}
-
-	ExecClearTuple(slot);
-	return false;
-
+	else
+	{
+		ExecClearTuple(slot);
+		return false;
+	}
 }
 
 /*
@@ -1567,11 +1566,11 @@ tuplesort_getindextuple(Tuplesortstate *state, bool forward,
 	SortTuple	stup;
 
 	if (!tuplesort_gettuple_common_pos(state, &state->pos, forward, &stup, should_free))
-		stup.tuple = NULL; 
+		stup.tuple = NULL;
 
 	MemoryContextSwitchTo(oldcontext);
 
-	return (IndexTuple) (stup.tuple); 
+	return (IndexTuple) stup.tuple;
 }
 
 /*
@@ -1962,13 +1961,11 @@ mergeonerun(Tuplesortstate *state)
 			if ((tupIndex = state->mergenext[srcTape]) == 0)
 				continue;
 		}
-
 		/* pull next preread tuple from list, insert in heap */
 		tup = &state->memtuples[tupIndex];
 		state->mergenext[srcTape] = tup->tupindex;
 		if (state->mergenext[srcTape] == 0)
 			state->mergelast[srcTape] = 0;
-
 		tuplesort_heap_insert(state, tup, srcTape, false);
 		/* put the now-unused memtuples entry on the freelist */
 		tup->tupindex = state->mergefreelist;
@@ -2923,27 +2920,29 @@ comparetup_heap(const SortTuple *a, const SortTuple *b, Tuplesortstate *state)
 	CHECK_FOR_INTERRUPTS();
 
 	Assert(state->mt_bind);
-	compare = inlineApplySortFunction(&scanKey->sk_func, state->sortFnKinds[0],
-			a->datum1, a->isnull1,
-			b->datum1, b->isnull1
-			);
-
-	if(compare != 0)
+	compare = inlineApplySortFunction(&scanKey->sk_func,
+									  state->sortFnKinds[0],
+									  a->datum1, a->isnull1,
+									  b->datum1, b->isnull1);
+	if (compare != 0)
 		return compare;
 
 	scanKey++;
 	for (nkey = 1; nkey < state->nKeys; nkey++, scanKey++)
 	{
 		AttrNumber	attno = scanKey->sk_attno;
-		Datum		datum1, datum2; 
-		bool		isnull1, isnull2;
+		Datum		datum1,
+					datum2;
+		bool		isnull1,
+					isnull2;
 
 		datum1 = memtuple_getattr(a->tuple, state->mt_bind, attno, &isnull1); 
 		datum2 = memtuple_getattr(b->tuple, state->mt_bind, attno, &isnull2);
 
-		compare = inlineApplySortFunction(&scanKey->sk_func, state->sortFnKinds[nkey],
-				datum1, isnull1,
-				datum2, isnull2);
+		compare = inlineApplySortFunction(&scanKey->sk_func,
+										  state->sortFnKinds[nkey],
+										  datum1, isnull1,
+										  datum2, isnull2);
 
 		if (compare != 0)
 			return compare;
@@ -3348,4 +3347,3 @@ void tuplesort_checksend_gpmonpkt(gpmon_packet_t *pkt, int *tick)
 		*tick = gpmon_tick;
 	}
 }
-	

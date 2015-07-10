@@ -24,7 +24,7 @@
  * will go away automatically at transaction end.  If the underlying
  * virtual File is made with OpenTemporaryFile, then all resources for
  * the file are certain to be cleaned up even if processing is aborted
- * by ereport(ERROR). To avoid confusion, the caller should take care that
+ * by ereport(ERROR).	To avoid confusion, the caller should take care that
  * all calls for a single BufFile are made in the same palloc context.
  *-------------------------------------------------------------------------
  */

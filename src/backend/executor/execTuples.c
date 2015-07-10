@@ -333,10 +333,8 @@ ExecAllocTableSlot(TupleTable table)
  * --------------------------------
  */
 void
-ExecSetSlotDescriptor(
-		TupleTableSlot *slot,		/* slot to change */
-		TupleDesc tupdesc 		/* new tup desc */
-		)		
+ExecSetSlotDescriptor(TupleTableSlot *slot,		/* slot to change */
+					  TupleDesc tupdesc)		/* new tuple descriptor */
 {
 	/* For safety, make sure slot is empty before changing it */
 	cleanup_slot(slot);
@@ -500,7 +498,7 @@ ExecStoreMemTuple(MemTuple mtup, TupleTableSlot *slot, bool shouldFree)
 		TupSetShouldFree(slot);
 	else
 		TupClearShouldFree(slot);
-		
+
 	slot->PRIVATE_tts_memtuple = mtup;
 
 	TupClearIsEmpty(slot);
@@ -672,7 +670,9 @@ ExecCopySlotHeapTuple(TupleTableSlot *slot)
 	/*
 	 * Otherwise we need to build a tuple from the Datum array.
 	 */
-	return heap_form_tuple(slot->tts_tupleDescriptor, slot_get_values(slot), slot_get_isnull(slot));
+	return heap_form_tuple(slot->tts_tupleDescriptor,
+						   slot_get_values(slot),
+						   slot_get_isnull(slot));
 }
 
 /* --------------------------------
@@ -1024,7 +1024,7 @@ void ExecModifyMemTuple(TupleTableSlot *slot, Datum *values, bool *isnull, bool 
 	slot->PRIVATE_tts_nvalid = 0;
 }
 
-	
+
 /* ----------------------------------------------------------------
  *				convenience initialization routines
  * ----------------------------------------------------------------

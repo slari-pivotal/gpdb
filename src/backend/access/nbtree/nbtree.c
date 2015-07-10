@@ -17,6 +17,7 @@
  *-------------------------------------------------------------------------
  */
 #include "postgres.h"
+
 #include "miscadmin.h"
 #include "access/genam.h"
 #include "access/nbtree.h"
@@ -28,6 +29,7 @@
 #include "utils/memutils.h"
 #include "nodes/tidbitmap.h"
 #include "cdb/cdbfilerepprimary.h"
+
 
 /* Working state for btbuild and its callback */
 typedef struct
@@ -831,11 +833,9 @@ btvacuumscan(IndexVacuumInfo *info, IndexBulkDeleteResult *stats,
 		{
 			/*
 			 * Okay to truncate.
-			 */			
-			RelationTruncate(
-						rel, 
-						new_pages,
-						/* markPersistentAsPhysicallyTruncated */ true);
+			 */
+			RelationTruncate(rel, new_pages,
+							 /* markPersistentAsPhysicallyTruncated */ true);
 
 			/* update statistics */
 			stats->pages_removed += num_pages - new_pages;

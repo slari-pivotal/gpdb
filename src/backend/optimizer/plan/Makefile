@@ -14,17 +14,12 @@ include $(top_builddir)/src/Makefile.global
 
 BLD_TOP = $(top_builddir)/..
 
-OBJS = createplan.o \
-	   initsplan.o \
-	   planagg.o \
-	   plangroupext.o \
-	   planmain.o \
-	   planner.o \
-	   planshare.o \
-	   planwindow.o \
-	   setrefs.o \
-	   subselect.o \
-	   planpartition.o \
-	   transform.o
+OBJS = createplan.o initsplan.o planagg.o planmain.o planner.o \
+	setrefs.o subselect.o \
+	plangroupext.o \
+	planshare.o \
+	planwindow.o \
+	planpartition.o \
+	transform.o
 
 include $(top_srcdir)/src/backend/common.mk

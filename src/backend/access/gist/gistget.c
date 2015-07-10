@@ -36,10 +36,10 @@ killtuple(Relation r, GISTScanOpaque so, ItemPointer iptr)
 
 	Page        p;
 	OffsetNumber offset;
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	LockBuffer(so->curbuf, GIST_SHARE);
 	gistcheckpage(r, so->curbuf);
 	p = (Page) BufferGetPage(so->curbuf);
@@ -70,10 +70,9 @@ killtuple(Relation r, GISTScanOpaque so, ItemPointer iptr)
 	}
 
 	LockBuffer(so->curbuf, GIST_UNLOCK);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
 }
 
 /*
@@ -155,10 +154,10 @@ gistnext(IndexScanDesc scan, ScanDirection dir, ItemPointer tids, int maxtids, b
 	int			ntids = 0;
 
 	so = (GISTScanOpaque) scan->opaque;
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	if (ItemPointerIsValid(&scan->currentItemData) == false)
 	{
 		/* Being asked to fetch the first entry, so start at the root */
@@ -176,10 +175,9 @@ gistnext(IndexScanDesc scan, ScanDirection dir, ItemPointer tids, int maxtids, b
 	}
 	else if (so->curbuf == InvalidBuffer)
 	{
-		
 		MIRROREDLOCK_BUFMGR_UNLOCK;
 		// -------- MirroredLock ----------
-		
+
 		return 0;
 	}
 
@@ -202,7 +200,6 @@ gistnext(IndexScanDesc scan, ScanDirection dir, ItemPointer tids, int maxtids, b
 
 		if ( ntids == maxtids )
 		{
-
 			MIRROREDLOCK_BUFMGR_UNLOCK;
 			// -------- MirroredLock ----------
 
@@ -274,10 +271,10 @@ gistnext(IndexScanDesc scan, ScanDirection dir, ItemPointer tids, int maxtids, b
 			{
 				ReleaseBuffer(so->curbuf);
 				so->curbuf = InvalidBuffer;
-				
+
 				MIRROREDLOCK_BUFMGR_UNLOCK;
 				// -------- MirroredLock ----------
-				
+
 				return ntids;
 			}
 
@@ -308,7 +305,7 @@ gistnext(IndexScanDesc scan, ScanDirection dir, ItemPointer tids, int maxtids, b
 					ItemPointerSet(&scan->currentItemData,
 								   BufferGetBlockNumber(so->curbuf), 
 								   so->pageData[ so->curPageData ].pageOffset);
-				
+
 					so->curPageData ++;
 					ntids++;
 				}
@@ -394,10 +391,10 @@ gistnext(IndexScanDesc scan, ScanDirection dir, ItemPointer tids, int maxtids, b
 				n = OffsetNumberNext(n);
 		}
 	}
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	return ntids;
 }
 

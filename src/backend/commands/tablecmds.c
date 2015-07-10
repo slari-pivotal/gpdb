@@ -141,6 +141,7 @@ typedef struct OnCommitItem
 
 static List *on_commits = NIL;
 
+
 /*
  * State information for ALTER TABLE
  *
@@ -202,6 +203,7 @@ typedef struct NewColumnValue
 	Expr	   *expr;			/* expression to compute */
 	ExprState  *exprstate;		/* execution state */
 } NewColumnValue;
+
 
 static void truncate_check_rel(Relation rel);
 static void MergeConstraintsIntoExisting(Relation child_rel, Relation parent_rel);

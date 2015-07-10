@@ -247,7 +247,6 @@ ConditionalLockRelation(Relation relation, LOCKMODE lockmode)
 	return true;
 }
 
-
 /*
  *		UnlockRelation
  *
@@ -560,7 +559,8 @@ XactLockTableInsert(TransactionId xid)
  *
  * Delete the lock showing that the given transaction ID is running.
  * (This is never used for main transaction IDs; those locks are only
- * released implicitly at transaction end.	But we do use it for subtrans IDs.)
+ * released implicitly at transaction end.	But we do use it for subtrans
+ * IDs.)
  */
 void
 XactLockTableDelete(TransactionId xid)

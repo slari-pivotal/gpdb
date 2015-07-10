@@ -89,7 +89,7 @@ _bt_doinsert(Relation rel, IndexTuple itup,
 
 	/* we need an insertion scan key to do our search, so build one */
 	itup_scankey = _bt_mkscankey(rel, itup);
-	
+
 top:
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
@@ -133,7 +133,7 @@ top:
 
 		xwait = _bt_check_unique(rel, itup, heapRel, buf, itup_scankey);
 
-		if (TransactionIdIsValid(xwait) )
+		if (TransactionIdIsValid(xwait))
 		{
 			/* Have to wait for the other guy ... */
 			_bt_relbuf(rel, buf);
@@ -152,7 +152,7 @@ top:
 
 	/* do the insertion */
 	_bt_insertonpg(rel, buf, stack, natts, itup_scankey, itup, 0, false);
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
 	
@@ -839,7 +839,7 @@ _bt_split(Relation rel, Buffer buf, OffsetNumber firstright,
 	Page		origpage;
 	Page		leftpage,
 				rightpage;
-	BlockNumber	origpagenumber,
+	BlockNumber origpagenumber,
 				rightpagenumber;
 	BTPageOpaque ropaque,
 				lopaque,
@@ -980,7 +980,7 @@ _bt_split(Relation rel, Buffer buf, OffsetNumber firstright,
 					memset(rightpage, 0, BufferGetPageSize(rbuf));
 					elog(ERROR, "failed to add new item to the left sibling"
 						 " while splitting block %u of index \"%s\"",
-						origpagenumber, RelationGetRelationName(rel));
+						 origpagenumber, RelationGetRelationName(rel));
 				}
 				itup_off = leftoff;
 				itup_blkno = BufferGetBlockNumber(buf);
@@ -1066,7 +1066,7 @@ _bt_split(Relation rel, Buffer buf, OffsetNumber firstright,
 			elog(ERROR, "right sibling's left-link doesn't match: "
 				 "block %u links to %u instead of expected %u in index \"%s\"",
 				 oopaque->btpo_next, sopaque->btpo_prev, origpagenumber,
-				  RelationGetRelationName(rel));
+				 RelationGetRelationName(rel));
 		}
 
 		/*
@@ -1092,7 +1092,7 @@ _bt_split(Relation rel, Buffer buf, OffsetNumber firstright,
 	 *
 	 * NO EREPORT(ERROR) till right sibling is updated.  We can get away with
 	 * not starting the critical section till here because we haven't been
-	 * scribbling on the original page yet; see the comments above.
+	 * scribbling on the original page yet; see comments above.
 	 */
 	START_CRIT_SECTION();
 
@@ -1185,7 +1185,7 @@ _bt_split(Relation rel, Buffer buf, OffsetNumber firstright,
 	 * clean, and the most efficient way to guarantee this is just to compact
 	 * the data by reinserting it into a new left page.  (XXX the latter
 	 * comment is probably obsolete; but in any case it's good to not scribble
-	 * on the original page unil we enter the critical section.)
+	 * on the original page until we enter the critical section.)
 	 *
 	 * It's a bit weird that we don't fill in the left page till after writing
 	 * the XLOG entry, but not really worth changing.  Note that we use the

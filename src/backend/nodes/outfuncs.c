@@ -4046,6 +4046,7 @@ _outAlterTypeStmt(StringInfo str, AlterTypeStmt *node)
 	WRITE_NODE_FIELD(encoding);
 }
 
+
 /*
  * _outNode -
  *	  converts a Node into ascii string and append it to 'str'
@@ -4874,8 +4875,12 @@ _outNode(StringInfo str, void *obj)
 
 			default:
 
-					elog(WARNING, "could not dump unrecognized node type: %d",
-						 (int) nodeTag(obj));
+				/*
+				 * This should be an ERROR, but it's too useful to be able to
+				 * dump structures that _outNode only understands part of.
+				 */
+				elog(WARNING, "could not dump unrecognized node type: %d",
+					 (int) nodeTag(obj));
 				break;
 		}
 		appendStringInfoChar(str, '}');

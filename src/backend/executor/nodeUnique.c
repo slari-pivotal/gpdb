@@ -15,7 +15,7 @@
 /*
  * INTERFACE ROUTINES
  *		ExecUnique		- generate a unique'd temporary relation
- *		ExecInitUnique	- initialize node and subnodes..
+ *		ExecInitUnique	- initialize node and subnodes
  *		ExecEndUnique	- shutdown node and subnodes
  *
  * NOTES
@@ -60,7 +60,6 @@ ExecUnique(UniqueState *node)
 		 * fetch a tuple from the outer subplan
 		 */
 		slot = ExecProcNode(outerPlan);
-
 		if (TupIsNull(slot))
 		{
 			/* end of subplan, so we're done */

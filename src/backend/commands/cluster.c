@@ -1409,5 +1409,3 @@ void populate_oidInfo(TableOidInfo *oidInfo, Oid TableSpace, bool relisshared,
 		}
 	}
 }
- 
- 

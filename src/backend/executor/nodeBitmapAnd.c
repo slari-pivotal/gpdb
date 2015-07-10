@@ -34,6 +34,7 @@
 #include "executor/nodeBitmapAnd.h"
 #include "nodes/tidbitmap.h"
 
+
 /* ----------------------------------------------------------------
  *		ExecInitBitmapAnd
  *
@@ -129,13 +130,12 @@ MultiExecBitmapAnd(BitmapAndState *node)
 	bitmapplans = node->bitmapplans;
 	nplans = node->nplans;
 
-
 	/*
 	 * Scan all the subplans and AND their result bitmaps
- 	 */
+	 */
 	for (i = 0; i < nplans; i++)
 	{
-		PlanState	*subnode = bitmapplans[i];
+		PlanState  *subnode = bitmapplans[i];
 		Node		*subresult = NULL;
 
 		subresult = MultiExecProcNode(subnode);
@@ -352,4 +352,3 @@ initGpmonPktForBitmapAnd(Plan *planNode, gpmon_packet_t *gpmon_pkt, EState *esta
 							  NULL);
 	}
 }
-

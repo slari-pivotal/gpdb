@@ -36,6 +36,7 @@
 #include "utils/lsyscache.h"
 #include "cdb/cdbfilerepprimary.h"
 
+
 static bool _hash_alloc_buckets(Relation rel, BlockNumber firstblock,
 								uint32 nblocks);
 static void _hash_splitbucket(Relation rel, Buffer metabuf,
@@ -150,10 +151,8 @@ _hash_getbuf(Relation rel, BlockNumber blkno, int access)
 Buffer
 _hash_getnewbuf(Relation rel, BlockNumber blkno, int access)
 {
-	BlockNumber	nblocks;
+	BlockNumber	nblocks = RelationGetNumberOfBlocks(rel);
 	Buffer		buf;
-
-	nblocks = RelationGetNumberOfBlocks(rel);
 
 	MIRROREDLOCK_BUFMGR_MUST_ALREADY_BE_HELD;
 
@@ -423,10 +422,9 @@ _hash_expandtable(Relation rel, Buffer metabuf)
 	uint32		highmask;
 	uint32		lowmask;
 
-	
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	/*
 	 * Obtain the page-zero lock to assert the right to begin a split (see
 	 * README).

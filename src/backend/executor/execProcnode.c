@@ -213,9 +213,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 	 * do nothing when we get to the end of a leaf on tree.
 	 */
 	if (node == NULL)
-	{
 		return NULL;
-	}
 
 	Assert(estate != NULL);
 	int origSliceIdInPlan = estate->currentSliceIdInPlan;
@@ -1540,17 +1538,13 @@ ExecEndNode(PlanState *node)
 
 	/* Clean up initPlans and subPlans */
 	foreach(subp, node->initPlan)
-	{
-		ExecEndSubPlan((SubPlanState *)lfirst(subp));
-	}
-	
+		ExecEndSubPlan((SubPlanState *) lfirst(subp));
+
 	estate->currentSliceIdInPlan = origSliceIdInPlan;
 	estate->currentExecutingSliceId = origExecutingSliceId;
 
 	foreach(subp, node->subPlan)
-	{
 		ExecEndSubPlan((SubPlanState *) lfirst(subp));
-	}
 
 	if (node->chgParam != NULL)
 	{
@@ -1567,7 +1561,7 @@ ExecEndNode(PlanState *node)
         node->cdbexplainbuf = NULL;
     }
 
-    switch (nodeTag(node))
+	switch (nodeTag(node))
 	{
 			/*
 			 * control nodes

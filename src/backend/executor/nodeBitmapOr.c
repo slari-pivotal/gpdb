@@ -266,4 +266,3 @@ initGpmonPktForBitmapOr(Plan *planNode, gpmon_packet_t *gpmon_pkt, EState *estat
 							  (int64)0,  NULL);
 	}
 }
-

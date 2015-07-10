@@ -317,10 +317,10 @@ gistVacuumUpdate(GistVacuum *gv, BlockNumber blkno, bool needunion)
 				lencompleted = 16;
 
 	vacuum_delay_point();
-	
+
 	// -------- MirroredLock ----------
 	MIRROREDLOCK_BUFMGR_LOCK;
-	
+
 	buffer = ReadBuffer(gv->index, blkno);
 	LockBuffer(buffer, GIST_EXCLUSIVE);
 	gistcheckpage(gv->index, buffer);
@@ -505,10 +505,10 @@ gistVacuumUpdate(GistVacuum *gv, BlockNumber blkno, bool needunion)
 		if (ncompleted && !gv->index->rd_istemp)
 			gistxlogInsertCompletion(gv->index->rd_node, completed, ncompleted);
 	}
-	
+
 	MIRROREDLOCK_BUFMGR_UNLOCK;
 	// -------- MirroredLock ----------
-	
+
 	for (i = 0; i < curlenaddon; i++)
 		pfree(addon[i]);
 	if (addon)
@@ -621,10 +621,10 @@ gistvacuumcleanup(PG_FUNCTION_ARGS)
 		Page		page;
 
 		vacuum_delay_point();
-		
+
 		// -------- MirroredLock ----------
 		MIRROREDLOCK_BUFMGR_LOCK;
-		
+
 		buffer = ReadBuffer(rel, blkno);
 		LockBuffer(buffer, GIST_SHARE);
 		page = (Page) BufferGetPage(buffer);
@@ -638,10 +638,9 @@ gistvacuumcleanup(PG_FUNCTION_ARGS)
 		else
 			lastFilledBlock = blkno;
 		UnlockReleaseBuffer(buffer);
-		
+
 		MIRROREDLOCK_BUFMGR_UNLOCK;
 		// -------- MirroredLock ----------
-		
 	}
 	lastBlock = npages - 1;
 
@@ -657,10 +656,8 @@ gistvacuumcleanup(PG_FUNCTION_ARGS)
 			}
 
 		if (lastBlock > lastFilledBlock)
-			RelationTruncate(
-				rel, 
-				lastFilledBlock + 1,
-				/* markPersistentAsPhysicallyTruncated */ true);
+			RelationTruncate(rel, lastFilledBlock + 1,
+							 /* markPersistentAsPhysicallyTruncated */ true);
 		stats->std.pages_removed = lastBlock - lastFilledBlock;
 	}
 
@@ -744,10 +741,10 @@ gistbulkdelete(PG_FUNCTION_ARGS)
 					maxoff;
 		IndexTuple	idxtuple;
 		ItemId		iid;
-		
+
 		// -------- MirroredLock ----------
 		MIRROREDLOCK_BUFMGR_LOCK;
-		
+
 		buffer = ReadBuffer(rel, stack->blkno);
 		
 		LockBuffer(buffer, GIST_SHARE);
@@ -767,10 +764,10 @@ gistbulkdelete(PG_FUNCTION_ARGS)
 			{
 				/* only the root can become non-leaf during relock */
 				UnlockReleaseBuffer(buffer);
-				
+
 				MIRROREDLOCK_BUFMGR_UNLOCK;
 				// -------- MirroredLock ----------
-				
+
 				/* one more check */
 				continue;
 			}
@@ -862,10 +859,10 @@ gistbulkdelete(PG_FUNCTION_ARGS)
 		}
 
 		UnlockReleaseBuffer(buffer);
-		
+
 		MIRROREDLOCK_BUFMGR_UNLOCK;
 		// -------- MirroredLock ----------
-		
+
 		ptr = stack->next;
 		pfree(stack);
 		stack = ptr;

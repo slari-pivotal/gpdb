@@ -897,7 +897,7 @@ ExecEvalWholeRowSlow(ExprState *exprstate, ExprContext *econtext,
 
 	Assert(HeapTupleHeaderGetNatts(dtuple) >= var_tupdesc->natts);
 	HeapTupleHeaderSetNatts(dtuple, var_tupdesc->natts);
-	
+
 	ReleaseTupleDesc(var_tupdesc);
 
 	return PointerGetDatum(dtuple);
@@ -961,7 +961,7 @@ ExecEvalParam(ExprState *exprstate, ExprContext *econtext,
 		 * ecxt_param_exec_vals array, and can be accessed by array index.
 		 */
 		ParamExecData *prmExec = &(econtext->ecxt_param_exec_vals[thisParamId]);
-		
+
 		/* 
 		 * Maybe this parameter has already been evaluated. If so, execPlan
 		 * would be NULL.
@@ -973,7 +973,7 @@ ExecEvalParam(ExprState *exprstate, ExprContext *econtext,
 			/* ExecSetParamPlan should have processed this param... */
 			Assert(prmExec->execPlan == NULL);
 		}
-		
+
 		*isNull = prmExec->isnull;
 		return prmExec->value;
 	}
@@ -2123,7 +2123,7 @@ no_function_result:
 	{
 		MemoryContextSwitchTo(econtext->ecxt_per_query_memory);
 		tupstore = tuplestore_begin_heap(true, false, operatorMemKB); 
-		rsinfo.setResult = tupstore;  
+		rsinfo.setResult = tupstore;
 		if (!returnsSet)
 		{
 			int			natts = expectedDesc->natts;
@@ -2558,9 +2558,9 @@ static void FastPathScalarArrayOp(ScalarArrayOpExpr *opexpr, ScalarArrayOpExprSt
 	if (sstate->element_type != ARR_ELEMTYPE(arr))
 	{
 		get_typlenbyvalalign(ARR_ELEMTYPE(arr),
-				&sstate->typlen,
-				&sstate->typbyval,
-				&sstate->typalign);
+							 &sstate->typlen,
+							 &sstate->typbyval,
+							 &sstate->typalign);
 		sstate->element_type = ARR_ELEMTYPE(arr);
 	}
 	typlen = sstate->typlen;
@@ -2688,7 +2688,7 @@ ExecEvalScalarArrayOp(ScalarArrayOpExprState *sstate,
 	if (argDone != ExprSingleResult)
 		ereport(ERROR,
 				(errcode(ERRCODE_DATATYPE_MISMATCH),
-				 errmsg("op ANY/ALL (array) does not support set arguments")));
+			   errmsg("op ANY/ALL (array) does not support set arguments")));
 	Assert(fcinfo.nargs == 2);
 
 	/*
@@ -2730,9 +2730,9 @@ ExecEvalScalarArrayOp(ScalarArrayOpExprState *sstate,
 	if (sstate->element_type != ARR_ELEMTYPE(arr))
 	{
 		get_typlenbyvalalign(ARR_ELEMTYPE(arr),
-				&sstate->typlen,
-				&sstate->typbyval,
-				&sstate->typalign);
+							 &sstate->typlen,
+							 &sstate->typbyval,
+							 &sstate->typalign);
 		sstate->element_type = ARR_ELEMTYPE(arr);
 	}
 	typlen = sstate->typlen;
@@ -4668,7 +4668,6 @@ ExecInitExpr(Expr *node, PlanState *parent)
 
 				FastPathScalarArrayOp(opexpr, sstate);
 				state = (ExprState *) sstate;
-
 			}
 			break;
 		case T_BoolExpr:
@@ -5595,7 +5594,7 @@ ExecProject(ProjectionInfo *projInfo, ExprDoneCond *isDone)
 	 * us to use the slot's Datum/isnull arrays as workspace. (Also, we can
 	 * return the slot as-is if we decide no rows can be projected.)
 	 */
-	ExecClearTuple(slot); 
+	ExecClearTuple(slot);
 
 	/*
 	 * form a new result tuple (if possible); if successful, mark the result
@@ -5607,7 +5606,9 @@ ExecProject(ProjectionInfo *projInfo, ExprDoneCond *isDone)
 		if (isDone)
 			*isDone = ExprSingleResult;
 
-		ExecVariableList(projInfo, slot_get_values(slot), slot_get_isnull(slot));
+		ExecVariableList(projInfo,
+						 slot_get_values(slot),
+						 slot_get_isnull(slot));
 		ExecStoreVirtualTuple(slot);
 	}
 	else
