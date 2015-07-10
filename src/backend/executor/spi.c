@@ -46,7 +46,6 @@
 #include "executor/functions.h"
 #include "cdb/memquota.h"
 #include "executor/nodeFunctionscan.h"
-#include "nodes/stack.h"
 
 extern char *savedSeqServerHost;
 extern int savedSeqServerPort;
