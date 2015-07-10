@@ -1732,10 +1732,6 @@ _allocAH(const char *FileSpec, const ArchiveFormat fmt,
 	AH->gzOut = 0;
 	AH->OF = stdout;
 
-#ifdef USE_DDBOOST
-	AH->ddHandle = -1;
-#endif
-
 	/*
 	 * On Windows, we need to use binary mode to read/write non-text archive
 	 * formats.  Force stdin/stdout into binary mode if that is what we are

@@ -945,7 +945,6 @@ main(int argc, char **argv)
 		}
 		else
 			ret = updateArchiveWithDDFile(AH, g_pszDDBoostFile, g_pszDDBoostDir);
-		AH->dd_boost_buf_size = dd_boost_buf_size;
 		if (ret)
 		{
 			mpp_err_msg(logError, progname, "Could not open file on ddboost. Err %d\n", ret);
