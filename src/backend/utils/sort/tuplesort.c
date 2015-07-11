@@ -2789,6 +2789,11 @@ SelectSortFunction(Oid sortOperator,
 	}
 
 	/* shouldn't get here if the parser did its job. See sort_op_can_sort() */
+
+	/* keep the compiler quiet */
+	*sortFunction = InvalidOid;
+	*kind = SORTFUNC_LT;
+
 	elog(ERROR, "operator %s cannot sort", get_opname(sortOperator));
 }
 
