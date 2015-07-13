@@ -29,13 +29,23 @@
 
 #define DUMP_PREFIX (dump_prefix==NULL?"":dump_prefix)
 
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
+#define COMMAND_MAX 65536
+#define KEY_MAX 64
+#define SCHEMA_MAX 1024
+
+#define EXIT_CODE_BACKUP_RESTORE_ERROR 127
+
 /* general utility copied from cdblink.c */
 #define GET_STR(textp) DatumGetCString(DirectFunctionCall1(textout, PointerGetDatum(textp)))
 
 /* static helper functions */
 static bool createBackupDirectory(char *pszPathName);
 static char *findAcceptableBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, int segid);
-static char *formBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool is_compress, bool isPostData);
+static char *formBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool is_compress, bool isPostData, const char *suffix);
 static char *formStatusFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool bIsBackup);
 static char *formThrottleCmd(char *pszBackupFileName, int directIO_read_chunk_mb, bool bIsThrottlingEnabled);
 static char *relativeToAbsolute(char *pszRelativeDirectory);
@@ -247,10 +257,14 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	is_compress = (pszCompressionProgram != NULL && *pszCompressionProgram != '\0' ? true : false);
 
 	/* Form backup file path name */
-	pszBackupFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, is_compress, false);
+	pszBackupFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, is_compress, false, NULL);
 	pszStatusFileName = formStatusFilePathName(pszBackupDirectory, pszBackupKey, true);
 
-	pszSaveBackupfileName = pszBackupFileName;
+	int pszBackupFileLen = strnlen(pszBackupFileName, PATH_MAX);
+
+	pszSaveBackupfileName = (char *)palloc(sizeof(char) * (1 + pszBackupFileLen));
+	strncpy(pszSaveBackupfileName, pszBackupFileName, pszBackupFileLen);
+	pszSaveBackupfileName[pszBackupFileLen] = '\0';
 
 	/* Initialise the DDBoost connection and use it to open the file */
 #ifdef USE_DDBOOST
@@ -458,7 +472,7 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	 * to update the sequence tables (last values). As for actual data -
 	 * there isn't any, so we will just dump empty COPY statements...
 	 */
-	pszDataOption = (instid == 1) ? "--pre-data-schema-only" : "-a";
+	pszDataOption = (instid == 1) ? "--pre-and-post-data-schema-only" : "-a";
 
 	sprintf(pszKeyParm, "%s_%d_%d_%s", pszBackupKey, instid, segid, pszPassThroughCredentials);
 
@@ -479,7 +493,7 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 		+ 2 + 1				/* -U */
 		+ strlen(pszUserName) + 1	/* pszUserName */
 		+ strlen(pszPassThroughParameters) + 1
-		+ 23 + 1			/* " " or "--post-data-schema-only" */
+		+ 31 + 1			/* " " or "--pre-and-post-data-schema-only" */
 		+ strlen("_post_data")
 		+ strlen(pszDBName) + 1
 		+ 2 + 1				/* 2> */
@@ -530,6 +544,7 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	if (pszCompressionProgram[0] != '\0')
 	{
 		len += 1 + 1		/* | */
+		+ 2 + 1			/* "-f "*/
 		+ strlen(compPg) + 1;
 	}
 
@@ -708,28 +723,52 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
 				 errmsg("Error in gp_backup_launch - execl of %s with Command Line %s failed",
 						"/bin/sh", pszCmdLine)));
-		_exit(127);
+		_exit(EXIT_CODE_BACKUP_RESTORE_ERROR);
 	}
 
 	/*
-	 * If we are the master, we do two calls to gp_dump_agent, one for the pre-schema, one for the post
+	 * If we are the master, we do both the pre and post data schema dump
 	 */
 	if (instid == 1)
 	{
 		int stat;
-		waitpid(newpid, &stat, 0);
 
-		/* Since we going to re-formated the file names, we need to re-create the command line with the correct length */
+		pid_t w = waitpid(newpid, &stat, 0);
+		if(w == -1)
+		{
+			elog(ERROR, "Dump agent failure: %m");
+		}
+
+		/* Calculate the new length */
 		int 	newlen = len -
-				strlen(pszBackupFileName) -
-				strlen(pszStatusFileName) -
-				strlen(pszDataOption) -
-				strlen(pszThrottleCmd);
+				strnlen(pszStatusFileName, PATH_MAX) -
+				strnlen(pszThrottleCmd, COMMAND_MAX) -
+				strnlen(bkPg, PATH_MAX) - 1 -	/* gp_dump_agent */
+				7 - 1 -			/* --gp-k */
+				strnlen(pszKeyParm, KEY_MAX) - 1 -
+				7 -1 -			/* --gp-d */
+				strnlen(pszBackupDirectory, PATH_MAX) - 1 -
+				2 - 1 -			/* -p */
+				5 - 1 -			/* port */
+				2 - 1 -			/* -U */
+				strnlen(pszUserName, SCHEMA_MAX) - 1 -	/* pszUserName */
+				strnlen(pszPassThroughParameters, COMMAND_MAX) - 1 -
+				strnlen(pszDBName, SCHEMA_MAX) - 1 -
+				2 - 1;			/* 2> */
 
-		/* re-format the file names */
-		pszBackupFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, is_compress, true);
-		pszStatusFileName = formStatusFilePathName(pszBackupDirectory, pszBackupKey, true);
-		pszDataOption = "--post-data-schema-only" ;
+		/* Delete the old command */
+		pfree(pszThrottleCmd);
+		pfree(pszBackupFileName);
+		pfree(pszCmdLine);
+
+#ifdef USE_DDBOOST
+		if(pszDDBoostFileName != NULL)
+			pfree(pszDDBoostFileName);
+#endif
+
+		/* re-format dump file name and create temp file */
+		pszBackupFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, is_compress, true, NULL);
+		char *pszTempBackupFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, false, true, "_temp");
 
 		if(gp_backup_directIO)
 		{
@@ -740,14 +779,17 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 			pszThrottleCmd = formThrottleCmd(pszBackupFileName, 0, false);
 		}
 
-		/* Delete the old command */
-		pfree(pszCmdLine);
+		newlen += strlen(pszTempBackupFileName) + 1
+			+ strlen(pszThrottleCmd) + 1
+			+ 1 + 1		/* "| " */
+			+ 3 + 1;	/* "cat " */
 
-		/* Calculate the new length */
-		newlen += strlen(pszBackupFileName) +
-				strlen(pszStatusFileName) +
-				strlen(pszDataOption) +
-				strlen(pszThrottleCmd);
+		if (newlen <= 0)
+		{
+			ereport(ERROR,
+					(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
+					 errmsg("Wrong size of command line to alloc, %d", newlen)));
+		}
 
 		pszCmdLine = (char *) palloc(newlen);
 		if (pszCmdLine == NULL)
@@ -773,25 +815,19 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 			{
 				/* gp_dump_agent + options, pipe into compression program, direct
 			 	* stdout to backup file and stderr to status file */
-				sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s --dd_boost_file %s --dd_boost_buf_size %s -p %d -U %s %s %s %s 2>> %s | %s | %s",
-					bkPg, pszKeyParm, pszBackupDirectory, pszDDBoostFileName, dd_boost_buffer_size, port, pszUserName, pszPassThroughParameters,
-					pszDataOption, pszDBName, pszStatusFileName, compPg, gpDDBoostCmdLine);
+				snprintf(pszCmdLine, newlen, "cat %s | %s | %s", pszTempBackupFileName, compPg, gpDDBoostCmdLine);
 			}
 			else
 			{
-				sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s --dd_boost_file %s --dd_boost_buf_size %s -p %d -U %s %s %s %s 2>> %s | %s",
-					bkPg, pszKeyParm, pszBackupDirectory, pszDDBoostFileName, dd_boost_buffer_size,
-					port, pszUserName, pszPassThroughParameters, pszDataOption, pszDBName,
-					pszStatusFileName, gpDDBoostCmdLine);
+				snprintf(pszCmdLine, newlen, "cat %s | %s", pszTempBackupFileName, gpDDBoostCmdLine);
 			}
 		}
 		else if (netbackup_enabled)
 		{
 			if (pszCompressionProgram[0] != '\0')
 			{
-				sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s -p %d -U %s %s %s %s 2>> %s | %s -f | %s --netbackup-service-host %s --netbackup-policy %s --netbackup-schedule %s --netbackup-filename %s",
-						bkPg, pszKeyParm, pszBackupDirectory, port, pszUserName, pszPassThroughParameters,
-						pszDataOption, pszDBName, pszStatusFileName, compPg, gpNBUDumpPg, netbackup_service_host,
+				snprintf(pszCmdLine, newlen, "cat %s | %s -f | %s --netbackup-service-host %s --netbackup-policy %s --netbackup-schedule %s --netbackup-filename %s",
+						pszTempBackupFileName, compPg, gpNBUDumpPg, netbackup_service_host,
 						netbackup_policy, netbackup_schedule, pszBackupFileName);
 				if (netbackup_block_size)
 				{
@@ -806,9 +842,8 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 			}
 			else
 			{
-				sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s -p %d -U %s %s %s %s 2>> %s | %s --netbackup-service-host %s --netbackup-policy %s --netbackup-schedule %s --netbackup-filename %s",
-						bkPg, pszKeyParm, pszBackupDirectory, port, pszUserName, pszPassThroughParameters,
-						pszDataOption, pszDBName, pszStatusFileName, gpNBUDumpPg, netbackup_service_host,
+				snprintf(pszCmdLine, newlen, "cat %s | %s --netbackup-service-host %s --netbackup-policy %s --netbackup-schedule %s --netbackup-filename %s",
+						pszTempBackupFileName, gpNBUDumpPg, netbackup_service_host,
 						netbackup_policy, netbackup_schedule, pszBackupFileName);
 				if (netbackup_block_size)
 				{
@@ -829,16 +864,11 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 			{
 				/* gp_dump_agent + options, pipe into compression program, direct
 			 	* stdout to backup file and stderr to status file */
-				sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s -p %d -U %s %s %s %s 2>> %s | %s %s",
-					bkPg, pszKeyParm, pszBackupDirectory, port, pszUserName, pszPassThroughParameters,
-					pszDataOption, pszDBName, pszStatusFileName, compPg, pszThrottleCmd);
+				snprintf(pszCmdLine, newlen, "cat %s | %s %s", pszTempBackupFileName, compPg, pszThrottleCmd);
 			}
 			else
 			{
-				sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s -p %d -U %s %s %s %s 2>> %s %s",
-					bkPg, pszKeyParm, pszBackupDirectory, 
-					port, pszUserName, pszPassThroughParameters, pszDataOption, pszDBName,
-					pszStatusFileName, pszThrottleCmd);
+				snprintf(pszCmdLine, newlen, "cat %s %s", pszTempBackupFileName, pszThrottleCmd);
 
 			}
 		}
@@ -847,9 +877,8 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	{
 		if (pszCompressionProgram[0] != '\0')
 		{
-				sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s -p %d -U %s %s %s %s 2>> %s | %s -f | %s --netbackup-service-host %s --netbackup-policy %s --netbackup-schedule %s --netbackup-filename %s",
-					bkPg, pszKeyParm, pszBackupDirectory, port, pszUserName, pszPassThroughParameters,
-					pszDataOption, pszDBName, pszStatusFileName, compPg, gpNBUDumpPg, netbackup_service_host,
+				snprintf(pszCmdLine, newlen, "cat %s | %s -f | %s --netbackup-service-host %s --netbackup-policy %s --netbackup-schedule %s --netbackup-filename %s",
+					pszTempBackupFileName, compPg, gpNBUDumpPg, netbackup_service_host,
 					netbackup_policy, netbackup_schedule, pszBackupFileName);
 				if (netbackup_block_size)
 				{
@@ -864,9 +893,8 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 		}
 		else
 		{
-				sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s -p %d -U %s %s %s %s 2>> %s | %s --netbackup-service-host %s --netbackup-policy %s --netbackup-schedule %s --netbackup-filename %s",
-					bkPg, pszKeyParm, pszBackupDirectory, port, pszUserName, pszPassThroughParameters,
-					pszDataOption, pszDBName, pszStatusFileName, gpNBUDumpPg, netbackup_service_host,
+				snprintf(pszCmdLine, newlen, "cat %s | %s --netbackup-service-host %s --netbackup-policy %s --netbackup-schedule %s --netbackup-filename %s",
+					pszTempBackupFileName, gpNBUDumpPg, netbackup_service_host,
 					netbackup_policy, netbackup_schedule, pszBackupFileName);
 				if (netbackup_block_size)
 				{
@@ -887,16 +915,11 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 		{
 			/* gp_dump_agent + options, pipe into compression program, direct
 			 * stdout to backup file and stderr to status file */
-			sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s -p %d -U %s %s %s %s 2>> %s | %s %s",
-					bkPg, pszKeyParm, pszBackupDirectory, port, pszUserName, pszPassThroughParameters,
-					pszDataOption, pszDBName, pszStatusFileName, compPg, pszThrottleCmd);
+			snprintf(pszCmdLine, newlen, "cat %s | %s %s", pszTempBackupFileName, compPg, pszThrottleCmd);
 		}
 		else
 		{
-			sprintf(pszCmdLine, "%s --gp-k %s --gp-d %s -p %d -U %s %s %s %s 2>> %s %s",
-					bkPg, pszKeyParm, pszBackupDirectory, 
-					port, pszUserName, pszPassThroughParameters, pszDataOption, pszDBName,
-					pszStatusFileName, pszThrottleCmd);
+			snprintf(pszCmdLine, newlen, "cat %s %s", pszTempBackupFileName, pszThrottleCmd);
 		}
 	}
 #endif
@@ -917,16 +940,26 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 		else if (newpid == 0)
 		{
 
-			/* This execs a shell that runs the gp_dump_agent program	*/
-				execl("/bin/sh", "sh", "-c", pszCmdLine, NULL);
+			/* This execs a shell that runs the shell program to cat local post dump data to dump file*/
+			execl("/bin/sh", "sh", "-c", pszCmdLine, NULL);
 
 			ereport(ERROR,
 					(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
 					 errmsg("Error in gp_backup_launch - execl of %s with Command Line %s failed",
 							"/bin/sh", pszCmdLine)));
-			_exit(127);
+			_exit(EXIT_CODE_BACKUP_RESTORE_ERROR);
 		}
 
+		w = waitpid(newpid, &stat, 0);
+		if(w == -1)
+		{
+			elog(ERROR, "Dump agent failure from post schema dump: %m");
+		}
+
+		if(remove(pszTempBackupFileName) != 0)
+		{
+			elog(WARNING, "Failed to remove temporary post schema dump file \"%s\": %m", pszTempBackupFileName);
+		}
 	}
 
 	/* Restore process interval timers */
@@ -1047,7 +1080,7 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
 	postDataSchemaOnly = strstr(pszPassThroughParameters, "--post-data-schema-only") != NULL;
 
 	/* Form backup file path name */
-	pszBackupFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, is_decompress, postDataSchemaOnly);
+	pszBackupFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, is_decompress, postDataSchemaOnly, NULL);
 	pszStatusFileName = formStatusFilePathName(statusDirectory, pszBackupKey, false);
 
 	if (strstr(pszPassThroughParameters,"--netbackup-service-host") != NULL)
@@ -1107,13 +1140,20 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
 		if (0 != stat(pszBackupFileName, &info))
 		{
 			if (netbackup_enabled)
-			{
-				if (strncmp(pszBackupFileName, queryNBUBackupFilePathName(netbackup_service_host, pszBackupFileName), strlen(pszBackupFileName)) != 0)
+			{		
+				char *queriedNBUBackupFilePathName = queryNBUBackupFilePathName(netbackup_service_host, pszBackupFileName);
+
+				elog(LOG, "Verify backup file path on netbackup server: %s\n", pszBackupFileName);
+				elog(LOG, "NetBackup server file path: %s\n", queriedNBUBackupFilePathName);
+
+				if (strncmp(pszBackupFileName, queriedNBUBackupFilePathName, strlen(pszBackupFileName)) != 0)
+				{
 					ereport(ERROR,
 						(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
 						errmsg("Attempt to restore dbid %d failed. Query to NetBackup server for file %s failed."
 						"The NetBackup server is not running or the given file was not backed up using NetBackup.",
 						target_dbid, pszBackupFileName)));
+				}
 			}
 			else
 			{
@@ -1391,7 +1431,7 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
 	}
 
 
-		elog(LOG, "gp_restore_agent command line: %s", pszCmdLine),
+		elog(LOG, "gp_restore_agent command line: %s\n", pszCmdLine);
 
 		/* This execs a shell that runs the gp_restore_agent program  */
 			execl("/bin/sh", "sh", "-c", pszCmdLine, NULL);
@@ -1400,7 +1440,7 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
 				 errmsg("Error in gp_restore_launch - execl of %s with Command Line %s failed",
 						"/bin/sh", pszCmdLine)));
-		_exit(127);
+		_exit(EXIT_CODE_BACKUP_RESTORE_ERROR);
 	}
 
 
@@ -1579,7 +1619,7 @@ gp_write_backup_file__(PG_FUNCTION_ARGS)
 	validateBackupDirectory(pszBackupDirectory);
 
 	/* Form backup file path name */
-	pszFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, false, false);
+	pszFileName = formBackupFilePathName(pszBackupDirectory, pszBackupKey, false, false, NULL);
 
 	/* Write file */
 	f = fopen(pszFileName, "w");
@@ -1839,11 +1879,8 @@ findAcceptableBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, i
  * based on the naming convention for this.
  */
 char *
-formBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool is_compress, bool isPostData)
+formBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool is_compress, bool isPostData, const char *suffix)
 {
-#ifndef PATH_MAX
-#define PATH_MAX 1024
-#endif
 	/* First form the prefix */
 	char		szFileNamePrefix[1 + PATH_MAX];
 	int			instid;			/* dispatch node */
@@ -1861,17 +1898,28 @@ formBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool is_com
 	len = strlen(pszBackupDirectory);
 	assert(len >= 1);
 	if (pszBackupDirectory[strlen(pszBackupDirectory) - 1] != '/')
+	{
 		len++;
+	}
 
 	len += strlen(szFileNamePrefix);
 	len += strlen(pszBackupKey);
 
 	/* if gzip/gunzip is used, the suffix is gz */
 	if (is_compress)
+	{
 		len += strlen(".gz");
+	}
 
 	if (isPostData)
+	{
 		len += strlen("_post_data");
+	}
+
+	if(suffix)
+	{
+		len += strnlen(suffix, PATH_MAX);
+	}
 
 	if (len > PATH_MAX)
 	{
@@ -1890,17 +1938,28 @@ formBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool is_com
 
 	strcpy(pszBackupFileName, pszBackupDirectory);
 	if (pszBackupDirectory[strlen(pszBackupDirectory) - 1] != '/')
+	{
 		strcat(pszBackupFileName, "/");
+	}
 
 	strcat(pszBackupFileName, szFileNamePrefix);
 	strcat(pszBackupFileName, pszBackupKey);
 	
 	if (isPostData)
+	{
 		strcat(pszBackupFileName, "_post_data");
+	}
 
 	/* if gzip/gunzip is used, the suffix is gz */
 	if (is_compress)
+	{
 		strcat(pszBackupFileName, ".gz");
+	}
+
+	if(suffix)
+	{
+		strncat(pszBackupFileName, suffix, PATH_MAX);
+	}
 
 	return pszBackupFileName;
 }
@@ -2195,7 +2254,9 @@ testProgramExists(char *pszProgramName)
 
 		sprintf(pszTestPath, "%s/%s", pszEnvPath, pszProgramNameLocal);
 		if (stat(pszTestPath, &buf) >= 0)
+		{
 			return pszTestPath;
+		}
 	}
 	pszEnvPath = getenv("PATH");
 	if (pszEnvPath == NULL)
@@ -2235,6 +2296,7 @@ testProgramExists(char *pszProgramName)
 			}
 
 			sprintf(pszTestPath, "%s/%s", pColon, pszProgramNameLocal);
+
 			if (stat(pszTestPath, &buf) >= 0)
 				return pszTestPath;
 			else

@@ -2199,6 +2199,12 @@ threadProc(void *arg)
 				decrementedLunchCount = true;
 			}
 
+			if (!decrementedLockCount)
+			{
+				decrementFinishedLockingCount();
+				decrementedLockCount = true;
+			}
+
 			return NULL;
 		}
 
@@ -2216,6 +2222,13 @@ threadProc(void *arg)
 				decrementFinishedLaunchCount();
 				decrementedLunchCount = true;
 			}
+
+			if (!decrementedLockCount)
+			{
+				decrementFinishedLockingCount();
+				decrementedLockCount = true;
+			}
+
 			return NULL;
 		}
 
@@ -2247,19 +2260,26 @@ threadProc(void *arg)
 						decrementFinishedLaunchCount();
 						decrementedLunchCount = true;
 					}
+
+					if (!decrementedLockCount)
+					{
+						decrementFinishedLockingCount();
+						decrementedLockCount = true;
+					}
+
 					return NULL;
 				}
 			}
 		}
 
 		ProcessInput(pState);
-		if ( /* !decrementedLunchCount && */ HasReceivedSetSerializable(pState))
+		if (!decrementedLunchCount && HasReceivedSetSerializable(pState))
 		{
 			decrementFinishedLaunchCount();
 			decrementedLunchCount = true;
 		}
 
-		if ( /* !decrementedLunchCount && */ HasReceivedGotLocks(pState))
+		if (!decrementedLockCount && HasReceivedGotLocks(pState))
 		{
 			decrementFinishedLockingCount();
 			decrementedLockCount = true;

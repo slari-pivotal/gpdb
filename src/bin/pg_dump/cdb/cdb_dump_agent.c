@@ -116,14 +116,25 @@ PGconn	   *g_conn_status = NULL;		/* the status connection between main
 bool		schemaOnly;
 bool		dataOnly;
 bool		aclsSkip;
-bool        incrementalBackup;
+bool		incrementalBackup;
 bool		no_lock;
 static char	*incrementalFilter = NULL;
+char		fileFormat;
+char		*filename;
+int		compressLevel;
+char		*postSchemaFileSuffix = "_post_data";
+
+#ifdef USE_DDBOOST
+	char            *g_pszDDBoostFile = NULL;
+	int 		ret = 0;
+	char		*temp_dd_file = NULL;
+#endif
 
 /* MPP additions start */
 static char *selectSchemaName = NULL;	/* name of a single schema to dump */
 
-int			preDataSchemaOnly;	/* int because getopt_long() */
+int			preAndPostDataSchemaOnly;	/* int because getopt_long() */
+int			preDataSchemaOnly;
 int			postDataSchemaOnly;
 /* MPP additions end */
 
@@ -151,7 +162,7 @@ static int	column_inserts = 0;
 
 /* MPP Additions start */
 static SegmentDatabase g_SegDB;
-/* static int			  plainText = 0; */
+static int	plainText = 0;
 static int	g_role = 0;
 static char *g_CDBDumpInfo = NULL;
 static char *g_CDBDumpKey = NULL;
@@ -250,13 +261,16 @@ static void *monitorThreadProc(void *arg __attribute__((unused)));
 static void myHandler(int signo);
 static void addDistributedBy(PQExpBuffer q, TableInfo *tbinfo, int actual_atts);
 static char *formCDatabaseFilePathName(char *pszBackupDirectory, char *pszBackupKey, int pszInstID, int pszSegID);
-static char *formGenericFilePathName(char *keyword, char *pszBackupDirectory, char *pszBackupKey, int pszInstID, int pszSegID);
+static char *formGenericFilePathName(char *keyword, char *pszBackupDirectory, char *pszBackupKey, int pszInstID, int pszSegID, const char *dumpSuffix);
 static void dumpMain(bool oids, const char *dumpencoding, int outputBlobs, int plainText, RestoreOptions *ropt);
 static void dumpDatabaseDefinition(void);
 static void installSignalHandlers(void);
 extern void reset(void);
 static bool testAttributeEncodingSupport(void);
 static bool isGPDB4300OrLater(void);
+Archive *makeArchive(char *filename);
+void updateDDBoostArchive(ArchiveHandle *AH);
+char *formPostDumpFilePathName(char *pszBackupDirectory, char *pszBackupKey, int pszInstID, int pszSegID);
 
 /* MPP additions end */
 
@@ -351,7 +365,6 @@ int
 main(int argc, char **argv)
 {
 	int			c;
-	const char *filename = NULL;
 	const char *format = "p";
 	const char *dbname = NULL;
 	const char *pghost = NULL;
@@ -361,7 +374,6 @@ main(int argc, char **argv)
 	bool		oids = false;
 	enum trivalue prompt_password = TRI_DEFAULT;
 	int			compressLevel = -1;
-	int			plainText = 0;
 	int			outputClean = 0;
 	int			outputCreateDB = 0;
 	bool		outputBlobs = false;
@@ -374,12 +386,6 @@ main(int argc, char **argv)
 	char	   *pszDBPswd;
 	ArchiveHandle *AH;
 	StatusOp   *pOp;
-
-#ifdef USE_DDBOOST
-	char            *g_pszDDBoostFile = NULL;
-	int 		ret = 0;
-	char		*temp_dd_file = NULL;
-#endif
 
 	/* MPP additions end */
 
@@ -441,8 +447,7 @@ main(int argc, char **argv)
 		 * the following are mpp specific, and don't have an equivalent short
 		 * option
 		 */
-		{"pre-data-schema-only", no_argument, &preDataSchemaOnly, 1},
-		{"post-data-schema-only", no_argument, &postDataSchemaOnly, 1},
+		{"pre-and-post-data-schema-only", no_argument, &preAndPostDataSchemaOnly, 1},
 		/* END MPP ADDITION */
 
 #ifdef USE_DDBOOST
@@ -473,7 +478,7 @@ main(int argc, char **argv)
 	strcpy(g_opaque_type, "opaque");
 
 	dataOnly = schemaOnly = dump_inserts = column_inserts = false;
-	preDataSchemaOnly = postDataSchemaOnly = false;
+	preAndPostDataSchemaOnly = preDataSchemaOnly = postDataSchemaOnly = false;
 	incrementalBackup = false;
 
 	progname = get_progname(argv[0]);
@@ -671,7 +676,7 @@ main(int argc, char **argv)
 					exit(1);
 				}
 				include_everything = false;
-                strcpy(tableFileName, optarg);
+                		strcpy(tableFileName, optarg);
 				break;
 			case 4: 			/*	--exclude-table-file */
 				if (!open_file_and_append_to_list(optarg, &table_exclude_patterns, "exclude tables list"))
@@ -735,7 +740,17 @@ main(int argc, char **argv)
 		}
 	}
 
-	if (g_role == ROLE_MASTER && incrementalFilter) {
+	/* for master, enable the pre data schema dump first,
+	 * once finished, enable the post schema dump
+	 */
+	if(preAndPostDataSchemaOnly)
+	{
+		preDataSchemaOnly = true;
+		postDataSchemaOnly = false;
+	}
+
+	if (g_role == ROLE_MASTER && incrementalFilter)
+	{
 		table_include_patterns.head = NULL;
 		table_include_patterns.tail = NULL;
 		if (!open_file_and_append_to_list(incrementalFilter, &table_include_patterns, "include tables list"))
@@ -766,17 +781,11 @@ main(int argc, char **argv)
 	if (column_inserts)
 		dump_inserts = 1;
 
-	/* --post-data-schema-only implies --schema-only */
-	if (postDataSchemaOnly)
-		schemaOnly = true;
-
 	if (dataOnly && schemaOnly)
 	{
 		mpp_err_msg(logError, progname, "options \"schema only\" (-s) and \"data only\" (-a) cannot be used together\n");
 		exit(1);
 	}
-
-
 
 	if (dataOnly && outputClean)
 	{
@@ -828,34 +837,9 @@ main(int argc, char **argv)
 	}
 #endif
 
-	/* open the output file */
-	switch (format[0])
-	{
-		case 'c':
-		case 'C':
-			g_fout = CreateArchive(filename, archCustom, compressLevel);
-			break;
+	fileFormat = format[0];
 
-		case 'f':
-		case 'F':
-			g_fout = CreateArchive(filename, archFiles, compressLevel);
-			break;
-
-		case 'p':
-		case 'P':
-			plainText = 1;
-			g_fout = CreateArchive(filename, archNull, 0);
-			break;
-
-		case 't':
-		case 'T':
-			g_fout = CreateArchive(filename, archTar, compressLevel);
-			break;
-
-		default:
-			mpp_err_msg(logError, progname, "invalid output format \"%s\" specified\n", format);
-			exit(1);
-	}
+	g_fout = makeArchive(filename);
 
 	if (g_fout == NULL)
 	{
@@ -929,27 +913,9 @@ main(int argc, char **argv)
 
 #ifdef USE_DDBOOST
 
-	/* Only *_post_data files will be dumped on local GPDB directories */
 	if (dd_boost_enabled)
 	{
-		if(postDataSchemaOnly)
-		{
-			temp_dd_file = (char*)malloc(MAX_PATH_NAME);
-			if(!temp_dd_file)
-			{
-				mpp_err_msg(logError, progname, "Could not allocate memory\n");
-				exit(1);
-			}
-			sprintf(temp_dd_file, "%s_post_data", g_pszDDBoostFile);
-			ret = updateArchiveWithDDFile(AH, temp_dd_file, g_pszDDBoostDir);
-		}
-		else
-			ret = updateArchiveWithDDFile(AH, g_pszDDBoostFile, g_pszDDBoostDir);
-		if (ret)
-		{
-			mpp_err_msg(logError, progname, "Could not open file on ddboost. Err %d\n", ret);
-			exit(1);
-		}
+		updateDDBoostArchive(AH);
 	}
 #endif
 
@@ -1088,12 +1054,8 @@ main(int argc, char **argv)
 	 * do the database main dump, and write contents into the dump file
 	 */
 	mpp_err_msg(logInfo, progname, "Dumping database \"%s\"...\n", g_conn->dbName);
+
 	dumpMain(oids, dumpencoding, outputBlobs, plainText, ropt);
-
-	reset();
-
-	/* cleanup */
-	CloseArchive(g_fout);
 
 	/*
 	 * Dump CREATE DATABASE statement into a new dump file IFF this is the
@@ -1132,9 +1094,6 @@ main(int argc, char **argv)
 		free(g_SegDB.pszDBPswd);
 
 	PQfinish(g_conn);
-
-	if (preDataSchemaOnly)
-		mpp_err_msg(logInfo, progname, "Finished pre-data schema successfully\n");
 
 	mpp_err_msg(logInfo, progname, "Finished successfully\n");
 
@@ -1218,7 +1177,7 @@ dumpMain(bool oids, const char *dumpencoding, int outputBlobs, int plainText, Re
 	/* add status operator, to let the monitor thread see it */
 	AddToStatusOpList(g_pStatusOpList, pOp);
 
-    if (shouldDumpSchemaOnly(g_role, incrementalBackup, (void*)table_include_patterns.head))
+	if (shouldDumpSchemaOnly(g_role, incrementalBackup, (void*)table_include_patterns.head))
         goto skipalldata;
 
 	if (!schemaOnly)
@@ -1290,8 +1249,46 @@ skipalldata:
 	 * And finally we can do the actual output.
 	 */
 	if (plainText)
-	{
 		RestoreArchive(g_fout, ropt);
+
+	if(g_role == ROLE_MASTER && !dataOnly)
+	{
+		CloseArchive(g_fout);
+		/* master needs to dump post schema if not dumping data. */
+		preDataSchemaOnly = false;
+		postDataSchemaOnly = true;
+
+		/* --post-data-schema-only implies --schema-only */
+		schemaOnly = true;
+
+		fileFormat = 'f';	/*dump post schema data into local file first*/
+
+		char *postDumpFileName = formPostDumpFilePathName(g_pszCDBOutputDirectory, g_CDBDumpKey, g_role, g_dbID);
+
+		g_fout = makeArchive(postDumpFileName);
+
+#ifdef USE_DDBOOST
+
+		/* Only *_post_data files will be dumped on local GPDB directories */
+		if (dd_boost_enabled)
+		{
+			updateDDBoostArchive((ArchiveHandle *)g_fout);
+		}
+#endif
+		for (i = 0; i < numObjs; i++)
+			dumpDumpableObject(g_fout, dobjs[i]);
+
+		reset();
+
+		CloseArchive(g_fout);
+		free(postDumpFileName);
+
+		postDataSchemaOnly = false;	/*Finish dump post schema, set false, main() dumps create database definition*/
+	}
+	else
+	{
+		reset();
+		CloseArchive(g_fout);
 	}
 }
 
@@ -7330,7 +7327,13 @@ addDistributedBy(PQExpBuffer q, TableInfo *tbinfo, int actual_atts)
 char *
 formCDatabaseFilePathName(char *pszBackupDirectory, char *pszBackupKey, int pszInstID, int pszSegID)
 {
-	return formGenericFilePathName("cdatabase", pszBackupDirectory, pszBackupKey, pszInstID, pszSegID);
+	return formGenericFilePathName("cdatabase", pszBackupDirectory, pszBackupKey, pszInstID, pszSegID, NULL);
+}
+
+char *
+formPostDumpFilePathName(char *pszBackupDirectory, char *pszBackupKey, int pszInstID, int pszSegID)
+{
+	return formGenericFilePathName("dump", pszBackupDirectory, pszBackupKey, pszInstID, pszSegID, "_post_data_temp");
 }
 
 /* formBackupFilePathName( char* pszBackupDirectory, char* pszBackupKey ) returns char*
@@ -7339,8 +7342,8 @@ formCDatabaseFilePathName(char *pszBackupDirectory, char *pszBackupKey, int pszI
 * the path and filename of the backup output file
 * based on the naming convention for this.
 */
-char *
-formGenericFilePathName(char *keyword, char *pszBackupDirectory, char *pszBackupKey, int pszInstID, int pszSegID)
+static char *
+formGenericFilePathName(char *keyword, char *pszBackupDirectory, char *pszBackupKey, int pszInstID, int pszSegID, const char *dumpSuffix)
 {
 	/* First form the prefix */
 	char		szFileNamePrefix[1 + PATH_MAX];
@@ -7356,6 +7359,11 @@ formGenericFilePathName(char *keyword, char *pszBackupDirectory, char *pszBackup
 
 	len += strlen(szFileNamePrefix);
 	len += strlen(pszBackupKey);
+
+	if(dumpSuffix != NULL)
+	{
+		len += strlen(dumpSuffix);
+	}
 
 	if (len > PATH_MAX)
 	{
@@ -7375,6 +7383,11 @@ formGenericFilePathName(char *keyword, char *pszBackupDirectory, char *pszBackup
 
 	strcat(pszBackupFileName, szFileNamePrefix);
 	strcat(pszBackupFileName, pszBackupKey);
+
+	if(dumpSuffix != NULL)
+	{
+		strcat(pszBackupFileName, dumpSuffix);
+	}
 
 	return pszBackupFileName;
 }
@@ -7534,13 +7547,14 @@ dumpDatabaseDefinitionToDDBoost()
 	 * get a good error message from sh if we can't write to the file
 	 */
 	path1.su_name = DDP_SU_NAME;
-	path1.path_name  = g_pszDDBoostDir;
+	path1.path_name = g_pszDDBoostDir;
 
 	err = createDDBoostDir(ddp_conn, path1.su_name, path1.path_name);
 	if (err)
 	{
 		mpp_err_msg(logError, progname, "Error creating directory on ddboost\n");
-                return ;
+		free(pszBackupFileName);
+		return ;
 	}
 
 	path1.path_name = pszBackupFileName;
@@ -7550,6 +7564,7 @@ dumpDatabaseDefinitionToDDBoost()
 	{
 		mpp_err_msg(logError, progname, "Error creating file %s on ddboost from gp_dump_agent",
 					pszBackupFileName);
+		free(pszBackupFileName);
 		return ;
 	}
 	free(pszBackupFileName);
@@ -7766,28 +7781,20 @@ cleanupDDSystem(void)
 int
 updateArchiveWithDDFile(ArchiveHandle *AH, char *g_pszDDBoostFile, const char *g_pszDDBoostDir)
 {
-       	int err = 0;
-       	char *full_path = NULL;
+	int err = 0;
 	char *dir_name = "db_dumps";
-	char *orig_dir = NULL;
 
- 	full_path = (char*)malloc(MAX_PATH_NAME);
-       	path1.su_name = DDP_SU_NAME;
+	path1.su_name = DDP_SU_NAME;
 
 	if (g_pszDDBoostDir)
 		path1.path_name  = strdup(g_pszDDBoostDir);
 	else
 		path1.path_name = dir_name;
 
-	orig_dir = strdup(path1.path_name);
-
 	err = createDDBoostDir(ddp_conn, path1.su_name, path1.path_name);
 
 	if (err)
 		return err;
-
-	sprintf(full_path, "%s/%s", orig_dir, g_pszDDBoostFile);
-       	path1.path_name = full_path;
 
        	return 0;
 }
@@ -7805,21 +7812,84 @@ createDDBoostDir(ddp_conn_desc_t ddp_conn, char *storage_unit_name, char *path_n
 
 	pch = strtok(path_name, " /");
 	while(pch != NULL)
-        {
-        	path.su_name = storage_unit_name;
+	{
+		path.su_name = storage_unit_name;
 		strcat(full_path, "/");
 		strcat(full_path, pch);
-                path.path_name = full_path;
+		path.path_name = full_path;
 
-        	err = ddp_mkdir(ddp_conn, &path, 0755);
-        	if ((err != 0) && (err != DD_ERR_EXIST))
-        	{
-                	mpp_err_msg(logError, progname, "mkdir failed. err %d\n", err);
-                	return err;
-        	}
+		err = ddp_mkdir(ddp_conn, &path, 0755);
+		if ((err != 0) && (err != DD_ERR_EXIST))
+		{
+			mpp_err_msg(logError, progname, "mkdir failed. err %d\n", err);
+			free(full_path);
+			return err;
+		}
 
-                pch = strtok(NULL, " /");
-        }
+		pch = strtok(NULL, " /");
+	}
+
+	free(full_path);
 	return 0;
+}
+#endif
+
+Archive *
+makeArchive(char *filename)
+{
+	/* open the output file */
+	switch (fileFormat)
+	{
+		case 'c':
+		case 'C':
+			g_fout = CreateArchive(filename, archCustom, compressLevel);
+			break;
+
+		case 'f':
+		case 'F':
+			g_fout = CreateArchive(filename, archFiles, compressLevel);
+			break;
+
+		case 'p':
+		case 'P':
+			plainText = 1;
+			g_fout = CreateArchive(filename, archNull, 0);
+			break;
+
+		case 't':
+		case 'T':
+			g_fout = CreateArchive(filename, archTar, compressLevel);
+			break;
+
+		default:
+			mpp_err_msg(logError, progname, "invalid output format \"%s\" specified\n", fileFormat);
+			exit(1);
+	}
+	return g_fout;
+}
+
+#ifdef USE_DDBOOST
+void
+updateDDBoostArchive(ArchiveHandle *AH)
+{
+	if(postDataSchemaOnly)
+	{
+		temp_dd_file = (char*)malloc(MAX_PATH_NAME);
+		if(!temp_dd_file)
+		{
+			mpp_err_msg(logError, progname, "Could not allocate memory\n");
+			exit(1);
+		}
+		sprintf(temp_dd_file, "%s_post_data", g_pszDDBoostFile);
+		ret = updateArchiveWithDDFile(AH, temp_dd_file, g_pszDDBoostDir);
+		free(temp_dd_file);
+	}
+	else
+		ret = updateArchiveWithDDFile(AH, g_pszDDBoostFile, g_pszDDBoostDir);
+	if (ret)
+	{
+		mpp_err_msg(logError, progname, "Could not open file on ddboost. Err %d\n", ret);
+		exit(1);
+	}
 }
 #endif
