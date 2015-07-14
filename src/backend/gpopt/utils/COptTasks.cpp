@@ -814,7 +814,7 @@ COptTasks::FUnexpectedFailure
 		FExceptionFound(exc, rgulExpectedOptFallback, GPOS_ARRAY_SIZE(rgulExpectedOptFallback));
 
 	BOOL fExpectedDXLFailure =
-		gpdxl::ExmaDXL == ulMajor &&
+		(gpdxl::ExmaDXL == ulMajor || gpdxl::ExmaMD == ulMajor) &&
 		FExceptionFound(exc, rgulExpectedDXLFallback, GPOS_ARRAY_SIZE(rgulExpectedDXLFallback));
 
 	return (!fExpectedOptFailure && !fExpectedDXLFailure);
