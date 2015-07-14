@@ -3720,9 +3720,10 @@ CTranslatorQueryToDXL::PdxlnProjectNullsForGroupingSets
 			OID oidType = gpdb::OidExprType((Node *) pte->expr);
 
 			ulColId = m_pidgtorCol->UlNextId();
-			CMDIdGPDB *pmdid = New(m_pmp) CMDIdGPDB(oidType);
 
+			CMDIdGPDB *pmdid = New(m_pmp) CMDIdGPDB(oidType);
 			CDXLNode *pdxlnPrEl = CTranslatorUtils::PdxlnPrElNull(m_pmp, m_pmda, pmdid, ulColId, pte->resname);
+			pmdid->Release();
 			
 			pdxlnPrL->AddChild(pdxlnPrEl);
 			StoreAttnoColIdMapping(phmiulOutputCols, ulResno, ulColId);

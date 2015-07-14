@@ -2688,6 +2688,7 @@ CTranslatorUtils::PdxlnPrElNull
 		delete pstrAlias;
 	}
 
+	pmdid->AddRef();
 	CDXLDatum *pdxldatum = NULL;
 	if (pmdid->FEquals(&CMDIdGPDB::m_mdidInt2))
 	{
