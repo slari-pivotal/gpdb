@@ -153,6 +153,8 @@
 #include "cdb/cdbvars.h"
 
 #include "cdb/cdbfilerep.h"
+#include "cdb/cdbpersistentfilespace.h"
+
 
 #ifdef EXEC_BACKEND
 #include "storage/spin.h"
@@ -3718,6 +3720,8 @@ processPrimaryMirrorTransitionQuery(Port *port, void *pkt)
 				FileRep_SetSegmentState(s_state, f_type);
 			}
 		}
+
+		PersistentFilespace_CheckDiskUsage();
 	}
 
 	sendPrimaryMirrorTransitionQuery((uint32)pm_mode, (uint32)s_state, (uint32)d_state, (uint32)f_type);
