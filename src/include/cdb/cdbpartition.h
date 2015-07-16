@@ -113,7 +113,8 @@ extern void
 parruleord_reset_rank(Oid partid, int2 level, Oid parent, int2 ruleord, MemoryContext mcxt);
 
 extern void
-parruleord_open_gap(Oid partid, int2 level, Oid parent, int2 ruleord, int stopkey, MemoryContext mcxt);
+parruleord_open_gap(Oid partid, int2 level, Oid parent, int2 ruleord,
+					int stopkey, MemoryContext mcxt, bool closegap);
 
 extern AttrNumber 
 max_partition_attr(PartitionNode *pn);

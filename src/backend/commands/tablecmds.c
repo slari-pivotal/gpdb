@@ -14693,7 +14693,8 @@ ATPExecPartCoalesce(Relation rel,
 				prule->topRule->parparentoid,
 				prule->topRule->parruleord,
 				0,
-				CurrentMemoryContext);
+				CurrentMemoryContext,
+				false /* closegap */);
 
 	}
 
