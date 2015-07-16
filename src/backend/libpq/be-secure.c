@@ -420,7 +420,23 @@ wloop:
 	}
 	else
 #endif
+	{
+		bool saved_ImmediateInterruptOK = ImmediateInterruptOK;
+		CommandDest saved_CommandDest = whereToSendOutput;
+
+		whereToSendOutput = DestNone;
+		ImmediateInterruptOK = true;
+
+		if (ProcDiePending)
+		{
+			CHECK_FOR_INTERRUPTS();
+		}
+
 		n = send(port->sock, ptr, len, 0);
+
+		ImmediateInterruptOK = saved_ImmediateInterruptOK;
+		whereToSendOutput = saved_CommandDest;
+	}
 
 	return n;
 }
