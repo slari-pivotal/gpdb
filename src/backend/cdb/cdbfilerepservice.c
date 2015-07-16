@@ -567,7 +567,7 @@ FileRepSubProcess_SetState(FileRepState_e fileRepStateLocal)
 	
 }
 	
-static void
+void
 FileRepSubProcess_InitializeResyncManagerProcess(void)
 {
 	char	*fullpath;
