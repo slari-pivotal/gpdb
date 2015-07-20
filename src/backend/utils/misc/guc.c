@@ -4137,7 +4137,7 @@ static struct config_bool ConfigureNamesBool[] =
 						GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
 		        },
 				&optimizer_nary_union_union_all,
-				false, NULL, NULL
+				true, NULL, NULL
 		},
 
         {
