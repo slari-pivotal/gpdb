@@ -2557,6 +2557,7 @@ CTranslatorRelcacheToDXL::PdxlcolstatsSystemColumn
 
        // cleanup
        pmdidAttType->Release();
+       pmdtype->Release();
 
        return New(pmp) CDXLColStats
                        (
