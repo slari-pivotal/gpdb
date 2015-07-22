@@ -182,6 +182,103 @@ Feature: gptransfer tests
         Then gptransfer should return a return code of 0
         And verify that table "t0" in "gptransfer_testdb1" has "100" rows
 
+    @T886744
+    Scenario: gptransfer -T exclude with --full
+        Given the database is running
+        And the database "gptest" does not exist
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "gptransfer --full -T 'non_existdb.public./.?/1' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        Then gptransfer should return a return code of 2
+        And gptransfer should print Cannot specify -T and --full options together to stdout 
+
+    @T886745
+    Scenario: gptransfer -F exclude with --full
+        Given the database is running
+        And the database "gptest" does not exist
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "gptransfer --full -F gppylib/test/behave/mgmt_utils/steps/data/gptransfer_wildcard_infile --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        Then gptransfer should return a return code of 2
+        And gptransfer should print Cannot specify -F and --full options together to stdout 
+
+   @T886746
+    Scenario: gptransfer -T exclude non exist objects
+        Given the database is running
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "gptransfer -d gptransfer_testdb1 -T 'non_existdb.public./.?/1' -T 'gptransfer_testdb1.public.non_exist_table' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        Then gptransfer should return a return code of 0
+        And gptransfer should print Found no tables to exclude from transfer table list to stdout
+
+    @T886747
+    Scenario: gptransfer -T table level wildcard
+        Given the database is running
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "gptransfer -d gptransfer_testdb1 -T 'gptransfer_testdb1.public./.?/1' -T 'gptransfer_testdb1.public./.*/0' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        And the user runs "gptransfer -d gptransfer_testdb2 -T 'gptransfer_testdb2.public.t/.*/' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        Then gptransfer should return a return code of 0
+        And verify that there is no table "t0" in "gptransfer_testdb1"
+        And verify that there is no table "t1" in "gptransfer_testdb1"
+        And verify that table "t2" in "gptransfer_testdb1" has "300" rows
+        And verify that database "gptransfer_testdb2" does not exist
+
+    @T886749
+    Scenario: gptransfer -T schema level wildcard
+        Given the database is running
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "gptransfer -d gptransfer_testdb1 -T 'gptransfer_testdb1.pu/.?/lic.t1' -T 'gptransfer_testdb1.pub/.*/.t0' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        And the user runs "gptransfer -d gptransfer_testdb2 -T 'gptransfer_testdb2.p/.{1,4}/lic.t3' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        And the user runs "gptransfer -d gptransfer_testdb3 -T 'gptransfer_testdb3.s/\w?/.t/\d+/' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        Then gptransfer should return a return code of 0
+        And verify that there is no table "t0" in "gptransfer_testdb1"
+        And verify that there is no table "t1" in "gptransfer_testdb1"
+        And verify that table "t2" in "gptransfer_testdb1" has "300" rows
+        And verify that there is no table "t3" in "gptransfer_testdb2"
+        And verify that table "t4" in "gptransfer_testdb2" has "500" rows
+        And verify that table "t5" in "gptransfer_testdb2" has "600" rows
+        And verify that there is no table "s1.t0" in "gptransfer_testdb3"
+        And verify that there is no table "s2.t0" in "gptransfer_testdb3"
+
+    @T886750
+    Scenario: gptransfer -T database level wildcard
+        Given the database is running
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "gptransfer -d gptransfer_testdb1 -T 'gptransfer_testdb1/|/gptransfer_testdb3.public.t0' -T '/.?/ptransfer_testdb1.public.t1' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        And the user runs "gptransfer -d gptransfer_testdb2 -T 'g/\w?/transfer_testdb2.public.t3' --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE -a"
+        Then gptransfer should return a return code of 0
+        And verify that there is no table "t0" in "gptransfer_testdb1"
+        And verify that there is no table "t1" in "gptransfer_testdb1"
+        And verify that table "t2" in "gptransfer_testdb1" has "300" rows
+        And verify that there is no table "t3" in "gptransfer_testdb2"
+
 
     @T506747
     Scenario: gptransfer -t table level wildcard
@@ -253,6 +350,7 @@ Feature: gptransfer tests
         And verify that table "s1.t0" in "gptransfer_testdb3" has "800" rows
         And verify that table "s2.t0" in "gptransfer_testdb3" has "900" rows
 
+
     @T339948
     Scenario: gptransfer single table with skip
         Given the database is running
@@ -264,7 +362,7 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb5" does not exist
         And the user runs "psql -p $GPTRANSFER_DEST_PORT -h $GPTRANSFER_DEST_HOST -U $GPTRANSFER_DEST_USER -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_setup.sql -d template1"
         And the user runs "gptransfer -t gptransfer_testdb1.public.t0 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --skip-existing"
-        Then gptransfer should return a return code of 1
+        Then gptransfer should return a return code of 0
         And gptransfer should print Found no tables to transfer to stdout
 
     @T339949
@@ -344,6 +442,24 @@ Feature: gptransfer tests
         And verify that table "s1.t0" in "gptransfer_testdb3" has "800" rows
         And verify that table "s2.t0" in "gptransfer_testdb3" has "900" rows
 
+
+    @T886748
+    Scenario: gptransfer -F exclude input file
+        Given the database is running
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And the user runs "gptransfer -d gptransfer_testdb1 -d gptransfer_testdb2 -d gptransfer_testdb3 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate md5 -F gppylib/test/behave/mgmt_utils/steps/data/gptransfer_wildcard_infile"
+        Then gptransfer should return a return code of 0
+        And verify that database "gptransfer_testdb1" does not exist
+        And verify that database "gptransfer_testdb2" does not exist
+        And verify that database "gptransfer_testdb3" does not exist
+
+
+
     @T339953
     Scenario: gptransfer input file to destination database with conflict
         Given the database is running
@@ -412,7 +528,7 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb4" does not exist
         And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer -d bad_db --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
-        Then gptransfer should return a return code of 1
+        Then gptransfer should return a return code of 0
         And gptransfer should print Find no user databases matching "bad_db" in source system to stdout
         And gptransfer should print Found no tables to transfer to stdout
 
@@ -426,7 +542,7 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb4" does not exist
         And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer -t gptransfer_testdb1.public.bad_table --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"
-        Then gptransfer should return a return code of 1
+        Then gptransfer should return a return code of 0
         And gptransfer should print Found no tables to transfer to stdout
 
     @T339851
@@ -835,7 +951,7 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb4" does not exist
         And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_bad_infile --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE"        
-        Then gptransfer should return a return code of 1
+        Then gptransfer should return a return code of 0
         And gptransfer should print Found no tables to transfer to stdout
     
     @T339850

@@ -373,6 +373,20 @@ def create_parser():
         help='Table to transfer.  Can be specified multiple times to include '
              'multiple tables'
     )
+
+    # tables
+    source_option_group.add_option(
+        '-T',
+        type='string',
+        dest='exclude_tables',
+        default=[],
+        action='append',
+        metavar='<db.schema.table>',
+        help='Table to exclude from transfer.  Can be specified multiple times to exclude '
+             'multiple tables'
+    )
+
+
     # database
     source_option_group.add_option(
         '-d',
@@ -393,6 +407,16 @@ def create_parser():
         action='store',
         metavar='<file>',
         help='File containing list of database.schema.table entries to transfer'
+    )
+    # file
+    source_option_group.add_option(
+        '-F',
+        type='string',
+        dest='exclude_input_file',
+        default=None,
+        action='store',
+        metavar='<file>',
+        help='File containing list of database.schema.table entries to exclude from transfer'
     )
     # exclusive lock
     source_option_group.add_option(
@@ -1482,6 +1506,7 @@ class GpTransferCommand(Command):
         """
         global tableCountLock
         global remaining_tables
+
         try:
             if not canceled:
                 self._pool = WorkerPool(self._batch_size)
@@ -1567,7 +1592,7 @@ class GpTransferCommand(Command):
             	    with tableCountLock:
                     	remaining_tables = remaining_tables - 1
                     logger.info(
-                        "Finished transferring table %s, remaining %s of %s tables", str(self._table_pair.source), remaining_tables, self._table_transfer_set_total)
+                               "Finished transferring table %s, remaining %s of %s tables", str(self._table_pair.source), remaining_tables, self._table_transfer_set_total)
                 else:
                     logger.error(
                         "Failed to transfer table %s", str(self._table_pair.source))
@@ -2270,6 +2295,7 @@ class GpTransfer(object):
                                       GPTRANSFER_TMP_DIR)
 
         self._cleanup_schemas = False
+        self._excluding_table = True
 
         # --format would be 'TEXT' if delimiter is other than ','
         if self._options.delimiter != ",":
@@ -2376,6 +2402,7 @@ class GpTransfer(object):
                 drop = (True if self._options.drop
                         and table_pair.dest
                         in self._dest_tables else False)
+
                 cmd = GpTransferCommand(
                     'transfer of %s' % table_pair.source,
                     self._options.source_host,
@@ -2407,7 +2434,7 @@ class GpTransfer(object):
                     self._options.validator,
                     self._options.format,
                     self._options.quote,
-                    self._table_transfer_set_total,
+                    self._table_transfer_set_total
                 )
                 self._pool.addCommand(cmd)
                 cmds_queued += 1
@@ -2747,6 +2774,18 @@ class GpTransfer(object):
                                    'Must be greater than 0 and less than %s'
                                    % MAX_SUB_BATCH_SIZE)
 
+        if self._options.full and len(self._options.exclude_tables) != 0:
+            raise ProgramArgumentValidationException('Cannot specify -T and --full options '
+                                   'together')
+
+        if self._options.full and self._options.exclude_input_file:
+            raise ProgramArgumentValidationException('Cannot specify -F and --full options '
+                                   'together')
+
+        if (self._options.exclude_tables or self._options.exclude_input_file) and not self._excluding_table:
+            logger.warning('Found no tables to exclude from transfer table list')
+            sys.exit(0)
+
         if self._options.full and (self._options.truncate or self._options.drop or
                                    self._options.skip_existing):
             raise ProgramArgumentValidationException('Cannot specify --drop, --truncate or '
@@ -3052,11 +3091,83 @@ class GpTransfer(object):
                             raise Exception('Error matching regular expression, %s with database name %s'
                                             ' or %s with schema name %s, or %s with table name %s\n%s' %
                                             (db_, database, schema_, schema, table_, table, e))
+
                     if is_table_match:
                         source_tables.append(user_table)
 
-        return source_tables
+        return self.filter_tables(source_tables, self.get_exclude_tables())
 
+
+    def get_exclude_tables(self):
+        """
+        get all tables to exclude from transfer table list
+        """
+
+        exclude_tables = set()
+
+        # excluded tables
+        for fqn in self._options.exclude_tables:
+            (database, schema, table) = split_fqn(fqn)
+            database = _process_regexp(database)
+            schema = _process_regexp(schema)
+            table = _process_regexp(table)
+            exclude_tables.add((database, schema, table))
+
+        # add all tables in exclude input file and parse wildcard of table names
+        if self._options.exclude_input_file:
+            with open(self._options.exclude_input_file) as input_file:
+                for line in input_file:
+                    line = line.strip()
+                    if line.startswith('#'):
+                        continue
+
+                    (database, schema, table) = split_fqn(line)
+                    database = _process_regexp(database)
+                    schema = _process_regexp(schema)
+                    table = _process_regexp(table)
+
+                    exclude_tables.add((database, schema, table))
+
+        return exclude_tables 
+
+
+    def filter_tables(self, source_tables, exclude_tables):
+        """
+        filter out the source tables from transferring
+        """
+        if (source_tables is None or len(source_tables) == 0 or
+            exclude_tables is None or len(exclude_tables) == 0):
+
+            return source_tables
+
+        tables_to_transfer = list()
+        for src_table in  source_tables:
+            database, schema, table = src_table.database, src_table.schema, src_table.table
+
+            is_exclude_table_match = False
+            for (db_, schema_, table_) in exclude_tables:
+                try:
+                    if (re.match(r'%s' % db_, database, re.L|re.U) and
+                        re.match(r'%s' % schema_, schema, re.L|re.U) and
+                        re.match(r'%s' % table_, table, re.L|re.U)):
+
+                        is_exclude_table_match = True
+                        break
+                except Exception, e:
+                    raise Exception('Error matching regular expression, %s with database name %s'
+                                    ' or %s with schema name %s, or %s with table name %s\n%s' %
+                                    (db_, database, schema_, schema, table_, table, e))
+
+            if is_exclude_table_match:
+                logger.debug("Excluding table %s", src_table)
+            else:
+                logger.debug('Adding table %s', src_table)
+                tables_to_transfer.append(src_table)
+
+        if len(tables_to_transfer) == len(source_tables):
+            self._excluding_table = False
+
+        return tables_to_transfer
 
     def _build_table_transfer_set(self):
         """
@@ -3167,8 +3278,8 @@ class GpTransfer(object):
             self._table_transfer_set.remove(remove)
 
         if len(self._table_transfer_set) == 0 and not self._options.dry_run:
-            logger.error('Found no tables to transfer.')
-            sys.exit(1)
+            logger.info('Found no tables to transfer.')
+            sys.exit(0)
 
         if self._options.interactive and not self._options.dry_run:
             ask = False
