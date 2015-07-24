@@ -39,10 +39,10 @@ typedef enum
 /* cache of function lookups for range partition selection */
 typedef struct PartitionRangeState
 {
-	FmgrInfo *ltfuncs;
-	bool *ltinit;
-	FmgrInfo *lefuncs;
-	bool *leinit;
+	FmgrInfo *ltfuncs_direct; /* comparator expr < partRule */
+	FmgrInfo *lefuncs_direct; /* comparator expr <= partRule */
+	FmgrInfo *ltfuncs_inverse; /* comparator partRule < expr */
+	FmgrInfo *lefuncs_inverse; /* comparator partRule <= expr */
 	int last_rule; /* cache offset to the last rule and test if it matches */
 	PartitionRule **rules;
 } PartitionRangeState;
@@ -292,6 +292,6 @@ freeValueArrays(Datum *values, bool *isnull);
 
 extern PartitionRule*
 get_next_level_matched_partition(PartitionNode *partnode, Datum *values, bool *isnull,
-								TupleDesc tupdesc, PartitionAccessMethods *accessMethods);
+								TupleDesc tupdesc, PartitionAccessMethods *accessMethods, Oid exprTypid);
 
 #endif   /* CDBPARTITION_H */

@@ -231,11 +231,12 @@ eval_part_qual(ExprState *exprstate, PartitionSelectorState *node, TupleTableSlo
  *		accessMethods: PartitionAccessMethods
  *		root_oid: root table Oid
  *		value: partition key value
+ *		exprTypid: type of the expression
  *
  * ----------------------------------------------------------------
  */
 static PartitionRule*
-partition_selection(PartitionNode *pn, PartitionAccessMethods *accessMethods, Oid root_oid, Datum value, bool isNull)
+partition_selection(PartitionNode *pn, PartitionAccessMethods *accessMethods, Oid root_oid, Datum value, Oid exprTypid, bool isNull)
 {
 	Assert (NULL != pn);
 	Assert (NULL != accessMethods);
@@ -256,7 +257,7 @@ partition_selection(PartitionNode *pn, PartitionAccessMethods *accessMethods, Oi
 	isnull[partAttno - 1] = isNull;
 	values[partAttno - 1] = value;
 
-	PartitionRule *result = get_next_level_matched_partition(pn, values, isnull, tupDesc, accessMethods);
+	PartitionRule *result = get_next_level_matched_partition(pn, values, isnull, tupDesc, accessMethods, exprTypid);
 
 	freeValueArrays(values, isnull);
 	relation_close(rel, NoLock);
@@ -420,7 +421,13 @@ partition_constraints_for_equality_predicate(PartitionSelectorState *node, int l
 	ExprDoneCond isDone = ExprSingleResult;
 	Datum value = ExecEvalExpr(exprState, econtext, &isNull, &isDone);
 
-	PartitionRule *partRule = partition_selection(parentNode, node->accessMethods, ps->relid, value, isNull);
+	/*
+	 * Compute the type of the expression result. Sometimes this can be different
+	 * than the type of the partition rules (MPP-25707), and we'll need this type
+	 * to choose the correct comparator.
+	 */
+	Oid exprTypid = exprType((Node *) exprState->expr);
+	PartitionRule *partRule = partition_selection(parentNode, node->accessMethods, ps->relid, value, exprTypid, isNull);
 	if (NULL != partRule)
 	{
 		return construct_part_constraints(partRule, parentNode->part->parkind);
