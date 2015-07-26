@@ -343,6 +343,13 @@ CConfigParamMapping::SConfigMappingElem CConfigParamMapping::m_elem[] =
 		&optimizer_push_requirements_from_consumer_to_producer,
 		true,  // m_fNegate
 		GPOS_WSZ_LIT("Optimize CTE producer plan on requirements enforced on top of CTE consumer")
+		},
+
+		{
+		EopttraceDisablePruneUnusedComputedColumns,
+		&optimizer_prune_computed_columns,
+		true,  // m_fNegate
+		GPOS_WSZ_LIT("Prune unused computed columns when pre-processing query")
 		}
 };
 

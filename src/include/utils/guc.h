@@ -408,6 +408,7 @@ extern bool optimizer_prefer_multistage_agg;
 extern bool optimizer_enable_multiple_distinct_aggs;
 extern bool optimizer_prefer_expanded_distinct_aggs;
 extern bool optimizer_nary_union_union_all;
+extern bool optimizer_prune_computed_columns;
 extern bool optimizer_push_requirements_from_consumer_to_producer;
 extern bool optimizer_enable_hashjoin_redistribute_broadcast_children;
 extern bool optimizer_enable_broadcast_nestloop_outer_child;
