@@ -1704,7 +1704,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
 
         self._pool.empty_completed_items()
-        logger.info('Creating FIFO pipes for source table %s...',
+        logger.debug('Creating FIFO pipes for source table %s...',
                     self._table_pair.source)
 
         for host in self._host_map.keys():
@@ -1741,7 +1741,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         Creates the writable external table on the source GPDB system.
         """
 
-        logger.info('Creating source writable external table for source '
+        logger.debug('Creating source writable external table for source '
                     'table %s...', self._table_pair.source)
 
         urls = ','.join(["'%s'" % url for url in self._wext_gpfdist_urls])
@@ -1785,7 +1785,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         Creates the readable external table on the destination GPDB system.
         """
 
-        logger.info('Creating external table for destination table %s...',
+        logger.debug('Creating external table for destination table %s...',
                     self._table_pair.dest)
         urls = ','.join(["'%s'" % url for url in self._ext_gpfdist_urls])
         ext_sql = \
@@ -1863,7 +1863,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
         self._pool.empty_completed_items()
 
-        logger.info(
+        logger.debug(
             'Starting gpfdist for readable external table for table %s...',
             self._table_pair.source)
 
@@ -1947,7 +1947,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
                     #       while data is remaining causes and EPIPE on the writable
                     #       gpfdist side.  Need a better way to coordinate this.
                     time.sleep(self._wait_time)
-                    logger.info('Closing named pipes for table %s...', str(self._table_pair.source))
+                    logger.debug('Closing named pipes for table %s...', str(self._table_pair.source))
                     for (address, pipe) in self._get_named_pipes():
                         cmd = GpCloseNamedPipe('close pipe %s on %s' % (pipe, address),
                                                pipe, REMOTE, address)
@@ -2058,7 +2058,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
 
         try:
-            logger.info(
+            logger.debug(
                 'Dropping writable external table for source table %s...',
                 self._table_pair.source)
             drop_wext_sql = """DROP EXTERNAL WEB TABLE gptransfer.%s""" \
@@ -2075,7 +2075,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
 
         try:
-            logger.info('Dropping external table for destination table %s...',
+            logger.debug('Dropping external table for destination table %s...',
                         self._table_pair.dest)
             drop_ext_sql = """DROP EXTERNAL TABLE gptransfer.%s""" \
                 % (self._ext_name)
@@ -2092,7 +2092,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
 
         self._pool.empty_completed_items()
-        logger.info('Stopping gpfdist for source table %s...',
+        logger.debug('Stopping gpfdist for source table %s...',
                     self._table_pair.source)
         if self._fast_mode:
             for seg in self._source_config.getSegDbList():
@@ -2137,7 +2137,7 @@ GROUP BY nspname, relname;''' % (self._table_pair.source.schema,
         """
 
         self._pool.empty_completed_items()
-        logger.info('Removing FIFO pipes for source table %s...',
+        logger.debug('Removing FIFO pipes for source table %s...',
                     self._table_pair.source)
 
         for host in self._host_map.keys():
