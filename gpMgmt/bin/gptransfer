@@ -43,7 +43,7 @@ try:
     from gppylib.commands.gp import get_gphome
     from gppylib.db.dbconn import connect, DbURL, execSQL, \
         execSQLForSingletonRow
-    from gppylib.db.catalog import getUserDatabaseList, doesSchemaExist
+    from gppylib.db.catalog import getUserDatabaseList, doesSchemaExist, dropSchemaIfExist
     from gppylib.gparray import GpArray
     from gppylib.userinput import ask_yesno
     from pygresql.pg import DB
@@ -776,6 +776,29 @@ def schema_exists_on_system(host, port, user, schema, databases=None):
         url = DbURL(host, port, database, user)
         conn = connect(url)
         schema_exists = doesSchemaExist(conn, schema)
+        conn.close()
+        if schema_exists:
+            return True
+
+def drop_existing_schema_on_system(host, port, user, schema, databases=None):
+    """  
+    host: hostname or ip address of Greenplum DB
+    port: port of Greenplum DB
+    user: user to connect as
+    schema: schema name to search for
+    databases: list of databases to search for schema
+    """
+
+    if databases is None:
+        url = DbURL(host, port, 'template1', user)
+        conn = connect(url)
+        databases = [db[0] for db in getUserDatabaseList(conn)]
+        conn.close()
+
+    for database in databases:
+        url = DbURL(host, port, database, user)
+        conn = connect(url)
+        schema_exists = dropSchemaIfExist(conn, schema)
         conn.close()
         if schema_exists:
             return True
@@ -2957,18 +2980,38 @@ class GpTransfer(object):
                 schemas_exists_on_destination = True
 
         if schemas_exists_on_source:
-            logger.error('The gptransfer schema already exists on the source system.')
-            logger.error('This is likely due to a previous run on gptransfer')
-            logger.error('being forcefully terminated and not properly cleaned up.')
-            logger.error('Remove these schemas and rerun gptransfer.')
-            raise Exception('gptransfer schema already exists on source system')
+            logger.warning('The gptransfer schema already exists on the source system.')
+            logger.warning('This is likely due to a previous run on gptransfer')
+            logger.warning('being forcefully terminated and not properly cleaned up.')
+            logger.warning('Removing existing gptransfer schema on source system.')
+            if self._options.full:
+                drop_existing_schema_on_system(self._options.source_host,
+                                               self._options.source_port,
+                                               self._options.source_user,
+                                               'gptransfer')
+            else:
+                drop_existing_schema_on_system(self._options.source_host,
+                                               self._options.source_port,
+                                               self._options.source_user,
+                                               'gptransfer',
+                                               self._src_databases)
 
         if schemas_exists_on_destination:
-            logger.error('The gptransfer schema already exists on destination system.')
-            logger.error('This is likely due to a previous run on gptransfer')
-            logger.error('being forcefully terminated and not properly cleaned up.')
-            logger.error('Remove these schemas and rerun gptransfer.')
-            raise Exception('gptransfer schema already exists on destination system')
+            logger.warning('The gptransfer schema already exists on destination system.')
+            logger.warning('This is likely due to a previous run on gptransfer')
+            logger.warning('being forcefully terminated and not properly cleaned up.')
+            logger.warning('Removing existing gptransfer schema on destination system.')
+            if self._options.full:
+                drop_existing_schema_on_system(self._options.dest_host,
+                                               self._options.dest_port,
+                                               self._options.dest_user,
+                                               'gptransfer')
+            else:
+                drop_existing_schema_on_system(self._options.dest_host,
+                                               self._options.dest_port,
+                                               self._options.dest_user,
+                                               'gptransfer',
+                                               [db for db in self._dest_databases if db in self._all_dest_databases])
 
 
     def _get_source_tables(self):

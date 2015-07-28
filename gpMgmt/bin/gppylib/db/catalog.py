@@ -92,6 +92,23 @@ def doesSchemaExist(conn,schemaname):
         if cursor: 
             cursor.close()
 
+def dropSchemaIfExist(conn,schemaname):
+    sql = "SELECT nspname FROM pg_catalog.pg_namespace WHERE nspname = '%s'" % schemaname
+    dropsql = "DROP SCHEMA %s" % schemaname
+    cursor=None
+    try:
+        cursor=dbconn.execSQL(conn,sql)
+        numrows = cursor.rowcount
+        if numrows == 1:
+            cursor=dbconn.execSQL(conn,dropsql)
+        else:
+            raise CatalogError("more than one entry in pg_namespace for '%s'" % schemaname)
+    except Exception as e:
+        raise CatalogError("error dropping schema %s: %s" % (schemaname, str(e)))
+    finally:
+        if cursor:
+            cursor.close()
+        conn.commit()
 
 def get_master_filespace_map(conn):
     """Returns an array of [fsname, fspath] arrays that represents
