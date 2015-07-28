@@ -3603,6 +3603,17 @@ def impl(context, filename, output):
     print contents
     check_stdout_msg(context, output) 
 
+@then('the user waits for "{process_name}" to finish running')
+def impl(context, process_name):
+     run_command(context, "ps ux | grep `which %s` | grep -v grep | awk '{print $2}' | xargs" % process_name)
+     pids = context.stdout_message.split()
+     while len(pids) > 0:
+         for pid in pids:
+             try:
+                 os.kill(int(pid), 0)
+             except OSError, error:
+                 pids.remove(pid)
+         time.sleep(10)
 
 @given('the gpfdists occupying port {port} on host "{hostfile}"')
 def impl(context, port, hostfile):

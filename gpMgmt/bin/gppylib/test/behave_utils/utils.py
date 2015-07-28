@@ -118,7 +118,8 @@ def check_stdout_msg(context, msg):
         raise Exception(err_str)
 
 def check_string_not_present_stdout(context, msg):
-    if msg in context.stdout_message:
+    pat = re.compile(msg)
+    if pat.search(context.stdout_message):
         err_str = "Did not expect stdout string '%s' but found: '%s'" % (msg, context.stdout_message)
         raise Exception(err_str)
 

@@ -1613,6 +1613,22 @@ Feature: gptransfer tests
        And verify that the file "/tmp/gptransfer_stdout.txt" contains "Removing existing gptransfer schema on source system"
        And verify that the file "/tmp/gptransfer_stdout.txt" contains "Removing existing gptransfer schema on destination system"
 
+    @gptransfer_help
+    Scenario: use gptransfer --help with another gptransfer process already running.
+        Given the database is running
+        And the database "gptransfer_destdb" does not exist
+        And the database "gptransfer_testdb1" does not exist
+        And the database "gptransfer_testdb2" does not exist
+        And the database "gptransfer_testdb3" does not exist
+        And the database "gptransfer_testdb4" does not exist
+        And the database "gptransfer_testdb5" does not exist
+        And a table is created containing rows of length "10" with connection "psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -d gptransfer_testdb5"
+        When the user runs the command "sleep 9; gptransfer -t gptransfer_testdb5.public.wide_row_10 --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --truncate -a" in the background
+        And the user runs "gptransfer --help && [ $(ps ux | grep `which gptransfer` | grep -v grep | wc -l) != 0 ]"
+        Then gptransfer should return a return code of 0
+        And gptransfer should not print An instance of gptransfer is already running to stdout
+        And the user waits for "gptransfer" to finish running
+
     Scenario: gptransfer cleanup
         Given the database is running
         And the user runs "psql -p $GPTRANSFER_SOURCE_PORT -h $GPTRANSFER_SOURCE_HOST -U $GPTRANSFER_SOURCE_USER -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_cleanup.sql -d template1"
