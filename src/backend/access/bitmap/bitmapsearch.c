@@ -500,8 +500,12 @@ _bitmap_findbitmaps(IndexScanDesc scan, ScanDirection dir  __attribute__((unused
 			scanPos->nvec++;
 		}
 
-		scanPos->posvecs =
-			(BMVector)palloc0(sizeof(BMVectorData) * scanPos->nvec);
+		if (scanPos->nvec)
+		{
+			scanPos->posvecs =
+				(BMVector)palloc0(sizeof(BMVectorData) * scanPos->nvec);
+		}
+
 		vectorNo = 0;
 		foreach(cell, lovItemPoss)
 		{

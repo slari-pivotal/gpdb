@@ -237,7 +237,8 @@ SetNextFileSegForRead(AppendOnlyScanDesc scan)
 		MemoryContext oldMemoryContext = MemoryContextSwitchTo(scan->aoScanInitContext);
 
 		/* Get the relation specific compression functions */
-		fns = RelationGetRelationCompressionFuncs(reln);
+
+		fns = get_funcs_for_compression(scan->aoEntry->compresstype);
 		scan->storageRead.compression_functions = fns;
 
 		if (scan->storageRead.compression_functions != NULL)
@@ -2201,7 +2202,7 @@ appendonly_fetch_init(
 						&aoFetchDesc->storageAttributes);
 
 
-	fns = RelationGetRelationCompressionFuncs(relation);
+	fns = get_funcs_for_compression(aoentry->compresstype);
 	aoFetchDesc->storageRead.compression_functions = fns;
 
 	if (fns)
@@ -2740,7 +2741,7 @@ appendonly_insert_init(Relation rel, Snapshot appendOnlyMetaDataSnapshot, int se
 
 	AORelationVersion_CheckValid(attr->version);
 
-	fns = RelationGetRelationCompressionFuncs(rel);
+	fns = get_funcs_for_compression(aoentry->compresstype);
 
 	CompressionState *cs = NULL;
 	CompressionState *verifyCs = NULL;

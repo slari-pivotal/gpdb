@@ -192,9 +192,13 @@ RelationGetAttributeOptions(Relation rel)
 	for (i = 0; i < RelationGetNumberOfAttributes(rel); i++)
 	{
 		if (DatumGetPointer(dats[i]) != NULL)
+		{
 			opts[i] = (StdRdOptions *)heap_reloptions(
 					RELKIND_RELATION, dats[i], false);
+			pfree(DatumGetPointer(dats[i]));
+		}
 	}
+	pfree(dats);
 
 	return opts;
 }
@@ -251,28 +255,6 @@ RelationGetRelationBlocksize(Relation rel)
   aoentry = GetAppendOnlyEntry(RelationGetRelid(rel), SnapshotNow);
 
   return aoentry->blocksize;
-
-}
-
-
-/*
- * Has the same signature as RelationGetAttributeCompressionFuncs() even though
- * we don't actually need the full Relation data structure. I deem consistency
- * of API more important in this case.
- */
-PGFunction *
-RelationGetRelationCompressionFuncs(Relation rel)
-{
-	AppendOnlyEntry *aoentry;
-	char *comptype;
-	PGFunction *compFuncs;
-
-	aoentry = GetAppendOnlyEntry(RelationGetRelid(rel), SnapshotNow);
-	comptype = aoentry->compresstype;
-
-	compFuncs =	get_funcs_for_compression(comptype);
-
-	return compFuncs;
 
 }
 

@@ -667,7 +667,6 @@ create_datumstreamread(
 		compressionFunctions = get_funcs_for_compression(acc->ao_attr.compressType);
 		if (compressionFunctions != NULL)
 		{
-			TupleDesc	td = CreateTupleDesc(1, false, &attr);
 			StorageAttributes sa;
 
 			sa.comptype = acc->ao_attr.compressType;
@@ -676,7 +675,7 @@ create_datumstreamread(
 
 			compressionState =
 				callCompressionConstructor(
-										   compressionFunctions[COMPRESSION_CONSTRUCTOR], td, &sa, false /* compress */ );
+										   compressionFunctions[COMPRESSION_CONSTRUCTOR], NULL, &sa, false /* compress */ );
 
 			determine_datumstream_compression_overflow(
 													   &acc->ao_attr,
@@ -759,6 +758,10 @@ destroy_datumstreamwrite(DatumStreamWrite * ds)
 
 	AppendOnlyStorageWrite_FinishSession(&ds->ao_write);
 
+	if (ds->title)
+	{
+		pfree(ds->title);
+	}
 	pfree(ds);
 }
 
@@ -772,6 +775,10 @@ destroy_datumstreamread(DatumStreamRead * ds)
 
 	AppendOnlyStorageRead_FinishSession(&ds->ao_read);
 
+	if (ds->title)
+	{
+		pfree(ds->title);
+	}
 	pfree(ds);
 }
 

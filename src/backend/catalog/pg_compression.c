@@ -101,6 +101,7 @@ comptype_to_name(char *comptype)
 	
 	memcpy(&(NameStr(compname)), dct, len);
 	NameStr(compname)[len] = '\0';
+	pfree(dct);
 
 	return compname;
 }
@@ -158,6 +159,7 @@ GetCompressionImplementation(char *comptype)
 	fmgr_info(ctup->compvalidator, &finfo);
 	funcs[COMPRESSION_VALIDATOR] = finfo.fn_addr;
 
+	pfree(tuple);
 	return funcs;
 }
 
@@ -277,7 +279,9 @@ quicklz_constructor(PG_FUNCTION_ARGS)
 					""); // tableName
 #endif
 
-	TupleDesc td 			= PG_GETARG_POINTER(0);
+	/* PG_GETARG_POINTER(0) is TupleDesc that is currently unused.
+	 * It is passed as NULL */
+
 	StorageAttributes *sa	= PG_GETARG_POINTER(1);
 	CompressionState *cs 	= palloc0(sizeof(CompressionState));
 	quicklz_state *state	= palloc0(sizeof(quicklz_state));
@@ -286,7 +290,6 @@ quicklz_constructor(PG_FUNCTION_ARGS)
 
 	cs->opaque = (void *)state;
 
-	Insist(PointerIsValid(td));
 	Insist(PointerIsValid(sa->comptype));
 	Insist(strcmp(sa->comptype, "quicklz") == 0);
 	Insist(sa->complevel == 1 ||
@@ -410,7 +413,10 @@ quicklz_validator(PG_FUNCTION_ARGS)
 Datum
 zlib_constructor(PG_FUNCTION_ARGS)
 {
-	TupleDesc		 td	   = PG_GETARG_POINTER(0);
+
+	/* PG_GETARG_POINTER(0) is TupleDesc that is currently unused.
+	 * It is passed as NULL */
+
 	StorageAttributes *sa = PG_GETARG_POINTER(1);
 	CompressionState *cs	   = palloc0(sizeof(CompressionState));
 	zlib_state	   *state	= palloc0(sizeof(zlib_state));
@@ -419,7 +425,6 @@ zlib_constructor(PG_FUNCTION_ARGS)
 	cs->opaque = (void *) state;
 	cs->desired_sz = NULL;
 
-	Insist(PointerIsValid(td));
 	Insist(PointerIsValid(sa->comptype));
 
 	if (sa->complevel == 0)

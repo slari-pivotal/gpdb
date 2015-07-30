@@ -874,6 +874,7 @@ parseRelOptions(Datum options, int numkeywords, const char *const * keywords,
 	Datum	   *optiondatums;
 	int			noptions;
 	int			i;
+	bool	isArrayToBeFreed = false;
 
 	/* Initialize to "all defaulted" */
 	MemSet(values, 0, numkeywords * sizeof(char *));
@@ -883,6 +884,7 @@ parseRelOptions(Datum options, int numkeywords, const char *const * keywords,
 		return;
 
 	array = DatumGetArrayTypeP(options);
+	isArrayToBeFreed = (array != DatumGetPointer(options));
 
 	Assert(ARR_ELEMTYPE(array) == TEXTOID);
 
@@ -934,6 +936,12 @@ parseRelOptions(Datum options, int numkeywords, const char *const * keywords,
 					 errmsg("unrecognized parameter \"%s\"", s),
 							   errOmitLocation(true)));
 		}
+	}
+	pfree(optiondatums);
+
+	if (isArrayToBeFreed)
+	{
+		pfree(array);
 	}
 }
 
@@ -1266,6 +1274,13 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 		if (result->compresslevel == AO_DEFAULT_COMPRESSLEVEL)
 			result->compresslevel = setDefaultCompressionLevel(
 					result->compresstype);
+	for (int i = 0; i < ARRAY_SIZE(default_keywords); i++)
+	{
+		if (values[i])
+		{
+			pfree(values[i]);
+		}
+	}
 }
 
 /**

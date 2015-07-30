@@ -198,7 +198,9 @@ _bitmap_cleanup_scanpos(BMVector bmScanPos, uint32 numBitmapVectors)
 	uint32 keyNo;
 
 	if (numBitmapVectors == 0)
+	{
 		return;
+	}
 		
 	for (keyNo=0; keyNo<numBitmapVectors; keyNo++)
 	{

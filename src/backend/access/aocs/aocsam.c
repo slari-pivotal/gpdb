@@ -1287,8 +1287,15 @@ aocs_fetch_init(Relation relation,
 								   /* title */ titleBuf.data);
 
 		}
+		if (opts[colno])
+		{
+			pfree(opts[colno]);
+		}
 	}
-
+	if (opts)
+	{
+		pfree(opts);
+	}
 	AppendOnlyVisimap_Init(&aocsFetchDesc->visibilityMap,
 						   aoentry->visimaprelid,
 						   aoentry->visimapidxid,
@@ -1810,6 +1817,7 @@ aocs_addcol_init(Relation rel,
 	AOCSAddColumnDesc desc;
 	int i;
 	int iattr;
+	StringInfoData titleBuf;
 
 	desc = palloc(sizeof(AOCSAddColumnDescData));
 	desc->num_newcols = num_newcols;
@@ -1828,6 +1836,10 @@ aocs_addcol_init(Relation rel,
 	for (i = 0; i < num_newcols; ++i, ++iattr)
 	{
 		Form_pg_attribute attr = rel->rd_att->attrs[iattr];
+
+		initStringInfo(&titleBuf);
+		appendStringInfo(&titleBuf, "ALTER TABLE ADD COLUMN new segfile");
+
 		Assert(opts[iattr]);
 		ct = opts[iattr]->compresstype;
 		clvl = opts[iattr]->compresslevel;
@@ -1835,7 +1847,7 @@ aocs_addcol_init(Relation rel,
 		desc->dsw[i] = create_datumstreamwrite(
 				ct, clvl, aoentry->checksum, 0, blksz /* safeFSWriteSize */,
 				aoentry->version, attr, RelationGetRelationName(rel),
-				"ALTER TABLE ADD COLUMN new segfile");
+				titleBuf.data);
 	}
 	return desc;
 }
@@ -2014,6 +2026,11 @@ void aocs_addcol_finish(AOCSAddColumnDesc desc)
 	for (i = 0; i < desc->num_newcols; ++i)
 		destroy_datumstreamwrite(desc->dsw[i]);
 	pfree(desc->dsw);
+	if(desc->aoEntry)
+	{
+		pfree(desc->aoEntry);
+	}
+
 	pfree(desc);
 }
 
