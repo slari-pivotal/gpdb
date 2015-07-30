@@ -15,6 +15,7 @@ import pickle
 import platform
 import re
 import sys
+import fnmatch
 
 from collections import defaultdict
 from datetime import datetime
@@ -38,6 +39,7 @@ PGPORT=os.environ.get('PGPORT', '5432')
 TIMESTAMP = datetime.now().strftime("%Y%m%d%H%M%S")
 BACKUP_RESTORE_LOG = os.path.join('/tmp', 'pt_bkup_restore_' + TIMESTAMP + '.log')
 TRANSACTION_LOG_DIRS = ['pg_clog', 'pg_xlog', 'pg_distributedlog', 'pg_distributedxidmap', 'pg_changetracking']
+NON_EMPTY_TRANSACTION_LOG_DIRS = ['pg_clog', 'pg_xlog', 'pg_distributedlog']
 GLOBAL_PERSISTENT_FILES = defaultdict(defaultdict) # {segment: {dbid1: [file1, file2], dbid2: [file3, file4]}}
 PER_DATABASE_PERSISTENT_FILES = defaultdict(defaultdict)  # {dbid1:{dboid1:[list],dboid2:[list]},
                                                           #  dbid2:{dboid1:[list],dboid2:[list]}},
@@ -342,15 +344,16 @@ class BackupPersistentTableFiles:
     """
     Backup all the global and the per database persistent table files
     """
-    def __init__(self, dbid_info, timestamp, perdb_pt_filenames, global_pt_filenames, batch_size=DEFAULT_BATCH_SIZE, backup_dir=None):
+    def __init__(self, dbid_info, timestamp, perdb_pt_filenames, global_pt_filenames, batch_size=DEFAULT_BATCH_SIZE, backup_dir=None, validate_only=False):
         self.dbid_info = dbid_info
         self.timestamp = timestamp
         self.batch_size = batch_size
         self.backup_dir = backup_dir
         self.md5_validator = None
         self.pool = None
-        self.GLOBAL_PERSISTENT_FILES = global_pt_filenames 
-        self.PER_DATABASE_PERSISTENT_FILES = perdb_pt_filenames 
+        self.GLOBAL_PERSISTENT_FILES = global_pt_filenames
+        self.PER_DATABASE_PERSISTENT_FILES = perdb_pt_filenames
+        self.validate_only = validate_only
 
     def _cleanup_pool(self):
         if self.pool:
@@ -405,8 +408,46 @@ class BackupPersistentTableFiles:
             raise Exception('MD5 sums do not match! Expected md5 = "%s", but actual md5 = "%s"' %
                            (unmatched_expected_src_md5, unmatched_actual_dest_md5))
 
+    def build_PT_src_dest_pairs(self, src_dir, dest_dir, file_list):
+        """
+        src_dir: source directory to copy pt files from
+        dest_dir: destination directory to backup pt files
+        file_list: list of pt files to backup
+        return: list of source files and destination files, if missing
+                any source files, return None, None
+        """
 
-    def build_src_dest_pairs(self, srcDir, destDir, restore=False):
+        if file_list is None or len(file_list) == 0:
+            logger.error('Persistent source file list is empty or none')
+            return None, None
+
+        if not os.path.isdir(src_dir) or len(os.listdir(src_dir)) == 0:
+            logger.error('Directory %s either does not exist or is empty' % src_dir)
+            return None, None
+
+        missed_files = []
+        src_files, dest_files = [], []
+        for f in file_list:
+            file = os.path.join(src_dir, f)
+            if not os.path.isfile(file):
+                missed_files.append(file)
+            else:
+                src_files.append(file)
+                dest_files.append(os.path.join(dest_dir, f))
+
+                # large heap tables splited into parts as [table, table.1, table.2,...]
+                for relfilenode in os.listdir(src_dir):
+                    if fnmatch.fnmatch(relfilenode, f + ".*"):
+                        src_files.append(os.path.join(src_dir, relfilenode))
+                        dest_files.append(os.path.join(dest_dir, relfilenode))
+
+        if len(missed_files) > 0:
+            logger.error('Missing source files %s' % missed_files)
+            return None, None
+
+        return src_files, dest_files
+
+    def build_Xactlog_src_dest_pairs(self, srcDir, destDir):
         """ 
         srcDir:  absolute path to source data directory
         destDir: absolute path to destination data directory
@@ -446,39 +487,37 @@ class BackupPersistentTableFiles:
         failures = []
         for di in self.dbid_info:
             #Find out the system filespace
-            datadir = di.filespace_dirs[SYSTEM_FSOID].rstrip(os.sep)
+            fs_dir = di.filespace_dirs[SYSTEM_FSOID].rstrip(os.sep)
 
-            src_dir = os.path.join(datadir, 'global')
+            data_dir = os.path.join(fs_dir, 'global')
             if self.backup_dir:
-                dest_dir = os.path.join(self.backup_dir,
+                bk_dir = os.path.join(self.backup_dir,
                                         '%s%s' % (DEFAULT_BACKUP_DIR_PREFIX, self.timestamp),
                                         str(di.dbid),
-                                        os.path.basename(datadir),
+                                        os.path.basename(fs_dir),
                                         'global')
             else:
-                dest_dir = os.path.join(datadir,
+                bk_dir = os.path.join(fs_dir,
                                         '%s%s' % (DEFAULT_BACKUP_DIR_PREFIX, self.timestamp),
                                         'global')
 
-            src_files, dest_files = [], []
             file_list = self.GLOBAL_PERSISTENT_FILES[di.dbid]
 
-            for f in os.listdir(src_dir):
-                if ('.' in f and f.split('.')[0] in file_list) or f in file_list:
-                    src_file = os.path.join(src_dir, f)
-                    dest_file = os.path.join(dest_dir, f)
-                    src_files.append(src_file)
-                    dest_files.append(dest_file)
+            if not restore:
+                src_files, dest_files = self.build_PT_src_dest_pairs(data_dir, bk_dir, file_list)
+            else:
+                src_files, dest_files = self.build_PT_src_dest_pairs(bk_dir, data_dir, file_list)
+
+            if src_files is None or len(src_files) == 0:
+                raise Exception('Missing global persistent files from source directory.')
 
             logger.debug('DBID =  %s' % di.dbid)
             logger.debug('Source files = %s' % src_files)
             logger.debug('Destination files = %s' % dest_files)
 
             try:
-                if not restore:
+                if not self.validate_only:
                     self._copy_files(src_files, dest_files, di.dbid, op)
-                else:
-                    self._copy_files(dest_files, src_files, di.dbid, op)
             except Exception as e:
                 failures.append((di, str(e)))
                 logger.error('%s failed' % op)
@@ -525,7 +564,6 @@ class BackupPersistentTableFiles:
                         else:
                             base_dir = 'base'
 
-                        src_files, dest_files = [], []
                         if dboid in self.PER_DATABASE_PERSISTENT_FILES[di.dbid]:
                             file_list = self.PER_DATABASE_PERSISTENT_FILES[di.dbid][dboid]
                         else:
@@ -534,9 +572,9 @@ class BackupPersistentTableFiles:
                             file_list = ['5094', '5095']
 
                         #finding out persistent table files for the database
-                        src_dir = os.path.join(fsdir, str(base_dir), str(dboid))
+                        data_dir = os.path.join(fsdir, str(base_dir), str(dboid))
                         if self.backup_dir:
-                            dest_dir = os.path.join(self.backup_dir,
+                            bk_dir = os.path.join(self.backup_dir,
                                                     '%s%s' % (DEFAULT_BACKUP_DIR_PREFIX, self.timestamp),
                                                     str(di.dbid),
                                                     (os.path.basename(fsdir) if fsoid == SYSTEM_FSOID
@@ -544,29 +582,28 @@ class BackupPersistentTableFiles:
                                                     str(base_dir),
                                                     str(dboid))
                         else:
-                            dest_dir = os.path.join(fsdir,
+                            bk_dir = os.path.join(fsdir,
                                                     '%s%s' % (DEFAULT_BACKUP_DIR_PREFIX, self.timestamp),
                                                     str(base_dir),
                                                     str(dboid))
 
-                        logger.debug('Work on database location = %s' % src_dir)
+                        logger.debug('Work on database location = %s' % data_dir)
                         logger.debug('Search listed persistent tables %s' % file_list)
 
-                        for f in os.listdir(src_dir):
-                            if ('.' in f and f.split('.')[0] in file_list) or f in file_list:
-                                src_file = os.path.join(src_dir, f)
-                                dest_file = os.path.join(dest_dir,f)
-                                src_files.append(src_file)
-                                dest_files.append(dest_file)
+                        if not restore:
+                            src_files, dest_files = self.build_PT_src_dest_pairs(data_dir, bk_dir, file_list)
+                        else:
+                            src_files, dest_files = self.build_PT_src_dest_pairs(bk_dir, data_dir, file_list)
+
+                        if src_files is None or len(src_files) == 0:
+                            raise Exception('Missing per-database persistent files from source directory.') 
 
                         logger.debug('Source files = %s' % src_files)
                         logger.debug('Destination files = %s' % dest_files)
 
                         try:
-                            if not restore:
+                            if not self.validate_only:
                                 self._copy_files(src_files, dest_files, di.dbid, op)
-                            else:
-                                self._copy_files(dest_files, src_files, di.dbid, op)
                         except Exception as e:
                             failures.append((di, str(e)))
                             logger.error('%s failed' % op)
@@ -609,11 +646,13 @@ class BackupPersistentTableFiles:
                     xlog_backup_dir = os.path.join(datadir,
                                                    '%s%s' % (DEFAULT_BACKUP_DIR_PREFIX, self.timestamp),
                                                    xlog_dir_name)
-
                 if restore:
-                    srcFiles, destFiles = self.build_src_dest_pairs(xlog_backup_dir, xlog_dir)
+                    srcFiles, destFiles = self.build_Xactlog_src_dest_pairs(xlog_backup_dir, xlog_dir)
                 else:
-                    srcFiles, destFiles = self.build_src_dest_pairs(xlog_dir, xlog_backup_dir)
+                    srcFiles, destFiles = self.build_Xactlog_src_dest_pairs(xlog_dir, xlog_backup_dir)
+
+                if xlog_dir_name in NON_EMPTY_TRANSACTION_LOG_DIRS and len(srcFiles) == 0:
+                    raise Exception('Source directory %s should not be empty' % (xlog_backup_dir if restore else xlog_dir))
 
                 allSrcFiles.extend(srcFiles)
                 allDestFiles.extend(destFiles)
@@ -623,7 +662,8 @@ class BackupPersistentTableFiles:
             logger.debug('Destination files = %s' % allDestFiles)
 
             try:
-                self._copy_files(allSrcFiles, allDestFiles, di.dbid, op)
+                if not self.validate_only:
+                    self._copy_files(allSrcFiles, allDestFiles, di.dbid, op)
             except Exception as e:
                 failures += 1
                 logger.error('%s failed' % op)
@@ -633,7 +673,7 @@ class BackupPersistentTableFiles:
         if failures > 0:
             raise Exception(' %s failed' % op)
 
-    def _copy_pg_control_file(self, restore=False):
+    def _copy_pg_control_file(self, restore=False, validate=False):
         """
         Backing up or restoring the pg_control file which determines
         checkpoint location in the transaction log file when running
@@ -665,9 +705,13 @@ class BackupPersistentTableFiles:
                                                       'pg_control')
             srcFiles, destFiles = [], []
             if restore:
+                if not os.path.isfile(pg_control_backup_path):
+                    raise Exception('Global pg_control file is missing from backup directory %s' % pg_control_backup_path)
                 srcFiles.append(pg_control_backup_path)
                 destFiles.append(pg_control_path)
             else:
+                if not os.path.isfile(pg_control_path):
+                    raise Exception('Global pg_control file is missing from source directory %s' % pg_control_path)
                 srcFiles.append(pg_control_path)
                 destFiles.append(pg_control_backup_path)
 
@@ -676,7 +720,8 @@ class BackupPersistentTableFiles:
             logger.debug('Destination files = %s' % destFiles)
 
             try:
-                self._copy_files(srcFiles, destFiles, di.dbid, op)
+                if not self.validate_only:
+                    self._copy_files(srcFiles, destFiles, di.dbid, op)
             except Exception as e:
                 failures += 1
                 logger.error('%s failed' % op)
@@ -711,6 +756,7 @@ class BackupPersistentTableFiles:
             self._copy_pg_control_file(restore=True)
         finally:
             self._cleanup_pool()
+
 
 class RebuildTableOperation(Operation):
     """
@@ -793,8 +839,7 @@ class ValidatePersistentBackup:
         """
         root_backup_dir = os.path.join(os.sep, self.backup_dir.split(os.sep)[1])
         if not os.path.exists(root_backup_dir):
-            logger.error('Root backup directory is not a valid path, %s' % root_backup_dir)
-            raise Exception('Root backup directory is not valid')
+            raise Exception('Root backup directory is not valid, %s' % root_backup_dir)
         logger.debug('Root backup directory is valid, %s' % root_backup_dir)
 
         logger.debug('Validating read and write permission of backup directory %s' % self.backup_dir)
@@ -805,7 +850,6 @@ class ValidatePersistentBackup:
                 logger.debug('Permission is allowed for backup directory under %s' % parentpath)
                 break
             elif os.path.exists(parentpath) and not os.access(parentpath, os.R_OK | os.W_OK):
-                logger.error('Permission not allowed for Backup directory under path %s' % parentpath)
                 raise Exception('Permission not allowed for Backup directory under path %s' % parentpath)
 
         logger.debug('Validating the backup directory is not under any segment data directory')
@@ -813,7 +857,6 @@ class ValidatePersistentBackup:
             for _, fsdir in di.filespace_dirs.items():
                 relpath = os.path.relpath(self.backup_dir, fsdir)
                 if not relpath.startswith('..'):
-                    logger.error('Backup directory can not be a sub directory of segment data directory %s' % fsdir)
                     raise Exception('Backup directory is a sub directory of segment data directory %s' % fsdir)
                 else:
                     logger.debug('Backup directory %s is not under %s' % (self.backup_dir, fsdir))
@@ -907,12 +950,13 @@ class RunBackupRestore:
     """
     This is a wrapper class to invoke $GPHOME/sbin/gppersistent_backup.py
     """
-    def __init__(self, dbid_info, timestamp, batch_size=DEFAULT_BATCH_SIZE, backup_dir=None):
+    def __init__(self, dbid_info, timestamp, batch_size=DEFAULT_BATCH_SIZE, backup_dir=None, validate_only=False):
         self.dbid_info = dbid_info
         self.timestamp = timestamp
         self.batch_size = batch_size
         self.backup_dir = backup_dir
         self.pool = None
+        self.validate_source_files_only = '--validate-source-file-only' if validate_only else ''
 
     def _get_host_to_dbid_info_map(self):
         host_to_dbid_info_map = defaultdict(list) 
@@ -956,13 +1000,13 @@ class RunBackupRestore:
                 pickled_per_database_persistent_files = base64.urlsafe_b64encode(pickle.dumps(PER_DATABASE_PERSISTENT_FILES[host]))
                 pickled_global_persistent_files = base64.urlsafe_b64encode(pickle.dumps(GLOBAL_PERSISTENT_FILES[host]))
                 if self.backup_dir:
-                    cmdStr = """$GPHOME/sbin/gppersistent_backup.py --timestamp %s %s %s --batch-size %s --backup-dir %s --perdbpt %s --globalpt %s %s""" %\
+                    cmdStr = """$GPHOME/sbin/gppersistent_backup.py --timestamp %s %s %s --batch-size %s --backup-dir %s --perdbpt %s --globalpt %s %s %s""" %\
                             (self.timestamp, option, pickled_backup_dbid_info, self.batch_size, self.backup_dir, pickled_per_database_persistent_files,
-                             pickled_global_persistent_files, verbose_logging)
+                             pickled_global_persistent_files, self.validate_source_files_only, verbose_logging)
                 else:
-                    cmdStr = """$GPHOME/sbin/gppersistent_backup.py --timestamp %s %s %s --batch-size %s --perdbpt %s --globalpt %s %s""" %\
+                    cmdStr = """$GPHOME/sbin/gppersistent_backup.py --timestamp %s %s %s --batch-size %s --perdbpt %s --globalpt %s %s %s""" %\
                             (self.timestamp, option, pickled_backup_dbid_info, self.batch_size, pickled_per_database_persistent_files,
-                             pickled_global_persistent_files, verbose_logging)
+                             pickled_global_persistent_files, self.validate_source_files_only, verbose_logging)
 
                 cmd = Command('backup pt files on a host', cmdStr=cmdStr, ctxt=REMOTE, remoteHost=host)
                 self.pool.addCommand(cmd) 
@@ -1096,6 +1140,11 @@ class RebuildPersistentTables(Operation):
                 for r in res: 
                     databases[hostname,port].append((dbid, r[0], r[1]))
 
+            if len(globalfiles) != 4:
+                logger.error("Found: %s, expected: [gp_persistent_relation_node, gp_persistent_database_node,\
+                              gp_persistent_tablespace_node, gp_persistent_filespace_node]" % globalfiles)
+                raise Exception("Missing relfilenode entry of global pesistent tables in pg_class, dbid %s" % dbid)
+
             GLOBAL_PERSISTENT_FILES[hostname][dbid] = globalfiles
 
         """  
@@ -1112,6 +1161,12 @@ class RebuildPersistentTables(Operation):
                     res = dbconn.execSQL(conn, PER_DATABASE_PT_FILES_QUERY)
                     for r in res: 
                         ptfiles_dboid[int(dboid)].append(str(r[0]))
+
+                if int(dboid) not in ptfiles_dboid or len(ptfiles_dboid[int(dboid)]) != 2:
+                    logger.error("Found: %s, Expected: [gp_relation_node, gp_relation_node_index]" % \
+                                  ptfiles_dboid[int(dboid)] if int(dboid) in ptfiles_dboid else "None")
+                    raise Exception("Missing relfilenode entry of per database persistent tables in pg_class, dbid %s" % dbid)
+
                 PER_DATABASE_PERSISTENT_FILES[hostname][dbid] = ptfiles_dboid
 
 
@@ -1195,14 +1250,23 @@ class RebuildPersistentTables(Operation):
         PT rebuild has failed in the middle and we cannot restore the original files safely.
         """
         if self.restore:
+            logger.info('Loading global and per database persistent table files information from restore file,  %s' % self.restore)
+            self.load_restore_info(self.restore)
+
+            """
+            Before stopping the database, pre check all required persistent relfilenode and transaction logs exist from backup
+            """
+            logger.info('Verifying backup directory for required persistent relfilenodes and transaction logs to restore')
+            try:
+                RunBackupRestore(self.dbid_info, self.restore, self.batch_size, self.backup_dir, validate_only=True).restore()
+            except Exception as e:
+                raise
+
             """
             We want to stop the database so that we can restore the persistent table files.
             """
             logger.info('Stopping Greenplum database')
             self._stop_database()
-
-            logger.info('Loading global and per database persistent table files information from restore file,  %s' % self.restore)
-            self.load_restore_info(self.restore)
 
             logger.info('Restoring persistent table files, and all transaction logs from backup %s' % self.restore)
             try:
@@ -1249,6 +1313,12 @@ class RebuildPersistentTables(Operation):
         logger.info('Getting information about persistent table filenames')
         self._get_persistent_table_filenames()
 
+        logger.info('Verifying data directory for required persistent relfilenodes and transaction logs to backup')
+        try:
+            RunBackupRestore(self.dbid_info, TIMESTAMP, self.batch_size, self.backup_dir, validate_only=True).backup()
+        except Exception as e:
+            raise
+
         """ 
         If we want to start persistent table rebuild instead of only making backup, first need to save 
         the gpperfmon guc value into a file, then disable gpperfmon before shutdown cluster.
@@ -1267,7 +1337,6 @@ class RebuildPersistentTables(Operation):
                 dbconn.execSQL(conn, 'CHECKPOINT')
                 conn.commit()
         except Exception as e:
-            logger.error('Failed to push a checkpoint, please contact support people')
             raise Exception('Failed to push a checkpoint, please contact support people')
         logger.info('Stopping Greenplum database')
         self._stop_database()

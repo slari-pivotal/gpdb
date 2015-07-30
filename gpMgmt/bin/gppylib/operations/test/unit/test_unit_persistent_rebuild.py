@@ -15,6 +15,28 @@ from gppylib.operations.persistent_rebuild import ValidateContentID, DbIdInfo, G
                                                   RebuildTable, RebuildPersistentTables, ValidatePersistentBackup,\
                                                   RunBackupRestore, ValidateMD5Sum
 
+remove_per_db_pt_entry = False
+remove_global_pt_entry = False
+
+def pt_query_side_effect(*args, **kwargs):
+    # missing the global persistent table entry
+    GET_ALL_DATABASES = """select oid, datname from pg_database"""
+    PER_DATABASE_PT_FILES_QUERY = """SELECT relfilenode FROM pg_class WHERE oid IN (5094, 5095)"""
+    GLOBAL_PT_FILES_QUERY = """SELECT relfilenode FROM pg_class WHERE oid IN (5090, 5091, 5092, 5093)"""
+
+    if args[1] == GET_ALL_DATABASES:
+        return [[123, 'db1']]
+    elif args[1] == PER_DATABASE_PT_FILES_QUERY:
+        if remove_per_db_pt_entry:
+            return [[5095]]
+        else:
+            return [[5094], [5095]]
+    else:
+        if remove_global_pt_entry:
+            return [[5091], [5092], [5093]]
+        else:
+            return [[5090], [5091], [5092], [5093]]
+
 class ValidateContentIDTestCase(unittest.TestCase):
     def setUp(self):
         self.contentid_validator = ValidateContentID(content_id=None,
@@ -430,13 +452,56 @@ class BackupPersistentTableFilesTestCase(unittest.TestCase):
     def setUpClass(cls):
         # create persistent table files under new filespace/tablespace/database, 
         # and also the default filespace, tablespace/database
+
+        # timestamp: 20140604101010
         try:
+            # source files
             os.makedirs(os.path.join('/tmp/p1', '2000', '123'))
-            os.makedirs(os.path.join('/tmp/p2', '2001', '234'))
             os.makedirs(os.path.join('/tmp/p2', 'base', '234'))
             os.makedirs(os.path.join('/tmp/p2', 'global'))
             os.makedirs(os.path.join('/tmp/p2', 'pg_xlog'))
             os.makedirs(os.path.join('/tmp/p2', 'pg_clog'))
+            os.makedirs(os.path.join('/tmp/p2', 'pg_distributedlog'))
+            os.makedirs(os.path.join('/tmp/p1', 'empty'))
+
+            open('/tmp/p1/2000/123/5094', 'w').close()
+            open('/tmp/p1/2000/123/5094.1', 'w').close()
+            open('/tmp/p1/2000/123/5095', 'w').close()
+            open('/tmp/p2/base/234/5094', 'w').close()
+            open('/tmp/p2/base/234/5095', 'w').close()
+
+            open('/tmp/p2/global/pg_control', 'w').close()
+            open('/tmp/p2/global/5090', 'w').close()
+            open('/tmp/p2/global/5091', 'w').close()
+            open('/tmp/p2/global/5092', 'w').close()
+            open('/tmp/p2/global/5093', 'w').close()
+            open('/tmp/p2/pg_xlog/0000', 'w').close()
+            open('/tmp/p2/pg_clog/0000', 'w').close()
+            open('/tmp/p2/pg_distributedlog/000', 'w').close()
+            
+            # Backup files
+            os.makedirs(os.path.join('/tmp/p1', 'pt_rebuild_bk_20140604101010','2000', '123'))
+            os.makedirs(os.path.join('/tmp/p2', 'pt_rebuild_bk_20140604101010', 'base', '234'))
+            os.makedirs(os.path.join('/tmp/p2', 'pt_rebuild_bk_20140604101010', 'global'))
+            os.makedirs(os.path.join('/tmp/p2', 'pt_rebuild_bk_20140604101010', 'pg_xlog'))
+            os.makedirs(os.path.join('/tmp/p2', 'pt_rebuild_bk_20140604101010', 'pg_clog'))
+            os.makedirs(os.path.join('/tmp/p2', 'pt_rebuild_bk_20140604101010', 'pg_distributedlog'))
+
+            open('/tmp/p1/pt_rebuild_bk_20140604101010/2000/123/5094', 'w').close()
+            open('/tmp/p1/pt_rebuild_bk_20140604101010/2000/123/5094.1', 'w').close()
+            open('/tmp/p1/pt_rebuild_bk_20140604101010/2000/123/5095', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/base/234/5094', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/base/234/5095', 'w').close()
+
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/global/pg_control', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/global/5090', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/global/5091', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/global/5092', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/global/5093', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/pg_xlog/0000', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/pg_clog/0000', 'w').close()
+            open('/tmp/p2/pt_rebuild_bk_20140604101010/pg_distributedlog/000', 'w').close()
+
         except OSError:
             pass
 
@@ -539,12 +604,66 @@ class BackupPersistentTableFilesTestCase(unittest.TestCase):
         with self.assertRaisesRegexp(ExecutionError, 'Error !!!'):
             self.backup_persistent_files._copy_files(src_ptfiles, dst_ptfiles, content, actionType)
 
+    def test_build_PT_src_dest_pairs_filelist_None(self):
+        src_dir = ''
+        dest_dir = ''
+        file_list = None
+        self.assertEqual((None, None), self.backup_persistent_files.build_PT_src_dest_pairs(src_dir, dest_dir, file_list))
+
+    def test_build_PT_src_dest_pairs_filelist_Empty(self):
+        src_dir = ''
+        dest_dir = ''
+        file_list = []
+        self.assertEqual((None, None), self.backup_persistent_files.build_PT_src_dest_pairs(src_dir, dest_dir, file_list))
+
+    def test_build_PT_src_dest_pairs_non_exist_src_dir(self):
+        src_dir = 'tmp'
+        dest_dir = '/tmp'
+        file_list = ['5090']
+        self.assertEqual((None, None), self.backup_persistent_files.build_PT_src_dest_pairs(src_dir, dest_dir, file_list))
+
+    def test_build_PT_src_dest_pairs_empty_src_dir(self):
+        src_dir = '/tmp/p1/empty'
+        dest_dir = '/tmp/p1/empty'
+        file_list = ['5090']
+        self.assertEqual((None, None), self.backup_persistent_files.build_PT_src_dest_pairs(src_dir, dest_dir, file_list))
+
+    def test_build_PT_src_dest_pairs_with_file_missed(self):
+        src_dir = '/tmp/p1/'
+        dest_dir = '/tmp/p1/'
+        file_list = ['5555']
+        self.assertEqual((None, None), self.backup_persistent_files.build_PT_src_dest_pairs(src_dir, dest_dir, file_list))
+
+    def test_build_PT_src_dest_pairs_with_extended_file_exist(self):
+        src_dir = '/tmp/p1/2000/123'
+        dest_dir = '/tmp/p1/pt_rebuild_bk_20140604101010/2000/123'
+        file_list = ['5094']
+        src_files = ['/tmp/p1/2000/123/5094', '/tmp/p1/2000/123/5094.1']
+        dest_files = ['/tmp/p1/pt_rebuild_bk_20140604101010/2000/123/5094', '/tmp/p1/pt_rebuild_bk_20140604101010/2000/123/5094.1']
+        self.assertEqual((src_files, dest_files), self.backup_persistent_files.build_PT_src_dest_pairs(src_dir, dest_dir, file_list))
+
     @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles._copy_files')
     def test_copy_global_pt_files(self, mock1):
         d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
         d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
         self.backup_persistent_files.dbid_info = [d1, d2]
         self.assertEqual(None, self.backup_persistent_files._copy_global_pt_files())
+
+    @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles.build_PT_src_dest_pairs', return_value=[None, None])
+    def test_copy_global_pt_files_with_restore_with_failure(self, mock1):
+        d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        self.backup_persistent_files.dbid_info = [d1, d2]
+        with self.assertRaisesRegexp(Exception, 'Missing global persistent files from source directory.'):
+            self.backup_persistent_files._copy_global_pt_files(restore=True)
+
+    @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles.build_PT_src_dest_pairs', return_value=[None, None])
+    def test_copy_global_pt_files_without_restore_with_failure(self, mock1):
+        d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        self.backup_persistent_files.dbid_info = [d1, d2]
+        with self.assertRaisesRegexp(Exception, 'Missing global persistent files from source directory.'):
+            self.backup_persistent_files._copy_global_pt_files()
 
     @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles._copy_files',
             side_effect=[Mock(), Exception('Error while backing up files')])
@@ -584,6 +703,22 @@ class BackupPersistentTableFilesTestCase(unittest.TestCase):
         d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
         self.backup_persistent_files.dbid_info = [d1, d2]
         self.assertEqual(None, self.backup_persistent_files._copy_per_db_pt_files())
+
+    @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles.build_PT_src_dest_pairs', return_value=[None, None])
+    def test_copy_per_db_pt_files_with_restore_with_failure(self, mock1):
+        d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        self.backup_persistent_files.dbid_info = [d1, d2]
+        with self.assertRaisesRegexp(Exception, 'Missing per-database persistent files from source directory.'):
+            self.backup_persistent_files._copy_per_db_pt_files(restore=True)
+
+    @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles.build_PT_src_dest_pairs', return_value=[None, None])
+    def test_copy_per_db_pt_files_without_restore_with_failure(self, mock1):
+        d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        self.backup_persistent_files.dbid_info = [d1, d2]
+        with self.assertRaisesRegexp(Exception, 'Missing per-database persistent files from source directory.'):
+            self.backup_persistent_files._copy_per_db_pt_files()
 
     @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles._copy_files', 
             side_effect=[Mock(), Exception('Error while backing up files')])
@@ -629,6 +764,22 @@ class BackupPersistentTableFilesTestCase(unittest.TestCase):
         self.backup_persistent_files.dbid_info = [d1, d2]
         self.assertEqual(None, self.backup_persistent_files._copy_Xactlog_files())
 
+    @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles.build_Xactlog_src_dest_pairs', return_value=[[],[]])
+    def test_copy_Xactlog_files_without_restore_with_failure(self, mock1):
+        d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        self.backup_persistent_files.dbid_info = [d1, d2]
+        with self.assertRaisesRegexp(Exception, 'should not be empty'):
+            self.backup_persistent_files._copy_Xactlog_files()
+
+    @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles.build_Xactlog_src_dest_pairs', return_value=[[],[]])
+    def test_copy_Xactlog_files_with_restore_with_failure(self, mock1):
+        d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        self.backup_persistent_files.dbid_info = [d1, d2]
+        with self.assertRaisesRegexp(Exception, 'should not be empty'):
+            self.backup_persistent_files._copy_Xactlog_files(restore=True)
+
     @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles._copy_files')
     def test_copy_Xactlog_files_with_restore_without_errors(self, mock1):
         d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
@@ -649,6 +800,22 @@ class BackupPersistentTableFilesTestCase(unittest.TestCase):
         d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
         self.backup_persistent_files.dbid_info = [d1, d2]
         self.assertEqual(None, self.backup_persistent_files._copy_pg_control_file(restore=True))
+
+    @patch('os.path.isfile', return_value=False)
+    def test_copy_pg_control_files_without_restore_with_failure(self, mock1):
+        d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        self.backup_persistent_files.dbid_info = [d1, d2]
+        with self.assertRaisesRegexp(Exception, 'Global pg_control file is missing from source directory'):
+            self.backup_persistent_files._copy_pg_control_file()
+
+    @patch('os.path.isfile', return_value=False)
+    def test_copy_pg_control_files_with_restore_with_failure(self, mock1):
+        d1 = DbIdInfo(1, 'p', 2, 5001, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        d2 = DbIdInfo(2, 'p', 3, 5002, 'h2', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        self.backup_persistent_files.dbid_info = [d1, d2]
+        with self.assertRaisesRegexp(Exception, 'Global pg_control file is missing from backup directory'):
+            self.backup_persistent_files._copy_pg_control_file(restore=True)
 
     @patch('gppylib.operations.persistent_rebuild.BackupPersistentTableFiles._copy_files',
             side_effect=[Mock(), Mock(), Mock(), Exception('Error while backing up files')])
@@ -1221,6 +1388,30 @@ class RebuildPersistentTableTestCase(unittest.TestCase):
         from gppylib.operations.persistent_rebuild import GLOBAL_PERSISTENT_FILES, PER_DATABASE_PERSISTENT_FILES
         self.assertEqual(GLOBAL_PERSISTENT_FILES, expected_global)
         self.assertEqual(PER_DATABASE_PERSISTENT_FILES, expected_perdb_pt_file)
+
+    @patch('gppylib.operations.persistent_rebuild.dbconn.execSQL', side_effect=pt_query_side_effect) 
+    @patch('gppylib.operations.persistent_rebuild.dbconn.connect')
+    @patch('gppylib.operations.persistent_rebuild.dbconn.DbURL')
+    def test_get_persistent_table_filenames_lacking_global_relfilenode(self, mock1, mock2, mock3):
+        d1 = DbIdInfo(2, 'p', 3, 5002, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        global remove_global_pt_entry
+        remove_global_pt_entry = True
+        self.rebuild_persistent_table.dbid_info = [d1]
+        with self.assertRaisesRegexp(Exception, 'Missing relfilenode entry of global pesistent tables in pg_class'):
+            self.rebuild_persistent_table._get_persistent_table_filenames()
+        remove_global_pt_entry = False
+
+    @patch('gppylib.operations.persistent_rebuild.dbconn.execSQL', side_effect=pt_query_side_effect) 
+    @patch('gppylib.operations.persistent_rebuild.dbconn.connect')
+    @patch('gppylib.operations.persistent_rebuild.dbconn.DbURL')
+    def test_get_persistent_table_filenames_lacking_per_database_relfilenode(self, mock1, mock2, mock3):
+        d1 = DbIdInfo(2, 'p', 3, 5002, 'h1', {1000: '/tmp/p1', 3052: '/tmp/p2'}, {1000: [2000], 3052: [2001]}, {2000: [123], 2001: [234]})
+        global remove_per_db_pt_entry
+        remove_per_db_pt_entry = True
+        self.rebuild_persistent_table.dbid_info = [d1]
+        with self.assertRaisesRegexp(Exception, 'Missing relfilenode entry of per database persistent tables in pg_class'):
+            self.rebuild_persistent_table._get_persistent_table_filenames()
+        remove_per_db_pt_entry = False
 
 if __name__ == '__main__':
     unittest.main()

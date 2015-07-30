@@ -29,6 +29,7 @@ class PersistentBackupRestore:
         self.backup_dir = options.backup_dir
         self.perdbpt = options.perdbpt
         self.globalpt = options.globalpt
+        self.validate_source_file_only = options.validate_source_file_only
 
     def run(self):
         if not self.perdbpt or not self.globalpt:
@@ -47,12 +48,12 @@ class PersistentBackupRestore:
             dbid_info = pickle.loads(base64.urlsafe_b64decode(self.backup))
             perdb_pt_filenames = pickle.loads(base64.urlsafe_b64decode(self.perdbpt))
             global_pt_filenames = pickle.loads(base64.urlsafe_b64decode(self.globalpt))
-            BackupPersistentTableFiles(dbid_info, self.timestamp, perdb_pt_filenames, global_pt_filenames, self.batch_size, self.backup_dir).backup()
+            BackupPersistentTableFiles(dbid_info, self.timestamp, perdb_pt_filenames, global_pt_filenames, self.batch_size, self.backup_dir, self.validate_source_file_only).backup()
         elif self.restore:
             dbid_info = pickle.loads(base64.urlsafe_b64decode(self.restore))
             perdb_pt_filenames = pickle.loads(base64.urlsafe_b64decode(self.perdbpt))
             global_pt_filenames = pickle.loads(base64.urlsafe_b64decode(self.globalpt))
-            BackupPersistentTableFiles(dbid_info, self.timestamp, perdb_pt_filenames, global_pt_filenames, self.batch_size, self.backup_dir).restore()
+            BackupPersistentTableFiles(dbid_info, self.timestamp, perdb_pt_filenames, global_pt_filenames, self.batch_size, self.backup_dir, self.validate_source_file_only).restore()
         elif self.validate_backups:
             dbid_info = pickle.loads(base64.urlsafe_b64decode(self.validate_backups))
             ValidatePersistentBackup(dbid_info, self.timestamp, self.batch_size, self.backup_dir).validate_backups()
@@ -95,6 +96,8 @@ def create_parser():
                       help="Filenames for per database persistent files")
     addTo.add_option('--globalpt', metavar="<global pt filenames>", type="string",
                       help="Filenames for global persistent files")
+    addTo.add_option('--validate-source-file-only', action='store_true', default=False,
+                      help="validate that required source files existed for backup and restore")
 
     parser.setHelp([
     """
