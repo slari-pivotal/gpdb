@@ -433,16 +433,25 @@ CREATE SCHEMA __@gpupgradeschemaname@_gpmigrator_uao;
 CREATE FUNCTION @gpupgradeschemaname@.upgrade_appendonly_aux(aoRelId oid) RETURNS int AS $$
 DECLARE
   aoSegRelName name;
+  aoRelFileId oid;
+  aoRelOwnerId oid;
   toastRelName name;
-  tempNameSpaceOid  oid;
+  aoRelOwner name;
+  tempNameSpaceOid oid;
   visimapRow record;
 BEGIN
-  EXECUTE 'CREATE TABLE pg_aoseg.pg_aovisimap_' || aoRelid ||
+  SELECT INTO aoRelFileId, aoRelOwnerId relfilenode, relowner FROM pg_catalog.pg_class
+    WHERE oid = aoRelId;
+  SELECT INTO aoRelOwner rolname FROM pg_catalog.pg_authid
+    WHERE oid = aoRelOwnerId; 
+  EXECUTE 'CREATE TABLE pg_aoseg.pg_aovisimap_' || aoRelFileId ||
     ' (segno int, first_row_no bigint, visimap varbit) DISTRIBUTED BY(segno)';
-  EXECUTE 'CREATE UNIQUE INDEX pg_aovisimap_' || aoRelid || '_index
-    ON pg_aoseg.pg_aovisimap_' || aoRelid || '(segno, first_row_no)';
+  EXECUTE 'CREATE UNIQUE INDEX pg_aovisimap_' || aoRelFileId || '_index
+    ON pg_aoseg.pg_aovisimap_' || aoRelFileId || '(segno, first_row_no)';
   SELECT INTO visimapRow reltoastrelid, oid FROM pg_catalog.pg_class
-    WHERE oid = ('pg_aoseg.pg_aovisimap_' || aoRelId)::regclass;
+    WHERE oid = ('pg_aoseg.pg_aovisimap_' || aoRelFileId)::regclass;
+  EXECUTE 'ALTER TABLE pg_aoseg.pg_aovisimap_' || aoRelFileId  ||
+    ' OWNER TO ' || aoRelOwner || ', ALTER visimap SET STORAGE PLAIN';
   DELETE FROM gp_distribution_policy WHERE localoid = visimapRow.oid;
   PERFORM @gpupgradeschemaname@.catDML(
     'DELETE FROM pg_catalog.pg_depend WHERE refclassid=1259 and classid=1259 and
@@ -459,21 +468,20 @@ BEGIN
   SELECT INTO toastRelName relname FROM pg_class
     WHERE oid = visimapRow.reltoastrelid;
   EXECUTE 'DROP TABLE __@gpupgradeschemaname@_gpmigrator_uao.' || toastRelName;
-  EXECUTE 'ALTER TABLE pg_aoseg.pg_aovisimap_' || aoRelid || ' ALTER visimap SET STORAGE PLAIN';
   PERFORM @gpupgradeschemaname@.catDML(
     'INSERT INTO pg_catalog.pg_depend VALUES (1259, ' || visimapRow.oid
      || ', 0, 1259, ' || aoRelId || ', 0, ''i'')');
   PERFORM @gpupgradeschemaname@.catDML(
     'UPDATE pg_catalog.pg_appendonly
      SET visimaprelid = (SELECT oid FROM pg_catalog.pg_class
-           WHERE relname = ''pg_aovisimap_' || aoRelid || '''
+           WHERE relname = ''pg_aovisimap_' || aoRelFileId || '''
               AND relnamespace = 6104),
          visimapidxid = (SELECT oid FROM pg_catalog.pg_class
-           WHERE relname = ''pg_aovisimap_' || aoRelid || '_index''
-             AND relnamespace = 6104) WHERE relid = ' || aoRelid);
+           WHERE relname = ''pg_aovisimap_' || aoRelFileId || '_index''
+             AND relnamespace = 6104) WHERE relid = ' || aoRelId);
   PERFORM @gpupgradeschemaname@.catDML(
     'UPDATE pg_catalog.pg_class SET relkind=''m'', reltoastrelid=0
-       WHERE relname = ''pg_aovisimap_' || aoRelid || '''
+       WHERE relname = ''pg_aovisimap_' || aoRelFileId || '''
          AND relnamespace = 6104');
 
   -- Add modcount and state column to pg_ao(cs)seg
