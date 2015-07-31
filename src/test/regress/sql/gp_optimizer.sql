@@ -1114,5 +1114,13 @@ insert into ggg values ('x', 'a', 'c');
 insert into ggg values ('x', 'a');
 insert into ggg values ('x');
 
+-- MPP-25700 Fix to TO_DATE on hybrid datums during constant expression evaluation
+drop table if exists orca.t3;
+create table orca.t3 (c1 timestamp without time zone);
+insert into orca.t3 values  ('2015-07-03 00:00:00'::timestamp without time zone);
+select to_char(c1, 'YYYY-MM-DD HH24:MI:SS') from orca.t3 where c1 = TO_DATE('2015-07-03','YYYY-MM-DD');
+select to_char(c1, 'YYYY-MM-DD HH24:MI:SS') from orca.t3 where c1 = '2015-07-03'::date;
+
+
 -- clean up
 drop schema orca cascade;
