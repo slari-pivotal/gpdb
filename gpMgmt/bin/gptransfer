@@ -803,7 +803,6 @@ def drop_existing_schema_on_system(host, port, user, schema, databases=None):
         if schema_exists:
             return True
 
-
 # --------------------------------------------------------------------------
 # Validation classes
 # --------------------------------------------------------------------------
@@ -3068,6 +3067,7 @@ class GpTransfer(object):
                     tables.append((database, schema, table))
 
             # add all tables in input file and parse wildcard of table names
+            # gptransfer with -f option
             if self._options.input_file:
                 with open(self._options.input_file) as input_file:
                     for line in input_file:
@@ -3108,35 +3108,24 @@ class GpTransfer(object):
                                           self._options.source_user,
                                           databases_table_transfer)
 
-            for user_table in user_tables:
-                database, schema, table = user_table.database, user_table.schema, user_table.table
+            # Filter down to only the tables needed to added
+            seen = set()
+            for (db_, schema_, table_) in tables:
+                for user_table in user_tables:
+                    database, schema, table = user_table.database, user_table.schema, user_table.table
 
-                skip = False
-                for db in databases_full_transfer:
                     try:
-                        if re.match(r'%s' % db, database, re.L|re.U):
-                            logger.debug('Table %s in database %s has already been added, skip.' % (table, database))
-                            skip = True
-                            break
+                        if (re.match(r'%s' % db_, database, re.L|re.U) and
+                            re.match(r'%s' % schema_, schema, re.L|re.U) and
+                            re.match(r'%s' % table_, table, re.L|re.U)):
+                                if user_table not in seen:
+                                    seen.add(user_table)
+                                    source_tables.append(user_table)
+
                     except Exception, e:
-                        raise Exception('Error matching regular expression %s with %s\n%s' % (db,database,e))
-                if not skip:
-                    is_table_match = False
-                    for (db_, schema_, table_) in tables:
-                        try:
-                            if (re.match(r'%s' % db_, database, re.L|re.U) and
-                                re.match(r'%s' % schema_, schema, re.L|re.U) and
-                                re.match(r'%s' % table_, table, re.L|re.U)):
-
-                                is_table_match = True
-                                break
-                        except Exception, e:
-                            raise Exception('Error matching regular expression, %s with database name %s'
-                                            ' or %s with schema name %s, or %s with table name %s\n%s' %
-                                            (db_, database, schema_, schema, table_, table, e))
-
-                    if is_table_match:
-                        source_tables.append(user_table)
+                        raise Exception('Error matching regular expression, %s with database name %s'
+                                        ' or %s with schema name %s, or %s with table name %s\n%s' %
+                                        (db_, database, schema_, schema, table_, table, e))
 
         return self.filter_tables(source_tables, self.get_exclude_tables())
 
@@ -3218,22 +3207,25 @@ class GpTransfer(object):
         """
 
         logger.info('Building list of source tables to transfer...')
-        table_pairs = set()
-        if self._options.full:
-            for src_table in self._src_tables:
-                table_pairs.add(GpTransferTablePair(src_table,
-                                GpTransferTable(src_table.database,
-                                src_table.schema, src_table.table,
-                                src_table.external)))
-        else:
-            for src_table in self._src_tables:
-                table_pairs.add(GpTransferTablePair(
-                                    GpTransferTable(
-                                        src_table.database, src_table.schema, src_table.table, src_table.external),
-                                    GpTransferTable(
-                                        (self._options.dest_database if self._options.dest_database else src_table.database),
-                                         src_table.schema, src_table.table, src_table.external)))
+        table_pairs = list()
+        seen = set()
+
+        for src_table in self._src_tables:
+            dest_database = src_table.database
+            if self._options.dest_database and not self._options.full:
+                dest_database = self._options.dest_database
+
+            table_pair = GpTransferTablePair(src_table,
+                                             GpTransferTable(dest_database,
+                                                             src_table.schema,
+                                                             src_table.table,
+                                                             src_table.external))
+            if table_pair not in seen:
+                seen.add(table_pair)
+                table_pairs.append(table_pair)
+
         logger.info('Number of tables to transfer: %s', len(table_pairs))
+
         return table_pairs
 
 

@@ -3687,3 +3687,35 @@ def impl(context, dbname, query, nrows):
 def impl(context, filepath, line):
     if line not in open(filepath).read():
         raise Exception("The file '%s' does not contain '%s'" % (filepath, line))
+
+@then('verify that gptransfer is in order of "{filepath}"')
+def impl(context, filepath):
+    table = []
+    with open(filepath) as f:
+        input_file = f.read().splitlines()
+        table = [x.replace('/', "")  for x in input_file]
+
+    split_message = re.findall("Starting transfer of.*\n", context.stdout_message)
+
+    if len(split_message) == 0 and len(table) != 0:
+        raise Exception("There were no tables transfered")
+
+    counter_table = 0
+    counter_split = 0
+    found = 0
+
+    while counter_table < len(table) and counter_split < len(split_message):
+        for i in range(counter_split, len(split_message)):
+            pat = table[counter_table] + " to"
+            prog = re.compile(pat)
+            res = prog.search(split_message[i])
+            if not res:
+                counter_table += 1
+                break
+            else:
+                found += 1
+                counter_split += 1
+
+    if found != len(split_message):
+        raise Exception("expected to find %s tables in order and only found %s in order" % (len(split_message), found))
+

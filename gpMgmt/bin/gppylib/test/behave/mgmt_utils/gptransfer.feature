@@ -419,6 +419,7 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate md5 -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_infile"
         Then gptransfer should return a return code of 0
+        And verify that gptransfer is in order of "gppylib/test/behave/mgmt_utils/steps/data/gptransfer_infile"
         And verify that table "t0" in "gptransfer_testdb1" has "100" rows
         And verify that table "t3" in "gptransfer_testdb2" has "400" rows
         And verify that table "t0" in "gptransfer_testdb3" has "700" rows
@@ -434,6 +435,7 @@ Feature: gptransfer tests
         And the database "gptransfer_testdb5" does not exist
         And the user runs "gptransfer --source-port $GPTRANSFER_SOURCE_PORT --source-host $GPTRANSFER_SOURCE_HOST --source-user $GPTRANSFER_SOURCE_USER --dest-user $GPTRANSFER_DEST_USER --dest-port $GPTRANSFER_DEST_PORT --dest-host $GPTRANSFER_DEST_HOST --source-map-file $GPTRANSFER_MAP_FILE --validate md5 -f gppylib/test/behave/mgmt_utils/steps/data/gptransfer_wildcard_infile"
         Then gptransfer should return a return code of 0
+        And verify that gptransfer is in order of "gppylib/test/behave/mgmt_utils/steps/data/gptransfer_wildcard_infile"
         And verify that table "t0" in "gptransfer_testdb1" has "100" rows
         And verify that table "t1" in "gptransfer_testdb1" has "200" rows
         And verify that table "t2" in "gptransfer_testdb1" has "300" rows
@@ -441,7 +443,6 @@ Feature: gptransfer tests
         And verify that table "t4" in "gptransfer_testdb2" has "500" rows
         And verify that table "s1.t0" in "gptransfer_testdb3" has "800" rows
         And verify that table "s2.t0" in "gptransfer_testdb3" has "900" rows
-
 
     @T886748
     Scenario: gptransfer -F exclude input file
@@ -457,8 +458,6 @@ Feature: gptransfer tests
         And verify that database "gptransfer_testdb1" does not exist
         And verify that database "gptransfer_testdb2" does not exist
         And verify that database "gptransfer_testdb3" does not exist
-
-
 
     @T339953
     Scenario: gptransfer input file to destination database with conflict
