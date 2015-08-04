@@ -1545,6 +1545,7 @@ PortalRunUtility(Portal portal, Node *utilityStmt, bool isTopLevel,
 	if(gp_enable_gpperfmon && Gp_role == GP_ROLE_DISPATCH)
 	{
 		gpmon_qlog_query_end(gpmon_pkt);
+		pfree(gpmon_pkt);
 	}
 }
 
