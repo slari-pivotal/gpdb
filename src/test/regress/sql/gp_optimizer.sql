@@ -3,7 +3,7 @@
 --
 
 -- show version
-SELECT gp_opt_version();
+SELECT count(*) from gp_opt_version();
 
 set optimizer_enable_master_only_queries = on;
 -- master only tables

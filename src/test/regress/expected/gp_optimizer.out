@@ -2,10 +2,10 @@
 -- ORCA tests
 --
 -- show version
-SELECT gp_opt_version();
-                           gp_opt_version                            
----------------------------------------------------------------------
- GPOPT version: 1.591, GPOS version: 1.121, Xerces version: 3.1.1-p1
+SELECT count(*) from gp_opt_version();
+ count
+-------
+     1
 (1 row)
 
 set optimizer_enable_master_only_queries = on;
