@@ -3384,7 +3384,7 @@ class GpTransfer(object):
                 host_map[hostname] = [hostname]
         else:
             raise Exception('--source-map-file option must be used when '
-                            'and destination systems are not the same')
+                            'source and destination systems are not the same')
 
         return host_map
 
