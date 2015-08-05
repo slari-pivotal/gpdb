@@ -27,20 +27,10 @@ BKIFILES = postgres.bki postgres.description postgres.shdescription
 
 include $(top_srcdir)/src/backend/common.mk
 
-all: cdb_init.sql cdb_util.sql cdb_schema.sql gp_toolkit.sql gp_toolkit_test.sql $(BKIFILES)
+all: cdb_init.sql gp_toolkit.sql gp_toolkit_test.sql $(BKIFILES)
 
-cdb_init.sql: cdb_schema.sql
+cdb_init.sql: cdb_schema.sql cdb_external_extensions.sql
 	cat $(call vpathsearch,cdb_schema.sql) $(call vpathsearch,cdb_external_extensions.sql) > cdb_init.sql
-
-cdb_schema.sql: cdb_schema.in
-			sed -e 's,@pkglibdir@,$(pkglibdir),g' \
-                -e 's,@dlsuffix@,$(DLSUFFIX),g' \
-             $< > cdb_schema.sql
-
-cdb_util.sql: cdb_util.in
-			sed -e 's,@pkglibdir@,$(pkglibdir),g' \
-                -e 's,@dlsuffix@,$(DLSUFFIX),g' \
-             $< > cdb_util.sql
 
 JETPACK_NAME = toolkit
 JETPACK_SCHEMA = gp_$(JETPACK_NAME)
@@ -152,4 +142,4 @@ uninstall-data:
 	rm -f $(addprefix '$(DESTDIR)$(datadir)'/, $(BKIFILES) system_views.sql information_schema.sql cdb_schema.sql sql_features.txt)
 
 clean:
-	rm -f SUBSYS.o $(OBJS) $(BKIFILES) cdb_schema.sql gp_toolkit_test.sql gp_toolkit.sql cdb_util.sql cdb_init.sql
+	rm -f SUBSYS.o $(OBJS) $(BKIFILES) gp_toolkit_test.sql gp_toolkit.sql cdb_init.sql
