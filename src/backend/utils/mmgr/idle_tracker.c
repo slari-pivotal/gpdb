@@ -13,6 +13,7 @@
 
 #include "postgres.h"
 #include "cdb/cdbvars.h"
+#include "miscadmin.h"
 #include "storage/ipc.h"
 #include "utils/session_state.h"
 #include "utils/vmem_tracker.h"
