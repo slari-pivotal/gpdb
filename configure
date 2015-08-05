@@ -8682,9 +8682,9 @@ fi
     echo "*** Or see http://curl.haxx.se/"
   else
         CURL_VERSION=`$CURL_CONFIG --version | cut -d" " -f2`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl >= 7.0.0" >&5
-$as_echo_n "checking for curl >= 7.0.0... " >&6; }
-        VERSION_CHECK=`expr $CURL_VERSION \>\= 7.0.0`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for curl >= 7.17.0" >&5
+$as_echo_n "checking for curl >= 7.17.0... " >&6; }
+        VERSION_CHECK=`expr $CURL_VERSION \>\= 7.17.0`
         if test "$VERSION_CHECK" = "1" ; then
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -8706,7 +8706,7 @@ $as_echo "$CURL_LIBS" >&6; }
             CURL_LIBS=""
             ## If we have a custom action on failure, don't print errors, but
             ## do set a variable so people can do so.
-            echo "can't find curl >= 7.0.0"
+            echo "can't find curl >= 7.17.0"
         fi
 
 

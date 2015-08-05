@@ -990,7 +990,7 @@ if test "$with_libxml" = yes ; then
 fi
 
 # Check for curl.
-AC_CHECK_CURL([7.0.0])
+AC_CHECK_CURL([7.17.0])
 CFLAGS="$CFLAGS $CURL_CFLAGS"
 LIBS="$LIBS $CURL_LIBS"
 
