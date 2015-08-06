@@ -1062,7 +1062,6 @@ externalgettup_custom(FileScanDesc scan)
 					 */
 					PG_TRY();
 					{
-						Datum					d;
 						FunctionCallInfoData	fcinfo;
 
 						/* per call formatter prep */
@@ -1074,7 +1073,7 @@ externalgettup_custom(FileScanDesc scan)
 													 scan->fs_tupDesc,
 													 scan->in_functions,
 													 scan->typioparams);
-						d = FunctionCallInvoke(&fcinfo);
+						(void) FunctionCallInvoke(&fcinfo);
 
 					}
 					PG_CATCH();

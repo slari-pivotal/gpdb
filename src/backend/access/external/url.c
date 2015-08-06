@@ -40,7 +40,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+#ifdef USE_CURL
 #include <curl/curl.h>
+#endif
 
 #include <fstream/fstream.h>
 
@@ -80,6 +82,7 @@
  *  extssl_libcurldebug 1 	
  */
 
+#ifdef USE_CURL
 static int extssl_protocol  = CURL_SSLVERSION_TLSv1; 
 const char* extssl_cipher = "AES128-SHA";
 static int extssl_verifycert = 1;
@@ -94,18 +97,23 @@ char extssl_key_full[MAXPGPATH] = {0};
 char extssl_cer_full[MAXPGPATH] = {0};
 char extssl_cas_full[MAXPGPATH] = {0};
 int readable_external_table_timeout = 0;
+#endif
 
 /* Will hold the last curl error					*/
 /* Currently it is in use only for SSL connection,	*/
 /* but we should consider using it always			*/
 static URL_FILE * alloc_url_file(const char *url);
+#ifdef USE_CURL
 static char curl_Error_Buffer[CURL_ERROR_SIZE];
+#endif
 static char *interpretError(int exitCode, char *buf, size_t buflen, char *err, size_t errlen);
 static const char *getSignalNameFromCode(int signo);
 static void read_err_msg(int fid, StringInfo sinfo);
 static int popen_with_stderr(int *rwepipe, const char *exe, bool forwrite);
 static int pclose_with_stderr(int pid, int *rwepipe, StringInfo sinfo);
+#ifdef USE_CURL
 static bool gp_proto0_write_done(URL_FILE *file);
+#endif
 static int32  InvokeExtProtocol(void		*ptr, 
 								size_t 		nbytes, 
 								URL_FILE 	*file, 
@@ -115,6 +123,7 @@ void extract_http_domain(char* i_path, char* o_domain, int dlen);
 
 
 /* we use a global one for convenience */
+#ifdef USE_CURL
 CURLM *multi_handle = 0;
 
 /*
@@ -695,7 +704,7 @@ replace_httpheader(URL_FILE *fcurl, const char *name, const char *value)
 
 	return 0;
 }
-
+#endif
 
 static int
 make_export(char *name, const char *value, char *buf)
@@ -775,6 +784,7 @@ make_command(const char *cmd, extvar_t * ev, char *buf)
 	return sz + 1;				/* add NUL terminator */
 }
 
+#ifdef USE_CURL
 static char *
 local_strstr(const char *str1, const char *str2)
 {	
@@ -966,6 +976,7 @@ void extract_http_domain(char* i_path, char* o_domain, int dlen)
 	cpsz = ( domsz < dlen ) ? domsz : dlen;
 	memcpy(o_domain, p_st, cpsz);
 }
+#endif
 
 /**
  * alloc_url_file()
@@ -1045,6 +1056,7 @@ url_execute_fopen(char* url, char *cmd, bool forwrite, extvar_t *ev)
 	return file;
 }
 
+#ifdef USE_CURL
 static bool 
 url_has_ipv6_format (char *url)
 {
@@ -1070,6 +1082,7 @@ is_file_exists(const char* filename)
     }
     return 0;
 }
+#endif
 
 /*
  * url_fopen
@@ -1089,8 +1102,6 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
 
 	/* an EXECUTE string will always be prefixed like this */
 	const char*	exec_prefix = "execute:";
-	int 		e;
-	int         ip_mode;
 
 	/*
 	 * if 'url' starts with "execute:" then it's a command to execute and
@@ -1106,8 +1117,10 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
 	}
 
 	URL_FILE* file = alloc_url_file(url);
+#ifdef USE_CURL
 	/* Reset curl_Error_Buffer */
 	curl_Error_Buffer[0] = '\0';
+#endif
 
 	if (IS_FILE_URI(url))
 	{
@@ -1150,9 +1163,11 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
 	}
 	else if (IS_HTTP_URI(url) || IS_GPFDIST_URI(url) || IS_GPFDISTS_URI(url))
 	{
-		int sz;
-
-		bool is_ipv6 = url_has_ipv6_format(file->url);
+#ifdef USE_CURL
+		int			sz;
+		int         ip_mode;
+		int 		e;
+		bool		is_ipv6 = url_has_ipv6_format(file->url);
 
 		sz = make_url(file->url, NULL, is_ipv6);
 
@@ -1182,7 +1197,7 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
 			 * a domain name was transformed to an IPv6 address.
 			 */
 			if ( !is_ipv6 )
-				is_ipv6 = url_has_ipv6_format(file->u.curl.curl_url);	
+				is_ipv6 = url_has_ipv6_format(file->u.curl.curl_url);
 		}
 		else
 		{
@@ -1547,7 +1562,6 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
          */
         if (!forwrite)
         {
-            
     		while (CURLM_CALL_MULTI_PERFORM ==
     			   (e = curl_multi_perform(multi_handle, &file->u.curl.still_running)));
 
@@ -1560,100 +1574,105 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
 
     		/* read some bytes to make sure the connection is established */
     		fill_buffer(file, 1);
- 
-		/* check the connection for GET request*/
-		if (check_response(file, response_code, response_string, true))
-		{
-			return NULL;
+
+			/* check the connection for GET request*/
+			if (check_response(file, response_code, response_string, true))
+			{
+				return NULL;
+			}
 		}
+		else
+		{
+			/* use empty message */
+			if (CURLE_OK != (e = curl_easy_setopt(file->u.curl.handle, CURLOPT_POSTFIELDS, "")))
+			{
+				url_fclose(file, false, pstate->cur_relname);
+				elog(ERROR, "internal error: curl_easy_setopt CURLOPT_POSTFIELDS error (%d - %s)",
+					 e, curl_easy_strerror(e));
+			}
+
+			if (CURLE_OK != (e = curl_easy_setopt(file->u.curl.handle, CURLOPT_POSTFIELDSIZE, 0)))
+			{
+				url_fclose(file, false, pstate->cur_relname);
+				elog(ERROR, "internal error: curl_easy_setopt CURLOPT_POSTFIELDSIZE %s error (%d - %s)",
+					 file->u.curl.curl_url,
+					 e, curl_easy_strerror(e));
+			}
+
+			/* post away and check response, retry if failed (timeout or * connect error) */
+			if ( gp_curl_easy_perform_backoff_and_check_response(file)) {
+				file->seq_number++;
+			} else {
+				url_fclose(file, false, pstate->cur_relname);
+				elog(ERROR, "error when sending OPEN request (SEQ:" INT64_FORMAT ") to gpfdist %s. error (%d - %s)",
+					 file->seq_number,
+					 file->u.curl.curl_url,
+					 e, curl_easy_strerror(e));
+				return NULL;
+			}
+        }
+#else
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("unsupported external table URI"),
+				 errdetail("This functionality requires the server to be built with libcurl support."),
+				 errhint("You need to rebuild the server using --with-libcurl.")));
+#endif
 	}
 	else
 	{
-		/* use empty message */
-		if (CURLE_OK != (e = curl_easy_setopt(file->u.curl.handle, CURLOPT_POSTFIELDS, "")))
-		{
-			url_fclose(file, false, pstate->cur_relname);
-			elog(ERROR, "internal error: curl_easy_setopt CURLOPT_POSTFIELDS error (%d - %s)",
-				 e, curl_easy_strerror(e));
-		}
-
-		if (CURLE_OK != (e = curl_easy_setopt(file->u.curl.handle, CURLOPT_POSTFIELDSIZE, 0)))
-		{
-			url_fclose(file, false, pstate->cur_relname);
-			elog(ERROR, "internal error: curl_easy_setopt CURLOPT_POSTFIELDSIZE %s error (%d - %s)",
-				 file->u.curl.curl_url,
-				 e, curl_easy_strerror(e));
-		}
-
-		/* post away and check response, retry if failed (timeout or * connect error) */
-		if ( gp_curl_easy_perform_backoff_and_check_response(file)) {
-			file->seq_number++;
-		} else {
-			url_fclose(file, false, pstate->cur_relname);
-			elog(ERROR, "error when sending OPEN request (SEQ:" INT64_FORMAT ") to gpfdist %s. error (%d - %s)",
-				 file->seq_number,
-				 file->u.curl.curl_url,
-				 e, curl_easy_strerror(e));
-			return NULL;
-		}
-        }
-       
-    }
-    else
-    {
-    	/* we're using a custom protocol */
+		/* we're using a custom protocol */
     	
-    	MemoryContext	oldcontext;
-    	ExtPtcFuncType	ftype;
+		MemoryContext	oldcontext;
+		ExtPtcFuncType	ftype;
 		Oid				procOid;
-    	char   		   *prot_name 	= pstrdup(file->url);
-    	int				url_len 	= strlen(file->url); 
-    	int				i 			= 0;
-    	
-    	file->type = CFTYPE_CUSTOM;
-    	ftype = (forwrite ? EXTPTC_FUNC_WRITER : EXTPTC_FUNC_READER);
-    	
-    	/* extract protocol name from url string */    	
-    	while (file->url[i] != ':' && i < url_len - 1)
-    		i++;
-    	
-    	prot_name[i] = '\0';
-    	procOid = LookupExtProtocolFunction(prot_name, ftype, true);
+		char   		   *prot_name 	= pstrdup(file->url);
+		int				url_len 	= strlen(file->url);
+		int				i 			= 0;
 
-        /*
-    	 * Create a memory context to store all custom UDF private
-    	 * memory. We do this in order to allow resource cleanup in
-    	 * cases of query abort. We use TopTransactionContext as a
-    	 * parent context so that it lives longer than Portal context.
-    	 * Note that we always Delete our new context, in normal execution
-    	 * and in abort (see url_fclose()).
-    	 */
-    	file->u.custom.protcxt = AllocSetContextCreate(TopTransactionContext,
+		file->type = CFTYPE_CUSTOM;
+		ftype = (forwrite ? EXTPTC_FUNC_WRITER : EXTPTC_FUNC_READER);
+
+		/* extract protocol name from url string */
+		while (file->url[i] != ':' && i < url_len - 1)
+			i++;
+
+    	prot_name[i] = '\0';
+		procOid = LookupExtProtocolFunction(prot_name, ftype, true);
+
+		/*
+		 * Create a memory context to store all custom UDF private
+		 * memory. We do this in order to allow resource cleanup in
+		 * cases of query abort. We use TopTransactionContext as a
+		 * parent context so that it lives longer than Portal context.
+		 * Note that we always Delete our new context, in normal execution
+		 * and in abort (see url_fclose()).
+		 */
+		file->u.custom.protcxt = AllocSetContextCreate(TopTransactionContext,
 													   "CustomProtocolMemCxt",
 													   ALLOCSET_DEFAULT_MINSIZE,
 													   ALLOCSET_DEFAULT_INITSIZE,
 													   ALLOCSET_DEFAULT_MAXSIZE);
-    	
-    	oldcontext = MemoryContextSwitchTo(file->u.custom.protcxt);
+
+		oldcontext = MemoryContextSwitchTo(file->u.custom.protcxt);
 		
-    	file->u.custom.protocol_udf = palloc(sizeof(FmgrInfo));
+		file->u.custom.protocol_udf = palloc(sizeof(FmgrInfo));
 		file->u.custom.extprotocol = (ExtProtocolData *) palloc (sizeof(ExtProtocolData));
 
 		/* we found our function. set it in custom file handler */
 		fmgr_info(procOid, file->u.custom.protocol_udf);
 
 		MemoryContextSwitchTo(oldcontext);
-		
+
 		file->u.custom.extprotocol->prot_user_ctx = NULL;
 		file->u.custom.extprotocol->prot_last_call = false;
 		file->u.custom.extprotocol->prot_url = NULL;
 		file->u.custom.extprotocol->prot_databuf = NULL;
-		
-		
+
 		pfree(prot_name);
-    }
+	}
 	
-    return file;
+	return file;
 }
 
 /*
@@ -1681,7 +1700,6 @@ url_fclose(URL_FILE *file, bool failOnError, const char *relname)
 	StringInfoData sinfo;
 	initStringInfo(&sinfo);
 	char* 	url = NULL; 
-	bool    retVal = true;	
 
 	switch (type)
 	{
@@ -1733,63 +1751,71 @@ url_fclose(URL_FILE *file, bool failOnError, const char *relname)
 			break;
 
 		case CFTYPE_CURL:
-			
-			/*
-			 * if WET, send a final "I'm done" request from this segment.
-			 */
-			if(file->u.curl.for_write && file->u.curl.handle != NULL)
-				retVal = gp_proto0_write_done(file);
-			
-			if (file->u.curl.x_httpheader)
+#ifdef USE_CURL
 			{
-				curl_slist_free_all(file->u.curl.x_httpheader);
-				file->u.curl.x_httpheader = NULL;
-			}
+				bool    retVal = true;
 
-			/* make sure the easy handle is not in the multi handle anymore */
-			if (file->u.curl.handle)
-			{
-				CURLMcode e = curl_multi_remove_handle(multi_handle, file->u.curl.handle);
-				if (CURLM_OK != e) {
-					elog(WARNING, "internal error curl_multi_remove_handle (%d - %s)", e, curl_easy_strerror(e));
+				/*
+				 * if WET, send a final "I'm done" request from this segment.
+				 */
+				if (file->u.curl.for_write && file->u.curl.handle != NULL)
+					retVal = gp_proto0_write_done(file);
+
+				if (file->u.curl.x_httpheader)
+				{
+					curl_slist_free_all(file->u.curl.x_httpheader);
+					file->u.curl.x_httpheader = NULL;
 				}
 
-				/* cleanup */
-				elog(LOG, "curl_easy_cleanup: %s", file->url);
-				curl_easy_cleanup(file->u.curl.handle);
-				file->u.curl.handle = NULL;
-			}
+				/* make sure the easy handle is not in the multi handle anymore */
+				if (file->u.curl.handle)
+				{
+					CURLMcode e = curl_multi_remove_handle(multi_handle, file->u.curl.handle);
+					if (CURLM_OK != e)
+						elog(WARNING, "internal error curl_multi_remove_handle (%d - %s)", e, curl_easy_strerror(e));
 
-			/* free any allocated buffer space */
-			if (file->u.curl.in.ptr)
-			{
-				free(file->u.curl.in.ptr);
-				file->u.curl.in.ptr = NULL;
-			}
-				
-			if (file->u.curl.curl_url)
-			{
-				free(file->u.curl.curl_url);
-				file->u.curl.curl_url = NULL;
-			}
+					/* cleanup */
+					elog(LOG, "curl_easy_cleanup: %s", file->url);
+					curl_easy_cleanup(file->u.curl.handle);
+					file->u.curl.handle = NULL;
+				}
 
-			if (file->u.curl.out.ptr)
-			{
-				Assert(file->u.curl.for_write);
-				pfree(file->u.curl.out.ptr);
-				file->u.curl.out.ptr = NULL;
-			}
+				/* free any allocated buffer space */
+				if (file->u.curl.in.ptr)
+				{
+					free(file->u.curl.in.ptr);
+					file->u.curl.in.ptr = NULL;
+				}
 
-			file->u.curl.gp_proto = 0;
-			file->u.curl.error = file->u.curl.eof = 0;
-			memset(&file->u.curl.in, 0, sizeof(file->u.curl.in));
-			memset(&file->u.curl.block, 0, sizeof(file->u.curl.block));
+				if (file->u.curl.curl_url)
+				{
+					free(file->u.curl.curl_url);
+					file->u.curl.curl_url = NULL;
+				}
 
-			free(file);
-			if (! retVal)	
-			{
-				elog(ERROR, "Error when close writable externtal table"); 
+				if (file->u.curl.out.ptr)
+				{
+					Assert(file->u.curl.for_write);
+					pfree(file->u.curl.out.ptr);
+					file->u.curl.out.ptr = NULL;
+				}
+
+				file->u.curl.gp_proto = 0;
+				file->u.curl.error = file->u.curl.eof = 0;
+				memset(&file->u.curl.in, 0, sizeof(file->u.curl.in));
+				memset(&file->u.curl.block, 0, sizeof(file->u.curl.block));
+
+				free(file);
+				if (!retVal)
+					elog(ERROR, "Error when close writable externtal table");
 			}
+#else
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("unsupported external table URI"),
+					 errdetail("This functionality requires the server to be built with libcurl support."),
+					 errhint("You need to rebuild the server using --with-libcurl.")));
+#endif
 			return ret;
 
 		case CFTYPE_CUSTOM:
@@ -1832,7 +1858,9 @@ url_feof(URL_FILE *file, int bytesread)
 			break;
 
 		case CFTYPE_CURL:
+#ifdef USE_CURL
 			ret = (file->u.curl.eof != 0);
+#endif
 			break;
 
 		case CFTYPE_CUSTOM:
@@ -1873,7 +1901,9 @@ bool url_ferror(URL_FILE *file, int bytesread, char *ebuf, int ebuflen)
 			break;
 
 		case CFTYPE_CURL:
+#ifdef USE_CURL
 			ret = (file->u.curl.error != 0);
+#endif
 			break;
 
 		case CFTYPE_CUSTOM:
@@ -1889,6 +1919,7 @@ bool url_ferror(URL_FILE *file, int bytesread, char *ebuf, int ebuflen)
 	return ret;
 }
 
+#ifdef USE_CURL
 /*
  * gp_proto0_read
  *
@@ -2250,7 +2281,7 @@ static size_t curl_fread(char *buf, int bufsz, URL_FILE* file, CopyState pstate)
 static size_t curl_fwrite(char *buf, int nbytes, URL_FILE* file, CopyState pstate)
 {
 	curlctl_t*	curl = &file->u.curl;
-	
+
 	if (curl->gp_proto != 0 && curl->gp_proto != 1)
 	{
 		elog(ERROR, "unknown gp protocol %d", curl->gp_proto);
@@ -2314,7 +2345,7 @@ static size_t curl_fwrite(char *buf, int nbytes, URL_FILE* file, CopyState pstat
 	
 	return nbytes;
 }
-
+#endif /* USE_CURL */
 
 size_t
 url_fread(void *ptr, size_t size, size_t nmemb, URL_FILE *file, CopyState pstate)
@@ -2350,8 +2381,8 @@ url_fread(void *ptr, size_t size, size_t nmemb, URL_FILE *file, CopyState pstate
 			want = piperead(file->u.exec.pipes[EXEC_DATA_P], ptr, nmemb * size);
 			break;
 
+#ifdef USE_CURL
 		case CFTYPE_CURL:
-
 			/* get data (up to nmemb * size) from the http/gpfdist server */
 			n = curl_fread(ptr, nmemb * size, file, pstate);
 
@@ -2360,6 +2391,7 @@ url_fread(void *ptr, size_t size, size_t nmemb, URL_FILE *file, CopyState pstate
 
 			/*printf("(fread) return %d bytes %d left\n", want,file->u.curl.buffer_pos);*/
 			break;
+#endif
 
 		case CFTYPE_CUSTOM:
 			
@@ -2378,7 +2410,7 @@ url_fread(void *ptr, size_t size, size_t nmemb, URL_FILE *file, CopyState pstate
 size_t
 url_fwrite(void *ptr, size_t size, size_t nmemb, URL_FILE *file, CopyState pstate)
 {
-    size_t 	want = 0, n = 0;
+    size_t 	want = 0;
 
     switch (file->type)
     {
@@ -2392,13 +2424,17 @@ url_fwrite(void *ptr, size_t size, size_t nmemb, URL_FILE *file, CopyState pstat
 			want = pipewrite(file->u.exec.pipes[EXEC_DATA_P], ptr, nmemb * size);
 			break;
 
+#ifdef USE_CURL
 		case CFTYPE_CURL:
-			
-			/* write data to the gpfdist server via curl */
-			n = curl_fwrite(ptr, nmemb * size, file, pstate);
-			want = n / size;
+			{
+				size_t	n;
+				/* write data to the gpfdist server via curl */
+				n = curl_fwrite(ptr, nmemb * size, file, pstate);
+				want = n / size;
+			}
 			break;
-		
+#endif
+
 		case CFTYPE_CUSTOM:
 						
 			want = (size_t) InvokeExtProtocol(ptr, nmemb * size, file, pstate, false);
@@ -2432,9 +2468,11 @@ url_fflush(URL_FILE *file, CopyState pstate)
 			/* data isn't buffered on app level. no op */
 			break;
 
+#ifdef USE_CURL
 		case CFTYPE_CURL:
 			gp_proto0_write(file, pstate);
 			break;
+#endif
 
 		default: /* unknown or unsupported type */
 			break;
@@ -2444,7 +2482,6 @@ url_fflush(URL_FILE *file, CopyState pstate)
 void
 url_rewind(URL_FILE *file, const char *relname)
 {
-	CURLMcode e;
 	char *url = file->url;
     switch(file->type)
     {
@@ -2461,28 +2498,31 @@ url_rewind(URL_FILE *file, const char *relname)
 			url_fopen(url, false, NULL, NULL, NULL, 0);
 			break;
 
+#ifdef USE_CURL
 		case CFTYPE_CURL:
 			/* halt transaction */
-			e = curl_multi_remove_handle(multi_handle, file->u.curl.handle);
-			if (CURLM_OK != e) {
-				elog(ERROR, "internal error curl_multi_remove_handle (%d - %s)", e, curl_easy_strerror(e));
+			{
+				CURLMcode e;
+				e = curl_multi_remove_handle(multi_handle, file->u.curl.handle);
+				if (CURLM_OK != e)
+					elog(ERROR, "internal error curl_multi_remove_handle (%d - %s)", e, curl_easy_strerror(e));
+
+				/* restart */
+				e = curl_multi_add_handle(multi_handle, file->u.curl.handle);
+				if (CURLM_OK != e)
+					elog(ERROR, "internal error curl_multi_add_handle (%d - %s)", e, curl_easy_strerror(e));
+
+				/* ditch buffer - write will recreate - resets stream pos*/
+				if (file->u.curl.in.ptr)
+					free(file->u.curl.in.ptr);
+
+				file->u.curl.gp_proto = 0;
+				file->u.curl.error = file->u.curl.eof = 0;
+				memset(&file->u.curl.in, 0, sizeof(file->u.curl.in));
+				memset(&file->u.curl.block, 0, sizeof(file->u.curl.block));
 			}
-
-			/* restart */
-			e = curl_multi_add_handle(multi_handle, file->u.curl.handle);
-			if (CURLM_OK != e) {
-				elog(ERROR, "internal error curl_multi_add_handle (%d - %s)", e, curl_easy_strerror(e));
-			}
-
-			/* ditch buffer - write will recreate - resets stream pos*/
-			if (file->u.curl.in.ptr)
-				free(file->u.curl.in.ptr);
-
-			file->u.curl.gp_proto = 0;
-			file->u.curl.error = file->u.curl.eof = 0;
-			memset(&file->u.curl.in, 0, sizeof(file->u.curl.in));
-			memset(&file->u.curl.block, 0, sizeof(file->u.curl.block));
 			break;
+#endif
 
 		case CFTYPE_CUSTOM:
 			elog(ERROR, "rewind support not yet implemented in custom protocol");

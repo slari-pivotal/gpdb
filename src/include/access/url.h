@@ -21,7 +21,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+#ifdef USE_CURL
 #include <curl/curl.h>
+#endif
 
 /*#include <fstream/fstream.h>*/
 
@@ -54,6 +56,7 @@ enum fcurl_type_e
 #define local_ntohll(n)  ((((uint64) ntohl(n)) << 32LL) | (uint32) ntohl(((uint64)n) >> 32LL))
 #endif
 
+#ifdef USE_CURL
 typedef struct curlctl_t {
 	
 	CURL *handle;
@@ -84,8 +87,8 @@ typedef struct curlctl_t {
 	{
 		int   datalen;  /* remaining datablock length */
 	} block;
-	
 } curlctl_t;
+#endif
 
 #define EXEC_DATA_P 0 /* index to data pipe */
 #define EXEC_ERR_P 1 /* index to error pipe  */
@@ -101,7 +104,9 @@ typedef struct URL_FILE
 			struct fstream_t*fp;
 		} file;
 
+#ifdef USE_CURL
 		curlctl_t curl;
+#endif
 
 		struct {
 			int 	pid;

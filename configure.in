@@ -779,6 +779,13 @@ PGAC_ARG_BOOL(with, rt, yes,
 AC_SUBST(with_rt)
 
 #
+# libcurl. Used for external table support
+#
+PGAC_ARG_BOOL(with, libcurl, yes,
+              [  --without-libcurl       do not use libcurl])
+AC_SUBST(with_libcurl)
+
+#
 # Elf
 #
 
@@ -990,9 +997,13 @@ if test "$with_libxml" = yes ; then
 fi
 
 # Check for curl.
-AC_CHECK_CURL([7.17.0])
-CFLAGS="$CFLAGS $CURL_CFLAGS"
-LIBS="$LIBS $CURL_LIBS"
+if test "$with_libcurl" = yes ; then
+  AC_CHECK_CURL([7.17.0])
+  CFLAGS="$CFLAGS $CURL_CFLAGS"
+  LIBS="$LIBS $CURL_LIBS"
+   AC_DEFINE([USE_CURL], 1,
+          [Define to 1 to build with libcurl support. (--with-libcurl)])
+fi
 
 # Check for bzip2
 AC_SEARCH_LIBS(BZ2_bzDecompress, bz2)

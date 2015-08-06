@@ -74,9 +74,6 @@
 /* Define to 1 if you have the `atexit' function. */
 #undef HAVE_ATEXIT
 
-/* Define to 1 if you have the <auth-client.h> header file. */
-#undef HAVE_AUTH_CLIENT_H
-
 /* Define to 1 if you have the `cbrt' function. */
 #undef HAVE_CBRT
 
@@ -277,6 +274,12 @@
 /* Define to 1 if you have the <ldap.h> header file. */
 #undef HAVE_LDAP_H
 
+/* Define to 1 if you have the `ccme_core' library (-lccme_core). */
+#undef HAVE_LIBCCME_CORE
+
+/* Define to 1 if you have the `ccme_fipsprov' library (-lccme_fipsprov). */
+#undef HAVE_LIBCCME_FIPSPROV
+
 /* Define to 1 if you have the `crypto' library (-lcrypto). */
 #undef HAVE_LIBCRYPTO
 
@@ -416,6 +419,9 @@
 
 /* Define to 1 if you have the `rl_filename_completion_function' function. */
 #undef HAVE_RL_FILENAME_COMPLETION_FUNCTION
+
+/* Define to 1 if you have FIPS 140-2 RSA BSAFE. */
+#undef HAVE_RSA_BSAFE_FIPS
 
 /* Define to 1 if you have the <security/pam_appl.h> header file. */
 #undef HAVE_SECURITY_PAM_APPL_H
@@ -628,6 +634,9 @@
 /* Define to 1 if you have the `unsetenv' function. */
 #undef HAVE_UNSETENV
 
+/* Define to 1 if the system has the type `unsigned long long int'. */
+#undef HAVE_UNSIGNED_LONG_LONG_INT
+
 /* Define to 1 if you have the `utime' function. */
 #undef HAVE_UTIME
 
@@ -744,16 +753,11 @@
    (--enable-connectemc) */
 #undef USE_CONNECTEMC
 
-/* Define to 1 to build with DD Boost capabilities.
-   (--enable-ddboost) */
+/* Define to 1 to build with libcurl support. (--with-libcurl) */
+#undef USE_CURL
+
+/* Define to 1 to build with DD Boost capabilities. (--enable-ddboost) */
 #undef USE_DDBOOST
-
-/* Define to 1 to build with NetBackup capabilities.
-   (--enable-netbackup) */
-#undef USE_NETBACKUP
-
-/* Define to 1 to build with Greenplum ORCA optimizer. (--enable-orca) */
-#undef USE_ORCA
 
 /* Define to 1 to build with debug_break capabilities. (--enable-debugbreak)
    */
@@ -765,9 +769,6 @@
 /* Define to 1 to build with plan forcing capabilities. (--enable-forceplan)
    */
 #undef USE_FORCE_PLAN
-
-/* Define to 1 to build with gphdfs capabilities. (--enable-gphdfs) */
-#undef USE_GPHDFS
 
 /* Define to 1 if you want 64-bit integer timestamp and interval support.
    (--enable-integer-datetimes) */
@@ -781,6 +782,12 @@
 
 /* Define to select named POSIX semaphores. */
 #undef USE_NAMED_POSIX_SEMAPHORES
+
+/* Define to 1 to build with NetBackup capabilities. (--enable-netbackup) */
+#undef USE_NETBACKUP
+
+/* Define to 1 to build with Greenplum ORCA optimizer. (--enable-orca) */
+#undef USE_ORCA
 
 /* Define to 1 to build with PAM support. (--with-pam) */
 #undef USE_PAM
@@ -809,15 +816,6 @@
 /* Define to select Win32-style semaphores. */
 #undef USE_WIN32_SEMAPHORES
 
-/* Define to build with RSA BSAFE (cryptocme) */
-#undef HAVE_LIBCCME_CORE
-
-/* Define to build with RSA BSAFE FIPS (cryptocme) */
-#undef HAVE_LIBCCME_FIPSPROV
-
-/* Define to 1 if you have FIPS 140-2 RSA BSAFE. */
-#undef HAVE_RSA_BSAFE_FIPS
-
 /* Define to select Win32-style shared memory. */
 #undef USE_WIN32_SHARED_MEMORY
 
@@ -831,6 +829,11 @@
 # ifndef WORDS_BIGENDIAN
 #  undef WORDS_BIGENDIAN
 # endif
+#endif
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
 #endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */

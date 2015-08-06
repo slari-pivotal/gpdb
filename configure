@@ -697,6 +697,7 @@ LDFLAGS_EX
 ELF_SYS
 EGREP
 GREP
+with_libcurl
 with_rt
 with_zlib
 with_system_tzdata
@@ -845,6 +846,7 @@ with_libxml
 with_system_tzdata
 with_zlib
 with_rt
+with_libcurl
 with_gnu_ld
 enable_largefile
 '
@@ -1525,6 +1527,7 @@ Optional Packages:
   --with-system-tzdata=DIR  use system time zone data in DIR
   --without-zlib          do not use Zlib
   --without-rt            do not use Realtime Library
+  --without-libcurl       do not use libcurl
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
 
 Some influential environment variables:
@@ -5793,6 +5796,36 @@ fi
 
 
 #
+# libcurl. Used for external table support
+#
+
+pgac_args="$pgac_args with_libcurl"
+
+
+# Check whether --with-libcurl was given.
+if test "${with_libcurl+set}" = set; then :
+  withval=$with_libcurl;
+  case $withval in
+    yes)
+      :
+      ;;
+    no)
+      :
+      ;;
+    *)
+      as_fn_error $? "no argument expected for --with-libcurl option" "$LINENO" 5
+      ;;
+  esac
+
+else
+  with_libcurl=yes
+
+fi
+
+
+
+
+#
 # Elf
 #
 
@@ -8629,6 +8662,7 @@ fi
 fi
 
 # Check for curl.
+if test "$with_libcurl" = yes ; then
 
   succeeded=no
 
@@ -8719,8 +8753,12 @@ $as_echo "$CURL_LIBS" >&6; }
      as_fn_error $? "Library requirements (curl) not met." "$LINENO" 5
   fi
 
-CFLAGS="$CFLAGS $CURL_CFLAGS"
-LIBS="$LIBS $CURL_LIBS"
+  CFLAGS="$CFLAGS $CURL_CFLAGS"
+  LIBS="$LIBS $CURL_LIBS"
+
+$as_echo "#define USE_CURL 1" >>confdefs.h
+
+fi
 
 # Check for bzip2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing BZ2_bzDecompress" >&5

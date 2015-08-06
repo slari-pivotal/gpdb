@@ -51,9 +51,11 @@
 
 extern int	PostPortNumber;
 
+#ifdef USE_CURL
 #include <curl/curl.h>
+#endif
 
-#if USE_SNMP
+#ifdef USE_SNMP
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/definitions.h>
 #include <net-snmp/types.h>
@@ -93,10 +95,12 @@ static size_t messagebody_cb(void *ptr, size_t size, size_t nmemb, void *userp);
 static void build_messagebody(StringInfo buf, const GpErrorData *errorData,
 				  const char *subject, const char *email_priority);
 
+#ifdef USE_CURL
 static void send_alert_via_email(const GpErrorData * errorData,
 					 const char * subject, const char * email_priority);
+#endif
 
-#if USE_SNMP
+#ifdef USE_SNMP
 static int send_snmp_inform_or_trap();
 extern pg_time_t	MyStartTime;
 #endif
@@ -193,7 +197,7 @@ int send_alert_from_chunks(const PipeProtoChunk *chunk,
 	return ret;
 }
 
-#if USE_SNMP
+#ifdef USE_SNMP
 static int send_snmp_inform_or_trap(const GpErrorData * errorData, const char * subject, const char * severity)
 {
 
@@ -527,6 +531,7 @@ static int send_snmp_inform_or_trap(const GpErrorData * errorData, const char * 
 }
 #endif
 
+#ifdef USE_CURL
 static void
 send_alert_via_email(const GpErrorData *errorData,
 					 const char *subject, const char *email_priority)
@@ -772,7 +777,7 @@ send_alert_via_email(const GpErrorData *errorData,
 	pfree(from);
 	pfree(upload_ctx.body.data);
 }
-
+#endif
 
 int send_alert(const GpErrorData * errorData)
 {
@@ -876,17 +881,19 @@ int send_alert(const GpErrorData * errorData)
 	previous_time = (pg_time_t)time(NULL);
 	memcpy(&previous_fix_fields,&errorData->fix_fields,sizeof(GpErrorDataFixFields));
 
-#if USE_SNMP
+#ifdef USE_SNMP
 	if (send_via_snmp)
 		send_snmp_inform_or_trap(errorData, subject, snmp_severity);
 	else 
 		elog(DEBUG4,"Not sending via SNMP");
 #endif
 
+#ifdef USE_CURL
 	if (send_via_email)
 		send_alert_via_email(errorData, subject, email_priority);
 	else
 		elog(DEBUG4,"Not sending via e-mail");
+#endif
 
 	return 0;
 }
