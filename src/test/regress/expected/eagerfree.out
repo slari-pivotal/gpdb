@@ -13,6 +13,7 @@ NOTICE:  table "smallt2" does not exist, skipping
 create table smallt2 (i int, t text, d date) distributed by (i);
 insert into smallt2 select i%5, 'text ' || (i%10), '2011-01-01'::date + ((i%15) || ' days')::interval
 from generate_series(0, 49) i;
+set optimizer_segments = 3;
 -- HashAgg, Agg
 select d, count(*) from smallt group by d;
      d      | count 
@@ -1350,7 +1351,6 @@ select t1.* from smallt as t1, smallt as t2 where t1.i = t2.i;
  9 | text 9  | 01-20-2011
 (1000 rows)
 
-set optimizer_segments = 2;
 explain analyze select t1.* from smallt as t1, smallt as t2 where t1.i = t2.i;
                                                                       QUERY PLAN                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1377,7 +1377,6 @@ explain analyze select t1.* from smallt as t1, smallt as t2 where t1.i = t2.i;
  Total runtime: 16.507 ms
 (21 rows)
 
-reset optimizer_segments;
 -- Rescan on HashJoin
 --select t1.* from (select t11.* from smallt as t11, smallt as t22 where t11.i = t22.i and t11.i < 2) as t1,
 --   (select t11.* from smallt as t11, smallt as t22 where t11.d = t22.d and t11.i < 5) as t2;
@@ -2044,3 +2043,4 @@ select * from eager_free_t where t1 > (select min(r1) from eager_free_r where r2
  30 |  6 |  5
 (24 rows)
 
+reset optimizer_segments;

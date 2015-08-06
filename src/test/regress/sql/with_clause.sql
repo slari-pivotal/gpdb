@@ -62,10 +62,10 @@ select sum(total) from (select sum(value) as total from with_test1 group by i) m
 --end_equivalent
 
 -- pathkeys
-explain with my_order as (select * from with_test1 order by i)
+with my_order as (select * from with_test1 order by i)
 select i, count(*)
 from my_order
-group by i;
+group by i order by i;
 
 -- WITH query used in InitPlan
 --begin_equivalent
@@ -325,7 +325,7 @@ with b1 as (select * from with_b) select * from (select * from b1 where b1.i =1)
 select * from (select * from (select * from with_b) as b1 where b1.i = 1) AS FOO, (select * from with_b) as foo2;
 --end_equivalent
 -- qual push down test
-explain with t as (select * from with_test1) select * from t where i = 10;
+with t as (select * from with_test1) select * from t where i = 10;
 
 -- MPP-17848
 drop table x;

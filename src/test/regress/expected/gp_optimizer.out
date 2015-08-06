@@ -8,6 +8,8 @@ SELECT count(*) from gp_opt_version();
      1
 (1 row)
 
+-- fix the number of segments for Orca
+set optimizer_segments = 3;
 set optimizer_enable_master_only_queries = on;
 -- master only tables
 create schema orca;
@@ -9571,3 +9573,4 @@ NOTICE:  drop cascades to table orca.s
 NOTICE:  drop cascades to table orca.r
 NOTICE:  drop cascades to table orca.bar2
 NOTICE:  drop cascades to table orca.bar1
+reset optimizer_segments;

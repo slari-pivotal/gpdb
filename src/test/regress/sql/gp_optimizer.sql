@@ -5,6 +5,9 @@
 -- show version
 SELECT count(*) from gp_opt_version();
 
+-- fix the number of segments for Orca
+set optimizer_segments = 3;
+
 set optimizer_enable_master_only_queries = on;
 -- master only tables
 
@@ -1124,3 +1127,4 @@ select to_char(c1, 'YYYY-MM-DD HH24:MI:SS') from orca.t3 where c1 = '2015-07-03'
 
 -- clean up
 drop schema orca cascade;
+reset optimizer_segments;

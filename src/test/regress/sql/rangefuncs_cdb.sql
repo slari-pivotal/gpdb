@@ -20,7 +20,7 @@ INSERT INTO foo2 VALUES(1, 111);
 -- start_ignore
 create language plperlu;
 -- end_ignore
-
+set optimizer_segments = 3;
 --
 -- RETURNS SETOF foo2
 --
@@ -454,3 +454,5 @@ DROP FUNCTION dup(anyelement);
 -- fails, no way to deduce outputs
 CREATE FUNCTION bad (f1 int, out f2 anyelement, out f3 anyarray)
 AS 'select $1, array[$1,$1]' LANGUAGE sql;
+
+reset optimizer_segments;

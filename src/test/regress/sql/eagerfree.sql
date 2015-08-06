@@ -15,6 +15,8 @@ create table smallt2 (i int, t text, d date) distributed by (i);
 insert into smallt2 select i%5, 'text ' || (i%10), '2011-01-01'::date + ((i%15) || ' days')::interval
 from generate_series(0, 49) i;
 
+set optimizer_segments = 3;
+
 -- HashAgg, Agg
 select d, count(*) from smallt group by d;
 explain analyze select d, count(*) from smallt group by d;
@@ -74,9 +76,7 @@ explain analyze select d, count(*) from smallt group by d limit 5;
 
 -- HashJoin
 select t1.* from smallt as t1, smallt as t2 where t1.i = t2.i;
-set optimizer_segments = 2;
 explain analyze select t1.* from smallt as t1, smallt as t2 where t1.i = t2.i;
-reset optimizer_segments;
 
 -- Rescan on HashJoin
 --select t1.* from (select t11.* from smallt as t11, smallt as t22 where t11.i = t22.i and t11.i < 2) as t1,
@@ -166,3 +166,4 @@ insert into eager_free_s select generate_series(1, 20), generate_series(6, 10), 
 insert into eager_free_t select generate_series(1, 30), generate_series(1, 6), generate_series(1, 5);
 
 select * from eager_free_t where t1 > (select min(r1) from eager_free_r where r2<t2 and r3 > (Select min(s3) from eager_free_s where s1<r1));
+reset optimizer_segments;

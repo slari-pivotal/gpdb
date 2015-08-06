@@ -32,6 +32,7 @@ INSERT INTO foo2 VALUES(1, 111);
 -- start_ignore
 create language plperlu;
 -- end_ignore
+set optimizer_segments = 3;
 --
 -- RETURNS SETOF foo2
 --
@@ -808,3 +809,4 @@ CREATE FUNCTION bad (f1 int, out f2 anyelement, out f3 anyarray)
 AS 'select $1, array[$1,$1]' LANGUAGE sql;
 ERROR:  cannot determine result data type
 DETAIL:  A function returning "anyarray" or "anyelement" must have at least one argument of either type.
+reset optimizer_segments;
