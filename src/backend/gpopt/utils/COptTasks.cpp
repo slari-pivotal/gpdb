@@ -707,7 +707,7 @@ COptTasks::PdrgPssLoad
 			pphDXL = CDXLUtils::PphdxlParseDXLFile(pmp, szPath, NULL);
 			if (NULL != pphDXL)
 			{
-				elog(LOG, "\n[OPT]: Using search strategy in (%s)", szPath);
+				elog(DEBUG2, "\n[OPT]: Using search strategy in (%s)", szPath);
 
 				pdrgpss = pphDXL->Pdrgpss();
 				pdrgpss->AddRef();
@@ -718,7 +718,7 @@ COptTasks::PdrgPssLoad
 	{
 		GPOS_RESET_EX;
 
-		elog(LOG, "\n[OPT]: Using default search strategy");
+		elog(DEBUG2, "\n[OPT]: Using default search strategy");
 	}
 	GPOS_CATCH_END;
 
