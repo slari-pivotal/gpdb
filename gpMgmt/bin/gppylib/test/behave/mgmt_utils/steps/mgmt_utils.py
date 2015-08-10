@@ -298,23 +298,27 @@ def impl(context, dir, dbconn):
             command = '%s -f %s'%(dbconn, os.path.join(dir,file))
             run_command(context, command)
 
-
-@given('the user "{USER}" creates filespace_config file for "{fs_name}" on host "{HOST}" with gpdb port "{PORT}" and config "{config_file}"')
-@then('the user "{USER}" creates filespace_config file for "{fs_name}" on host "{HOST}" with gpdb port "{PORT}" and config "{config_file}"')
-def impl(context, USER, HOST, PORT,fs_name,config_file): 
+@given('the user "{USER}" creates filespace_config file for "{fs_name}" on host "{HOST}" with gpdb port "{PORT}" and config "{config_file}" in "{dir}" directory')
+@then('the user "{USER}" creates filespace_config file for "{fs_name}" on host "{HOST}" with gpdb port "{PORT}" and config "{config_file}" in "{dir}" directory')
+def impl(context, USER, HOST, PORT,fs_name,config_file,dir):
     user = os.environ.get(USER)
     host = os.environ.get(HOST)
     port = os.environ.get(PORT)
-    create_gpfilespace_config(host,port, user, fs_name, config_file)
+    if not dir.startswith("/"):
+        dir = os.environ.get(dir)
+    config_file_path = dir + "/" + config_file
+    create_gpfilespace_config(host,port, user, fs_name, config_file_path, dir)
 
-
-@given('the user "{USER}" creates filespace on host "{HOST}" with gpdb port "{PORT}" and config "{config_file}"')
-@when('the user "{USER}" creates filespace on host "{HOST}" with gpdb port "{PORT}" and config "{config_file}"')
-def impl(context, USER, HOST, PORT, config_file): 
+@given('the user "{USER}" creates filespace on host "{HOST}" with gpdb port "{PORT}" and config "{config_file}" in "{dir}" directory')
+@when('the user "{USER}" creates filespace on host "{HOST}" with gpdb port "{PORT}" and config "{config_file}" in "{dir}" directory')
+def impl(context, USER, HOST, PORT, config_file, dir):
     user = os.environ.get(USER)
     host = os.environ.get(HOST)
     port = os.environ.get(PORT)
-    cmdStr = 'gpfilespace -h %s -p %s -U %s -c "%s"'%(host, port, user,config_file)
+    if not dir.startswith("/"):
+        dir = os.environ.get(dir)
+    config_file_path = dir + "/" + config_file
+    cmdStr = 'gpfilespace -h %s -p %s -U %s -c "%s"'%(host, port, user, config_file_path)
     run_command(context, cmdStr)
 
 
@@ -327,23 +331,26 @@ def impl(context, filepath, HOST, port):
 
 @given('the user starts the gpfdist on host "{HOST}" and port "{port}" in work directory "{dir}" from remote "{ctxt}"')
 @then('the user starts the gpfdist on host "{HOST}" and port "{port}" in work directory "{dir}" from remote "{ctxt}"')
-def impl(context, HOST, port, dir, ctxt): 
+def impl(context, HOST, port, dir, ctxt):
     host = os.environ.get(HOST)
     remote_gphome = os.environ.get('GPHOME')
-    gp_source_file = os.path.join(remote_gphome, 'greenplum_path.sh')    
-    gpfdist = Gpfdist('gpfdist on host %s'%host, dir, port, os.path.join('/tmp','gpfdist.pid'), int(ctxt), host, gp_source_file)
+    if not dir.startswith("/"):
+        dir = os.environ.get(dir)
+    gp_source_file = os.path.join(remote_gphome, 'greenplum_path.sh')
+    gpfdist = Gpfdist('gpfdist on host %s'%host, dir, port, os.path.join(dir,'gpfdist.pid'), int(ctxt), host, gp_source_file)
     gpfdist.startGpfdist()
 
 
 @given('the user stops the gpfdist on host "{HOST}" and port "{port}" in work directory "{dir}" from remote "{ctxt}"')
 @then('the user stops the gpfdist on host "{HOST}" and port "{port}" in work directory "{dir}" from remote "{ctxt}"')
-def impl(context, HOST, port, dir, ctxt): 
+def impl(context, HOST, port, dir, ctxt):
     host = os.environ.get(HOST)
     remote_gphome = os.environ.get('GPHOME')
+    if not dir.startswith("/"):
+        dir = os.environ.get(dir)
     gp_source_file = os.path.join(remote_gphome, 'greenplum_path.sh')
-    gpfdist = Gpfdist('gpfdist on host %s'%host, dir, port, os.path.join('/tmp','gpfdist.pid'), int(ctxt), host, gp_source_file)
+    gpfdist = Gpfdist('gpfdist on host %s'%host, dir, port, os.path.join(dir,'gpfdist.pid'), int(ctxt), host, gp_source_file)
     gpfdist.cleanupGpfdist()
-
 
 def parse_netbackup_params():
     current_path = os.path.realpath(__file__)

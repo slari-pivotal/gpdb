@@ -1094,11 +1094,15 @@ def modify_sql_file(file, hostport):
                 line = re.sub('(\d+)\.(\d+)\.(\d+)\.(\d+)\:(\d+)',hostport, line)
             print str(re.sub('\n','',line))
 
-def create_gpfilespace_config(host, port, user,fs_name, config_file):
+def create_gpfilespace_config(host, port, user,fs_name, config_file, working_dir='/tmp'):
     mirror_hosts = []
     primary_hosts = []
     standby_host = ''
     master_host = ''
+    fspath_master = working_dir + '/fs_master'
+    fspath_standby = working_dir + '/fs_standby'
+    fspath_primary = working_dir + '/fs_primary'
+    fspath_mirror = working_dir + '/fs_mirror'
     get_master_filespace_entry = 'psql -t -h %s -p %s -U %s -d template1 -c \" select hostname, dbid, fselocation from pg_filespace_entry, gp_segment_configuration where dbid=fsedbid and preferred_role =\'p\' and content=-1;\"'%(host, port, user)
     (rc, out, err) = run_cmd(get_master_filespace_entry)
     if rc != 0:
@@ -1114,7 +1118,7 @@ def create_gpfilespace_config(host, port, user,fs_name, config_file):
                 hostname = row[0]
                 master_host = hostname
                 dbid = row[1]
-                fs_loc = os.path.join('/tmp/fs_master',os.path.split(row[2])[1])
+                fs_loc = os.path.join(fspath_master,os.path.split(row[2])[1])
                 file.write(hostname+':'+dbid+':'+fs_loc)
                 file.write('\n')
         file.close()
@@ -1133,7 +1137,7 @@ def create_gpfilespace_config(host, port, user,fs_name, config_file):
                 hostname = row[0]
                 standby_host= hostname
                 dbid = row[1]
-                fs_loc = os.path.join('/tmp/fs_standby',os.path.split(row[2])[1])
+                fs_loc = os.path.join(fspath_standby,os.path.split(row[2])[1])
                 file.write(hostname+':'+dbid+':'+fs_loc)
                 file.write('\n')
         file.close()
@@ -1152,7 +1156,7 @@ def create_gpfilespace_config(host, port, user,fs_name, config_file):
                 hostname = row[0]
                 primary_hosts.append(hostname)
                 dbid = row[1]
-                fs_loc = os.path.join('/tmp/fs_primary',os.path.split(row[2])[1])
+                fs_loc = os.path.join(fspath_primary,os.path.split(row[2])[1])
                 file.write(hostname+':'+dbid+':'+fs_loc)
                 file.write('\n')
         file.close()
@@ -1171,21 +1175,21 @@ def create_gpfilespace_config(host, port, user,fs_name, config_file):
                 hostname = row[0]
                 mirror_hosts.append(hostname)
                 dbid = row[1]
-                fs_loc = os.path.join('/tmp/fs_mirror',os.path.split(row[2])[1])
+                fs_loc = os.path.join(fspath_mirror,os.path.split(row[2])[1])
                 file.write(hostname+':'+dbid+':'+fs_loc)
                 file.write('\n')
         file.close()
 
     for host in primary_hosts:
-        remove_dir(host,'/tmp/fs_primary')
-        create_dir(host,'/tmp/fs_primary')
+        remove_dir(host,fspath_primary)
+        create_dir(host,fspath_primary)
     for host in mirror_hosts:
-        remove_dir(host,'/tmp/fs_mirror')
-        create_dir(host,'/tmp/fs_mirror')
-    remove_dir(master_host,'/tmp/fs_master') 
-    remove_dir(standby_host,'/tmp/fs_standby')
-    create_dir(master_host,'/tmp/fs_master')
-    create_dir(standby_host,'/tmp/fs_standby')
+        remove_dir(host,fspath_mirror)
+        create_dir(host,fspath_mirror)
+    remove_dir(master_host,fspath_master)
+    remove_dir(standby_host,fspath_standby)
+    create_dir(master_host,fspath_master)
+    create_dir(standby_host,fspath_standby)
 
 def remove_dir(host, directory):
     cmd = 'gpssh -h %s -e \'rm -rf %s\''%(host, directory) 
