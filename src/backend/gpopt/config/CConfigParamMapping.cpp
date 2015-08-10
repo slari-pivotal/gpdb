@@ -331,13 +331,6 @@ CConfigParamMapping::SConfigMappingElem CConfigParamMapping::m_elem[] =
 		GPOS_WSZ_LIT("Prefer plans that expand multiple distinct aggregates into join of single distinct aggregate")
 		},
 
-        {
-        EopttraceCollapseCascadedUnionUnionAll,
-		&optimizer_nary_union_union_all,
-		false,  // m_fNegate
-		GPOS_WSZ_LIT("Support collapsing of cascaded union/union all into n-ary union/union all")
-        },
-
 		{
 		EopttraceDisablePushingCTEConsumerReqsToCTEProducer,
 		&optimizer_push_requirements_from_consumer_to_producer,
