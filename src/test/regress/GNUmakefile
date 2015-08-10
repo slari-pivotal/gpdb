@@ -13,7 +13,6 @@
 subdir = src/test/regress
 top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
-include $(top_builddir)/../releng/releng.mk
 
 contribdir = $(top_builddir)/contrib
 
@@ -230,7 +229,7 @@ upg2-setup:
 		-e 's/tablespace pg_global//g;' \
 		-e 's/oids=true, /oids=true/;' \
 		-e 's/\(,/(/;' \
- 		< $(srcdir)/data/upgrade43/upg2_catupgrade_43.sql.in \
+		< $(srcdir)/data/upgrade43/upg2_catupgrade_43.sql.in \
 		> data/upg_catupgrade_43.sql
 	@gpstringsubs.pl data/upg_catupgrade_43.sql
 
