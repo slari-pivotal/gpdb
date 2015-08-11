@@ -13,7 +13,7 @@
 void
 test__column_to_scan(void **state)
 {
-	AOCSFileSegInfo *segInfos[3];
+	AOCSFileSegInfo *segInfos[4];
 	int numcols = 3;
 	int col;
 
@@ -74,7 +74,7 @@ test__column_to_scan(void **state)
 	segInfos[3]->vpinfo.entry[2].eof_uncompressed = 85;
 
 	/* Column 0 (vpe index 0) is the smallest (total eof = 120 + 200) */
-	col = column_to_scan(segInfos, 3, numcols);
+	col = column_to_scan(segInfos, 4, numcols);
 	assert_int_equal(col, 0);
 }
 
