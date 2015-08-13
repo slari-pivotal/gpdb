@@ -1846,6 +1846,7 @@ static void checkPgDir2(const char *dir)
 		pfree(path);
 		/* quit all processes and exit */
 		pmdie(SIGQUIT);
+		return;
 	}
 	
 	pfree(path);
