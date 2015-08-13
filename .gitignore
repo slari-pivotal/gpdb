@@ -43,3 +43,4 @@ configure.lineno
 Debug
 Release
 pgsql.sln
+cscope.*

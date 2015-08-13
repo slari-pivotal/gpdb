@@ -440,7 +440,7 @@ HasDropTransaction(bool allDbs)
 		{
 			if (proc->inDropTransaction && proc != MyProc)
 			{
-				elog(DEBUG3, "Found drop transaction: "
+				elog((Debug_print_snapshot_dtm ? LOG : DEBUG3), "Found drop transaction: "
 					"database %d, pid %d, xid %d, xmin %d",
 					proc->databaseId, proc->pid, proc->xid, proc->xmin);
 				result = true;
@@ -479,7 +479,7 @@ HasSerializableBackends(bool allDbs)
 		{
 			if (proc->serializableIsoLevel && proc != MyProc)
 			{
-				elog(DEBUG3, "Found serializable transaction: "
+				elog((Debug_print_snapshot_dtm ? LOG : DEBUG3), "Found serializable transaction: "
 					"database %d, pid %d, xid %d, xmin %d",
 					proc->databaseId, proc->pid, proc->xid, proc->xmin);
 				result = true;
@@ -1031,7 +1031,7 @@ GetSnapshotData(Snapshot snapshot, bool serializable)
 				
 				SetSharedTransactionId();
 
-				elog(DEBUG5, "Reader qExec setting shared local snapshot to: xmin: %d xmax: %d curcid: %d",
+				elog((Debug_print_snapshot_dtm ? LOG : DEBUG5), "Reader qExec setting shared local snapshot to: xmin: %d xmax: %d curcid: %d",
 					 snapshot->xmin, snapshot->xmax, snapshot->curcid);
 				
 				if (Debug_print_full_dtm)
@@ -1291,7 +1291,7 @@ GetSnapshotData(Snapshot snapshot, bool serializable)
 	{
 		MyProc->serializableIsoLevel = true;
 
-		elog(DEBUG3, "Got serializable snapshot: "
+		elog((Debug_print_snapshot_dtm ? LOG : DEBUG3), "Got serializable snapshot: "
 			"database %d, pid %d, xid %d, xmin %d",
 			MyProc->databaseId, MyProc->pid, MyProc->xid, MyProc->xmin);
 	}

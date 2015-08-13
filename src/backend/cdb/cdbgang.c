@@ -258,7 +258,10 @@ create_gang_retry:
 	 * If the connection fails, mark it (locally) as unavailable
 	 * If no database serving a segindex is available, fail the user's connection request.
 	 */
-	elog(DEBUG1, "createGang type = %d, gang_id %d, size %d", type, gang_id, size);
+	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
+	{
+		elog(LOG, "createGang type = %d, gang_id %d, size %d", type, gang_id, size);
+	}
 	if (type == GANGTYPE_PRIMARY_WRITER)
 		Assert(gang_id == PRIMARY_WRITER_GANG_ID);
 
@@ -301,7 +304,10 @@ create_gang_retry:
 		 */
 		segdbDesc = &newGangDefinition->db_descriptors[i];
 
-		elog(DEBUG2, "createGang: segment %d/%d descriptor %p (gangdef size %d)", i, segdb_count, segdbDesc, newGangDefinition->size);
+		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
+		{
+			elog(LOG, "createGang: segment %d/%d descriptor %p (gangdef size %d)", i, segdb_count, segdbDesc, newGangDefinition->size);
+		}
 
 		/*
 		 * This function handles putting the segdbDesc into the proper thread's Parms
@@ -333,7 +339,7 @@ create_gang_retry:
 		pParms->i_am_superuser = connectAsSuperUser;
 
 		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-			elog(DEBUG5, "createGang creating thread %d of %d for libpq connections",
+			elog(LOG, "createGang creating thread %d of %d for libpq connections",
 				 i + 1, threadCount);
 
 		pthread_err = gp_pthread_create(&pParms->thread, thread_DoConnect, pParms, "createGang");
@@ -371,7 +377,7 @@ create_gang_retry:
 		DoConnectParms *pParms = &doConnectParmsAr[i];
 
 		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-			elog(DEBUG5, "joining to thread %d of %d for libpq connections",
+			elog(LOG, "joining to thread %d of %d for libpq connections",
 				 i + 1, threadCount);
 
 		if (0 != pthread_join(pParms->thread, NULL))
@@ -491,7 +497,7 @@ create_gang_retry:
 		{
 			if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
 			{
-				elog(DEBUG1, "createGang: gang creation failed, but retryable.");
+				elog(LOG, "createGang: gang creation failed, but retryable.");
 			}
 
 			if (gp_gang_creation_retry_count)
@@ -717,7 +723,10 @@ buildGangDefinition(GangType type, int gang_id, int size, int content, char *por
 	/* if mirroring is not configured */
 	if (cdb_component_dbs->total_segment_dbs == cdb_component_dbs->total_segments)
 	{
-		elog(DEBUG2, "building Gang: mirroring not configured");
+		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
+		{
+			elog(LOG, "building Gang: mirroring not configured");
+		}
 		disableFTS();
 		mirroringNotConfigured = true;
 	}
@@ -1374,11 +1383,12 @@ allocateGang(GangType type, int size, int content, char *portal_name)
 	insist_log(IsTransactionOrTransactionBlock(), "cannot allocate segworker group outside of transaction");
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG4, "allocateGang for portal %s: allocatedReaderGangsN %d, availableReaderGangsN %d",
+	{
+		elog(LOG, "allocateGang for portal %s: allocatedReaderGangsN %d, availableReaderGangsN %d",
 			 (portal_name ? portal_name : "<unnamed>"),
 			 list_length(allocatedReaderGangsN),
 			 list_length(availableReaderGangsN));
-
+	}
 
 
 	if (GangContext == NULL)
@@ -1409,7 +1419,7 @@ allocateGang(GangType type, int size, int content, char *portal_name)
 														 * already created */
 				{
 					if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-						elog(DEBUG4, "Reusing an available reader N-gang for %s", (portal_name ? portal_name : "unnamed portal"));
+						elog(LOG, "Reusing an available reader N-gang for %s", (portal_name ? portal_name : "unnamed portal"));
 
 					gp = linitial(availableReaderGangsN);
 					Assert(gp != NULL);
@@ -1435,7 +1445,7 @@ allocateGang(GangType type, int size, int content, char *portal_name)
 					 */
 				{
 					if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-						elog(DEBUG4, "Creating a new reader N-gang for %s", (portal_name ? portal_name : "unnamed portal"));
+						elog(LOG, "Creating a new reader N-gang for %s", (portal_name ? portal_name : "unnamed portal"));
 
 					for (int attempts = 0; (attempts < gp_gang_creation_retry_count && gp == NULL); attempts++)
 					{
@@ -1487,7 +1497,7 @@ allocateGang(GangType type, int size, int content, char *portal_name)
 					if (cell)
 					{
 						if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-							elog(DEBUG4, "reusing an available reader 1-gang for seg%d, portal: %s", content, (portal_name ? portal_name : "unnamed"));
+							elog(LOG, "reusing an available reader 1-gang for seg%d, portal: %s", content, (portal_name ? portal_name : "unnamed"));
 
 						availableReaderGangs1 =
 							list_delete_cell(availableReaderGangs1, cell, prevcell);
@@ -1511,7 +1521,7 @@ allocateGang(GangType type, int size, int content, char *portal_name)
 				if (gp == NULL) /* no pre-created gang exists */
 				{
 					if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-						elog(DEBUG4, "creating a new reader 1-gang for seg%d, portal: %s", content, (portal_name ? portal_name : "unnamed"));
+						elog(LOG, "creating a new reader 1-gang for seg%d, portal: %s", content, (portal_name ? portal_name : "unnamed"));
 					for (int attempts = 0; (attempts < gp_gang_creation_retry_count && (gp == NULL || gp->size !=size)); attempts++)
 					{
 						gp = createGang(type, gang_id_counter++, size, content, portal_name);
@@ -1546,7 +1556,7 @@ allocateGang(GangType type, int size, int content, char *portal_name)
 	}
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG4,
+		elog(LOG,
 			 "allocateGang on return: allocatedReaderGangsN %d, availableReaderGangsN %d",
 			 list_length(allocatedReaderGangsN),
 			 list_length(availableReaderGangsN));
@@ -1622,7 +1632,7 @@ allocateWriterGang()
 	else
 	{
 		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-			elog(DEBUG4, "Reusing an existing primary writer gang");
+			elog(LOG, "Reusing an existing primary writer gang");
 	}
 
 	insist_log(writer_gang != NULL, "no primary segworker group allocated");
@@ -1732,7 +1742,12 @@ findGangById(int gang_id)
 		insist_log(false, "could not find segworker group %d", gang_id);
 	}
 	else
-		elog(DEBUG1, "could not find segworker group %d", gang_id);
+	{
+		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
+		{
+			elog(LOG, "could not find segworker group %d", gang_id);
+		}
+	}
 
 	return NULL;
 
@@ -1772,7 +1787,7 @@ getCdbProcessList(Gang *gang, int sliceIndex, DirectDispatchInfo *directDispatch
 	Assert(gang != NULL);
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG3, "getCdbProcessList slice%d gangtype=%d gangsize=%d",
+		elog(LOG, "getCdbProcessList slice%d gangtype=%d gangsize=%d",
 			 sliceIndex, gang->type, gang->size);
 
 	if (gang != NULL && gang->type != GANGTYPE_UNALLOCATED)
@@ -1853,7 +1868,7 @@ getCdbProcessList(Gang *gang, int sliceIndex, DirectDispatchInfo *directDispatch
 			process->contentid = segdbDesc->segindex;
 
 			if (gp_log_gang >= GPVARS_VERBOSITY_VERBOSE || DEBUG4 >= log_min_messages)
-				elog(DEBUG1, "Gang assignment (gang_id %d): slice%d seg%d %s:%d pid=%d",
+				elog(LOG, "Gang assignment (gang_id %d): slice%d seg%d %s:%d pid=%d",
 					 gang->gang_id,
 					 sliceIndex,
 					 process->contentid,
@@ -1956,10 +1971,10 @@ cleanupGang(Gang *gp)
 	if (gp == NULL)
 		return true;
 
-	elog(DEBUG5, "cleaning up gang %d", gp->gang_id);
-
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG4, "cleanupGang: cleaning gang type %d size %d, was used for portal: %s", gp->type, gp->size, (gp->portal_name ? gp->portal_name : "(unnamed)"));
+	{
+		elog(LOG, "cleanupGang: cleaning gang id %d type %d size %d, was used for portal: %s", gp->gang_id, gp->type, gp->size, (gp->portal_name ? gp->portal_name : "(unnamed)"));
+	}
 
 	/* disassociate this gang with any portal that it may have belonged to */
 	if (gp->portal_name)
@@ -1968,7 +1983,9 @@ cleanupGang(Gang *gp)
 	gp->portal_name = NULL;
 
 	if (gp->active)
-		elog(DEBUG2, "cleanupGang called on a gang that is active");
+	{
+		elog((gp_log_gang >= GPVARS_VERBOSITY_DEBUG ? LOG : DEBUG2), "cleanupGang called on a gang that is active");
+	}
 
 	/*
 	 * if the process is in the middle of blowing up... then we don't do
@@ -2048,7 +2065,7 @@ cleanupGang(Gang *gp)
 	gp->allocated = false;
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG5, "cleanupGang done");
+		elog(LOG, "cleanupGang done");
 	return true;
 }
 
@@ -2087,12 +2104,12 @@ void
 cleanupIdleReaderGangs(void)
 {
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG4, "cleanupIdleReaderGangs beginning");
+		elog(LOG, "cleanupIdleReaderGangs beginning");
 
 	disconnectAndDestroyAllReaderGangs(false);
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG4, "cleanupIdleReaderGangs done");
+		elog(LOG, "cleanupIdleReaderGangs done");
 
 	return;
 }
@@ -2106,7 +2123,7 @@ void
 cleanupAllIdleGangs(void)
 {
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG4, "cleanupAllIdleGangs beginning");
+		elog(LOG, "cleanupAllIdleGangs beginning");
 
 	/*
 	 * It's always safe to get rid of the reader gangs.
@@ -2147,14 +2164,14 @@ cleanupAllIdleGangs(void)
 		}
 		else
 			if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-				elog(DEBUG4,"TempNameSpaceOid is valid, can't free writer");
+				elog(LOG, "TempNameSpaceOid is valid, can't free writer");
 	}
 	else
 		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-			elog(DEBUG4,"We are in a transaction, can't free writer");
+			elog(LOG, "We are in a transaction, can't free writer");
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG4, "cleanupAllIdleGangs done");
+		elog(LOG, "cleanupAllIdleGangs done");
 
 	return;
 }
@@ -2239,12 +2256,18 @@ cleanupPortalGangs(Portal portal)
 	if (portal->name && strcmp(portal->name, "") != 0)
 	{
 		portal_name = portal->name;
-		elog(DEBUG3, "cleanupPortalGangs %s", portal_name);
+		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
+		{
+			elog(LOG, "cleanupPortalGangs %s", portal_name);
+		}
 	}
 	else
 	{
 		portal_name = NULL;
-		elog(DEBUG3, "cleanupPortalGangs (unamed portal)");
+		if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
+		{
+			elog(LOG, "cleanupPortalGangs (unamed portal)");
+		}
 	}
 
 
@@ -2256,11 +2279,14 @@ cleanupPortalGangs(Portal portal)
 	availableReaderGangsN = cleanupPortalGangList(availableReaderGangsN, gp_cached_gang_threshold);
 	availableReaderGangs1 = cleanupPortalGangList(availableReaderGangs1, MAX_CACHED_1_GANGS);
 
-	elog(DEBUG4, "cleanupPortalGangs '%s'. Reader gang inventory: "
-		 "allocatedN=%d availableN=%d allocated1=%d available1=%d",
-		 (portal_name ? portal_name : "unnamed portal"),
-	  list_length(allocatedReaderGangsN), list_length(availableReaderGangsN),
-	 list_length(allocatedReaderGangs1), list_length(availableReaderGangs1));
+	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
+	{
+		elog(LOG, "cleanupPortalGangs '%s'. Reader gang inventory: "
+			 "allocatedN=%d availableN=%d allocated1=%d available1=%d",
+		 	(portal_name ? portal_name : "unnamed portal"),
+	  		 list_length(allocatedReaderGangsN), list_length(availableReaderGangsN),
+			 list_length(allocatedReaderGangs1), list_length(availableReaderGangs1));
+	}
 
 	MemoryContextSwitchTo(oldContext);
 }
@@ -2274,10 +2300,10 @@ disconnectAndDestroyGang(Gang *gp)
 		return;
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG5, "disconnectAndDestroyGang entered");
+		elog(LOG, "disconnectAndDestroyGang entered: id = %d", gp->gang_id);
 
 	if (gp->active || gp->allocated)
-		elog(DEBUG2, "Warning: disconnectAndDestroyGang called on an %s gang",
+		elog(gp_log_gang >= GPVARS_VERBOSITY_DEBUG ? LOG : DEBUG2, "Warning: disconnectAndDestroyGang called on an %s gang",
 			 gp->active ? "active" : "allocated");
 
 	if (gp->gang_id < 1 || gp->gang_id > 100000000 || gp->type > 10 || gp->size > 100000)
@@ -2306,7 +2332,7 @@ disconnectAndDestroyGang(Gang *gp)
 			PGTransactionStatusType status =
 			PQtransactionStatus(segdbDesc->conn);
 
-			elog((Debug_print_full_dtm ? LOG : DEBUG5),
+			elog((Debug_print_full_dtm ? LOG : (gp_log_gang >= GPVARS_VERBOSITY_TERSE ? LOG : DEBUG5)),
 				 "disconnectAndDestroyGang: got QEDistributedTransactionId = %u, QECommandId = %u, and QEDirty = %s",
 				 segdbDesc->conn->QEWriter_DistributedTransactionId,
 				 segdbDesc->conn->QEWriter_CommandId,
@@ -2337,7 +2363,7 @@ disconnectAndDestroyGang(Gang *gp)
 						ts = "invalid transaction status";
 						break;
 				}
-				elog(DEBUG3, "Finishing connection with %s; %s",
+				elog(LOG, "Finishing connection with %s; %s",
 					 segdbDesc->whoami, ts);
 			}
 
@@ -2346,7 +2372,7 @@ disconnectAndDestroyGang(Gang *gp)
 				char		errbuf[256];
 				PGcancel   *cn = PQgetCancel(segdbDesc->conn);
 
-				if (Debug_cancel_print)
+				if (Debug_cancel_print || gp_log_gang >= GPVARS_VERBOSITY_TERSE)
 					elog(LOG, "Calling PQcancel for %s", segdbDesc->whoami);
 
 				if (PQcancel(cn, errbuf, 256) == 0)
@@ -2386,8 +2412,12 @@ disconnectAndDestroyGang(Gang *gp)
 		gp->segment_database_info = NULL;
 	}
 
-	pfree(gp->db_descriptors);
-	gp->db_descriptors = NULL;
+	if (gp->db_descriptors != NULL)
+	{
+		pfree(gp->db_descriptors);
+		gp->db_descriptors = NULL;
+	}
+
 	gp->size = 0;
 	if (gp->portal_name != NULL)
 		pfree(gp->portal_name);
@@ -2397,7 +2427,7 @@ disconnectAndDestroyGang(Gang *gp)
 	 * this is confusing, gp is local variable, no need to null it. gp = NULL;
 	 */
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG5, "disconnectAndDestroyGang done");
+		elog(LOG, "disconnectAndDestroyGang done");
 }
 
 /*
@@ -2420,7 +2450,7 @@ freeGangsForPortal(char *portal_name)
 		return;
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG4, "freeGangsForPortal '%s'. Reader gang inventory: "
+		elog(LOG, "freeGangsForPortal '%s'. Reader gang inventory: "
 			 "allocatedN=%d availableN=%d allocated1=%d available1=%d",
 			 (portal_name ? portal_name : "unnamed portal"),
 			 list_length(allocatedReaderGangsN), list_length(availableReaderGangsN),
@@ -2469,7 +2499,7 @@ freeGangsForPortal(char *portal_name)
 			if (isTargetPortal(gp->portal_name, portal_name))
 			{
 				if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-					elog(DEBUG5, "Returning a reader N-gang to the available list");
+					elog(LOG, "Returning a reader N-gang to the available list");
 
 				/* cur_item must be removed */
 				allocatedReaderGangsN = list_delete_cell(allocatedReaderGangsN, cur_item, prev_item);
@@ -2486,7 +2516,7 @@ freeGangsForPortal(char *portal_name)
 			else
 			{
 				if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-					elog(DEBUG5, "Skipping the release of a reader N-gang. It is used by another portal");
+					elog(LOG, "Skipping the release of a reader N-gang. It is used by another portal");
 
 				/* cur_item must be preserved */
 				prev_item = cur_item;
@@ -2509,7 +2539,7 @@ freeGangsForPortal(char *portal_name)
 			if (isTargetPortal(gp->portal_name, portal_name))
 			{
 				if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-					elog(DEBUG5, "Returning a reader 1-gang to the available list");
+					elog(LOG, "Returning a reader 1-gang to the available list");
 
 				/* cur_item must be removed */
 				allocatedReaderGangs1 = list_delete_cell(allocatedReaderGangs1, cur_item, prev_item);
@@ -2526,7 +2556,7 @@ freeGangsForPortal(char *portal_name)
 			else
 			{
 				if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-					elog(DEBUG5, "Skipping the release of a reader 1-gang. It is used by another portal");
+					elog(LOG, "Skipping the release of a reader 1-gang. It is used by another portal");
 
 				/* cur_item must be preserved */
 				prev_item = cur_item;
@@ -2755,7 +2785,7 @@ disconnectAndDestroyAllGangs(void)
 		return;
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG2, "disconnectAndDestroyAllGangs");
+		elog(LOG, "disconnectAndDestroyAllGangs");
 
 	/* for now, destroy all readers, regardless of the portal that owns them */
 	disconnectAndDestroyAllReaderGangs(true);
@@ -2764,7 +2794,7 @@ disconnectAndDestroyAllGangs(void)
 	primaryWriterGang = NULL;
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-		elog(DEBUG3, "disconnectAndDestroyAllGangs done");
+		elog(LOG, "disconnectAndDestroyAllGangs done");
 }
 
 bool
