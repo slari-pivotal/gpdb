@@ -226,26 +226,6 @@ class CatCoreGen(object):
                 """{attnums}, {nkeys}, """
                 """{syscacheid}}}""".format(**index))
 
-    def generate_fkey(self, relname, fkey):
-        ref_table = fkey['pktable']
-        ref_index = self.index_pointer(ref_table, fkey['pkcols'])
-
-        attnums = ['InvalidAttrNumber'] * MAX_SCAN_NUM
-        for i, fkcol in enumerate(fkey['fkcols']):
-            attnums[i] = self._catdump.attname_to_anum(relname, fkcol)
-
-        attnums = '{\n\t\t' + ',\n\t\t'.join(attnums) + '\n\t}'
-
-        # ref_relname should be a pointer to relation, but because it's
-        # a circular definition, we end up having a char pointer instead.
-        return ("""\t{{{attnums}, {attnumlen}, """
-                """"{ref_relname}", {ref_index}}}""".format(
-                    ref_relname=ref_table,
-                    ref_index=ref_index,
-                    attnums=attnums,
-                    attnumlen=len(fkey['fkcols'])
-                    ))
-
     def generate_relation_attributes(self, relname):
         cols = self._catdump.get_cols_by_relname(relname)
         attrList = []
@@ -270,18 +250,6 @@ class CatCoreGen(object):
                 IndexList=",\n".join(indexList)
                 )
 
-    def generate_relation_fkeys(self, relname):
-        fkeys = self._catdump.get_fklist_by_relname(relname)
-        fkeyList = []
-        for fkey in fkeys:
-            fkeytext = self.generate_fkey(relname, fkey)
-            fkeyList.append(fkeytext)
-
-        return CatCoreTableRelationFKeyTemplate.format(
-                RelName=relname,
-                FKeyList=",\n".join(fkeyList)
-                )
-
     def generate_relation(self, relname):
         result = []
         catdump = self._catdump
@@ -289,13 +257,11 @@ class CatCoreGen(object):
         return ("""{{"{relname}", {CamelCaseRelationId}, """
                     """{relname}Attributes, {natts}, """
                     """{relname}Indexes, {nindexes}, """
-                    """{relname}ForeignKeys, {nfkeys}, """
                     """{hasoid}}}""").format(
                     relname=relname,
                     CamelCaseRelationId=catdump.CamelCaseRelationId(relname),
                     natts=len(catdump.get_cols_by_relname(relname)),
                     nindexes=len(catdump.get_indexes_by_relname(relname)),
-                    nfkeys=len(catdump.get_fklist_by_relname(relname)),
                     hasoid="true" if catdump.rel_has_oid(relname) else "false"
                     )
 
@@ -341,12 +307,6 @@ class CatCoreGen(object):
             text = self.generate_relation_indexes(relname)
             indexList.append(text)
 
-        # generate fkey array.
-        fkeyList = []
-        for relname in relnames:
-            text = self.generate_relation_fkeys(relname)
-            fkeyList.append(text)
-
         # generate relation array.
         relationList = []
         for relname in relnames:
@@ -366,11 +326,9 @@ class CatCoreGen(object):
                         AttributeList="\n".join(attributeList),
                         OidTypePointer=oidTypePointer,
                         IndexList="\n".join(indexList),
-                        FKeyList="\n".join(fkeyList),
                         RelationList=",\n".join(relationList),
                         RelationSize=len(relationList),
                         TypeList=",\n".join(typeList),
-                        TypeSize=len(typeList),
                         ProgName=sys.argv[0],
                         GenerateTime=datetime.datetime.utcnow()
                         )
@@ -456,10 +414,9 @@ CatCoreTableTemplate = """
 #include "utils/fmgroids.h"
 #include "utils/syscache.h"
 
-const CatCoreType CatCoreTypes[] = {{
+static const CatCoreType CatCoreTypes[] = {{
 {TypeList}
 }};
-const int CatCoreTypeSize = {TypeSize};
 
 {AttributeList}
 
@@ -469,29 +426,21 @@ const CatCoreAttr TableOidAttr = {{
 
 {IndexList}
 
-{FKeyList}
-
-const CatCoreRelation CatCoreRelations[] = {{
+const int CatCoreRelationSize = {RelationSize};
+const CatCoreRelation CatCoreRelations[{RelationSize}] = {{
 {RelationList}
 }};
-const int CatCoreRelationSize = {RelationSize};
 """.lstrip()
 
 CatCoreTableRelationAttrTemplate = """
-const CatCoreAttr {RelName}Attributes[] = {{
+static const CatCoreAttr {RelName}Attributes[] = {{
 {AttrList}
 }};
 """.lstrip()
 
 CatCoreTableRelationIndexTemplate = """
-const CatCoreIndex {RelName}Indexes[] = {{
+static const CatCoreIndex {RelName}Indexes[] = {{
 {IndexList}
-}};
-""".lstrip()
-
-CatCoreTableRelationFKeyTemplate = """
-const CatCoreFKey {RelName}ForeignKeys[] = {{
-{FKeyList}
 }};
 """.lstrip()
 if __name__ == '__main__':

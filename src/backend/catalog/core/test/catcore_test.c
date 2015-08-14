@@ -54,29 +54,6 @@ test__catcore_index_max_scan_num(void **state)
 }
 
 /*
- * FKey nkeys should be <= MAX_SCAN_NUM
- */
-void
-test__catcore_fkey_max_scan_num(void **state)
-{
-	int			i, j;
-
-	for (i = 0; i < CatCoreRelationSize; i++)
-	{
-		const CatCoreRelation	   *relation;
-
-		relation = &CatCoreRelations[i];
-		for (j = 0; j < relation->nfkeys; j++)
-		{
-			const CatCoreFKey	   *fkey;
-
-			fkey = &relation->fkeys[j];
-			assert_true(fkey->nkeys <= MAX_SCAN_NUM);
-		}
-	}
-}
-
-/*
  * OID column should be found if available.
  */
 void
@@ -126,7 +103,6 @@ main(int argc, char* argv[])
 	const UnitTest tests[] = {
 			unit_test(test__catcore_relation_ordered),
 			unit_test(test__catcore_index_max_scan_num),
-			unit_test(test__catcore_fkey_max_scan_num),
 			unit_test(test__catcore_oid_attr),
 			unit_test(test__catcore_lookup_attnum),
 	};

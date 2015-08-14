@@ -61,14 +61,6 @@ typedef struct CatCoreIndex
 	int			syscacheid;		/* syscache id if available.  -1 otherwise */
 } CatCoreIndex;
 
-typedef struct CatCoreFKey
-{
-	AttrNumber	attnums[MAX_SCAN_NUM];
-	int			nkeys;
-	const char *refrelname;
-	const CatCoreIndex *refindex;
-} CatCoreFKey;
-
 /*
  * Relation in the catalog.
  * This is only for tables, and index relations are not included.
@@ -81,8 +73,6 @@ typedef struct CatCoreRelation
 	int			natts;			/* number of attributes */
 	const CatCoreIndex *indexes;/* pointer to index array */
 	int			nindexes;		/* number of indexes */
-	const CatCoreFKey *fkeys;	/* pointer to foreign key array */
-	int			nfkeys;			/* number of fkeys */
 	bool		hasoid;			/* true if this table has oid column */
 } CatCoreRelation;
 
@@ -93,8 +83,6 @@ typedef struct CatCoreRelation
 extern const CatCoreAttr TableOidAttr;
 extern const CatCoreRelation CatCoreRelations[];
 extern const int CatCoreRelationSize;
-extern const CatCoreType CatCoreTypes[];
-extern const int CatCoreTypeSize;
 
 /* catcore.c */
 extern const CatCoreRelation *catcore_lookup_rel(char *name);
