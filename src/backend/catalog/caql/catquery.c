@@ -11,16 +11,8 @@
  */
 #include "postgres.h"
 
-#include <math.h>
-#include <fcntl.h>
-#include <locale.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "access/genam.h"
-#include "access/heapam.h"
-#include "access/relscan.h"
-#include "access/transam.h"
 
 #include "catalog/caqlparse.h"
 #include "catalog/catalog.h"
@@ -29,11 +21,9 @@
 #include "catalog/pg_aggregate.h"
 #include "catalog/pg_amop.h"
 #include "catalog/pg_amproc.h"
-#include "catalog/pg_appendonly_alter_column.h"
 #include "catalog/pg_attrdef.h"
 #include "catalog/pg_auth_members.h"
 #include "catalog/pg_authid.h"
-#include "catalog/pg_autovacuum.h"
 #include "catalog/pg_cast.h"
 #include "catalog/pg_class.h"
 #include "catalog/pg_constraint.h"
@@ -68,22 +58,18 @@
 #include "catalog/pg_tidycat.h"
 
 #include "catalog/gp_configuration.h"
-#include "catalog/gp_configuration.h"
 #include "catalog/gp_segment_config.h"
 #include "catalog/gp_san_config.h"
 
 #include "catalog/gp_fastsequence.h"
-#include "catalog/aoblkdir.h"
 
 #include "catalog/gp_persistent.h"
 #include "catalog/gp_global_sequence.h"
 #include "catalog/gp_id.h"
 #include "catalog/gp_version.h"
-#include "catalog/toasting.h"
 #include "catalog/gp_policy.h"
 
 #include "miscadmin.h"
-#include "storage/fd.h"
 #include "utils/fmgroids.h"
 #include "utils/relcache.h"
 #include "utils/lsyscache.h"
@@ -106,13 +92,15 @@ static void caql_UpdateIndexes(cqContext	*pCtx,
 (SysCacheGetAttr((pCtx)->cq_cacheId, (tup), (attnum), (isnull))) : \
 (heap_getattr((tup), (attnum), (pCtx)->cq_tupdesc, (isnull))))
 
-#define caql_heapclose(pCtx) \
-if (!(pCtx)->cq_externrel) { \
-heap_close((pCtx)->cq_heap_rel, (pCtx)->cq_lockmode); \
-(pCtx)->cq_heap_rel = InvalidRelation; } else
-
-/* NOTE: caql_iud_switch locking removed */
-#define caql_iud_switch(pctx, isiud, oldtup, newtup, dontWait) 
+static void
+caql_heapclose(cqContext *pCtx)
+{
+	if (!pCtx->cq_externrel)
+	{
+		heap_close(pCtx->cq_heap_rel, pCtx->cq_lockmode);
+		pCtx->cq_heap_rel = InvalidRelation;
+	}
+}
 
 static bool
 is_builtin_object(cqContext *pCtx, HeapTuple tuple)
@@ -330,26 +318,6 @@ cqContext	*caql_lockmode(cqContext *pCtx, LOCKMODE lm)
 }
 
 /* ----------------------------------------------------------------
- * caql_PKLOCK()
- * 
- * Lock the primary key(s) for all fetched tuples of the underlying
- * relation.  If bExclusive is true, gets an exclusive lock.
- * If bExclusive is true, gets an exclusive lock on the primary key(s),
- * and share locks (nowait) on any foreign keys.
- * If bExclusive is false, gets a share lock on the primary key(s) only.
- * 
- * NOTE: Waits for all primary key locks.    
- * ----------------------------------------------------------------
- */
-
-cqContext	*caql_PKLOCK(cqContext *pCtx, bool bExclusive)
-{
-	pCtx->cq_setpklock	 = true;
-	pCtx->cq_pklock_excl = bExclusive;
-	return (pCtx);
-}
-
-/* ----------------------------------------------------------------
  * caql_snapshot()
  * 
  * Change the default snapshot (SnapshotNow) associated with the 
@@ -559,15 +527,7 @@ int caql_getcount(cqContext *pCtx0, cq_list *pcql)
 			ii++;
 			pCtx->cq_lasttup = tuple;
 			if (pchn->bDelete)
-			{
-				caql_iud_switch(pCtx, 0, tuple, NULL, true /* dontWait */);
 				simple_heap_delete(rel, &tuple->t_self);
-			}
-			else
-			{
-				if (pCtx->cq_setpklock)
-					caql_iud_switch(pCtx, 0, tuple, NULL, false /* Wait */);
-			}
 
 			ReleaseSysCache(tuple);
 			/* only one */
@@ -579,10 +539,9 @@ int caql_getcount(cqContext *pCtx0, cq_list *pcql)
 	while (HeapTupleIsValid(tuple = systable_getnext(pCtx->cq_sysScan)))
 	{
 		disable_catalog_check(pCtx, tuple);
-		if (HeapTupleIsValid(tuple) && (pchn->bDelete || pCtx->cq_setpklock))
+		if (HeapTupleIsValid(tuple) && pchn->bDelete)
 		{
 			pCtx->cq_lasttup = tuple;
-			caql_iud_switch(pCtx, 0, tuple, NULL, true /* dontWait */);
 			if (pchn->bDelete)
 				simple_heap_delete(rel, &tuple->t_self);
 		}
@@ -650,9 +609,6 @@ HeapTuple caql_getfirst_only(cqContext *pCtx0, bool *pbOnly, cq_list *pcql)
 
 		pCtx->cq_lasttup = newTup; /* need this for update/delete */
 
-		if (pCtx->cq_setpklock)
-			caql_iud_switch(pCtx, 0, newTup, NULL, false /* Wait */);
-
 		return (newTup);
 	}
 
@@ -671,9 +627,6 @@ HeapTuple caql_getfirst_only(cqContext *pCtx0, bool *pbOnly, cq_list *pcql)
 	}
 	systable_endscan(pCtx->cq_sysScan); 
 	caql_heapclose(pCtx);
-
-	if (pCtx->cq_setpklock)
-		caql_iud_switch(pCtx, 0, newTup, NULL, false /* Wait */);
 
 	pCtx->cq_lasttup = newTup; /* need this for update/delete */
 	return (newTup);
@@ -831,9 +784,6 @@ HeapTuple caql_getnext(cqContext *pCtx)
 
 	disable_catalog_check(pCtx, tuple);
 
-	if (pCtx->cq_setpklock)
-		caql_iud_switch(pCtx, 0, tuple, NULL, false /* Wait */);
-
 	pCtx->cq_lasttup = tuple; /* need this for ReleaseSysCache */
 
 	return (tuple);
@@ -875,9 +825,6 @@ HeapTuple caql_getprev(cqContext *pCtx)
 	}
 
 	disable_catalog_check(pCtx, tuple);
-
-	if (pCtx->cq_setpklock)
-		caql_iud_switch(pCtx, 0, tuple, NULL, false /* Wait */);
 
 	pCtx->cq_lasttup = tuple; /* need this for ReleaseSysCache */
 
@@ -968,10 +915,7 @@ void caql_delete_current(cqContext *pCtx)
 
 	disable_catalog_check(pCtx, pCtx->cq_lasttup);
 	if (HeapTupleIsValid(pCtx->cq_lasttup))
-	{
-		caql_iud_switch(pCtx, 0, pCtx->cq_lasttup, NULL, true /* dontWait */);
 		simple_heap_delete(rel, &(pCtx->cq_lasttup)->t_self);
-	}
 }
 
 /* ----------------------------------------------------------------
@@ -991,13 +935,11 @@ Oid caql_insert(cqContext *pCtx, HeapTuple tup)
 
 	disable_catalog_check(pCtx, tup);
 
-	{
-		caql_iud_switch(pCtx, 1, NULL, tup, true /* dontWait */);
-		result = simple_heap_insert(rel, tup);
+	result = simple_heap_insert(rel, tup);
 
-		/* keep the catalog indexes up to date (if has any) */
-		caql_UpdateIndexes(pCtx, rel, tup);
-	}
+	/* keep the catalog indexes up to date (if has any) */
+	caql_UpdateIndexes(pCtx, rel, tup);
+
 	return (result);
 }
 
@@ -1020,14 +962,10 @@ void caql_update_current(cqContext *pCtx, HeapTuple tup)
 
 	disable_catalog_check(pCtx, pCtx->cq_lasttup);
 
-	{
-		caql_iud_switch(pCtx, 2, pCtx->cq_lasttup, tup, true /* dontWait */);
-		simple_heap_update(rel, &(pCtx->cq_lasttup)->t_self, tup);
+	simple_heap_update(rel, &(pCtx->cq_lasttup)->t_self, tup);
 
-		/* keep the catalog indexes up to date (if has any) */
-		caql_UpdateIndexes(pCtx, rel, tup);
-	}
-
+	/* keep the catalog indexes up to date (if has any) */
+	caql_UpdateIndexes(pCtx, rel, tup);
 }
 /* ----------------------------------------------------------------
  * caql_modify_current()
@@ -1145,10 +1083,6 @@ HeapTuple caql_getattname(cqContext *pCtx, Oid relid, const char *attname)
 		if (!pCtx->cq_setidxOK)
 			pCtx->cq_useidxOK = true;
 
-		/* for caql_update_current(), etc */
-		if (pCtx->cq_setpklock)
-			caql_iud_switch(pCtx, 0, tup, NULL, false /* Wait */);
-
 		pCtx->cq_lasttup = tup;
 	}   
 
@@ -1214,10 +1148,6 @@ caql_getattname_scan(cqContext *pCtx0, Oid relid, const char *attname)
 
 		pCtx->cq_freeScan = true;
 		pCtx->cq_EOF  = true;
-
-		/* for caql_update_current(), etc */
-		if (pCtx->cq_setpklock)
-			caql_iud_switch(pCtx, 0, tup, NULL, false /* Wait */);
 
 		pCtx->cq_lasttup = tup;
 	}   

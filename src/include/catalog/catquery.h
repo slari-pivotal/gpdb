@@ -74,7 +74,6 @@ typedef struct cqContextData
 	bool		cq_setidxOK;	/* set the indexOK mode */
 	bool		cq_useidxOK;	/* use supplied indexOK mode) */
 
-	bool		cq_setpklock;	/* lock primary keys on fetch if set */
 	bool		cq_pklock_excl;	/* lock exclusive if true */
 
 	Datum		cq_datumKeys[5];/* key array of datums */
@@ -214,7 +213,6 @@ cq_list *cql1(const char* caqlStr, const char* filename, int lineno, ...);
 cqContext	*caql_addrel(cqContext *pCtx, Relation rel);		/*  */
 cqContext	*caql_indexOK(cqContext *pCtx, bool bindexOK);		/*  */
 cqContext	*caql_lockmode(cqContext *pCtx, LOCKMODE lm);		/*  */
-cqContext	*caql_PKLOCK(cqContext *pCtx, bool bExclusive);		/*  */
 cqContext	*caql_snapshot(cqContext *pCtx, Snapshot ss);		/*  */
 cqContext	*caql_syscache(cqContext *pCtx, bool bUseCache);	/*  */
 
