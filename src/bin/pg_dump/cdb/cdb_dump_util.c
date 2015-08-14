@@ -1754,21 +1754,25 @@ formDDBoostPsqlCommandLine(char** retVal, bool compUsed, const char* ddboostPg, 
 
 	strcat(pszCmdLine, " --dd_boost_buf_size=");
 	strcat(pszCmdLine, dd_boost_buf_size);
-	strcat(pszCmdLine, " | ");
 
 	if(compUsed)
 	{
+		strcat(pszCmdLine, " | ");
 		strcat(pszCmdLine, compProg);
-		strcat(pszCmdLine, "| ");
 	}
 
-	if (table_filter_file && (role == ROLE_SEGDB))
+	if (table_filter_file) 
 	{
+		strcat(pszCmdLine, " | ");
 		strcat(pszCmdLine, filter_script);
+		if (role == ROLE_MASTER)
+		{
+			strcat(pszCmdLine, " -m");
+		}
 		strcat(pszCmdLine, " -t ");
 		strcat(pszCmdLine, table_filter_file);
-		strcat(pszCmdLine, " | ");
 	}
+	strcat(pszCmdLine, " | ");
 	strcat(pszCmdLine, psqlPg);
 }
 

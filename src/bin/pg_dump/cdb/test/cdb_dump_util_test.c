@@ -523,7 +523,7 @@ void test__formDDBoostPsqlCommandLine1(void **state)
 	char *cmdLine = calloc(1000000, 1);
 	char *inputFileSpec = "fileSpec";
 	bool compUsed = true;
-	const char* compProg = "gzip -c ";
+	const char* compProg = "gzip -c";
 	const char* filter_script = "filter.py"; 
 	const char* table_filter_file = "filter.conf";
 	int role = ROLE_SEGDB;
@@ -547,7 +547,7 @@ void test__formDDBoostPsqlCommandLine2(void **state)
 	char *cmdLine = calloc(1000000, 1);
 	char *inputFileSpec = "fileSpec";
 	bool compUsed = true;
-	const char* compProg = "gzip -c ";
+	const char* compProg = "gzip -c";
 	int role = ROLE_SEGDB;
 	const char* psqlPg = "psql"; 
 	const char* ddboostPg = "ddboostPg";
@@ -560,6 +560,7 @@ void test__formDDBoostPsqlCommandLine2(void **state)
 							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename.gz --dd_boost_buf_size=512MB | gzip -c | psql";
+	printf("cmdLine is %s", cmdLine);
 
 	assert_string_equal(cmdLine, e);
 	free(cmdLine);
@@ -570,7 +571,7 @@ void test__formDDBoostPsqlCommandLine3(void **state)
 	char *cmdLine = calloc(1000000, 1);
 	char *inputFileSpec = "fileSpec";
 	bool compUsed = false;
-	const char* compProg = "gzip -c ";
+	const char* compProg = "gzip -c";
 	const char* filter_script = "filter.py"; 
 	const char* table_filter_file = "filter.conf";
 	int role = ROLE_SEGDB;
@@ -595,7 +596,7 @@ void test__formDDBoostPsqlCommandLine4(void **state)
 	char *cmdLine = calloc(1000000, 1);
 	char *inputFileSpec = "fileSpec";
 	bool compUsed = false;
-	const char* compProg = "gzip -c ";
+	const char* compProg = "gzip -c";
 	int role = ROLE_SEGDB;
 	const char* psqlPg = "psql"; 
 	const char* ddboostPg = "ddboostPg";
@@ -617,7 +618,7 @@ void test__formDDBoostPsqlCommandLine5(void **state)
 	char *cmdLine = calloc(1000000, 1);
 	char *inputFileSpec = "fileSpec";
 	bool compUsed = true;
-	const char* compProg = "gzip -c ";
+	const char* compProg = "gzip -c";
 	const char* filter_script = "filter.py"; 
 	const char* table_filter_file = "filter.conf";
 	int role = ROLE_MASTER;
@@ -631,7 +632,7 @@ void test__formDDBoostPsqlCommandLine5(void **state)
 							   filter_script, table_filter_file,
 							   role, psqlPg);
 
-    char *e = "ddboostPg --readFile --from-file=ddb_filename.gz --dd_boost_buf_size=512MB | gzip -c | psql";
+    char *e = "ddboostPg --readFile --from-file=ddb_filename.gz --dd_boost_buf_size=512MB | gzip -c | filter.py -m -t filter.conf | psql";
 	assert_string_equal(cmdLine, e);
 	free(cmdLine);
 }
@@ -641,7 +642,7 @@ void test__formDDBoostPsqlCommandLine6(void **state)
 	char *cmdLine = calloc(1000000, 1);
 	char *inputFileSpec = "fileSpec";
 	bool compUsed = true;
-	const char* compProg = "gzip -c ";
+	const char* compProg = "gzip -c";
 	int role = ROLE_MASTER;
 	const char* psqlPg = "psql"; 
 	const char* ddboostPg = "ddboostPg";
@@ -663,7 +664,7 @@ void test__formDDBoostPsqlCommandLine7(void **state)
 	char *cmdLine = calloc(1000000, 1);
 	char *inputFileSpec = "fileSpec";
 	bool compUsed = false;
-	const char* compProg = "gzip -c ";
+	const char* compProg = "gzip -c";
 	const char* filter_script = "filter.py"; 
 	const char* table_filter_file = "filter.conf";
 	int role = ROLE_MASTER;
@@ -677,7 +678,7 @@ void test__formDDBoostPsqlCommandLine7(void **state)
 							   filter_script, table_filter_file,
 							   role, psqlPg);
 
-    char *e = "ddboostPg --readFile --from-file=ddb_filename --dd_boost_buf_size=512MB | psql";
+    char *e = "ddboostPg --readFile --from-file=ddb_filename --dd_boost_buf_size=512MB | filter.py -m -t filter.conf | psql";
 	assert_string_equal(cmdLine, e);
 	free(cmdLine);
 }
@@ -687,7 +688,7 @@ void test__formDDBoostPsqlCommandLine8(void **state)
 	char *cmdLine = calloc(1000000, 1);
 	char *inputFileSpec = "fileSpec";
 	bool compUsed = false;
-	const char* compProg = "gzip -c ";
+	const char* compProg = "gzip -c";
 	int role = ROLE_MASTER;
 	const char* psqlPg = "psql"; 
 	const char* ddboostPg = "ddboostPg";
