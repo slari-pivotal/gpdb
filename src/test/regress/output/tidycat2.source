@@ -24,17 +24,18 @@ set search_path to tidycat2, "$user", public;
 -- FAKE types to avoid problems.
 -- Also fix the PGNSP reference.
 --
-CREATE EXTERNAL WEB TABLE get_pgproc (x text)
-execute E'((echo \'set search_path to tidycat2;\'; cat @abs_srcdir@/../../include/catalog/pg_proc.sql | perl -ple \' s/\\s*with\\s*\\(.*\\)\\s*//gmi\' | perl -ple \' s/RETURNS\\s+anyarray\\s+/RETURNS fake_anyarray /gmi \' | perl -ple \' s/RETURNS\\s+anyelement\\s+/RETURNS fake_anyelement /gmi \' | perl -ple \' s/RETURNS\\s+internal\\s+/RETURNS fake_internal /gmi \' | perl -ple \' s/relnamespace\\s+=\\s+PGNSP/relnamespace = 11 /gmi \') | psql $GP_DATABASE >/dev/null)' 
-ON MASTER
-FORMAT 'text' (delimiter '|');
-select * from get_pgproc order by 1;
- x 
----
-(0 rows)
-
-drop external table get_pgproc;
--- how many non-tidycat2 procs? (should be ZERO)
+\! cat @abs_srcdir@/../../include/catalog/pg_proc.sql | perl -ple ' s/\s*with\s*\(.*\)\s*//gmi' | perl -ple ' s/RETURNS\s+anyarray\s+/RETURNS fake_anyarray /gmi ' | perl -ple ' s/RETURNS\s+anyelement\s+/RETURNS fake_anyelement /gmi ' | perl -ple ' s/RETURNS\s+internal\s+/RETURNS fake_internal /gmi ' | perl -ple ' s/relnamespace\s+=\s+PGNSP/relnamespace = 11 /gmi ' > @abs_builddir@/results/tidycat2-sql
+-- Load all the functions into tidycat2 schema.
+--
+-- This is a lot faster to do in a single transaction, hence the begin-commit.
+-- The statements produce a lot of warnings, because of the "oid" and "description"
+-- attributes that are not recognized by the backend; silence those by setting
+-- client_min_messages.
+begin;
+set local search_path to tidycat2;
+set client_min_messages=error;
+\set ECHO OFF
+commit;
 select proname from pg_proc pp
 where
 pp.pronamespace =
