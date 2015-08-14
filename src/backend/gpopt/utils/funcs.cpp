@@ -69,6 +69,7 @@ PG_FUNCTION_INFO_V1(DumpQueryToFile);
 PG_FUNCTION_INFO_V1(RestoreQueryFromFile);
 PG_FUNCTION_INFO_V1(DumpQueryDXL);
 PG_FUNCTION_INFO_V1(DumpQueryToDXLFile);
+PG_FUNCTION_INFO_V1(DumpQueryFromFileToDXLFile);
 PG_FUNCTION_INFO_V1(RestoreQueryDXL);
 PG_FUNCTION_INFO_V1(RestoreQueryFromDXLFile);
 PG_FUNCTION_INFO_V1(DisableXform);
@@ -91,6 +92,7 @@ static int extractFrozenPlanAndExecute(char *pcSerializedPS);
 static int extractFrozenQueryPlanAndExecute(char *pcQuery);
 static int executeXMLPlan(char *szXml);
 static int executeXMLQuery(char *szXml);
+static int translateQueryToFile(char *szSqlText, char *szFilename);
 
 //---------------------------------------------------------------------------
 //	@function:
@@ -254,6 +256,28 @@ static char *getPlannedStmtBinary
 	return pcRetBuf;
 }
 
+static int translateQueryToFile
+	(
+	char *szSqlText,
+	char *szFilename
+	)
+{
+	Query *pquery = parseSQL(szSqlText);
+
+	Assert(pquery);
+
+	char *szXmlString = COptTasks::SzDXL(pquery);
+	int iLen = (int) gpos::clib::UlStrLen(szXmlString);
+
+	CFileWriter fw;
+	fw.Open(szFilename, S_IRUSR | S_IWUSR);
+	fw.Write(reinterpret_cast<const BYTE*>(szXmlString), iLen + 1);
+	fw.Close();
+
+	return iLen;
+}
+
+
 //---------------------------------------------------------------------------
 //	@function:
 //		DumpQuery
@@ -411,7 +435,7 @@ DumpQueryDXL(PG_FUNCTION_ARGS)
 //		DumpQueryToDXLFile
 //
 //	@doc:
-//		Plan a query and dump out plan as xml text.
+//		Parse a query and dump out query as xml text.
 // 		Input: sql query text
 // 		Output: serialized dxl representation written to file.
 //
@@ -424,17 +448,42 @@ DumpQueryToDXLFile(PG_FUNCTION_ARGS)
 	char *szSqlText = textToString(PG_GETARG_TEXT_P(0));
 	char *szFilename = textToString(PG_GETARG_TEXT_P(1));
 
-	Query *pquery = parseSQL(szSqlText);
+	int iLen = translateQueryToFile(szSqlText, szFilename);
 
-	Assert(pquery);
+	PG_RETURN_INT32(iLen);
+}
+}
 
-	char *szXmlString = COptTasks::SzDXL(pquery);
-	int iLen = (int) gpos::clib::UlStrLen(szXmlString);
+//---------------------------------------------------------------------------
+//	@function:
+//		DumpQueryFromFileToDXLFile
+//
+//	@doc:
+//		Parse a query and dump out query as xml text.
+// 		Input: name of the file containing query
+// 		Output: serialized dxl representation written to file.
+//
+//---------------------------------------------------------------------------
 
-	CFileWriter fw;
-	fw.Open(szFilename, S_IRUSR | S_IWUSR);
-	fw.Write(reinterpret_cast<const BYTE*>(szXmlString), iLen + 1);
-	fw.Close();
+extern "C" {
+Datum
+DumpQueryFromFileToDXLFile(PG_FUNCTION_ARGS)
+{
+	char *szSqlFilename = textToString(PG_GETARG_TEXT_P(0));
+	char *szFilename = textToString(PG_GETARG_TEXT_P(1));
+
+	CFileReader fr;
+	fr.Open(szSqlFilename);
+	ULLONG ullSize = fr.UllSize();
+
+	char *pcBuf = (char*) gpdb::GPDBAlloc(ullSize + 1);
+	fr.UlpRead((BYTE*)pcBuf, ullSize);
+	pcBuf[ullSize] = '\0';
+	fr.Close();
+
+	int iLen = translateQueryToFile(pcBuf, szFilename);
+
+	gpdb::GPDBFree(pcBuf);
 
 	PG_RETURN_INT32(iLen);
 }
