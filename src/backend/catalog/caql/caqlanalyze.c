@@ -20,6 +20,7 @@
 #include "utils/array.h"
 #include "utils/inval.h"
 #include "utils/memutils.h"
+#include "utils/syscache.h"
 
 
 /*
@@ -159,6 +160,10 @@ cq_lookup(const char *str, unsigned int len, cq_list *pcql)
 	hash_cookie->lineno = pcql->lineno;
 	/* Find an available index based on predicates or ORDER BY */
 	hash_cookie->index = caql_find_index(hash_cookie, query);
+	if (hash_cookie->index != NULL)
+		hash_cookie->syscacheid = GetSysCacheId(hash_cookie->index->indexoid);
+	else
+		hash_cookie->syscacheid = -1;
 
 	caql_put_parser_cache(str, len, hash_cookie);
 
@@ -246,7 +251,7 @@ caql_basic_fn_all(caql_hash_cookie *pchn, cqContext *pCtx,
 	/*
 	 * Use the syscache if available and unless the caller states otherwise.
 	 */
-	if ((index && index->syscacheid >= 0) && can_use_syscache)
+	if ((index && pchn->syscacheid >= 0) && can_use_syscache)
 	{
 		int		nkeys = index->nkeys;
 
@@ -277,7 +282,7 @@ caql_basic_fn_all(caql_hash_cookie *pchn, cqContext *pCtx,
 
 		if (pCtx->cq_usesyscache)
 		{
-			pCtx->cq_cacheId = index->syscacheid;
+			pCtx->cq_cacheId = pchn->syscacheid;
 
 			/* number of keys must match (unless a SearchSysCacheList ) */
 			Assert(pCtx->cq_bCacheList || (pCtx->cq_NumKeys == nkeys));
@@ -511,7 +516,7 @@ caql_find_index(caql_hash_cookie *pchn, Node *query)
 }
 
 /*
- * Finds an usable index based on the clause.  If is_orderby is true,
+ * Finds a usable index based on the clause.  If is_orderby is true,
  * it processes ORDER BY, otherwise WHERE.
  */
 static const CatCoreIndex *

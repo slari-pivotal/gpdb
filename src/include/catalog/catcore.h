@@ -53,7 +53,6 @@ typedef struct CatCoreIndex
 	/* key attributes.  filled with InvalidOid */
 	AttrNumber	attnums[MAX_SCAN_NUM];
 	int			nkeys;			/* number of valid attributes in attnums */
-	int			syscacheid;		/* syscache id if available.  -1 otherwise */
 } CatCoreIndex;
 
 /*

@@ -36,6 +36,7 @@ typedef struct caql_hash_cookie
 	Oid			atttype;		/* type OID of the specified column */
 	const CatCoreRelation *relation; /* target relation */
 	const CatCoreIndex    *index; /* available index */
+	int			syscacheid;	/* syscache matching the index (-1 if none) */
 	Node	   *query;		/* parsed syntax tree */
 
 	/* debug info */

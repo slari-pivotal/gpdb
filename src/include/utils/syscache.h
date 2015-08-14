@@ -111,6 +111,8 @@ extern struct catclist *SearchSysCacheList(int cacheId, int nkeys,
 extern struct catclist *SearchSysCacheKeyArrayList(int cacheId, int nkeys,
 												   Datum *keys);
 
+extern int GetSysCacheId(Oid indexoid);
+
 /*
  * The use of the macros below rather than direct calls to the corresponding
  * functions is encouraged, as it insulates the caller from changes in the

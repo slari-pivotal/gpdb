@@ -950,3 +950,19 @@ SearchSysCacheList(int cacheId, int nkeys,
 	return SearchCatCacheList(SysCache[cacheId], nkeys,
 							  key1, key2, key3, key4);
 }
+
+/*
+ * Look up the ID of a syscache that's backed by the given index.
+ */
+int
+GetSysCacheId(Oid indexoid)
+{
+	int			syscacheid;
+
+	for (syscacheid = 0; syscacheid < SysCacheSize; syscacheid++)
+	{
+		if (cacheinfo[syscacheid].indoid == indexoid)
+			return syscacheid;
+	}
+	return -1;
+}

@@ -165,6 +165,10 @@ test__caql_switch1(void **state)
 	Datum				keys[] = {ObjectIdGetDatum(ProcedureRelationId)};
 	cq_list			   *pcql = CaQL(query, 1, keys);
 
+
+	expect_any(GetSysCacheId, indexoid);
+	will_return(GetSysCacheId, 123);	/* pretend there is a syscache */
+
 	hash_cookie = cq_lookup(query, strlen(query), pcql);
 
 	pCtx = caql_switch(hash_cookie, &context, pcql);
@@ -277,6 +281,9 @@ test__caql_switch4(void **state)
 	RelationData		dummyrel;
 	SysScanDescData		dummydesc;
 
+	expect_any(GetSysCacheId, indexoid);
+	will_return(GetSysCacheId, 123);	/* pretend there is a syscache */
+
 	dummyrel.rd_id = ConstraintRelationId;
 
 	hash_cookie = cq_lookup(query, strlen(query), pcql);
@@ -328,6 +335,9 @@ test__caql_switch5(void **state)
 	cq_list			   *pcql = CaQL(query, 2, keys);
 	RelationData		dummyrel;
 	SysScanDescData		dummydesc;
+
+	expect_any(GetSysCacheId, indexoid);
+	will_return(GetSysCacheId, 123);	/* pretend there is a syscache */
 
 	dummyrel.rd_id = AttributeRelationId;
 
@@ -384,6 +394,9 @@ test__caql_switch6(void **state)
 	Datum				keys[] = {ObjectIdGetDatum(ProcedureRelationId)};
 	cq_list			   *pcql = CaQL(query, 1, keys);
 	RelationData		dummyrel;
+
+	expect_any(GetSysCacheId, indexoid);
+	will_return(GetSysCacheId, 123);	/* pretend there is a syscache */
 
 	dummyrel.rd_id = RelationRelationId;
 	hash_cookie = cq_lookup(query, strlen(query), pcql);

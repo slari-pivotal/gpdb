@@ -205,16 +205,7 @@ class CatCoreGen(object):
         index['attnums'] = '{\n\t\t' + ',\n\t\t'.join(attnums) + '\n\t}'
         index['nkeys'] = len(indexkeys)
 
-        # transfer data for just convenience
-        if 'syscacheid' in index['with']:
-            index['syscacheid'] = index['with']['syscacheid']
-        else:
-            index['syscacheid'] = '-1'
-
-        index['is_unique'] = 'true' if index['unique'] == '1' else 'false'
-
-        return ("""\t{{{CamelCaseIndexId}, {attnums}, {nkeys}, """
-                """{syscacheid}}}""".format(**index))
+        return ("""\t{{{CamelCaseIndexId}, {attnums}, {nkeys}}}""".format(**index))
 
     def generate_relation_attributes(self, relname):
         cols = self._catdump.get_cols_by_relname(relname)
