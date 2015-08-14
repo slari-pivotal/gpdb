@@ -7,6 +7,9 @@ OBJS = catcore.o catcoretable.o
 
 include $(top_srcdir)/src/backend/common.mk
 
-catcoretable.c: catcoregen.py catheader.py $(catdump_json)
-	PYTHONPATH=$(python_libdir) $(PYTHON) $(srcdir)/catcoregen.py $@ $(catdump_json)
+# FIXME: This is missing dependency on all the header files.
+catcoretable.c: catcoregen.pl
+	cat ../../../include/catalog/*.h | perl catcoregen.pl > catcoretable.c
 
+clean:
+	rm -f catcoretable.c

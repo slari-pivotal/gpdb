@@ -376,9 +376,6 @@ endif
 DEF_PGPORT = @default_port@
 WANTED_LANGUAGES = @WANTED_LANGUAGES@
 
-# catdump json
-catdump_json = $(abs_top_srcdir)/../gpMgmt/bin/gppylib/data/$(GP_MAJORVERSION).json
-
 
 
 ##########################################################################
