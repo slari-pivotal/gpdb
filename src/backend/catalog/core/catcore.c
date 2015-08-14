@@ -43,16 +43,22 @@ catcore_lookup_rel(char *relname)
  * Search a catcore attribute number by attribute name.
  */
 AttrNumber
-catcore_lookup_attnum(const CatCoreRelation *relation, char *attname)
+catcore_lookup_attnum(const CatCoreRelation *relation, char *attname, Oid *attype)
 {
 	const CatCoreAttr *attr;
 
 	attr = catcore_lookup_attr(relation, attname);
 
 	if (attr != NULL)
+	{
+		*attype = attr->atttyp->typid;
 		return attr->attnum;
+	}
 	else
+	{
+		*attype = InvalidOid;
 		return InvalidAttrNumber;
+	}
 }
 
 /*

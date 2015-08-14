@@ -104,14 +104,16 @@ test__catcore_oid_attr(void **state)
 void
 test__catcore_lookup_attnum(void **state)
 {
-	const CatCoreRelation  *relation;
-	AttrNumber				attnum;
+	const CatCoreRelation *relation;
+	AttrNumber	attnum;
+	Oid			atttype;
 
 	relation = catcore_lookup_rel("pg_type");
-	attnum = catcore_lookup_attnum(relation, "typname");
+	attnum = catcore_lookup_attnum(relation, "typname", &atttype);
 	assert_int_equal(attnum, 1);
+	assert_int_equal(atttype, NAMEOID);
 
-	attnum = catcore_lookup_attnum(relation, "nonexistent");
+	attnum = catcore_lookup_attnum(relation, "nonexistent", &atttype);
 
 	assert_int_equal(attnum, InvalidOid);
 }

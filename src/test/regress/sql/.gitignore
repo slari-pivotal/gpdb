@@ -10,7 +10,6 @@ misc.sql
 bkuprestore_advance.sql
 bkuprestore_cleanup.sql
 caql.sql
-caqltrack.sql
 constraints.sql
 copy.sql
 create_function_1.sql

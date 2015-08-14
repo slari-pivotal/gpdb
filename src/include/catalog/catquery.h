@@ -33,6 +33,7 @@ typedef struct caql_hash_cookie
 	int			bInsert;	/* INSERT INTO  */
 	bool		bAllEqual;	/* true if all equality operators */
 	AttrNumber	attnum;		/* column number (or 0 if no column specified) */
+	Oid			atttype;		/* type OID of the specified column */
 	const CatCoreRelation *relation; /* target relation */
 	const CatCoreIndex    *index; /* available index */
 	Node	   *query;		/* parsed syntax tree */

@@ -72,12 +72,10 @@ sub writeSchedule
     }
 	# We include these CaQL test cases only when the environment variable
 	# is defined with -logquery.  These tests contain things that may be
-	# disruptive to the normal installcheck tests.  caqltrack won't work
-	# without -logquery build.
+	# disruptive to the normal installcheck tests.
 	if ($ENV{caql_logquery_FLAGS} =~ /-logquery/){
 		print SCHED "test: caql\n";
 		print SCHED "test: caqlcov\n";
-		print SCHED "test: caqltrack\n";
 	}
     close SCHED;
 }

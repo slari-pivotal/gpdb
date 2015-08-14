@@ -99,7 +99,7 @@ extern const int CatCoreTypeSize;
 /* catcore.c */
 extern const CatCoreRelation *catcore_lookup_rel(char *name);
 extern AttrNumber catcore_lookup_attnum(const CatCoreRelation *relation,
-			char *attname);
+					  char *attname, Oid *atttype);
 extern const CatCoreAttr *catcore_lookup_attr(const CatCoreRelation *relation,
 			char *attname);
 extern const CatCoreType *catcore_lookup_type(Oid typid);

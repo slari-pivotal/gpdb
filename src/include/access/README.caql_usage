@@ -325,22 +325,13 @@ constructed and inserted into the open table.
 Operational Details
 ===================
 
-The calico.pl module extracts the CaQL statements from the cql()
-macros in the C source files and generates a file called catquery.c.
-This file contains a set of "basic" functions which perform the
-underlying primitive database operations for the associated CaQL
-statement.  calico.pl uses gperf, the gnu perfect hash utility, to
-construct a static dispatch table that maps the CaQL statements to the
-basic functions.  At runtime, the caql functions hash the cql()
-statements to find and execute the associated basic database
-functions.  All of the basic functions are pre-constructed during the
-initial build and compilation of the database engine -- using a novel
-CaQL statement at runtime results in an error.  The make system also
-constructs caql.md5, the md5 hashes for the c source files used to
-generate catquery.c.  The installcheck "caql" test compares the md5
-signatures for the current set of sources with the historic signatures
-for the catquery source files to ensure that the current postgres
-executable is up-to-date.
+The src/backend/catalog/caql/catquery.c file contains a set of "basic"
+functions which perform the underlying primitive database operations for
+the associated CaQL statement.  At runtime, the caql functions hash the cql()
+query text to find a previously cached instance of the same query. If not
+found, the query is parsed, the relation names and their indexes are looked
+up etc. and the pre-processed representation of the query is stored in a
+caql_hash_cookie struct, and put in the cache.
 
 Painful SysCache Brain Damage
 =============================
