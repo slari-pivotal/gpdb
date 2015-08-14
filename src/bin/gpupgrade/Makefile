@@ -25,9 +25,10 @@ UPGRADEFILES = $(DATADIR)/upgrade/upg2_catupgrade.sql \
 			   $(DATADIR)/upgrade43/upg2_catupgrade_43.sql
 
 FIXUPGRADE = fix_ao_upgrade.py
+FIXVISIOWNER = fix_visimap_owner.sql
 
 DATAFILES = $(DATADIR)/upgrade43/pg_operator.data $(DATADIR)/upgrade43/pg_type.data \
-		$(DATADIR)/upgrade43/$(FIXUPGRADE)
+		$(DATADIR)/upgrade43/$(FIXUPGRADE) $(DATADIR)/upgrade43/$(FIXVISIOWNER).in
 
 # This sets things up to create a "contrib" module for upgrade extensions
 MODULE_big = gpupgrade
@@ -82,6 +83,8 @@ installupgradefiles: $(UPGRADEFILES) $(DATAFILES)
 		$(INSTALL_DATA) $$i '$(DESTDIR)$(datadir)/upgrade/'`basename $$i`; \
 	done
 	chmod +x $(DESTDIR)$(datadir)/upgrade/$(FIXUPGRADE)
+	mv $(DESTDIR)$(datadir)/upgrade/$(FIXVISIOWNER).in \
+		$(DESTDIR)$(datadir)/upgrade/$(FIXVISIOWNER)
 
 gpmodcontrol_unistall:
 	rm -f '$(DESTDIR)$(bindir)'/lib, gpmodcontrol$(X)
