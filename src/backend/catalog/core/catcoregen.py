@@ -182,15 +182,6 @@ class CatCoreGen(object):
         return "&CatCoreTypes[{pos}] /* {typiddef} */".format(
                 pos=pos, typiddef=typiddef)
 
-    def index_pointer(self, relname, cols):
-        pos = self._catdump.index_pos(relname, cols)
-        if pos == -1:
-            return "NULL"
-        index = self._catdump.get_indexes_by_relname(relname)[pos]
-        return "&{relname}Indexes[{pos}] /* {CamelCaseIndexId} */".format(
-                relname=relname, pos=pos,
-                CamelCaseIndexId=index['CamelCaseIndexId'])
-
     def generate_attribute(self, relname, col):
         typpointer = self.type_pointer(col['atttypid'])
         return ("""\t{{"{colname}", {attnum}, {typpointer}}}""".format(
@@ -222,8 +213,7 @@ class CatCoreGen(object):
 
         index['is_unique'] = 'true' if index['unique'] == '1' else 'false'
 
-        return ("""\t{{{CamelCaseIndexId}, {is_unique}, """
-                """{attnums}, {nkeys}, """
+        return ("""\t{{{CamelCaseIndexId}, {attnums}, {nkeys}, """
                 """{syscacheid}}}""".format(**index))
 
     def generate_relation_attributes(self, relname):
@@ -273,16 +263,10 @@ class CatCoreGen(object):
             return "F_" + op.upper()
 
         typid_def = self._catdump.pg_type.oid_to_def(typid)
-        typtup = self._catdump.pg_type.findtup_by_typid(typid)
-        typelem_def = self._catdump.pg_type.oid_to_def(typtup['typelem'])
         (eq, lt, le, ge, gt) = self._catdump.btree_ops(typid)
-        return ("""{{{typid}, {typlen}, {typbyval}, '{typalign}', """
-                """{typelem}, {eq}, {lt}, {le}, {ge}, {gt}}}""".format(
+        return ("""{{{typid}, """
+                """{eq}, {lt}, {le}, {ge}, {gt}}}""".format(
                     typid=typid_def,
-                    typlen=typtup['typlen'],
-                    typbyval='true' if typtup['typbyval'] == 't' else 'false',
-                    typalign=typtup['typalign'],
-                    typelem=typelem_def,
                     eq=fmgr_style(eq), lt=fmgr_style(lt), le=fmgr_style(le),
                     ge=fmgr_style(ge), gt=fmgr_style(gt)
                     ))

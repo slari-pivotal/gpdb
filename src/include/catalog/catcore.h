@@ -25,10 +25,6 @@
 typedef struct CatCoreType
 {
 	Oid			typid;			/* oid of this type */
-	int16		typlen;			/* pg_type.typlen */
-	bool		typbyval;		/* pg_type.typbyval */
-	char		typalign;		/* pg_type.typalign */
-	Oid			typelem;		/* pg_type.typelem */
 	Oid			eqfunc;			/* function for BTEqualStrategyNumber */
 	Oid			ltfunc;			/* function for BTLessStrategyNumber */
 	Oid			lefunc;			/* function for BTLessEqualStrategyNumber */
@@ -54,7 +50,6 @@ typedef struct CatCoreAttr
 typedef struct CatCoreIndex
 {
 	Oid			indexoid;		/* oid of this index relation */
-	bool		unique;			/* is unique index? */
 	/* key attributes.  filled with InvalidOid */
 	AttrNumber	attnums[MAX_SCAN_NUM];
 	int			nkeys;			/* number of valid attributes in attnums */
