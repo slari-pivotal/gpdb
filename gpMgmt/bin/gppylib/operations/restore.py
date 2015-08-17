@@ -622,7 +622,7 @@ class RestoreDatabase(Operation):
     def drop_database_if_exists(self, master_port, restore_db):
         conn = None
         try:
-            dburl = dbconn.DbURL(port=master_port)
+            dburl = dbconn.DbURL(port=master_port, dbname='template1')
             conn = dbconn.connect(dburl)
             count = execSQLForSingleton(conn, "select count(*) from pg_database where datname='%s';" % restore_db)
 
