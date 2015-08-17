@@ -43,7 +43,7 @@ ifneq (,$(findstring yes, $(shared_libpython)$(allow_nonpic_in_shlib)))
 override CPPFLAGS := -Wno-error -I$(srcdir) $(python_includespec) $(CPPFLAGS) 
 
 
-rpathdir = $(python_libdir)
+rpathdir = $(python_libdir):$$ORIGIN/../../ext/python/lib
 
 NAME = plpython
 OBJS = plpython.o
