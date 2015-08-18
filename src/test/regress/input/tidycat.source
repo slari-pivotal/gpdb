@@ -28,14 +28,7 @@
 -- *********************************************************************
 
 
-CREATE EXTERNAL WEB TABLE get_tc (x text)
-execute E'(find @abs_srcdir@/../../include/catalog \\\( -name \'pg_*.h\' -o -name \'gp_*.h\' \\\)  | xargs perl @abs_srcdir@/../../include/catalog/tidycat.pl -sql - 2>&1 | perl -ple \' s/^\\s*with\\s*\\(.*\\)\\s*//gm \' > @abs_srcdir@/data/tidyddl.sql ; sleep 20)' 
-ON MASTER
-FORMAT 'text' (delimiter '|');
-
-select * from get_tc order by 1;
-
-drop external table get_tc;
+\! find @abs_srcdir@/../../include/catalog \( -name 'pg_*.h' -o -name 'gp_*.h' \)  | xargs perl @abs_srcdir@/../../include/catalog/tidycat.pl -sql - 2>&1 | perl -ple ' s/^\s*with\s*\(.*\)\s*//gm ' > @abs_srcdir@/data/tidyddl.sql
 
 create schema tidycat;
 
@@ -129,5 +122,5 @@ order by relname, pa1.attnum;
 
 -- end_equiv
 
+set client_min_messages=error;
 drop schema tidycat CASCADE;
-
