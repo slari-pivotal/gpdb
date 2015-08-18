@@ -78,10 +78,6 @@ The tokens are:
  a compound psql connect string, equivalent to the "-connect" option
  for this tool.
 
-=item gphome
-
- location of the greenplum installation
-
 =item ps_pidfirst
 
  generate a long ps listing with the pid first, equivalent to 
@@ -411,10 +407,7 @@ if (1)
 	my $upgtoolkit = '\\@gpupgradetoolkitschema\\@';
 	my $infoschema = '\\@gpinfoschemaname\\@';
 	my $ugdir = '\\@gpupgradedatadir\\@';
-	my $gphomeexp = '\\@gphome\\@';
 	my $gpglobconn = '\\@gp_glob_connect\\@';
-
-	my $gphome = $ENV{GPHOME};
 
     my $locps   = 'ps axww';
     if ($^O !~ /darwin|mac|osx/i)
@@ -458,7 +451,7 @@ if (1)
 	chomp $curdir;
 
 #    print "$filnam\n";
-    system "perl -i -ple \' s/$hostexp/$hostname/gm; s,$gphomeexp,$gphome,gm; s/$psexp/$locps/gm; s/$isainfoexp/$locisainfo/gm; s/$perlosexp/$locperlos/gm; s/$numsegexp/$numsegs/gm; s/$unexp/$username/gm; s/$schema/upg_catalog/gm; s/$infoschema/upg_information/gm; s,$ugdir,$curdir/data/upgrade43,gm; s/$gpglobconn/$glob_connect/gm; s/$upgtoolkit/upg_toolkit/gm;   \' $filnam\n";
+    system "perl -i -ple \' s/$hostexp/$hostname/gm; s/$psexp/$locps/gm; s/$isainfoexp/$locisainfo/gm; s/$perlosexp/$locperlos/gm; s/$numsegexp/$numsegs/gm; s/$unexp/$username/gm; s/$schema/upg_catalog/gm; s/$infoschema/upg_information/gm; s,$ugdir,$curdir/data/upgrade43,gm; s/$gpglobconn/$glob_connect/gm; s/$upgtoolkit/upg_toolkit/gm;   \' $filnam\n";
 
     # replace filespace
     if (defined($gpfspace_all) && length($gpfspace_all))
