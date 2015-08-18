@@ -45,25 +45,29 @@ from information_schema.columns
 where ordinal_position = 20;
 
 -- MPP-25724
+create table mpp_25724(mpp_25724_col int) distributed by (mpp_25724_col);
+
 select a.column_name
 from information_schema.columns a
 where a.table_name
 in
 (select b.table_name from information_schema.tables b where
-	a.column_name like 'b');
+	a.column_name like 'mpp_25724_col');
 
 select c.relname
 from pg_class c
 where c.relname
 in
 (select b.table_name from information_schema.tables b where
-	c.relname like 'r');
+	c.relname like 'mpp_25724');
 
 select a.table_name
 from information_schema.tables a
 where a.table_name
 in
 (select b.relname from pg_class b where
-	a.table_name like 'r');
+	a.table_name like 'mpp_25724');
+
+drop table mpp_25724;
 
 drop table r;
