@@ -98,7 +98,8 @@ in
  column_name
 -------------
  b
-(1 row)
+ b
+(2 rows)
 
 select c.relname
 from pg_class c

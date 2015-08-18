@@ -100,7 +100,9 @@ in
  column_name
 -------------
  b
-(1 row)
+ b
+ b
+(3 rows)
 
 select c.relname
 from pg_class c
