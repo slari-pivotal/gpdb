@@ -1606,32 +1606,35 @@ handle_sig_alarm(SIGNAL_ARGS)
 	if (MyProc)
 		SetLatch(&MyProc->procLatch);
 
-	/*
-	 * Idle session timeout shares with the deadlock timeout.
-	 * If DoingCommandRead is true, we are deciding the session is idle
-	 * In that case, we can't possibly be in a deadlock, so no point
-	 * in running the deadlock detection.
-	 */
-
-	if (deadlock_timeout_active && !DoingCommandRead)
+	/* don't joggle the elbow of proc_exit */
+	if (!proc_exit_inprogress)
 	{
-		deadlock_timeout_active = false;
-		CheckDeadLock();
+		/*
+		 * Idle session timeout shares with the deadlock timeout.
+		 * If DoingCommandRead is true, we are deciding the session is idle
+		 * In that case, we can't possibly be in a deadlock, so no point
+		 * in running the deadlock detection.
+		 */
+
+		if (deadlock_timeout_active && !DoingCommandRead)
+		{
+			deadlock_timeout_active = false;
+			CheckDeadLock();
+		}
+
+		if (statement_timeout_active)
+			(void) CheckStatementTimeout();
+
+		/*
+		 * If we are DoingCommandRead, it means we are sitting idle waiting for
+		 * the user to send us some SQL.
+		 */
+		if (DoingCommandRead)
+		{
+			(void) HandleClientWaitTimeout();
+			deadlock_timeout_active = false;
+		}
 	}
-
-	if (statement_timeout_active)
-		(void) CheckStatementTimeout();
-
-	/*
-	 * If we are DoingCommandRead, it means we are sitting idle waiting for
-	 * the user to send us some SQL.
-	 */
-	if (DoingCommandRead)
-	{
-		(void) HandleClientWaitTimeout();
-		deadlock_timeout_active = false;
-	}
-
 
 	errno = save_errno;
 }
