@@ -55,7 +55,7 @@ class SegStopTestCase(unittest.TestCase):
         self.segstop.db = '/tmp/gpseg0:1234'
         self.segstop.mode = 'smart'
         self.segstop.timeout = '10'
-        expected = SegStopStatus('/tmp/gpseg0', True, 'Shutdown failed')
+        expected = SegStopStatus('/tmp/gpseg0', True, 'Forceful termination success')
         result = self.segstop.run()
         self.assertIn(str(expected), str(result))
  
@@ -69,7 +69,7 @@ class SegStopTestCase(unittest.TestCase):
         self.segstop.db = '/tmp/gpseg0:1234'
         self.segstop.mode = 'smart'
         self.segstop.timeout = '10'
-        expected = SegStopStatus('/tmp/gpseg0', True, 'Shutdown failed')
+        expected = SegStopStatus('/tmp/gpseg0', True, 'Forceful termination success')
         result = self.segstop.run()
         self.assertIn(str(expected), str(result))
 

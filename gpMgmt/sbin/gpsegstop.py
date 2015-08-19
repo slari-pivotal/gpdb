@@ -105,15 +105,20 @@ class SegStop(base.Command):
                     unix.kill_sequence(mypid)
 
                     if not unix.check_pid(mypid):
-                        lockfile = "/tmp/.s.PGSQL.%s" % self.port    
+                        lockfile = "/tmp/.s.PGSQL.%s" % self.port
                         if os.path.exists(lockfile):
-                            self.logger.info("Clearing segment instance lock files")        
+                            self.logger.info("Clearing segment instance lock files")
                             os.remove(lockfile)
 
-                status = SegStopStatus(self.datadir,True,"Shutdown failed: rc: %d stdout: %s stderr: %s. Will attempt forceful termination of processes" % (results.rc,results.stdout,results.stderr))
-                self.result = status
+                status = SegStopStatus(self.datadir, True, "Forceful termination success: rc: %d stdout: %s stderr: %s." % (results.rc,results.stdout,results.stderr))
+
             try:
                 unix.kill_9_segment_processes(self.datadir, self.port, mypid)
+
+                if unix.check_pid(mypid) and mypid != -1:
+                    status = SegStopStatus(self.datadir, False, "Failed forceful termnation: rc: %d stdout: %s stderr: %s." % (results.rc,results.stdout,results.stderr))
+
+                self.result = status
             except Exception as e:
                 logger.error('Failed forceful termination of segment %s: (%s)' % (self.datadir, str(e)))
                 self.result = SegStopStatus(self.datadir,False,'Failed forceful termination of segment! (%s)' % str(e))

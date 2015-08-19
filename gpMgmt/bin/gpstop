@@ -511,6 +511,7 @@ class GpStop:
         success_seg_status=[]
         seg_timed_out=False
         cmds=self.pool.getCompletedItems()
+
         for cmd in cmds:
             if cmd.get_results().rc == 0 or cmd.get_results().rc == 1:                            
                 cmdout = cmd.get_results().stdout
@@ -537,7 +538,11 @@ class GpStop:
                                     failed_seg_status.append( SegStopStatus(db,stopped=False,reason=reasonStr,failedCmd=cmd) )
 
                     elif line.strip().startswith('stderr: pg_ctl: server does not shut down'):
-                        failed_seg_status[-1].timedOut=True
+                        # We are assuming that we know what segment failed beforehand.
+                        if failed_seg_status:
+                            failed_seg_status[-1].timedOut=True
+                        else:
+                            logger.debug("No failed segments to time out")
             else:
                 for db in cmd.dblist:
                     #dbs that are marked invalid are 'skipped' but we dispatch to them
