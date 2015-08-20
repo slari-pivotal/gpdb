@@ -1107,14 +1107,6 @@ ExecInitMotion(Motion * node, EState *estate, int eflags)
 		 * Create hash API reference
 		 */
 		motionstate->cdbhash = makeCdbHash(node->numOutputSegs, HASH_FNV_1);
-
-#ifdef MEASURE_MOTION_TIME
-		/*
-		 * Create buckets to hold counts of tuples hashing to each
-		 * destination segindex (for debugging purposes)
-		 */
-		motionstate->numTuplesByHashSegIdx = (int *) palloc0(node->numHashSegs * sizeof(int));
-#endif
     }
 
 	/* Merge Receive: Set up the key comparator and priority queue. */
@@ -1263,18 +1255,6 @@ ExecEndMotion(MotionState * node)
 			 node->numTuplesFromChild,
 			 node->numTuplesToAMS
 			);
-	}
-
-	if (node->numTuplesByHashSegIdx != NULL)
-	{
-		int i;
-        for (i = 0; i < motion->numHashSegs; i++)
-		{
-			elog(DEBUG1, "Motion Node %3d Hash Bucket %3d: %10d tuples",
-                 motNodeID, i, node->numTuplesByHashSegIdx[i]);
-		}
-		pfree(node->numTuplesByHashSegIdx);
-		node->numTuplesByHashSegIdx = NULL;
 	}
 #endif /* MEASURE_MOTION_TIME */
 

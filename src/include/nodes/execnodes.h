@@ -2497,7 +2497,6 @@ typedef struct MotionState
         int numTuplesToAMS;         /* Number of tuples from child that were sent to AMS */
         int numTuplesFromAMS;       /* Number of tuples received from AMS */
         int numTuplesToParent;      /* Number of tuples either from child or AMS that were sent to parent */
-        int *numTuplesByHashSegIdx; /* Distribution of number of tuples from child by hash seg index */
         
         struct timeval otherTime;   /* time accumulator used in sending motion node to keep track of time
                                      * spent getting the next tuple (not sending). this could mean time spent
