@@ -159,16 +159,6 @@ bindCurrentOfParams(char *cursor_name,
 					int *gp_segment_id, 
 					Oid *tableoid);
 
-
-#define BEGIN_STR "BEGIN "
-#define PREPARE_STR "PREPARE "
-#define COMMIT_STR "COMMIT "
-#define ROLLBACK_STR "ROLLBACK "
-#define PG_RELATION_SIZE_STR "select pg_relation_size("
-#define PG_HIGHEST_OID_STR "select pg_highest_oid("
-#define MPPEXEC_CAP_STR "MPPEXEC "
-#define MPPEXEC_STR "mppexec "
-
 #define GP_PARTITION_SELECTION_OID 6084
 #define GP_PARTITION_EXPANSION_OID 6085
 #define GP_PARTITION_INVERSE_OID 6086
