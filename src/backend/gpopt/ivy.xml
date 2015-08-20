@@ -9,11 +9,24 @@
     <!-- ================================================================ -->
 
     <configurations>
+      <conf name="aix5_ppc_32"    visibility="public"/>
+      <conf name="aix5_ppc_64"    visibility="public"/>
+      <conf name="hpux_ia64"      visibility="public"/>
       <conf name="osx106_x86"     visibility="public"/>
+      <conf name="rhel4_x86_32"   visibility="public"/>
+      <conf name="rhel4_x86_64"   visibility="public"/>
+      <conf name="rhel5_x86_32"   visibility="public"/>
       <conf name="rhel5_x86_64"   visibility="public"/>
       <conf name="rhel6_x86_64"   visibility="public"/>
+      <conf name="sol9_sparc_32"  visibility="public"/>
+      <conf name="sol9_sparc_64"  visibility="public"/>
+      <conf name="sol10_x86_32"   visibility="public"/>
+      <conf name="sol10_x86_64"   visibility="public"/>
+      <conf name="sol10_sparc_32" visibility="public"/>
+      <conf name="sol10_sparc_64" visibility="public"/>
       <conf name="suse10_x86_64"  visibility="public"/>
       <conf name="suse11_x86_64"  visibility="public"/>
+      <conf name="win32"          visibility="public"/>
     </configurations>
 
     <dependencies>
