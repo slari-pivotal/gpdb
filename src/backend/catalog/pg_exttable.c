@@ -239,7 +239,9 @@ GetExtTableEntry(Oid relid)
 	
 	Insist(!isNull);
 	extentry->fmtcode = DatumGetChar(fmtcode);
-	Insist(extentry->fmtcode == 'c' || extentry->fmtcode == 't' || extentry->fmtcode == 'b');
+	Insist(extentry->fmtcode == 'c' || extentry->fmtcode == 't' 
+		 || extentry->fmtcode == 'b' || extentry->fmtcode == 'a'
+		 || extentry->fmtcode == 'p');
 
 	/* get the format options string */
 	fmtopts = heap_getattr(tuple, 

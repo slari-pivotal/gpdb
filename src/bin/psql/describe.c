@@ -1827,6 +1827,16 @@ describeOneTableDetails(const char *schemaname,
 					format = "custom";
 				}
 				break;
+                case 'a':
+                {
+                    format = "avro";
+                }
+                break;
+                case 'p':
+                {
+                    format = "parquet";
+                }
+                break;
 				default:
 				{
 					format = "";

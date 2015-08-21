@@ -18156,6 +18156,10 @@ static char transformFormatType(char *formatname)
 		result = 'c';
 	else if(pg_strcasecmp(formatname, "custom") == 0)
 		result = 'b';
+    else if(pg_strcasecmp(formatname, "avro") == 0)
+        result = 'a';
+    else if(pg_strcasecmp(formatname, "parquet") == 0)
+        result = 'p';
 	else
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
@@ -18191,9 +18195,11 @@ static Datum transformFormatOpts(char formattype, List *formatOpts, int numcols,
 	Size len;
 	StringInfoData fnn, fq, nl;
 
-	Assert(fmttype_is_custom(formattype) || 
-		   fmttype_is_text(formattype) ||
-		   fmttype_is_csv(formattype));
+    Assert(fmttype_is_custom(formattype) ||
+           fmttype_is_text(formattype) ||
+           fmttype_is_csv(formattype) ||
+           fmttype_is_avro(formattype) ||
+           fmttype_is_parquet(formattype));
 	
 	/* Extract options from the statement node tree */
 	if (fmttype_is_text(formattype) || fmttype_is_csv(formattype))
@@ -18426,6 +18432,30 @@ static Datum transformFormatOpts(char formattype, List *formatOpts, int numcols,
 		}
 
 	}
+    else if (fmttype_is_avro(formattype) || fmttype_is_parquet(formattype))
+    {
+        /* avro format, add "formatter 'gphdfs_import’ " directly, user don't
+         * need to set this value*/
+        char *val = NULL;
+        if (iswritable)
+        {
+            val = "gphdfs_export";
+        }else{
+            val = "gphdfs_import";
+        }
+
+        const int   maxlen = 32;
+        format_str = (char *) palloc0(maxlen + 1);
+        if(format_str)
+        {
+            sprintf((char *) format_str, "%s '%s' ", "formatter", val);
+        }
+        else
+        {
+            ereport(ERROR, (errcode(ERRCODE_GP_INTERNAL_ERROR),
+                errmsg("palloc return null"), errOmitLocation(true)));
+        }
+    }
 	else
 	{
 		/* custom format */

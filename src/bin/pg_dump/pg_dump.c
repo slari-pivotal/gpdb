@@ -7721,6 +7721,14 @@ dumpTableSchema(Archive *fout, TableInfo *tbinfo)
 				tabfmt = "custom";
 				customfmt = custom_fmtopts_string(tmpstring);
 				break;
+			case 'a':
+				tabfmt = "avro";
+				customfmt = custom_fmtopts_string(tmpstring);
+				break;
+			case 'p':
+				tabfmt = "parquet";
+				customfmt = custom_fmtopts_string(tmpstring);
+				break;	
 			default:
 				tabfmt = "csv";
 		}
