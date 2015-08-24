@@ -490,6 +490,7 @@ convert_sourcefiles_in(char *source, char *dest, char *suffix)
 		FILE	   *infile,
 				   *outfile;
 		char		line[1024];
+		bool		has_tokens = false;
 
 		/* reject filenames not finishing in ".source" */
 		if (strlen(*name) < 8)
@@ -525,9 +526,18 @@ convert_sourcefiles_in(char *source, char *dest, char *suffix)
 			replace_string(line, "@testtablespace@", testtablespace);
 			replace_string(line, "@DLSUFFIX@", DLSUFFIX);
 			fputs(line, outfile);
+
+			/*
+			 * Remember if there are any more tokens that we didn't recognize.
+			 * They need to be handled by the gpstringsubs.pl script
+			 */
+			if (!has_tokens && strchr(line, '@') != NULL)
+				has_tokens = true;
 		}
 		fclose(infile);
 		fclose(outfile);
+
+		if (has_tokens)
 		{
 			char		cmd[MAXPGPATH * 3];
 			snprintf(cmd, sizeof(cmd),
