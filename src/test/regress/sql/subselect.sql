@@ -594,42 +594,42 @@ explain select * from csq_pullup t0 where not exists (select 1 from csq_pullup t
 select * from csq_pullup t0 where not exists (select 1 from csq_pullup t1 where t0.i=t1.i + 1);
 
 --
--- FINRA wrong results bug MPP-16477
+-- wrong results bug MPP-16477
 --
 
-drop table if exists finra_t1;
-drop table if exists finra_t2;
+drop table if exists subselect_t1;
+drop table if exists subselect_t2;
 
-create table finra_t1(x int) distributed by (x);
-insert into finra_t1 values(1),(2);
+create table subselect_t1(x int) distributed by (x);
+insert into subselect_t1 values(1),(2);
 
-create table finra_t2(y int) distributed by (y);
-insert into finra_t2 values(1),(2),(2);
+create table subselect_t2(y int) distributed by (y);
+insert into subselect_t2 values(1),(2),(2);
 
-analyze finra_t1;
-analyze finra_t2;
+analyze subselect_t1;
+analyze subselect_t2;
 
-explain select * from finra_t1 where x in (select y from finra_t2);
+explain select * from subselect_t1 where x in (select y from subselect_t2);
 
-select * from finra_t1 where x in (select y from finra_t2);
-
--- start_ignore
--- Known_opt_diff: MPP-21351
--- end_ignore
-explain select * from finra_t1 where x in (select y from finra_t2 union all select y from finra_t2);
-
-select * from finra_t1 where x in (select y from finra_t2 union all select y from finra_t2);
-
-explain select count(*) from finra_t1 where x in (select y from finra_t2);
-
-select count(*) from finra_t1 where x in (select y from finra_t2);
+select * from subselect_t1 where x in (select y from subselect_t2);
 
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select count(*) from finra_t1 where x in (select y from finra_t2 union all select y from finra_t2);
+explain select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
 
-select count(*) from finra_t1 where x in (select y from finra_t2 union all select y from finra_t2);
+select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
+
+explain select count(*) from subselect_t1 where x in (select y from subselect_t2);
+
+select count(*) from subselect_t1 where x in (select y from subselect_t2);
+
+-- start_ignore
+-- Known_opt_diff: MPP-21351
+-- end_ignore
+explain select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
+
+select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
 
 select count(*) from 
        ( select 1 as FIELD_1 union all select 2 as FIELD_1 ) TABLE_1 

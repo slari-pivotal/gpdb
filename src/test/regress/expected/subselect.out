@@ -1271,31 +1271,31 @@ select * from csq_pullup t0 where not exists (select 1 from csq_pullup t1 where 
 (1 row)
 
 --
--- FINRA wrong results bug MPP-16477
+-- wrong results bug MPP-16477
 --
-drop table if exists finra_t1;
-NOTICE:  table "finra_t1" does not exist, skipping
-drop table if exists finra_t2;
-NOTICE:  table "finra_t2" does not exist, skipping
-create table finra_t1(x int) distributed by (x);
-insert into finra_t1 values(1),(2);
-create table finra_t2(y int) distributed by (y);
-insert into finra_t2 values(1),(2),(2);
-analyze finra_t1;
-analyze finra_t2;
-explain select * from finra_t1 where x in (select y from finra_t2);
+drop table if exists subselect_t1;
+NOTICE:  table "subselect_t1" does not exist, skipping
+drop table if exists subselect_t2;
+NOTICE:  table "subselect_t2" does not exist, skipping
+create table subselect_t1(x int) distributed by (x);
+insert into subselect_t1 values(1),(2);
+create table subselect_t2(y int) distributed by (y);
+insert into subselect_t2 values(1),(2),(2);
+analyze subselect_t1;
+analyze subselect_t2;
+explain select * from subselect_t1 where x in (select y from subselect_t2);
                                  QUERY PLAN                                 
 ----------------------------------------------------------------------------
  Gather Motion 2:1  (slice1; segments: 2)  (cost=2.07..4.13 rows=4 width=4)
    ->  Hash EXISTS Join  (cost=2.07..4.13 rows=2 width=4)
-         Hash Cond: finra_t1.x = finra_t2.y
-         ->  Seq Scan on finra_t1  (cost=0.00..2.02 rows=1 width=4)
+         Hash Cond: subselect_t1.x = subselect_t2.y
+         ->  Seq Scan on subselect_t1  (cost=0.00..2.02 rows=1 width=4)
          ->  Hash  (cost=2.03..2.03 rows=2 width=4)
-               ->  Seq Scan on finra_t2  (cost=0.00..2.03 rows=2 width=4)
+               ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
  Settings:  optimizer_segments=3
 (7 rows)
 
-select * from finra_t1 where x in (select y from finra_t2);
+select * from subselect_t1 where x in (select y from subselect_t2);
  x 
 ---
  1
@@ -1305,44 +1305,44 @@ select * from finra_t1 where x in (select y from finra_t2);
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select * from finra_t1 where x in (select y from finra_t2 union all select y from finra_t2);
+explain select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
                                              QUERY PLAN                                             
 ----------------------------------------------------------------------------------------------------
  Gather Motion 2:1  (slice2; segments: 2)  (cost=4.37..6.44 rows=4 width=4)
    ->  Hash EXISTS Join  (cost=4.37..6.44 rows=2 width=4)
-         Hash Cond: finra_t1.x = "IN_subquery".y
-         ->  Seq Scan on finra_t1  (cost=0.00..2.02 rows=1 width=4)
+         Hash Cond: subselect_t1.x = "IN_subquery".y
+         ->  Seq Scan on subselect_t1  (cost=0.00..2.02 rows=1 width=4)
          ->  Hash  (cost=4.30..4.30 rows=3 width=4)
                ->  Redistribute Motion 2:2  (slice1; segments: 2)  (cost=0.00..4.30 rows=3 width=4)
                      Hash Key: "IN_subquery".y
                      ->  Append  (cost=0.00..4.12 rows=3 width=4)
-                           ->  Seq Scan on finra_t2  (cost=0.00..2.03 rows=2 width=4)
-                           ->  Seq Scan on finra_t2  (cost=0.00..2.03 rows=2 width=4)
+                           ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
+                           ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
  Settings:  optimizer_segments=3
 (11 rows)
 
-select * from finra_t1 where x in (select y from finra_t2 union all select y from finra_t2);
+select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
  x 
 ---
  2
  1
 (2 rows)
 
-explain select count(*) from finra_t1 where x in (select y from finra_t2);
+explain select count(*) from subselect_t1 where x in (select y from subselect_t2);
                                       QUERY PLAN                                      
 --------------------------------------------------------------------------------------
  Aggregate  (cost=4.20..4.21 rows=1 width=8)
    ->  Gather Motion 2:1  (slice1; segments: 2)  (cost=4.14..4.18 rows=1 width=8)
          ->  Aggregate  (cost=4.14..4.15 rows=1 width=8)
                ->  Hash EXISTS Join  (cost=2.07..4.13 rows=2 width=0)
-                     Hash Cond: finra_t1.x = finra_t2.y
-                     ->  Seq Scan on finra_t1  (cost=0.00..2.02 rows=1 width=4)
+                     Hash Cond: subselect_t1.x = subselect_t2.y
+                     ->  Seq Scan on subselect_t1  (cost=0.00..2.02 rows=1 width=4)
                      ->  Hash  (cost=2.03..2.03 rows=2 width=4)
-                           ->  Seq Scan on finra_t2  (cost=0.00..2.03 rows=2 width=4)
+                           ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
  Settings:  optimizer_segments=3
 (9 rows)
 
-select count(*) from finra_t1 where x in (select y from finra_t2);
+select count(*) from subselect_t1 where x in (select y from subselect_t2);
  count 
 -------
      2
@@ -1351,25 +1351,25 @@ select count(*) from finra_t1 where x in (select y from finra_t2);
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select count(*) from finra_t1 where x in (select y from finra_t2 union all select y from finra_t2);
+explain select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
                                                    QUERY PLAN                                                   
 ----------------------------------------------------------------------------------------------------------------
  Aggregate  (cost=6.50..6.51 rows=1 width=8)
    ->  Gather Motion 2:1  (slice2; segments: 2)  (cost=6.45..6.49 rows=1 width=8)
          ->  Aggregate  (cost=6.45..6.46 rows=1 width=8)
                ->  Hash EXISTS Join  (cost=4.37..6.44 rows=2 width=0)
-                     Hash Cond: finra_t1.x = "IN_subquery".y
-                     ->  Seq Scan on finra_t1  (cost=0.00..2.02 rows=1 width=4)
+                     Hash Cond: subselect_t1.x = "IN_subquery".y
+                     ->  Seq Scan on subselect_t1  (cost=0.00..2.02 rows=1 width=4)
                      ->  Hash  (cost=4.30..4.30 rows=3 width=4)
                            ->  Redistribute Motion 2:2  (slice1; segments: 2)  (cost=0.00..4.30 rows=3 width=4)
                                  Hash Key: "IN_subquery".y
                                  ->  Append  (cost=0.00..4.12 rows=3 width=4)
-                                       ->  Seq Scan on finra_t2  (cost=0.00..2.03 rows=2 width=4)
-                                       ->  Seq Scan on finra_t2  (cost=0.00..2.03 rows=2 width=4)
+                                       ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
+                                       ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
  Settings:  optimizer_segments=3
 (13 rows)
 
-select count(*) from finra_t1 where x in (select y from finra_t2 union all select y from finra_t2);
+select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
  count 
 -------
      2
