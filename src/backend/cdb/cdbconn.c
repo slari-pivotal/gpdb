@@ -265,11 +265,18 @@ cdbconn_termSegmentDescriptor(SegmentDatabaseDescriptor *segdbDesc)
 
 /* Connect to a QE as a client via libpq. */
 bool                            /* returns true if connected */
-cdbconn_doConnect(SegmentDatabaseDescriptor    *segdbDesc,
-                  const char                   *options)
+cdbconn_doConnect(SegmentDatabaseDescriptor *segdbDesc,
+				  const char *gpqeid,
+				  const char *options)
 {
     CdbComponentDatabaseInfo   *q = segdbDesc->segment_database_info;
     PQExpBufferData             buffer;
+#define MAX_KEYWORDS 10
+	const char *keywords[MAX_KEYWORDS];
+	const char *values[MAX_KEYWORDS];
+	int			nkeywords = 0;
+	char		portstr[20];
+	char		timeoutstr[20];
 
     /*
      * We use PQExpBufferData instead of StringInfoData
@@ -280,14 +287,19 @@ cdbconn_doConnect(SegmentDatabaseDescriptor    *segdbDesc,
      */
     initPQExpBuffer(&buffer);
 
-    /*
-     * Build the connection string
-     */
-    if (options)
-    {
-        appendPQExpBufferStr(&buffer, options);
-        appendPQExpBufferChar(&buffer, ' ');
-    }
+	keywords[nkeywords] = "gpqeid";
+	values[nkeywords] = gpqeid;
+	nkeywords++;
+
+	/*
+	 * Build the connection string
+	 */
+	if (options)
+	{
+		keywords[nkeywords] = "options";
+		values[nkeywords] = options;
+		nkeywords++;
+	}
 
 	/*
 	 * On the master, we must use UNIX domain sockets for security -- as it can
@@ -304,50 +316,75 @@ cdbconn_doConnect(SegmentDatabaseDescriptor    *segdbDesc,
 		 */
 		if (q->hostip != NULL)
 		{
-	        appendPQExpBuffer(&buffer, "hostaddr=%s ", q->hostip);
+			keywords[nkeywords] = "hostaddr";
+			values[nkeywords] = q->hostip;
+			nkeywords++;
 		}
 		else if (q->address != NULL)
 		{
 			if (isdigit(q->address[0]))
 			{
-				appendPQExpBuffer(&buffer, "hostaddr=%s ", q->address);
+				keywords[nkeywords] = "hostaddr";
+				values[nkeywords] = q->address;
+				nkeywords++;
 			}
 			else
 			{
-				appendPQExpBuffer(&buffer, "host=%s ", q->address);
+				keywords[nkeywords] = "host";
+				values[nkeywords] = q->address;
+				nkeywords++;
 			}
 		}
 	    else if (q->hostname == NULL)
 		{
-	        appendPQExpBufferStr(&buffer, "host='' " );
+			keywords[nkeywords] = "host";
+			values[nkeywords] = "";
+			nkeywords++;
 		}
 	    else if (isdigit(q->hostname[0]))
 		{
-	        appendPQExpBuffer(&buffer, "hostaddr=%s ", q->hostname);
+			keywords[nkeywords] = "hostaddr";
+			values[nkeywords] = q->hostname;
+			nkeywords++;
 		}
 	    else
 		{
-	        appendPQExpBuffer(&buffer, "host=%s ", q->hostname);
+			keywords[nkeywords] = "host";
+			values[nkeywords] = q->hostname;
+			nkeywords++;
 		}
 	}
 
-    appendPQExpBuffer(&buffer, "port=%u ", q->port);
+	snprintf(portstr, sizeof(portstr), "%u", q->port);
+	keywords[nkeywords] = "port";
+	values[nkeywords] = portstr;
+	nkeywords++;
 
-	/* 
-	 * XXX: PQconnectdb() doesn't handle embedded quotes (') but they can be
-	 * in a valid database name.
-	 */
     if (MyProcPort->database_name)
-        appendPQExpBuffer(&buffer, "dbname='%s' ", MyProcPort->database_name);
+	{
+		keywords[nkeywords] = "dbname";
+		values[nkeywords] = MyProcPort->database_name;
+		nkeywords++;
+	}
 
-    appendPQExpBuffer(&buffer, "user='%s' ", MyProcPort->user_name);
+	keywords[nkeywords] = "user";
+	values[nkeywords] = MyProcPort->user_name;
+	nkeywords++;
 
-    appendPQExpBuffer(&buffer, "connect_timeout=%d ", gp_segment_connect_timeout);
+	snprintf(timeoutstr, sizeof(timeoutstr), "%d", gp_segment_connect_timeout);
+	keywords[nkeywords] = "connect_timeout";
+	values[nkeywords] = timeoutstr;
+	nkeywords++;
+
+	keywords[nkeywords] = NULL;
+	values[nkeywords] = NULL;
+
+	Assert (nkeywords < MAX_KEYWORDS);
 
     /*
      * Call libpq to connect
      */
-    segdbDesc->conn = PQconnectdb(buffer.data);
+    segdbDesc->conn = PQconnectdbParams(keywords, values, false);
 
     /* Build whoami string to identify the QE for use in messages. */
     if(!cdbconn_setSliceIndex(segdbDesc, -1))
