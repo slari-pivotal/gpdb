@@ -2271,7 +2271,7 @@ transformCreateExternalStmt(ParseState *pstate, CreateExternalStmt *stmt,
 	/*
 	 * Check if this is an EXECUTE ON MASTER table. We'll need this information
 	 * in transformExternalDistributedBy. While at it, we also check if an error
-	 * table is attempted to be used on ON MASTER table and error if so.
+	 * table or LOG ERRORS is attempted to be used on ON MASTER table and error if so.
 	 */
 	if(!iswritable)
 	{
@@ -2291,11 +2291,11 @@ transformCreateExternalStmt(ParseState *pstate, CreateExternalStmt *stmt,
 
 					onmaster = true;
 
-					if(srehDesc && srehDesc->errtable)
+					if(srehDesc && (srehDesc->errtable || srehDesc->into_file))
 						ereport(ERROR,
 								(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 								 errmsg("External web table with ON MASTER clause "
-										"cannot use error tables.")));
+										"cannot use LOG ERRORS feature.")));
 				}
 			}
 		}
