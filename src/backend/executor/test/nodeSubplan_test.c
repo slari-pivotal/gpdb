@@ -146,11 +146,11 @@ test__ExecSetParamPlan__Check_Dispatch_Results(void **state)
 int 
 main(int argc, char* argv[]) 
 {
-        cmockery_parse_arguments(argc, argv);
-        
-        const UnitTest tests[] = {
-                        unit_test(test__ExecSetParamPlan__Check_Dispatch_Results)
-        };
-        return run_tests(tests);
-}
+	cmockery_parse_arguments(argc, argv);
 
+	const UnitTest tests[] = {
+		unit_test(test__ExecSetParamPlan__Check_Dispatch_Results)
+	};
+
+	return run_tests(tests);
+}

@@ -395,18 +395,19 @@ test__IdleTracker_Shutdown__IgnoresDeactivationDuringProcExit(void **state)
 int
 main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-            	unit_test(test__IdleTracker_ShmemInit__InitializesGlobalVarsWhenPostmaster),
-            	unit_test(test__IdleTracker_Init__ActivatesProcess),
-            	unit_test(test__IdleTracker_ActivateProcess__ActivatesProcess),
-            	unit_test(test__IdleTracker_DeactivateProcess__DeactivatesProcessWithCleanup),
-            	unit_test(test__IdleTracker_Shutdown__DeactivatesProcessWithCleanup),
-            	unit_test(test__IdleTracker_DeactivateProcess__DeactivatesProcessWithoutCleanup),
-            	unit_test(test__IdleTracker_Shutdown__DeactivatesProcessWithoutCleanup),
-            	unit_test(test__IdleTracker_DeactivateProcess__IgnoresDeactivationDuringProcExit),
-            	unit_test(test__IdleTracker_Shutdown__IgnoresDeactivationDuringProcExit),
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test(test__IdleTracker_ShmemInit__InitializesGlobalVarsWhenPostmaster),
+		unit_test(test__IdleTracker_Init__ActivatesProcess),
+		unit_test(test__IdleTracker_ActivateProcess__ActivatesProcess),
+		unit_test(test__IdleTracker_DeactivateProcess__DeactivatesProcessWithCleanup),
+		unit_test(test__IdleTracker_Shutdown__DeactivatesProcessWithCleanup),
+		unit_test(test__IdleTracker_DeactivateProcess__DeactivatesProcessWithoutCleanup),
+		unit_test(test__IdleTracker_Shutdown__DeactivatesProcessWithoutCleanup),
+		unit_test(test__IdleTracker_DeactivateProcess__IgnoresDeactivationDuringProcExit),
+		unit_test(test__IdleTracker_Shutdown__IgnoresDeactivationDuringProcExit),
+	};
+
+	return run_tests(tests);
 }

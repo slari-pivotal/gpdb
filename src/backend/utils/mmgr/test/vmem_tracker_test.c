@@ -667,21 +667,22 @@ test__VmemTracker_RequestWaiver__WaiveEnforcement(void **state)
 int
 main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-            	unit_test_setup_teardown(test__VmemTracker_ReserveVmem__IgnoreWhenUninitialized, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_ReserveVmem__FailForInvalidSize, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_ReserveVmem__CacheSanity, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_ReserveVmem__TrackedBytesSanity, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_ReserveVmem__TrackedBytesSanityForRedzoneDetection, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_ReserveVmem__OOMLoggingBeforeReservation, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_ShmemInit__InitSegmentVmemLimitUnderPostmaster, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_ShmemInit__InitSegmentVmemLimitInPostmaster, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_ShmemInit__QuotaCalculation, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_Init__InitializesOthers, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_Shutdown__ReleasesAllVmem, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-            	unit_test_setup_teardown(test__VmemTracker_RequestWaiver__WaiveEnforcement, VmemTrackerTestSetup, VmemTrackerTestTeardown),
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test_setup_teardown(test__VmemTracker_ReserveVmem__IgnoreWhenUninitialized, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_ReserveVmem__FailForInvalidSize, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_ReserveVmem__CacheSanity, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_ReserveVmem__TrackedBytesSanity, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_ReserveVmem__TrackedBytesSanityForRedzoneDetection, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_ReserveVmem__OOMLoggingBeforeReservation, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_ShmemInit__InitSegmentVmemLimitUnderPostmaster, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_ShmemInit__InitSegmentVmemLimitInPostmaster, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_ShmemInit__QuotaCalculation, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_Init__InitializesOthers, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_Shutdown__ReleasesAllVmem, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+		unit_test_setup_teardown(test__VmemTracker_RequestWaiver__WaiveEnforcement, VmemTrackerTestSetup, VmemTrackerTestTeardown),
+	};
+
+	return run_tests(tests);
 }

@@ -17,7 +17,7 @@ int pqcomm_accept_mock(int socket, struct sockaddr *restrict address,
 
 #include "../pqcomm.c"
 
-/* Number of bytes requested to be sent through internal_flush */ 
+/* Number of bytes requested to be sent through internal_flush */
 #define TEST_NUM_BYTES 100
 
 /* Number of seconds to set the SO_SNDTIMEO to */
@@ -35,18 +35,19 @@ static int test_accept_socket;
 void
 test__internal_flush_succesfulSend(void **state)
 {
+	int			result;
 
-  expect_any(secure_write, port);
-  expect_any(secure_write, ptr); 
-  expect_any(secure_write, len); 
-  will_return(secure_write, TEST_NUM_BYTES);
-  
-  PqSendPointer = TEST_NUM_BYTES; 
-  int result = internal_flush();
+	expect_any(secure_write, port);
+	expect_any(secure_write, ptr);
+	expect_any(secure_write, len);
+	will_return(secure_write, TEST_NUM_BYTES);
 
-  assert_int_equal(result,0);
-  assert_int_equal(ClientConnectionLost, 0);
-  assert_int_equal(InterruptPending, 0);
+	PqSendPointer = TEST_NUM_BYTES;
+	result = internal_flush();
+
+	assert_int_equal(result,0);
+	assert_int_equal(ClientConnectionLost, 0);
+	assert_int_equal(InterruptPending, 0);
 }
 
 /*
@@ -55,7 +56,7 @@ test__internal_flush_succesfulSend(void **state)
 void
 _set_errno(void *val)
 {
-  errno = * ((int *) val); 
+	errno = *((int *) val);
 }
 
 /*
@@ -66,6 +67,7 @@ _set_errno(void *val)
 void
 test__internal_flush_failedSendEINTR(void **state)
 {
+	int			result;
 
 	/*
 	 * In the case secure_write gets interrupted, we loop around and
@@ -89,7 +91,7 @@ test__internal_flush_failedSendEINTR(void **state)
 	PqSendPointer = TEST_NUM_BYTES;
 
 	/* Call function under test */
-	int result = internal_flush();
+	result = internal_flush();
 
 	assert_int_equal(result,0);
 	assert_int_equal(ClientConnectionLost, 0);
@@ -104,6 +106,7 @@ test__internal_flush_failedSendEINTR(void **state)
 void
 test__internal_flush_failedSendEPIPE(void **state)
 {
+	int			result;
 
 	/* Simulating that secure_write will fail, and set the errno to EPIPE */
 	expect_any(secure_write, port);
@@ -123,12 +126,11 @@ test__internal_flush_failedSendEPIPE(void **state)
 	PqSendPointer = TEST_NUM_BYTES;
 
 	/* Call function under test */
-	int result = internal_flush();
+	result = internal_flush();
 
 	assert_int_equal(result,EOF);
 	assert_int_equal(ClientConnectionLost, 1);
 	assert_int_equal(InterruptPending, 1);
-
 }
 
 /*
@@ -136,16 +138,17 @@ test__internal_flush_failedSendEPIPE(void **state)
  * We don't actually accept an incoming connection, but we just return
  * a socket from the global variable test_accept_socket.
  */
-int pqcomm_accept_mock(int accept_sock, struct sockaddr *restrict address,
-		socklen_t *restrict address_len)
+int
+pqcomm_accept_mock(int accept_sock, struct sockaddr *restrict address,
+				   socklen_t *restrict address_len)
 {
 	return test_accept_socket;
 }
 
 
-/* 
- * Solaris doesn't support setting the SO_SNDTIMEO Socket option. Disable all the 
- * corresponding unit tests on Solaris
+/*
+ * Solaris doesn't support setting the SO_SNDTIMEO Socket option. Disable all
+ * the corresponding unit tests on Solaris
  */
 
 #if !defined(pg_on_solaris)
@@ -209,8 +212,8 @@ test__StreamConnection_set_SNDTIMEO_AF_UNIX(void **state)
 }
 
 /*
- * Test for StreamConnection that verifies that we don't set the socket SO_SNDTIMEO
- * timeout on segments
+ * Test for StreamConnection that verifies that we don't set the socket
+ * SO_SNDTIMEO timeout on segments
  */
 void
 test__StreamConnection_set_SNDTIMEO_segment(void **state)
@@ -244,19 +247,18 @@ test__StreamConnection_set_SNDTIMEO_segment(void **state)
 int
 main(int argc, char* argv[])
 {
-    cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-    const UnitTest tests[] = 
-    {
-    		unit_test(test__internal_flush_succesfulSend),
-    		unit_test(test__internal_flush_failedSendEINTR),
-    		unit_test(test__internal_flush_failedSendEPIPE),
+	const UnitTest tests[] = {
+		unit_test(test__internal_flush_succesfulSend),
+		unit_test(test__internal_flush_failedSendEINTR),
+		unit_test(test__internal_flush_failedSendEPIPE),
 #if !defined(pg_on_solaris)
-    		unit_test(test__StreamConnection_set_SNDTIMEO_AF_INET),
-    		unit_test(test__StreamConnection_set_SNDTIMEO_AF_UNIX),
-    		unit_test(test__StreamConnection_set_SNDTIMEO_segment)
+		unit_test(test__StreamConnection_set_SNDTIMEO_AF_INET),
+		unit_test(test__StreamConnection_set_SNDTIMEO_AF_UNIX),
+		unit_test(test__StreamConnection_set_SNDTIMEO_segment)
 #endif
-    };
+	};
 
-    return run_tests(tests);
+	return run_tests(tests);
 }

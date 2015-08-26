@@ -134,24 +134,25 @@ test_parse_option_from_params_5(void **state)
 	assert_true(result == NULL);
 }
 
-int		
-main(int argc, char* argv[]) {
-        cmockery_parse_arguments(argc, argv);
+int
+main(int argc, char* argv[])
+{
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = { 
-			unit_test(test__parse_prefix_from_params_valid_param),
-			unit_test(test__parse_prefix_from_params_no_param),
-			unit_test(test__parse_prefix_from_params_null_param),
-			unit_test(test__parse_prefix_from_params_space),
-			unit_test(test__parse_prefix_from_params_truncate),
-			unit_test(test__parse_prefix_from_params_no_prefix),
-            unit_test(test__parse_prefix_from_params_with_pre_incremental),
-			unit_test(test_parse_option_from_params_1),
-			unit_test(test_parse_option_from_params_2),
-			unit_test(test_parse_option_from_params_3),
-			unit_test(test_parse_option_from_params_4),
-			unit_test(test_parse_option_from_params_5)
-        };  
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test(test__parse_prefix_from_params_valid_param),
+		unit_test(test__parse_prefix_from_params_no_param),
+		unit_test(test__parse_prefix_from_params_null_param),
+		unit_test(test__parse_prefix_from_params_space),
+		unit_test(test__parse_prefix_from_params_truncate),
+		unit_test(test__parse_prefix_from_params_no_prefix),
+		unit_test(test__parse_prefix_from_params_with_pre_incremental),
+		unit_test(test_parse_option_from_params_1),
+		unit_test(test_parse_option_from_params_2),
+		unit_test(test_parse_option_from_params_3),
+		unit_test(test_parse_option_from_params_4),
+		unit_test(test_parse_option_from_params_5)
+	};
+
+	return run_tests(tests);
 }
-

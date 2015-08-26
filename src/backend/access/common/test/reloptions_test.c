@@ -11,7 +11,7 @@ test__parse_AO_options(void **state)
 	bool aovalue=false;
 	Datum opts;
 	ArrayType *array;
-	int nelems, i;
+	int nelems;
 	expect_any(parse_bool, value);
 	expect_any(parse_bool, result);
 	will_return(parse_bool, true);
@@ -59,7 +59,8 @@ main(int argc, char* argv[])
 	cmockery_parse_arguments(argc, argv);
 
 	const UnitTest tests[] = {
-			unit_test(test__parse_AO_options)
+		unit_test(test__parse_AO_options)
 	};
+
 	return run_tests(tests);
 }

@@ -35,7 +35,8 @@ void SetupMemoryDataStructures(void **state)
  * This method cleans up MemoryContext tree and
  * the MemoryAccount data structures.
  */
-void TeardownMemoryDataStructures(void **state)
+void
+TeardownMemoryDataStructures(void **state)
 {
 	MemoryContextReset(TopMemoryContext); /* TopMemoryContext deletion is not supported */
 
@@ -833,34 +834,34 @@ test__AllocSetRealloc__AdjustsOutstandingBalance(void **state)
 	pfree(testAlloc);
 }
 
-int 
-main(int argc, char* argv[]) 
+int
+main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-			unit_test_setup_teardown(test__MemoryAccounting_Allocate__ChargesOnlyActiveAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__MemoryAccounting_Allocate__AdjustsOutstanding, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__MemoryAccounting_Allocate__AdjustsPeak, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__MemoryAccounting_Free__FreesOldGenFromRollover, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__MemoryAccounting_Free__AdjustsOutstanding, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__MemoryAccounting_Free__KeepsPeakUnchanged, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocAllocInfo__SharesHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocAllocInfo__ChargesSharedChunkHeadersMemoryAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocAllocInfo__UsesNullAccountHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocAllocInfo__LooksAheadInSharedHeaderList, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocAllocInfo__IgnoresOldGenSharedHeaders, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocAllocInfo__InsertsIntoSharedHeaderList, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocFreeInfo__SharedChunkHeadersMemoryAccountIgnoresNullHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocFreeInfo__ReusesNullHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocFreeInfo__FreesObsoleteHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocFreeInfo__FreesOnlyOwnerAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__MemoryAccounting_Allocate__ChargesOnlyActiveAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocSetAllocImpl__LargeAllocInNewBlock, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocSetAllocImpl__LargeAllocInOutstandingBalance, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocSetAllocImpl__LargeAllocInActiveMemoryAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-			unit_test_setup_teardown(test__AllocSetRealloc__AdjustsOutstandingBalance, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test_setup_teardown(test__MemoryAccounting_Allocate__ChargesOnlyActiveAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Allocate__AdjustsOutstanding, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Allocate__AdjustsPeak, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Free__FreesOldGenFromRollover, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Free__AdjustsOutstanding, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Free__KeepsPeakUnchanged, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocAllocInfo__SharesHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocAllocInfo__ChargesSharedChunkHeadersMemoryAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocAllocInfo__UsesNullAccountHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocAllocInfo__LooksAheadInSharedHeaderList, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocAllocInfo__IgnoresOldGenSharedHeaders, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocAllocInfo__InsertsIntoSharedHeaderList, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocFreeInfo__SharedChunkHeadersMemoryAccountIgnoresNullHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocFreeInfo__ReusesNullHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocFreeInfo__FreesObsoleteHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocFreeInfo__FreesOnlyOwnerAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Allocate__ChargesOnlyActiveAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocSetAllocImpl__LargeAllocInNewBlock, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocSetAllocImpl__LargeAllocInOutstandingBalance, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocSetAllocImpl__LargeAllocInActiveMemoryAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__AllocSetRealloc__AdjustsOutstandingBalance, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+	};
+
+	return run_tests(tests);
 }
-

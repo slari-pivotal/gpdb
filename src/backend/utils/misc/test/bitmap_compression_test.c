@@ -304,20 +304,21 @@ test__BitmapCompression__IllegalCompressionType(void **state)
 	PG_END_TRY();	
 }
 
-int 
-main(int argc, char* argv[]) 
+int
+main(int argc, char* argv[])
 {
 	cmockery_parse_arguments(argc, argv);
 
 	const UnitTest tests[] = {
-			unit_test(test__BitmapCompression__ZeroBitmap),
-			unit_test(test__BitmapCompression__Raw),
-			unit_test(test__BitmapCompression__ExplicitNoCompression),
-			unit_test(test__BitmapCompression__ImplicitNoCompression),
-			unit_test(test__BitmapCompression__MultipleTypeBitmap),
-			unit_test(test__BitmapCompression_ShortDecompress),
-			unit_test(test__BitmapCompression__ExplicitNoCompressionNoBlocks),
-			unit_test(test__BitmapCompression__IllegalCompressionType)
+		unit_test(test__BitmapCompression__ZeroBitmap),
+		unit_test(test__BitmapCompression__Raw),
+		unit_test(test__BitmapCompression__ExplicitNoCompression),
+		unit_test(test__BitmapCompression__ImplicitNoCompression),
+		unit_test(test__BitmapCompression__MultipleTypeBitmap),
+		unit_test(test__BitmapCompression_ShortDecompress),
+		unit_test(test__BitmapCompression__ExplicitNoCompressionNoBlocks),
+		unit_test(test__BitmapCompression__IllegalCompressionType)
 	};
+
 	return run_tests(tests);
 }

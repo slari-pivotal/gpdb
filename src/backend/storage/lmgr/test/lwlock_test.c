@@ -147,11 +147,13 @@ test__LWLockCancelWait(void **state)
 }
 
 int
-main(int argc, char* argv[]) {
+main(int argc, char* argv[])
+{
 	cmockery_parse_arguments(argc, argv);
 
 	const UnitTest tests[] = {
 		unit_test(test__LWLockCancelWait)
 	};
+
 	return run_tests(tests);
 }

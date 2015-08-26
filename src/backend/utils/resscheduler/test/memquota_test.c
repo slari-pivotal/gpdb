@@ -15,7 +15,6 @@
 void
 test__ComputeMemLimitForChildGroups_rounding(void **state)
 {
-
 	OperatorGroupNode *parentGroup = (OperatorGroupNode *) palloc0(sizeof(OperatorGroupNode));
 	OperatorGroupNode *childGroup1 = (OperatorGroupNode *) palloc0(sizeof(OperatorGroupNode));
 	OperatorGroupNode *childGroup2 = (OperatorGroupNode *) palloc0(sizeof(OperatorGroupNode));
@@ -89,7 +88,8 @@ main(int argc, char* argv[])
 	cmockery_parse_arguments(argc, argv);
 
 	const UnitTest tests[] = {
-			unit_test(test__ComputeMemLimitForChildGroups_rounding)
+		unit_test(test__ComputeMemLimitForChildGroups_rounding)
 	};
+
 	return run_tests(tests);
 }

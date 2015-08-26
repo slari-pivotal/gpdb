@@ -52,8 +52,9 @@ main(int argc, char* argv[])
 	cmockery_parse_arguments(argc, argv);
 
 	const UnitTest tests[] = {
-			unit_test(test__ReleaseTupleDesc__no_ref_count),
-			unit_test(test__ReleaseTupleDesc__ref_count)
+		unit_test(test__ReleaseTupleDesc__no_ref_count),
+		unit_test(test__ReleaseTupleDesc__ref_count)
 	};
+
 	return run_tests(tests);
 }

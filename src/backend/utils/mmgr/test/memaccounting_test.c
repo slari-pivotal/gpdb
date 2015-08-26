@@ -1576,42 +1576,42 @@ test__MemoryAccounting_SaveToFile__GeneratesCorrectString(void **state)
 int
 main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-        		unit_test_setup_teardown(test__CreateMemoryAccountImpl__ActiveVsParent, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__CreateMemoryAccountImpl__TreeStructure, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__CreateMemoryAccountImpl__AutoDetectParent, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-				unit_test_setup_teardown(test__CreateMemoryAccountImpl__AccountProperties, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-				unit_test_setup_teardown(test__CreateMemoryAccountImpl__TracksMemoryOverhead, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-				unit_test_setup_teardown(test__CreateMemoryAccountImpl__AllocatesOnlyFromMemoryAccountMemoryContext, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_SwitchAccount__AccountIsSwitched, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_SwitchAccount__RequiresNonNullAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccountIsValid__ProperValidation, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__TreeStructure, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__ReusesLongLivingAccounts, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__RecreatesShortLivingAccounts, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__ReusesMemoryAccountMemoryContext, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__ResetsMemoryAccountMemoryContext, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__TopIsActive, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__AdvancesGeneration, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__TransferRemainingToRollover, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Reset__ResetPeakBalance, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__AdvancesGeneration, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__SetsActiveToRollover, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__MigratesChunkHeaders, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__PreservesChunkHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__TransfersBalanceToRolloverWithMigration, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__TransfersBalanceToRolloverWithoutMigration, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryContextReset__ResetsSharedChunkHeadersMemoryAccountBalance, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_Serialize_Deserialize__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_GetAccountName__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_GetPeak__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_GetBalance__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_ToString__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_SaveToLog__GeneratesCorrectString, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        		unit_test_setup_teardown(test__MemoryAccounting_SaveToFile__GeneratesCorrectString, SetupMemoryDataStructures, TeardownMemoryDataStructures),
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test_setup_teardown(test__CreateMemoryAccountImpl__ActiveVsParent, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__CreateMemoryAccountImpl__TreeStructure, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__CreateMemoryAccountImpl__AutoDetectParent, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__CreateMemoryAccountImpl__AccountProperties, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__CreateMemoryAccountImpl__TracksMemoryOverhead, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__CreateMemoryAccountImpl__AllocatesOnlyFromMemoryAccountMemoryContext, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_SwitchAccount__AccountIsSwitched, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_SwitchAccount__RequiresNonNullAccount, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccountIsValid__ProperValidation, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__TreeStructure, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__ReusesLongLivingAccounts, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__RecreatesShortLivingAccounts, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__ReusesMemoryAccountMemoryContext, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__ResetsMemoryAccountMemoryContext, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__TopIsActive, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__AdvancesGeneration, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__TransferRemainingToRollover, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Reset__ResetPeakBalance, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__AdvancesGeneration, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__SetsActiveToRollover, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__MigratesChunkHeaders, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__PreservesChunkHeader, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__TransfersBalanceToRolloverWithMigration, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_AdvanceMemoryAccountingGeneration__TransfersBalanceToRolloverWithoutMigration, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryContextReset__ResetsSharedChunkHeadersMemoryAccountBalance, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_Serialize_Deserialize__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_GetAccountName__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_GetPeak__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_GetBalance__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_ToString__Validate, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_SaveToLog__GeneratesCorrectString, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+		unit_test_setup_teardown(test__MemoryAccounting_SaveToFile__GeneratesCorrectString, SetupMemoryDataStructures, TeardownMemoryDataStructures),
+	};
+
+	return run_tests(tests);
 }
-

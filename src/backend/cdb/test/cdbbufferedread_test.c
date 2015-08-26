@@ -6,7 +6,8 @@
 #include "../cdbbufferedread.c"
 
 
-void test__BufferedReadInit__IsConsistent(void **state)
+void
+test__BufferedReadInit__IsConsistent(void **state)
 {
 	BufferedRead *bufferedRead = palloc(sizeof(BufferedRead));
 	int32 memoryLen = 512; /* maxBufferLen + largeReadLen */
@@ -31,7 +32,8 @@ void test__BufferedReadInit__IsConsistent(void **state)
 }
 
 
-void test__BufferedReadUseBeforeBuffer__IsNextReadLenZero(void **state)
+void
+test__BufferedReadUseBeforeBuffer__IsNextReadLenZero(void **state)
 {
     BufferedRead *bufferedRead = palloc(sizeof(BufferedRead));
     int32 memoryLen = 512; /* maxBufferLen + largeReadLen */
@@ -78,12 +80,15 @@ void test__BufferedReadUseBeforeBuffer__IsNextReadLenZero(void **state)
 	PG_END_TRY();	
 }
 
-int main(int argc, char* argv[]) {
+int
+main(int argc, char* argv[])
+{
 	cmockery_parse_arguments(argc, argv);
 
 	const UnitTest tests[] = {
-			unit_test(test__BufferedReadUseBeforeBuffer__IsNextReadLenZero),
-			unit_test(test__BufferedReadInit__IsConsistent)
+		unit_test(test__BufferedReadUseBeforeBuffer__IsNextReadLenZero),
+		unit_test(test__BufferedReadInit__IsConsistent)
 	};
+
 	return run_tests(tests);
 }

@@ -56,7 +56,6 @@ char *execWorkfile_pstrdup_mock(const char *string)
 void
 test__ExecWorkFile_Create__InTopMemContext(void **state)
 {
-
 	char *test_filename = "foo";
 
 	will_return(WorkfileQueryspace_AddWorkfile, true);
@@ -94,7 +93,6 @@ test__ExecWorkFile_Create__InTopMemContext(void **state)
 void
 test__ExecWorkFile_Open__InTopMemContext(void **state)
 {
-
 	char *test_filename = "foo";
 	BufFile *bfile = (BufFile *) 0xbffffffe;
 
@@ -133,12 +131,12 @@ test__ExecWorkFile_Open__InTopMemContext(void **state)
 int
 main(int argc, char* argv[])
 {
-    cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-    const UnitTest tests[] = {
-                                 unit_test(test__ExecWorkFile_Create__InTopMemContext),
-                                 unit_test(test__ExecWorkFile_Open__InTopMemContext)
-                             };
+	const UnitTest tests[] = {
+		unit_test(test__ExecWorkFile_Create__InTopMemContext),
+		unit_test(test__ExecWorkFile_Open__InTopMemContext)
+	};
 
-    return run_tests(tests);
+	return run_tests(tests);
 }

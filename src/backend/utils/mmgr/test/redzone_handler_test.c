@@ -409,17 +409,18 @@ test__RedZoneHandler_FlagTopConsumer__UpdatesEventVersions(void **state)
 int
 main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-            	unit_test(test__RedZoneHandler_ShmemInit__InitializesGlobalVarsWhenPostmaster),
-            	unit_test(test__RedZoneHandler_ShmemInit__InitializesUnderPostmaster),
-            	unit_test(test__RedZoneHandler_IsVmemRedZone__ProperlyIdentifiesRedZone),
-            	unit_test(test__RedZoneHandler_FlagTopConsumer__SingletonDetector),
-            	unit_test(test__RedZoneHandler_FlagTopConsumer__FindsTopConsumer),
-            	unit_test(test__RedZoneHandler_FlagTopConsumer__IgnoresIdleSession),
-            	unit_test(test__RedZoneHandler_FlagTopConsumer__ReactivatesDetectorIfNoActiveSession),
-            	unit_test(test__RedZoneHandler_FlagTopConsumer__UpdatesEventVersions),
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test(test__RedZoneHandler_ShmemInit__InitializesGlobalVarsWhenPostmaster),
+		unit_test(test__RedZoneHandler_ShmemInit__InitializesUnderPostmaster),
+		unit_test(test__RedZoneHandler_IsVmemRedZone__ProperlyIdentifiesRedZone),
+		unit_test(test__RedZoneHandler_FlagTopConsumer__SingletonDetector),
+		unit_test(test__RedZoneHandler_FlagTopConsumer__FindsTopConsumer),
+		unit_test(test__RedZoneHandler_FlagTopConsumer__IgnoresIdleSession),
+		unit_test(test__RedZoneHandler_FlagTopConsumer__ReactivatesDetectorIfNoActiveSession),
+		unit_test(test__RedZoneHandler_FlagTopConsumer__UpdatesEventVersions),
+	};
+
+	return run_tests(tests);
 }

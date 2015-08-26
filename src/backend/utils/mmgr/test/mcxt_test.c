@@ -17,15 +17,14 @@ test__MemoryContextInit__CallsMemoryAccountingReset(void **state)
 	MemoryContextInit();
 }
 
-int 
-main(int argc, char* argv[]) 
+int
+main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-        		unit_test(test__MemoryContextInit__CallsMemoryAccountingReset)
+	const UnitTest tests[] = {
+		unit_test(test__MemoryContextInit__CallsMemoryAccountingReset)
+	};
 
-        };
-        return run_tests(tests);
+	return run_tests(tests);
 }
-

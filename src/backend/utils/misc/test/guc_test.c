@@ -59,10 +59,10 @@ test__GUCArrayReset__all_userset_guc(void **state)
 	ArrayType  *in;
 	List 	   *guc_list;
 	int			elems;
-	
+
 	build_guc_variables();
 	will_return(superuser, false);
-	
+
 	/* construct text array */
 	elems = 3;
 	guc_list = list_make3("application_name=unittest", "password_encryption=off", "backslash_quote=off");
@@ -90,7 +90,7 @@ test__GUCArrayReset__all_non_userset_guc(void **state)
 
 	build_guc_variables();
 	will_return(superuser, false);
-	
+
 	/* construct text array */
 	elems = 3;
 	guc_list = list_make3("log_error_verbosity=terse", "gp_log_format=csv", "upgrade_mode=true");
@@ -141,7 +141,7 @@ test__GUCArrayReset__mix_guc(void **state)
 
 	build_guc_variables();
 	will_return(superuser, false);
-	
+
 	/* construct text array */
 	elems = 4;
 	guc_list = list_make4("password_encryption=on", "log_error_verbosity=verbose", "application_name=mixtest", "allow_system_table_mods=dml");
@@ -200,7 +200,7 @@ test__GUCArrayReset__invalid_guc(void **state)
 void 
 test__GUCArrayReset__md_array(void **state) 
 {
-	ArrayType  *in;	
+	ArrayType  *in;
 	List       *guc_list;
 	int         elems;
 	int			ndims;
@@ -298,7 +298,7 @@ create_md_guc_array(List *guc_list, int elems, int ndims)
 	Datum	   *darray;
 	int			dims[ndims];
 	int			lbs[1];
-	
+
 	darray = create_guc_datum_array(guc_list, elems * ndims);
 
 	dims[0] = elems;
@@ -310,23 +310,22 @@ create_md_guc_array(List *guc_list, int elems, int ndims)
 	return array;
 }
 
-
-int 
-main(int argc, char* argv[]) 
+int
+main(int argc, char* argv[])
 {
 	cmockery_parse_arguments(argc, argv);
 
 	const UnitTest tests[] = {
-			unit_test(test__GUCArrayReset__superuser),
-			unit_test(test__GUCArrayReset__NULL_array),
-			unit_test(test__GUCArrayReset__all_userset_guc),
-			unit_test(test__GUCArrayReset__all_non_userset_guc),
-			unit_test(test__GUCArrayReset__mix_guc),
-			unit_test(test__GUCArrayReset__invalid_guc),
-			unit_test(test__GUCArrayReset__md_array),
-			unit_test(test__set_config_option), 
-			unit_test(test__find_option)
+		unit_test(test__GUCArrayReset__superuser),
+		unit_test(test__GUCArrayReset__NULL_array),
+		unit_test(test__GUCArrayReset__all_userset_guc),
+		unit_test(test__GUCArrayReset__all_non_userset_guc),
+		unit_test(test__GUCArrayReset__mix_guc),
+		unit_test(test__GUCArrayReset__invalid_guc),
+		unit_test(test__GUCArrayReset__md_array),
+		unit_test(test__set_config_option),
+		unit_test(test__find_option)
 	};
+
 	return run_tests(tests);
 }
-

@@ -528,20 +528,21 @@ test__RunawayCleaner_RunawayCleanupDoneForSession__ResetsRunawayFlagAndReactivat
 int
 main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-            	unit_test(test__RunawayCleaner_StartCleanup__IgnoresNonRunaway),
-            	unit_test(test__RunawayCleaner_StartCleanup__IgnoresDuplicateCleanup),
-            	unit_test(test__RunawayCleaner_StartCleanup__StartsCleanupIfPossible),
-            	unit_test(test__RunawayCleaner_StartCleanup__IgnoresCleanupInCriticalSection),
-            	unit_test(test__RunawayCleaner_StartCleanup__IgnoresCleanupInHoldoffInterrupt),
-            	unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__IgnoresCleanupIfNotRequired),
-            	unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__IgnoresDuplicateCalls),
-            	unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__PreventsDuplicateCleanup),
-            	unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__UndoDeactivation),
-            	unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__ReactivatesRunawayDetection),
-            	unit_test(test__RunawayCleaner_RunawayCleanupDoneForSession__ResetsRunawayFlagAndReactivateRunawayDetector),
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test(test__RunawayCleaner_StartCleanup__IgnoresNonRunaway),
+		unit_test(test__RunawayCleaner_StartCleanup__IgnoresDuplicateCleanup),
+		unit_test(test__RunawayCleaner_StartCleanup__StartsCleanupIfPossible),
+		unit_test(test__RunawayCleaner_StartCleanup__IgnoresCleanupInCriticalSection),
+		unit_test(test__RunawayCleaner_StartCleanup__IgnoresCleanupInHoldoffInterrupt),
+		unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__IgnoresCleanupIfNotRequired),
+		unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__IgnoresDuplicateCalls),
+		unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__PreventsDuplicateCleanup),
+		unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__UndoDeactivation),
+		unit_test(test__RunawayCleaner_RunawayCleanupDoneForProcess__ReactivatesRunawayDetection),
+		unit_test(test__RunawayCleaner_RunawayCleanupDoneForSession__ResetsRunawayFlagAndReactivateRunawayDetector),
+	};
+
+	return run_tests(tests);
 }

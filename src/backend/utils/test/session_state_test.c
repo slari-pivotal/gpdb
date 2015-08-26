@@ -590,25 +590,26 @@ test__SessionState_Shutdown__MarksSessionCleanUponRelease(void **state)
 int
 main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
-        /*
-         * Initializing the gp_sessionstate_loglevel to make sure it is not
-         * set to some random value
-         */
-        gp_sessionstate_loglevel = LOG;
+	cmockery_parse_arguments(argc, argv);
+	/*
+	 * Initializing the gp_sessionstate_loglevel to make sure it is not
+	 * set to some random value
+	 */
+	gp_sessionstate_loglevel = LOG;
 
-        const UnitTest tests[] = {
-            	unit_test(test__SessionState_ShmemSize__StructLayout),
-            	unit_test(test__SessionState_ShmemSize__CalculatesCorrectSize),
-            	unit_test(test__SessionState_ShmemInit__NoOpUnderPostmaster),
-            	unit_test(test__SessionState_ShmemInit__InitializesWhenPostmaster),
-            	unit_test(test__SessionState_ShmemInit__LinkedListSanity),
-            	unit_test(test__SessionState_Init__TestSideffects),
-            	unit_test(test__SessionState_Init__AcquiresWithReuse),
-            	unit_test(test__SessionState_Init__AcquiresAndInitializes),
-            	unit_test(test__SessionState_Init__FailsIfNoFreeSessionStateEntry),
-            	unit_test(test__SessionState_Shutdown__ReleaseSessionEntry),
-            	unit_test(test__SessionState_Shutdown__MarksSessionCleanUponRelease),
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test(test__SessionState_ShmemSize__StructLayout),
+		unit_test(test__SessionState_ShmemSize__CalculatesCorrectSize),
+		unit_test(test__SessionState_ShmemInit__NoOpUnderPostmaster),
+		unit_test(test__SessionState_ShmemInit__InitializesWhenPostmaster),
+		unit_test(test__SessionState_ShmemInit__LinkedListSanity),
+		unit_test(test__SessionState_Init__TestSideffects),
+		unit_test(test__SessionState_Init__AcquiresWithReuse),
+		unit_test(test__SessionState_Init__AcquiresAndInitializes),
+		unit_test(test__SessionState_Init__FailsIfNoFreeSessionStateEntry),
+		unit_test(test__SessionState_Shutdown__ReleaseSessionEntry),
+		unit_test(test__SessionState_Shutdown__MarksSessionCleanUponRelease),
+	};
+
+	return run_tests(tests);
 }

@@ -11,8 +11,9 @@
 void
 test_checkValidUntilForGssapi1(void **state)
 {
-	int result = -1;
-	Port *port = (Port *)malloc(sizeof(Port));
+	int			result = -1;
+	Port	   *port = (Port *) malloc(sizeof(Port));
+
 	port->user_name = "foo";
 	expect_any(get_role_line, role);
 	will_return(get_role_line, NULL);
@@ -23,10 +24,11 @@ test_checkValidUntilForGssapi1(void **state)
 void
 test_checkValidUntilForGssapi2(void **state)
 {
-	int result = -1;
-	List *list = list_make1("foo");
-	List **line = &list;	
-	Port *port = (Port *)malloc(sizeof(Port));
+	int			result = -1;
+	List	   *list = list_make1("foo");
+	List	  **line = &list;
+	Port	   *port = (Port *) malloc(sizeof(Port));
+
 	port->user_name = "foo";
 	expect_any(get_role_line, role);
 	will_return(get_role_line, line);
@@ -37,11 +39,12 @@ test_checkValidUntilForGssapi2(void **state)
 void
 test_checkValidUntilForGssapi3(void **state)
 {
-	int result = -1;
-	ListCell *cell; 
-	List *list = list_make1(cell);
-	List **line = &list;	
-	Port *port = (Port *)malloc(sizeof(Port));
+	int			result = -1;
+	ListCell   *cell;
+	List	   *list = list_make1(cell);
+	List	  **line = &list;
+	Port	   *port = (Port *) malloc(sizeof(Port));
+
 	port->user_name = "foo";
 	expect_any(get_role_line, role);
 	will_return(get_role_line, line);
@@ -52,12 +55,13 @@ test_checkValidUntilForGssapi3(void **state)
 void
 test_checkValidUntilForGssapi4(void **state)
 {
-	int result = -1;
-	ListCell *cell;
-	ListCell *cell1;
-	List *list = list_make2(cell, cell1);
-	List **line = &list;	
-	Port *port = (Port *)malloc(sizeof(Port));
+	int			result = -1;
+	ListCell   *cell;
+	ListCell   *cell1;
+	List	   *list = list_make2(cell, cell1);
+	List	  **line = &list;
+	Port	   *port = (Port *) malloc(sizeof(Port));
+
 	port->user_name = "foo";
 	expect_any(get_role_line, role);
 	will_return(get_role_line, line);
@@ -68,13 +72,14 @@ test_checkValidUntilForGssapi4(void **state)
 void
 test_checkValidUntilForGssapi5(void **state)
 {
-	int result = -1;
-	ListCell *cell;
-	ListCell *cell1;
-	ListCell *cell2;
-	List *list = list_make3(cell, "foo", "bar");
-	List **line = &list;	
-	Port *port = (Port *)malloc(sizeof(Port));
+	int			result = -1;
+	ListCell   *cell;
+	ListCell   *cell1;
+	ListCell   *cell2;
+	List	   *list = list_make3(cell, "foo", "bar");
+	List	  **line = &list;
+	Port	   *port = (Port *) malloc(sizeof(Port));
+
 	port->user_name = "foo";
 	expect_any(get_role_line, role);
 	will_return(get_role_line, line);
@@ -91,13 +96,14 @@ test_checkValidUntilForGssapi5(void **state)
 void
 test_checkValidUntilForGssapi6(void **state)
 {
-	int result = -1;
-	ListCell *cell;
-	ListCell *cell1;
-	ListCell *cell2;
-	List *list = list_make3(cell, "foo", "bar");
-	List **line = &list;	
-	Port *port = (Port *)malloc(sizeof(Port));
+	int			result = -1;
+	ListCell   *cell;
+	ListCell   *cell1;
+	ListCell   *cell2;
+	List	   *list = list_make3(cell, "foo", "bar");
+	List	  **line = &list;
+	Port	   *port = (Port *) malloc(sizeof(Port));
+
 	port->user_name = "foo";
 	expect_any(get_role_line, role);
 	will_return(get_role_line, line);
@@ -112,20 +118,20 @@ test_checkValidUntilForGssapi6(void **state)
 }
 #endif
 
-int 
-main(int argc, char* argv[]) 
+int
+main(int argc, char* argv[])
 {
 	cmockery_parse_arguments(argc, argv);
 
 	const UnitTest tests[] = {
-		#ifdef ENABLE_GSS
+#ifdef ENABLE_GSS
 		unit_test(test_checkValidUntilForGssapi1),
 		unit_test(test_checkValidUntilForGssapi2),
 		unit_test(test_checkValidUntilForGssapi3),
 		unit_test(test_checkValidUntilForGssapi4),
 		unit_test(test_checkValidUntilForGssapi5),
 		unit_test(test_checkValidUntilForGssapi6)
-		#endif
+#endif
 	};
 
 	return run_tests(tests);

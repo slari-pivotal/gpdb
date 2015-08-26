@@ -37,12 +37,14 @@ test__gp_strxfrm__LongQuery(void **state)
 }
 
 int
-main(int argc, char* argv[]) {
-        cmockery_parse_arguments(argc, argv);
+main(int argc, char* argv[])
+{
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-                        unit_test(test__gp_strxfrm__LongQuery)
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test(test__gp_strxfrm__LongQuery)
+	};
+
+	return run_tests(tests);
 }
 

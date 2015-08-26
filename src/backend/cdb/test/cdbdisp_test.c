@@ -24,7 +24,6 @@ _ExceptionalCondition()
 void
 _init_cdbdisp_dispatchPlan(QueryDesc *queryDesc)
 {
-
 #ifdef USE_ASSERT_CHECKING
 
 	_ExceptionalCondition( );
@@ -51,15 +50,15 @@ _init_cdbdisp_dispatchPlan(QueryDesc *queryDesc)
 void
 test__cdbdisp_dispatchPlan__Overflow_plan_size_in_kb(void **state)
 {
-	bool success = false;
+	bool		success = false;
 
 	struct CdbDispatcherState *ds = (struct CdbDispatcherState *)
-                                         palloc0(sizeof(struct CdbDispatcherState));
+		palloc0(sizeof(struct CdbDispatcherState));
 
-        struct QueryDesc *queryDesc = (struct QueryDesc *)
-                                        palloc0(sizeof(QueryDesc));
+	struct QueryDesc *queryDesc = (struct QueryDesc *)
+		palloc0(sizeof(QueryDesc));
 
-        _init_cdbdisp_dispatchPlan(queryDesc);
+	_init_cdbdisp_dispatchPlan(queryDesc);
 
 	/* Set max plan to a value that will require handling INT32 
 	 * overflow of the current plan size */
@@ -70,45 +69,46 @@ test__cdbdisp_dispatchPlan__Overflow_plan_size_in_kb(void **state)
 	/* Set num_slices and uncompressed_size to be INT_MAX-1 to force overflow */
 	queryDesc->plannedstmt->planTree->nMotionNodes = INT_MAX-1;
 
-        expect_any(serializeNode, node);
-        expect_any(serializeNode, size);
-        expect_any(serializeNode, uncompressed_size_out);
-        will_assign_value(serializeNode, uncompressed_size_out, INT_MAX-1);
-        will_return(serializeNode, NULL);
+	expect_any(serializeNode, node);
+	expect_any(serializeNode, size);
+	expect_any(serializeNode, uncompressed_size_out);
+	will_assign_value(serializeNode, uncompressed_size_out, INT_MAX-1);
+	will_return(serializeNode, NULL);
 
-        PG_TRY();
-        {
-                cdbdisp_dispatchPlan(queryDesc, true, true, ds);
-        }
-        PG_CATCH();
-        {
+	PG_TRY();
+	{
+		cdbdisp_dispatchPlan(queryDesc, true, true, ds);
+	}
+	PG_CATCH();
+	{
 		/* Verify that we get the correct error (limit exceeded) */
-                ErrorData *edata = CopyErrorData();
+		ErrorData *edata = CopyErrorData();
 
-                StringInfo message = makeStringInfo();
-                appendStringInfo(message,
-			"Query plan size limit exceeded, current size: "  UINT64_FORMAT "KB, max allowed size: %dKB", 
-				((INT_MAX-1)*(INT_MAX-1)/(uint64)1024), INT_MAX);
+		StringInfo message = makeStringInfo();
+		appendStringInfo(message,
+						 "Query plan size limit exceeded, current size: "  UINT64_FORMAT "KB, max allowed size: %dKB",
+						 ((INT_MAX-1)*(INT_MAX-1)/(uint64)1024), INT_MAX);
 
-                if ( edata->elevel == ERROR &&
-                     strncmp(edata->message, message->data, message->len))
-                {
-                        success = true;
-                }
+		if (edata->elevel == ERROR &&
+			strncmp(edata->message, message->data, message->len))
+		{
+			success = true;
+		}
 
-        }
-        PG_END_TRY();
+	}
+	PG_END_TRY();
 
-        assert_true(success);
+	assert_true(success);
 }
 	
 int		
-main(int argc, char* argv[]) {
-        cmockery_parse_arguments(argc, argv);
+main(int argc, char* argv[])
+{
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = { 
-			unit_test(test__cdbdisp_dispatchPlan__Overflow_plan_size_in_kb)
-        };  
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test(test__cdbdisp_dispatchPlan__Overflow_plan_size_in_kb)
+	};
+
+	return run_tests(tests);
 }
-

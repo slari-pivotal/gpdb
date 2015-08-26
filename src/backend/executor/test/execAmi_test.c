@@ -24,10 +24,11 @@ test__ExecEagerFree_ExecEagerFreeShareInputScan(void **state)
 int
 main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
+	cmockery_parse_arguments(argc, argv);
 
-        const UnitTest tests[] = {
-                        unit_test(test__ExecEagerFree_ExecEagerFreeShareInputScan)
-        };
-        return run_tests(tests);
+	const UnitTest tests[] = {
+		unit_test(test__ExecEagerFree_ExecEagerFreeShareInputScan)
+	};
+
+	return run_tests(tests);
 }

@@ -231,17 +231,18 @@ test__find_memory_limited_substring__mb_chars_within_memory_limit(void **state)
 #endif
 }
 
-int 
-main(int argc, char* argv[]) 
+int
+main(int argc, char* argv[])
 {
-        cmockery_parse_arguments(argc, argv);
-        
-        const UnitTest tests[] = {
-			unit_test(test__find_memory_limited_substring__small_string),
-			unit_test(test__find_memory_limited_substring__null_string),
-			unit_test(test__find_memory_limited_substring__ascii_chars_within_memory_limit),
-			unit_test(test__find_memory_limited_substring__mb_chars_within_memory_limit)
-        };
-        return run_tests(tests);
+	cmockery_parse_arguments(argc, argv);
+
+	const UnitTest tests[] = {
+		unit_test(test__find_memory_limited_substring__small_string),
+		unit_test(test__find_memory_limited_substring__null_string),
+		unit_test(test__find_memory_limited_substring__ascii_chars_within_memory_limit),
+		unit_test(test__find_memory_limited_substring__mb_chars_within_memory_limit)
+	};
+
+	return run_tests(tests);
 }
 
