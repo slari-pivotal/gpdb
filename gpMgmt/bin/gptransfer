@@ -41,6 +41,7 @@ try:
     from gppylib.commands.unix import MakeDirectory, RemoveDirectory, \
         RemoveFiles, FileDirExists, Scp, LINUX, curr_platform
     from gppylib.commands.gp import get_gphome
+    from gppylib.db import dbconn
     from gppylib.db.dbconn import connect, DbURL, execSQL, \
         execSQLForSingletonRow
     from gppylib.db.catalog import getUserDatabaseList, doesSchemaExist, dropSchemaIfExist
@@ -2380,6 +2381,10 @@ class GpTransfer(object):
 
         self._validate_host_map()
 
+        self._validate_filespace(self._options.source_host, self._options.source_port, self._options.source_user,
+                                 self._options.dest_host, self._options.dest_port, self._options.dest_user,
+                                 self._options.full)
+
         self._validate_table_transfer_set()
 
         # At most we'll execute primary segment count of commands in the subbatches
@@ -2924,6 +2929,52 @@ class GpTransfer(object):
         if self._options.delimiter == ',' and self._options.format.lower() == 'text':
             raise ProgramArgumentValidationException(
                 'Invalid --delimiter. Default delimiter "," is not allowed in TEXT format. Specify --delimiter option for TEXT')
+
+    def _validate_filespace(self, source_host, source_port, source_user, dest_host, dest_port, dest_user, full):
+        dest_fs_sql = """SELECT * from pg_filespace where fsname = '%s'"""
+        with dbconn.connect(dbconn.DbURL(dest_host, dest_port, 'template1', dest_user)) as dest_conn:
+            if full:
+                source_fs_sql = """SELECT fsname FROM pg_filespace"""
+                with dbconn.connect(dbconn.DbURL(source_host, source_port, 'template1', source_user)) as source_conn:
+                    source_cur = execSQL(source_conn, source_fs_sql)
+                    for row in source_cur:
+                        fs = row[0]
+                        dest_cur = execSQL(dest_conn, dest_fs_sql % fs)
+                        if dest_cur.rowcount != 1:
+                            dest_cur.close()
+                            source_cur.close()
+                            raise Exception("Filespace '%s' does not exist on destination. Please create the filespace to run gptransfer" % fs)
+                        dest_cur.close()
+                    source_cur.close()
+            else:
+                source_fs_sql = """SELECT fsname FROM pg_filespace WHERE oid IN(SELECT spcfsoid FROM pg_tablespace WHERE oid IN (SELECT dattablespace FROM  pg_database WHERE datname IN ('%s')))"""
+                with dbconn.connect(dbconn.DbURL(source_host, source_port, 'template1', source_user)) as source_conn:
+                    for table_pair in self._table_transfer_set:
+                        source_cur = execSQL(source_conn, source_fs_sql % table_pair.source.database)
+                        for row in source_cur:
+                            fs = row[0]
+                            dest_cur = execSQL(dest_conn, dest_fs_sql % fs)
+                            if dest_cur.rowcount != 1:
+                                dest_cur.close()
+                                source_cur.close()
+                                raise Exception("Filespace '%s' does not exist on destination. Please create the filespace to run gptransfer" % fs)
+                            dest_cur.close()
+                        source_cur.close()
+                ### This code will be executed only if the filespace of the table is different than database
+                source_table_sql = """SELECT fsname FROM pg_filespace WHERE oid IN (select spcfsoid from pg_tablespace where spcname in (select tablespace from pg_tables where tablename='%s'))"""
+                for table_pair in self._table_transfer_set:
+                    with dbconn.connect(dbconn.DbURL(source_host, source_port, 'template1', source_user)) as source_conn:
+                        cursor = execSQL(source_conn, source_table_sql % table_pair.source.table)
+                        for row in cursor:
+                            fs = row[0]
+                            dest_cur = execSQL(dest_conn, dest_fs_sql % fs)
+                            if dest_cur.rowcount != 1:
+                                dest_cur.close()
+                                cursor.close()
+                                raise Exception("Filespace '%s' does not exist on destination. Please create the filespace to run gptransfer" % fs)
+                            dest_cur.close()
+                        cursor.close()
+                ###
 
     def _get_configurations(self):
         """
