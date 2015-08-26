@@ -3,9 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "postgres.h"
-#include "catalog/catcore.h"
-
 #include "../catcore.c"
 
 

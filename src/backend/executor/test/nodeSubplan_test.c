@@ -3,9 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
-#include "postgres.h"
-#include "nodes/nodes.h"
 #include "../nodeSubplan.c"
 
 /* Function passed to testing framework

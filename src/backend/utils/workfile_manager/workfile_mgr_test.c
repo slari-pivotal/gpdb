@@ -8,8 +8,10 @@
  *-------------------------------------------------------------------------
  */
 
-#include <postgres.h>
 #include <unistd.h>
+
+#include "postgres.h"
+
 #include "cdb/cdbgang.h"
 #include "cdb/cdbvars.h"
 #include "executor/execWorkfile.h"

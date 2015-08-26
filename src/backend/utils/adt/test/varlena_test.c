@@ -3,9 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
-#include "postgres.h"
-#include "nodes/nodes.h"
 #include "../varlena.c"
 
 #define MEMORY_LIMIT 8 /* 8 bytes memory limit */

@@ -3,9 +3,7 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
 #include "../syslogger.c"
-#include "postgres.h"
 
 int
 mkdir(const char *path, mode_t mode)

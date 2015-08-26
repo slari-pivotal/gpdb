@@ -3,7 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
 #include "../lwlock.c"
 
 /* Returns true if passed in proc is found in the waiters list */

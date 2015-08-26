@@ -3,10 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
-#include "postgres.h"
-#include "nodes/nodes.h"
-
 #include "../runaway_cleaner.c"
 
 #define EXPECT_ELOG(LOG_LEVEL)     \

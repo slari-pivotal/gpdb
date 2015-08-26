@@ -3,7 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
 #include "../guc.c"
 
 #define assert_null(c) assert_true(c == NULL)

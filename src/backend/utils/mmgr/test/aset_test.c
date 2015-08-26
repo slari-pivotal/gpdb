@@ -3,9 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
-#include "postgres.h"
-#include "nodes/nodes.h"
 #include "../aset.c"
 
 #define NEW_ALLOC_SIZE 1024

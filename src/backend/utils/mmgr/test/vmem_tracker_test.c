@@ -3,10 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
-#include "postgres.h"
-#include "nodes/nodes.h"
-
 #include "../vmem_tracker.c"
 
 #define EXPECT_EXCEPTION()     \

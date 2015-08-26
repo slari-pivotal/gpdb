@@ -4,8 +4,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
-#include "postgres.h"
 #include "catquery_mock.c"
 
 

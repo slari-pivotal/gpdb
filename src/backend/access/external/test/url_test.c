@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <setjmp.h>
 #include "cmockery.h"
-#include "c.h"
+
 #include "../url.c"
 
 void

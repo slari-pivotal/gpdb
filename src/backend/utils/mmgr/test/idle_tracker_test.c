@@ -3,11 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
-#include "postgres.h"
-#include "nodes/nodes.h"
-#include "miscadmin.h"
-
 #include "../idle_tracker.c"
 
 /*

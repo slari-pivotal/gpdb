@@ -4,7 +4,6 @@
 
 #include "cmockery.h"
 
-#include "c.h"
 #include "postgres.h"
 #include "utils/string_wrapper.h"
 

@@ -3,9 +3,7 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
 #include "postgres.h"
-#include "nodes/nodes.h"
 
 static Size add_size(Size s1, Size s2);
 static Size mul_size(Size s1, Size s2);

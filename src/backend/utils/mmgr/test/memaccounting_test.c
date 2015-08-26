@@ -3,9 +3,7 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
 #include "postgres.h"
-#include "nodes/nodes.h"
 
 /*
  * We assume the maximum output size from any memory accounting output

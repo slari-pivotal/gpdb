@@ -3,7 +3,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
 #include "../bitmap_compression.c"
 
 void 

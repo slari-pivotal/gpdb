@@ -4,8 +4,6 @@
 #include <setjmp.h>
 #include "cmockery.h"
 
-#include "c.h"
-#include "postgres.h"
 #include "../catquery.c"
 
 static const FormData_pg_attribute Desc_pg_class[Natts_pg_class] = {Schema_pg_class};

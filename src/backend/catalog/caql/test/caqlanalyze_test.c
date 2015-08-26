@@ -17,12 +17,11 @@
  */
 #define elog_finish __elog_finish
 
-#include "postgres.h"
-#include "access/tupdesc.h"
+#include "../caqlanalyze.c"
+
 #include "catalog/pg_constraint.h"
 #include "catalog/pg_proc.h"
 #include "utils/fmgroids.h"
-#include "../caqlanalyze.c"
 
 #define expect_value_or_any(func, arg) do{ \
 	if (use_##arg) \
