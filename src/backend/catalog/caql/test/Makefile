@@ -1,5 +1,6 @@
 subdir=src/backend/catalog/caql
 top_builddir=../../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=catquery caqlanalyze gram 
 
@@ -53,7 +54,7 @@ catquery_REAL_OBJS=$(COMMON_REAL_OBJS) \
 	$(top_srcdir)/src/backend/access/transam/filerepdefs.o \
 	$(top_srcdir)/src/backend/executor/execUtils.o \
 	$(top_srcdir)/src/port/exec.o 
-	
+
 include ../../../../Makefile.mock
 
 gram.t: gram_upper

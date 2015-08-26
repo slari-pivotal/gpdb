@@ -1,5 +1,6 @@
 subdir=src/backend/executor
 top_builddir=../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=nodeSubplan nodeShareInputScan execAmi execWorkfile execHHashagg
 

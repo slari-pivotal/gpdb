@@ -1,5 +1,6 @@
 subdir=src/backend/access/aocs
 top_builddir=../../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=aocsam
 

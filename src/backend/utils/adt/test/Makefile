@@ -1,5 +1,6 @@
-top_builddir=../../../../..
 subdir=src/backend/utils/adt
+top_builddir=../../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=date varlena
 

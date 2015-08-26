@@ -1,5 +1,6 @@
-top_builddir=../../../../..
 subdir=src/backend/utils/mmgr
+top_builddir=../../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=aset mcxt memaccounting vmem_tracker redzone_handler runaway_cleaner idle_tracker event_version
 
@@ -32,7 +33,7 @@ common_REAL_OBJS=\
     $(top_srcdir)/src/port/thread.o \
     $(top_srcdir)/src/timezone/localtime.o \
     $(top_srcdir)/src/timezone/pgtz.o \
-    $(top_srcdir)/src/backend/utils/misc/size.o \    
+    $(top_srcdir)/src/backend/utils/misc/size.o \
 
 memaccounting_REAL_OBJS=$(common_REAL_OBJS) \
     $(top_srcdir)/src/backend/utils/mmgr/memprot.o \

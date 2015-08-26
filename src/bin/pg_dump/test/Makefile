@@ -1,5 +1,6 @@
 subdir=src/bin/pg_dump
 top_builddir=../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=dumputils
 
@@ -30,7 +31,7 @@ dumputils_REAL_OBJS=\
 	$(top_srcdir)/src/port/thread.o \
 	$(top_srcdir)/src/timezone/localtime.o \
 	$(top_srcdir)/src/timezone/pgtz.o 
-	
+
 override CPPFLAGS+= -I$(top_srcdir)/src/interfaces/libpq 
 
 include ../../../Makefile.mock

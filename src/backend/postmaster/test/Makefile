@@ -1,5 +1,6 @@
-top_builddir=../../../..
 subdir=src/backend/postmaster
+top_builddir=../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=backoff \
 		syslogger

@@ -1,5 +1,6 @@
 subdir=src/backend/cdb
 top_builddir=../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=cdbbufferedread \
 	cdbbackup \

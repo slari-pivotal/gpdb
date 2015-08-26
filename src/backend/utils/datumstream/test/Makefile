@@ -1,5 +1,6 @@
-top_builddir=../../../../..
 subdir=src/backend/utils/datumstream
+top_builddir=../../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=datumstreamblock
 

@@ -1,5 +1,6 @@
 subdir=src/bin/pg_dump/cdb
 top_builddir=../../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=cdb_dump_util \
 	cdb_bsa_util 
@@ -31,7 +32,7 @@ cdb_dump_util_REAL_OBJS=\
 	$(top_srcdir)/src/port/thread.o \
 	$(top_srcdir)/src/timezone/localtime.o \
 	$(top_srcdir)/src/timezone/pgtz.o 
-	
+
 cdb_bsa_util_REAL_OBJS=\
 	$(top_srcdir)/src/backend/access/hash/hashfunc.o \
 	$(top_srcdir)/src/backend/access/transam/filerepdefs.o \
@@ -59,8 +60,6 @@ cdb_bsa_util_REAL_OBJS=\
 	$(top_srcdir)/src/timezone/localtime.o \
 	$(top_srcdir)/src/timezone/pgtz.o \
 	$(top_srcdir)/src/bin/pg_dump/cdb/cdb_dump_util.o 
-	
-include $(top_builddir)/src/Makefile.global
 
 override CPPFLAGS+= -I$(top_srcdir)/src/interfaces/libpq -I$(top_srcdir)/../ext/$(BLD_ARCH)/include -I$(top_srcdir)/../ext/$(BLD_ARCH)/include/rsa_csp/lb
 

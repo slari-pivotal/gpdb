@@ -1,5 +1,6 @@
-top_builddir=../../../..
 subdir=src/backend/utils
+top_builddir=../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=session_state
 

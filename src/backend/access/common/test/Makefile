@@ -1,5 +1,6 @@
 subdir=src/backend/access/common
 top_builddir=../../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=reloptions tupdesc
 
@@ -37,8 +38,8 @@ COMMON_REAL_OBJS=\
 
 reloptions_REAL_OBJS=\
 	$(COMMON_REAL_OBJS) \
-	
+
 tupdesc_REAL_OBJS=\
 	$(COMMON_REAL_OBJS) \
-	
+
 include ../../../../Makefile.mock

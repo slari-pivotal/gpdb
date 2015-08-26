@@ -1,5 +1,6 @@
 subdir=src/backend/libpq
 top_builddir=../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=pqcomm auth
 # Objects from backend, which don't need to be mocked but need to be linked.

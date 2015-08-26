@@ -1,5 +1,6 @@
 subdir=src/backend/utils/hash
 top_builddir=../../../../..
+include $(top_builddir)/src/Makefile.global
 
 TARGETS=dynahash
 

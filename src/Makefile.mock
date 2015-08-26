@@ -1,5 +1,3 @@
-include $(top_builddir)/src/Makefile.global
-
 MOCK_DIR=$(top_builddir)/src/test/unit/mock
 CMOCKERY_DIR=$(top_builddir)/src/test/unit/cmockery
 CMOCKERY_OBJS=$(CMOCKERY_DIR)/cmockery.o
