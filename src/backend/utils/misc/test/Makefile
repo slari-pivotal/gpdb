@@ -102,4 +102,4 @@ bitmap_compression_REAL_OBJS=\
 	$(top_srcdir)/src/backend/utils/mb/wchar.o \
 	$(top_srcdir)/src/backend/utils/mb/mbutils.o
 
-include ../../../../Makefile.mock
+include $(top_builddir)/src/Makefile.mock

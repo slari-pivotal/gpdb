@@ -63,7 +63,7 @@ cdb_bsa_util_REAL_OBJS=\
 
 override CPPFLAGS+= -I$(top_srcdir)/src/interfaces/libpq -I$(top_srcdir)/../ext/$(BLD_ARCH)/include -I$(top_srcdir)/../ext/$(BLD_ARCH)/include/rsa_csp/lb
 
-include ../../../../Makefile.mock
+include $(top_builddir)/src/Makefile.mock
 
 ifeq ($(enable_ddboost), yes)
 override MOCK_LIBS += -lDDBoost 

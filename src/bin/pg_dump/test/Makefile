@@ -34,4 +34,4 @@ dumputils_REAL_OBJS=\
 
 override CPPFLAGS+= -I$(top_srcdir)/src/interfaces/libpq 
 
-include ../../../Makefile.mock
+include $(top_builddir)/src/Makefile.mock

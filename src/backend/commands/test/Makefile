@@ -66,5 +66,5 @@ define_REAL_OBJS=\
     $(top_srcdir)/src/timezone/localtime.o \
     $(top_srcdir)/src/timezone/pgtz.o
 
-include ../../../Makefile.mock
+include $(top_builddir)/src/Makefile.mock
 

@@ -39,4 +39,4 @@ dynahash_REAL_OBJS=\
 	$(top_srcdir)/src/timezone/pgtz.o \
 	$(top_srcdir)/src/backend/utils/misc/size.o
 
-include ../../../../Makefile.mock
+include $(top_builddir)/src/Makefile.mock
