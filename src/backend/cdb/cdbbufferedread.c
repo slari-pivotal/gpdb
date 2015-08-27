@@ -609,7 +609,6 @@ uint8 *BufferedReadGrowBuffer(
     int32              newMaxReadAheadLen,
     int32              *growBufferLen)
 {
-	int32 originalBufferLen;
 	int32 newNextOffset;
 
 	Assert(bufferedRead != NULL);
@@ -618,8 +617,6 @@ uint8 *BufferedReadGrowBuffer(
 	Assert(newMaxReadAheadLen <= bufferedRead->maxBufferLen);
 	Assert(growBufferLen != NULL);
 
-	originalBufferLen = bufferedRead->bufferLen;
-	
 	newNextOffset = bufferedRead->bufferOffset + newMaxReadAheadLen;
     if (newNextOffset > bufferedRead->largeReadLen)
 	{

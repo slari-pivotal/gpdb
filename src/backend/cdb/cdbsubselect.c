@@ -1296,7 +1296,6 @@ mutate_targetlist(List *tlist)
 
 	if (has_resjunk(tlist))
 	{
-		ListCell   *prev = NULL;
 		ListCell   *curr = NULL;
 		bool		junk = false;
 
@@ -1314,7 +1313,6 @@ mutate_targetlist(List *tlist)
 				}
 			}
 			new_list = lappend(new_list, tle);
-			prev = curr;
 		}
 	}
 	else

@@ -1565,7 +1565,6 @@ make_two_stage_agg_plan(PlannerInfo *root,
 static Plan *
 make_three_stage_agg_plan(PlannerInfo *root, MppGroupContext *ctx)
 {
-	List	   *current_pathkeys;
 	Plan       *result_plan;
 	QualCost	tlist_cost;
 	Path       *path = ctx->best_path; /* no use for ctx->cheapest_path */
@@ -1586,7 +1585,6 @@ make_three_stage_agg_plan(PlannerInfo *root, MppGroupContext *ctx)
 	if (ctx->subplan == NULL)
 	{
 		result_plan = create_plan(root, path);
-		current_pathkeys = path->pathkeys;
 
 		/* Instead of the flat target list produced above, use the sub_tlist
 		 * constructed in cdb_grouping_planner.  Add a Result node if the
@@ -1607,7 +1605,6 @@ make_three_stage_agg_plan(PlannerInfo *root, MppGroupContext *ctx)
 	else
 	{
 		result_plan = ctx->subplan;
-		current_pathkeys = ctx->current_pathkeys;
 	}
 	
 	/* Use caller specified join_strategy: None, Cross, Hash, or Merge. */
@@ -4174,13 +4171,11 @@ Cost cost_1phase_aggregation(PlannerInfo *root, MppGroupContext *ctx, AggPlanInf
 {
 	Plan input_dummy;
 	bool is_sorted;
-	double input_rows;
 	long numGroups = (*(ctx->p_dNumGroups) < 0) ? 0 :
 						(*(ctx->p_dNumGroups) > LONG_MAX) ? LONG_MAX :
 						(long)*(ctx->p_dNumGroups);
 	
 	cost_common_agg(root, ctx, info, &input_dummy);
-	input_rows = input_dummy.plan_rows;
 	
 	is_sorted = pathkeys_contained_in(root->group_pathkeys, info->input_path->pathkeys);
 	
@@ -4452,7 +4447,6 @@ Cost cost_2phase_aggregation(PlannerInfo *root, MppGroupContext *ctx, AggPlanInf
 Cost cost_3phase_aggregation(PlannerInfo *root, MppGroupContext *ctx, AggPlanInfo *info)
 {
 	Plan dummy;
-	double input_rows;
 	Cost total_cost;
 	Cost share_cost;
 	Cost reexec_cost;
@@ -4468,7 +4462,6 @@ Cost cost_3phase_aggregation(PlannerInfo *root, MppGroupContext *ctx, AggPlanInf
 	
 	cost_common_agg(root, ctx, info, &dummy);
 	
-	input_rows = dummy.plan_rows;
 	total_cost = dummy.total_cost;
 	
 	Assert( ctx->numDistinctCols == list_length(ctx->agg_counts->dqaArgs) );

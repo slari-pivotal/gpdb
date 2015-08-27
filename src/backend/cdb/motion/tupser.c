@@ -805,7 +805,6 @@ DeserializeTuple(SerTupInfo * pSerInfo, StringInfo serialTup)
 	uint32		attr_size;
 
 	int			i;
-	int			origLen;
 	StringInfoData attr_data;
 	bool		fHandled;
 
@@ -814,7 +813,6 @@ DeserializeTuple(SerTupInfo * pSerInfo, StringInfo serialTup)
 
 	tupdesc = pSerInfo->tupdesc;
 	natts = tupdesc->natts;
-	origLen = serialTup->len;
 
 	/*
 	 * Flip to our tuple-serialization memory-context, to speed up memory

@@ -69,15 +69,13 @@ preprocess_initplans(QueryDesc *queryDesc)
 				augmentedPli;
 	int			i;
 	EState	   *estate = queryDesc->estate;
-	int			originalRoot,
-                originalSlice,
+	int			originalSlice,
 				rootIndex;
 
 	if (queryDesc->plannedstmt->nCrossLevelParams == 0)
 		return;
 
 	originalPli = queryDesc->params;
-	originalRoot = RootSliceIndex(queryDesc->estate);
 
     originalSlice = LocallyExecutingSliceIndex(queryDesc->estate);
 	Assert(originalSlice == 0); /* Original slice being executed is slice 0 */

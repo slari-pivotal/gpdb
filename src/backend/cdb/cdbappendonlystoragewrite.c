@@ -993,7 +993,6 @@ static void AppendOnlyStorageWrite_VerifyWriteBlock(
 	int32					expectedCompressedLen)
 {
 	uint8	*header;
-	uint8   *content;
 
 	AOHeaderCheckError	checkError;
 	AoHeaderKind	    headerKind;
@@ -1182,8 +1181,6 @@ static void AppendOnlyStorageWrite_VerifyWriteBlock(
 		}
 		else
 		{
-			content = &header[offset];
-
 			// UNDONE: Do comparison here
 		}
 		break;
@@ -1272,7 +1269,6 @@ AppendOnlyStorageWrite_CompressAppend(
 {
 	uint8			*header;
 	uint8 			*dataBuffer;
-	int 	 		res;
 	int32 			dataRoundedUpLen = 0;	// Shutup compiler.
 	int32			dataBufferWithOverrrunLen;
 	PGFunction	   *cfns = storageWrite->compression_functions;
@@ -1305,7 +1301,7 @@ AppendOnlyStorageWrite_CompressAppend(
 	 * Compress into the BufferedAppend buffer after the large header (and
 	 * optional checksum, etc.
 	 */
-	res = gp_trycompress_new(
+	(void) gp_trycompress_new(
 					sourceData,
 					sourceLen,
 					dataBuffer,
@@ -1400,8 +1396,6 @@ AppendOnlyStorageWrite_CompressAppend(
 	}
 	else
 	{
-		int32 	overallBlockLen;
-
 		/*
 		 * Unable to compress the data to smaller the input size.
 		 * Solution: Indicate in the header we are storing an non-compressed
@@ -1410,8 +1404,6 @@ AppendOnlyStorageWrite_CompressAppend(
 		*compressedLen = 0;
 
 		dataRoundedUpLen = AOStorage_RoundUp(sourceLen, storageWrite->storageAttributes.version);
-
-		overallBlockLen = storageWrite->currentCompleteHeaderLen + dataRoundedUpLen;
 
 		/*
 		 * Copy non-compressed data in after the header information.

@@ -1418,7 +1418,6 @@ del_part_template(Oid rootrelid, int16 parlevel, Oid parent)
 {
 	bool istemplate = true;
 	Oid paroid = InvalidOid;
-	int ii = 0;
 	int			 fetchCount;
 
 	paroid = caql_getoid_plus(
@@ -1442,27 +1441,23 @@ del_part_template(Oid rootrelid, int16 parlevel, Oid parent)
 	if (fetchCount > 1)
 		return 2;
 
-	ii = caql_getcount(
-			NULL,
-			cql("DELETE FROM pg_partition_rule "
-				" WHERE paroid = :1 "
-				" AND parparentrule = :2 ",
-				ObjectIdGetDatum(paroid),
-				ObjectIdGetDatum(parent))
-			);
+	(void) caql_getcount(NULL,
+			     cql("DELETE FROM pg_partition_rule "
+				 " WHERE paroid = :1 "
+				 " AND parparentrule = :2 ",
+				 ObjectIdGetDatum(paroid),
+				 ObjectIdGetDatum(parent)));
 
 	/* now delete the pg_partition entry */
 
-	ii = caql_getcount(
-			NULL,
-			cql("DELETE FROM pg_partition "
-				" WHERE parrelid = :1 "
-				" AND parlevel = :2 "
-				" AND paristemplate = :3 ",
-				ObjectIdGetDatum(rootrelid),
-				Int16GetDatum(parlevel),
-				BoolGetDatum(istemplate))
-			);
+	(void) caql_getcount(NULL,
+			     cql("DELETE FROM pg_partition "
+				 " WHERE parrelid = :1 "
+				 " AND parlevel = :2 "
+				 " AND paristemplate = :3 ",
+				 ObjectIdGetDatum(rootrelid),
+				 Int16GetDatum(parlevel),
+				 BoolGetDatum(istemplate)));
 
 	/* make visible */
 	CommandCounterIncrement();
@@ -5035,15 +5030,7 @@ atpxPart_validate_spec(
 	/* fixup the pnode_tmpl to get the right parlevel */
 	if (pNode && (pNode->rules || pNode->default_part))
 	{
-		PartitionRule *prule;
-
-		if (pNode->default_part)
-			prule = pNode->default_part;
-		else
-			prule = linitial(pNode->rules);
-
-		pNode_tmpl = get_parts(
-							   pNode->part->parrelid,
+		pNode_tmpl = get_parts(pNode->part->parrelid,
 							   pNode->part->parlevel + 1,
 							   InvalidOid, /* no parent for template */
 							   true,
@@ -5300,15 +5287,7 @@ atpxPart_validate_spec(
 					/* fixup the pnode_tmpl to get the right parlevel */
 					if (pNode2 && (pNode2->rules || pNode2->default_part))
 					{
-						PartitionRule *prule66;
-
-						if (pNode2->default_part)
-							prule66 = pNode2->default_part;
-						else
-							prule66 = linitial(pNode2->rules);
-
-						pNode_tmpl = get_parts(
-											   pNode2->part->parrelid,
+						pNode_tmpl = get_parts(pNode2->part->parrelid,
 											   pNode2->part->parlevel + 1,
 											   InvalidOid, /* no parent for template */
 											   true,
@@ -5350,7 +5329,6 @@ atpxPartAddList(Relation rel,
 {
 	CreateStmt			*ct		   = NULL;
 	DestReceiver		*dest	   = None_Receiver;
-	int					 partno    = 0;
 	int					 maxpartno = 0;
 	typedef enum {
 		FIRST = 0,  /* New partition lies before first. */
@@ -6439,16 +6417,8 @@ atpxPartAddList(Relation rel,
 	} /* end if pelem && pelem->boundspec */
 
 	/* this function does transformExpr on the boundary specs */
-	partno = atpxPart_validate_spec(pBy,
-									&cxt,
-									rel,
-									ct,
-									pelem,
-									pNode,
-									partName,
-									isDefault,
-									part_type,
-									"");
+	(void) atpxPart_validate_spec(pBy, &cxt, rel, ct, pelem, pNode, partName,
+								  isDefault, part_type, "");
 
 	if (pelem && pelem->boundSpec)
 	{
@@ -7179,7 +7149,6 @@ atpxModifyListOverlap (Relation rel,
 		PartitionValuesSpec		*pVSpec;
 		AlterPartitionId		 pid2;
 		PartitionNode			*pNode	= prule->pNode;
-		int						 partno = 0;
 		CreateStmtContext		 cxt;
 
 		MemSet(&cxt, 0, sizeof(cxt));
@@ -7189,17 +7158,17 @@ atpxModifyListOverlap (Relation rel,
 		MemSet(&pid2, 0, sizeof(AlterPartitionId));
 
 		/* this function does transformExpr on the boundary specs */
-		partno = atpxPart_validate_spec(makeNode(PartitionBy),
-										&cxt,
-										rel,
-										NULL,		 /* CreateStmt */
-										pelem,
-										pNode,
-										(pid->idtype == AT_AP_IDName) ?
-										pid->partiddef : NULL,
-										false,		 /* isDefault */
-										PARTTYP_LIST, /* part_type */
-										prule->partIdStr);
+		(void) atpxPart_validate_spec(makeNode(PartitionBy),
+									  &cxt,
+									  rel,
+									  NULL,		 /* CreateStmt */
+									  pelem,
+									  pNode,
+									  (pid->idtype == AT_AP_IDName) ?
+									  pid->partiddef : NULL,
+									  false,		 /* isDefault */
+									  PARTTYP_LIST, /* part_type */
+									  prule->partIdStr);
 
 		pVSpec = (PartitionValuesSpec *)pelem->boundSpec;
 
@@ -7693,23 +7662,22 @@ atpxModifyRangeOverlap (Relation				 rel,
 				 errOmitLocation(true)));
 
 	{
-		int						 partno = 0;
 		CreateStmtContext		 cxt;
 
 		MemSet(&cxt, 0, sizeof(cxt));
 
 		/* this function does transformExpr on the boundary specs */
-		partno = atpxPart_validate_spec(makeNode(PartitionBy),
-										&cxt,
-										rel,
-										NULL,		 /* CreateStmt */
-										pelem,
-										pNode,
-										(pid->idtype == AT_AP_IDName) ?
-										pid->partiddef : NULL,
-										false,		 /* isDefault */
-										PARTTYP_RANGE, /* part_type */
-										prule->partIdStr);
+		(void) atpxPart_validate_spec(makeNode(PartitionBy),
+									  &cxt,
+									  rel,
+									  NULL,		 /* CreateStmt */
+									  pelem,
+									  pNode,
+									  (pid->idtype == AT_AP_IDName) ?
+									  pid->partiddef : NULL,
+									  false,		 /* isDefault */
+									  PARTTYP_RANGE, /* part_type */
+									  prule->partIdStr);
 	}
 
 

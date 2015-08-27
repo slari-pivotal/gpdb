@@ -1426,7 +1426,6 @@ SetupTCPInterconnect(EState *estate)
 	{
 		int			totalNumProcs, activeNumProcs;
 		int			childId = lfirst_int(cell);
-		ChunkTransportStateEntry *pEntry;
 
 #ifdef AMS_VERBOSE_LOGGING
 		elog(DEBUG5, "Setting up RECEIVING motion node %d", childId);
@@ -1449,7 +1448,7 @@ SetupTCPInterconnect(EState *estate)
 				activeNumProcs++;
 		}
 
-		pEntry = createChunkTransportState(estate->interconnect_context, aSlice, mySlice, totalNumProcs);
+		(void) createChunkTransportState(estate->interconnect_context, aSlice, mySlice, totalNumProcs);
 
 		/* let cdbmotion now how many receivers to expect. */
 		setExpectedReceivers(estate->motionlayer_context, childId, activeNumProcs);

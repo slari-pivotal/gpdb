@@ -188,7 +188,6 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	int	   len;
 	int	   instid;			/* dispatch node */
 	bool	   is_compress;
-	bool	   rsyncable;
 	itimers    savetimers;
 
 	char       *pszThrottleCmd;
@@ -202,7 +201,6 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	char 		*temp = NULL, *pch = NULL, *pchs = NULL;
 #endif
 
-	rsyncable = false;
 	verifyGpIdentityIsSet();
 	instid = (GpIdentity.segindex == -1) ? 1 : 0;	/* dispatch node */
 	segid = GpIdentity.dbid;
@@ -324,7 +322,6 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 
 	if (strstr(pszPassThroughParameters,"--rsyncable") != NULL)
 	{
-		rsyncable = true;
 		elog(DEBUG1,"--rsyncable found, ptp %s",pszPassThroughParameters);
 		/* Remove from gp_dump_agent parameters, because this parameter is for gzip */
 		strncpy(strstr(pszPassThroughParameters,"--rsyncable"),"            ",strlen("--rsyncable"));

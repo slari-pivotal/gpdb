@@ -1439,11 +1439,9 @@ getSuperuser(Oid *userOid)
 	{
 		Datum   attrName;
 		Datum   attrNameOid;
-		Datum   validuntil;
 
-		validuntil = heap_getattr(auth_tup,
-			Anum_pg_authid_rolvaliduntil,
-			auth_rel->rd_att, &isNull);
+		(void) heap_getattr(auth_tup, Anum_pg_authid_rolvaliduntil,
+							auth_rel->rd_att, &isNull);
 		/* we actually want it to be NULL, that means always valid */
 		if (!isNull)
 			continue;
@@ -3539,10 +3537,8 @@ static void
 abortRMInDoubtTransactions(HTAB *htab)
 {
 	HASH_SEQ_STATUS status;
-	char	   *cmd = NULL,
-				cmdbuf[100];
 	InDoubtDtx *entry = NULL;
-	TMGXACT *gxact = NULL;
+	TMGXACT	   *gxact = NULL;
 
 	if (htab == NULL)
 		return;
@@ -3566,9 +3562,6 @@ abortRMInDoubtTransactions(HTAB *htab)
 				 gxact->gid, DtxStateToString(gxact->state));
 			continue;
 		}
-
-		sprintf(cmdbuf, "ROLLBACK PREPARED '%s'", entry->gid);
-		cmd = cmdbuf;
 
 		elog(DTM_DEBUG3, "Aborting in-doubt transaction with gid = %s", entry->gid);
 

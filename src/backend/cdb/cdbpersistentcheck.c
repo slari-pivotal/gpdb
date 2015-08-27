@@ -843,15 +843,13 @@ void
 Persistent_PostDTMRecv_RemoveHashEntry(Oid dbId)
 {
 	bool	foundPtr;
-	postDTMRecv_dbTblSpc_Hash_Entry *entry;
 	Insist(PT_PostDTMRecv_Info);
 	Insist(PT_PostDTMRecv_Info->postDTMRecv_dbTblSpc_Hash != NULL);
 
-	entry = (postDTMRecv_dbTblSpc_Hash_Entry *) hash_search(
-										PT_PostDTMRecv_Info->postDTMRecv_dbTblSpc_Hash,
-										(void *) &dbId,
-										HASH_REMOVE,
-										&foundPtr);
+	(void) hash_search(PT_PostDTMRecv_Info->postDTMRecv_dbTblSpc_Hash,
+					   (void *) &dbId,
+					   HASH_REMOVE,
+					   &foundPtr);
 }
 
 postDTMRecv_dbTblSpc_Hash_Entry *

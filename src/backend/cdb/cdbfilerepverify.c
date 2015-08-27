@@ -7407,16 +7407,10 @@ FileRepVerify_ProcessHeapPage(
 	*madeChange = false;
 	for (whichItem = 1; whichItem < (maxOffset + 1); whichItem++)
 	{
-		unsigned int	itemSize = 0;
-		unsigned int	itemOffset = 0;
-		unsigned int	itemFlags = 0;
 		ItemId			itemId;
 		HeapTupleHeader htup;
 
 		itemId = PageGetItemId(page, whichItem);
-		itemFlags = (unsigned int) ItemIdGetFlags(itemId);
-		itemSize = (unsigned int) ItemIdGetLength(itemId);
-		itemOffset = (unsigned int) ItemIdGetOffset(itemId);
 
 		if (ItemIdIsUsed(itemId))
 		{

@@ -1377,7 +1377,6 @@ cdbexplain_showExecStats(struct PlanState              *planstate,
     int                         i;
 
     const char *s_row = " row";
-    const char *s_rows = " rows";
     char        firstbuf[50];
     char        totalbuf[50];
     char        avgbuf[50];
@@ -1408,7 +1407,6 @@ cdbexplain_showExecStats(struct PlanState              *planstate,
         case T_BitmapOrState:
         case T_BitmapIndexScanState:
             s_row = "";
-            s_rows = "";
             if (ns->ntuples.vcnt > 1)
                 appendStringInfo(str,
                                  "Bitmaps out:  Avg %.1f x %d workers."
@@ -1815,8 +1813,6 @@ cdbexplain_showExecStatsEnd(struct PlannedStmt *stmt,
 {
     Slice  *slice;
     int     sliceIndex;
-    int     startlen;
-    int     tab;
     int     flag;
 
     char    avgbuf[50];
@@ -1834,14 +1830,12 @@ cdbexplain_showExecStatsEnd(struct PlannedStmt *stmt,
         CdbExplain_SliceSummary    *ss = &showstatctx->slices[sliceIndex];
         CdbExplain_DispatchSummary *ds = &ss->dispatchSummary;
 
-        startlen = str->len;
         appendStringInfo(str, "  (slice%d) ", sliceIndex);
         if (sliceIndex < 10)
             appendStringInfoChar(str, ' ');
 
         flag = str->len;
         appendStringInfoString(str, "  ");
-        tab = str->len - startlen;
 
         /* Worker counts */
         slice = getCurrentSlice(estate, sliceIndex);

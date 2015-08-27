@@ -874,7 +874,6 @@ getChunkSorterEntry(MotionLayerState *mlStates,
 					MotionNodeEntry * motNodeEntry,
 					int16 srcRoute)
 {
-	int16		motNodeID;
 	MemoryContext oldCtxt;
 	ChunkSorterEntry *chunkSorterEntry=NULL;
 
@@ -882,8 +881,6 @@ getChunkSorterEntry(MotionLayerState *mlStates,
 
 	Assert(srcRoute >= 0);
 	Assert(srcRoute < GpIdentity.numsegments);
-
-	motNodeID = motNodeEntry->motion_node_id;
 
 	/* Do we have a sorter initialized ? */
 	if (motNodeEntry->ready_tuple_lists != NULL)
@@ -925,9 +922,9 @@ getChunkSorterEntry(MotionLayerState *mlStates,
 		chunkSorterEntry->ready_tuples = htfifo_create(motNodeEntry->memKB);
 
 #ifdef AMS_VERBOSE_LOGGING
-		elog(DEBUG5, "Motion node %d is order-preserving.  Creating"
-			 " tuple-store for entry [src=%d,mn=%d].", motNodeID,
-			 srcRoute, motNodeID);
+		elog(DEBUG5, "Motion node %d is order-preserving.  Creating tuple-store for entry [src=%d,mn=%d].",
+			 motNodeEntry->motion_node_id,
+			 srcRoute, motNodeEntry->motion_node_id);
 #endif
 	}
 	else
@@ -935,9 +932,9 @@ getChunkSorterEntry(MotionLayerState *mlStates,
 		chunkSorterEntry->ready_tuples = motNodeEntry->ready_tuples;
 
 #ifdef AMS_VERBOSE_LOGGING
-		elog(DEBUG5, "Motion node %d is not order-preserving.  Using"
-			 " shared tuple-store for entry [src=%d,mn=%d].", motNodeID,
-			 srcRoute, motNodeID);
+		elog(DEBUG5, "Motion node %d is not order-preserving.  Using shared tuple-store for entry [src=%d,mn=%d].",
+			 motNodeEntry->motion_node_id,
+			 srcRoute, motNodeEntry->motion_node_id);
 #endif
 
 		/* Sanity-check: */
