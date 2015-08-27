@@ -281,13 +281,6 @@ namespace gpdxl
 				CMappingColIdVar *pmapcidvar
 				);
 
-			// translate a scalar minmax
-			Expr *PminmaxFromDXLNodeScMinMax
-				(
-				const CDXLNode *pdxlnScMinMax,
-				CMappingColIdVar *pmapcidvar
-				);
-
 			// translate a scconstval
 			Expr *PconstFromDXLNodeScConst
 				(

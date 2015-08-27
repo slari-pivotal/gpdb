@@ -96,7 +96,6 @@ CTranslatorDXLToScalar::PexprFromDXLNodeScalar
 		{EdxlopScalarOpExpr, &CTranslatorDXLToScalar::PopexprFromDXLNodeScOpExpr},
 		{EdxlopScalarArrayComp, &CTranslatorDXLToScalar::PstrarrayopexprFromDXLNodeScArrayComp},
 		{EdxlopScalarCoalesce, &CTranslatorDXLToScalar::PcoalesceFromDXLNodeScCoalesce},
-		{EdxlopScalarMinMax, &CTranslatorDXLToScalar::PminmaxFromDXLNodeScMinMax},
 		{EdxlopScalarConstValue, &CTranslatorDXLToScalar::PconstFromDXLNodeScConst},
 		{EdxlopScalarBoolExpr, &CTranslatorDXLToScalar::PboolexprFromDXLNodeScBoolExpr},
 		{EdxlopScalarBooleanTest, &CTranslatorDXLToScalar::PbooleantestFromDXLNodeScBooleanTest},
@@ -1470,43 +1469,6 @@ CTranslatorDXLToScalar::PcoalesceFromDXLNodeScCoalesce
 	pcoalesce->location = -1;
 
 	return (Expr *) pcoalesce;
-}
-
-//---------------------------------------------------------------------------
-//	@function:
-//		CTranslatorDXLToScalar::PminmaxFromDXLNodeScMinMax
-//
-//	@doc:
-//		Translates a DXL scalar minmax operator into a GPDB minmax node
-//
-//---------------------------------------------------------------------------
-Expr *
-CTranslatorDXLToScalar::PminmaxFromDXLNodeScMinMax
-	(
-	const CDXLNode *pdxlnMinMax,
-	CMappingColIdVar *pmapcidvar
-	)
-{
-	GPOS_ASSERT(NULL != pdxlnMinMax);
-	CDXLScalarMinMax *pdxlop = CDXLScalarMinMax::PdxlopConvert(pdxlnMinMax->Pdxlop());
-	MinMaxExpr *pminmax = MakeNode(MinMaxExpr);
-
-	pminmax->minmaxtype = CMDIdGPDB::PmdidConvert(pdxlop->PmdidType())->OidObjectId();
-	pminmax->args = PlistTranslateScalarChildren(pminmax->args, pdxlnMinMax, pmapcidvar);
-	pminmax->location = -1;
-
-	CDXLScalarMinMax::EdxlMinMaxType emmt = pdxlop->Emmt();
-	if (CDXLScalarMinMax::EmmtMax == emmt)
-	{
-		pminmax->op = IS_GREATEST;
-	}
-	else
-	{
-		GPOS_ASSERT(CDXLScalarMinMax::EmmtMin == emmt);
-		pminmax->op = IS_LEAST;
-	}
-
-	return (Expr *) pminmax;
 }
 
 //---------------------------------------------------------------------------
