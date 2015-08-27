@@ -240,6 +240,13 @@ namespace gpdxl
 				const CMappingVarColId* pmapvarcolid
 				);
 
+			// create a DXL scalar minmax node from a GPDB expression
+			CDXLNode *PdxlnScMinMaxFromExpr
+				(
+				const Expr *pexpr,
+				const CMappingVarColId* pmapvarcolid
+				);
+
 			// create a DXL scalar relabeltype node from a GPDB expression
 			CDXLNode *PdxlnScCastFromRelabelType
 				(

@@ -340,6 +340,7 @@ CTranslatorScalarToDXL::PdxlnScOpFromExpr
 		{T_CaseExpr, &CTranslatorScalarToDXL::PdxlnScCaseStmtFromExpr},
 		{T_CaseTestExpr, &CTranslatorScalarToDXL::PdxlnScCaseTestFromExpr},
 		{T_CoalesceExpr, &CTranslatorScalarToDXL::PdxlnScCoalesceFromExpr},
+		{T_MinMaxExpr, &CTranslatorScalarToDXL::PdxlnScMinMaxFromExpr},
 		{T_FuncExpr, &CTranslatorScalarToDXL::PdxlnScFuncExprFromFuncExpr},
 		{T_Aggref, &CTranslatorScalarToDXL::PdxlnScAggrefFromAggref},
 		{T_WindowRef, &CTranslatorScalarToDXL::PdxlnScWindowref},
@@ -905,6 +906,50 @@ CTranslatorScalarToDXL::PdxlnScCoalesceFromExpr
 	CDXLNode *pdxln = New(m_pmp) CDXLNode(m_pmp, pdxlop);
 
 	TranslateScalarChildren(pdxln, pcoalesceexpr->args, pmapvarcolid);
+
+	return pdxln;
+}
+
+//---------------------------------------------------------------------------
+//	@function:
+//		CTranslatorScalarToDXL::PdxlnScMinMaxFromExpr
+//
+//	@doc:
+//		Create a DXL node for a min/max operator from a GPDB OpExpr
+//---------------------------------------------------------------------------
+CDXLNode *
+CTranslatorScalarToDXL::PdxlnScMinMaxFromExpr
+	(
+	const Expr *pexpr,
+	const CMappingVarColId* pmapvarcolid
+	)
+{
+	GPOS_ASSERT(IsA(pexpr, MinMaxExpr));
+
+	MinMaxExpr *pminmaxexpr = (MinMaxExpr *) pexpr;
+	GPOS_ASSERT(NULL != pminmaxexpr->args);
+
+	CDXLScalarMinMax::EdxlMinMaxType emmt = CDXLScalarMinMax::EmmtSentinel;
+	if (IS_GREATEST == pminmaxexpr->op)
+	{
+		emmt = CDXLScalarMinMax::EmmtMax;
+	}
+	else
+	{
+		GPOS_ASSERT(IS_LEAST == pminmaxexpr->op);
+		emmt = CDXLScalarMinMax::EmmtMin;
+	}
+
+	CDXLScalarMinMax *pdxlop = New(m_pmp) CDXLScalarMinMax
+											(
+											m_pmp,
+											New(m_pmp) CMDIdGPDB(pminmaxexpr->minmaxtype),
+											emmt
+											);
+
+	CDXLNode *pdxln = New(m_pmp) CDXLNode(m_pmp, pdxlop);
+
+	TranslateScalarChildren(pdxln, pminmaxexpr->args, pmapvarcolid);
 
 	return pdxln;
 }
