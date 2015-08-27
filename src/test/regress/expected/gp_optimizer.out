@@ -9376,6 +9376,43 @@ select to_char(c1, 'YYYY-MM-DD HH24:MI:SS') from orca.t3 where c1 = '2015-07-03'
  2015-07-03 00:00:00
 (1 row)
 
+-- MPP-25806: multi-column index
+create table orca.index_test (a int, b int, c int, d int, e int, constraint index_test_pkey PRIMARY KEY (a, b, c, d));
+NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "index_test_pkey" for table "index_test"
+insert into orca.index_test select i,i%2,i%3,i%4,i%5 from generate_series(1,100) i;
+-- force_explain
+explain select * from orca.index_test where a = 5;
+                                       QUERY PLAN                                        
+-----------------------------------------------------------------------------------------
+ Gather Motion 2:1  (slice1; segments: 2)  (cost=0.00..2.00 rows=1 width=20)
+   ->  Index Scan using index_test_pkey on index_test  (cost=0.00..2.00 rows=1 width=20)
+         Index Cond: a = 5
+ Settings:  optimizer=on; optimizer_segments=3
+ Optimizer status: PQO version 
+(5 rows)
+
+-- force_explain
+explain select * from orca.index_test where c = 5;
+                                       QUERY PLAN                                        
+-----------------------------------------------------------------------------------------
+ Gather Motion 2:1  (slice1; segments: 2)  (cost=0.00..2.00 rows=1 width=20)
+   ->  Index Scan using index_test_pkey on index_test  (cost=0.00..2.00 rows=1 width=20)
+         Index Cond: c = 5
+ Settings:  optimizer=on; optimizer_segments=3
+ Optimizer status: PQO version 
+(5 rows)
+
+-- force_explain
+explain select * from orca.index_test where a = 5 and c = 5;
+                                       QUERY PLAN                                        
+-----------------------------------------------------------------------------------------
+ Gather Motion 2:1  (slice1; segments: 2)  (cost=0.00..2.00 rows=1 width=20)
+   ->  Index Scan using index_test_pkey on index_test  (cost=0.00..2.00 rows=1 width=20)
+         Index Cond: a = 5 AND c = 5
+ Settings:  optimizer=on; optimizer_segments=3
+ Optimizer status: PQO version 
+(5 rows)
+ 
 -- clean up
 drop schema orca cascade;
 NOTICE:  drop cascades to table orca.bm_dyn_test_onepart_1_prt_part5

@@ -3972,11 +3972,24 @@ get_index_opclasses(Oid oidIndex)
 	}
 	
 	List *opclass_oids = NIL;
-	Form_pg_index index_tuple = (Form_pg_index) GETSTRUCT(htup);
+    /*
+     * use caql_getattr() to retrieve number of index attributes, and the oid vector of indclass
+     */
+    bool isnull = false;
+    int indnatts = DatumGetInt16(caql_getattr(pcqCtx, Anum_pg_index_indnatts, &isnull));
+	Assert(!isnull);
 
-	for (int i = 0; i < index_tuple->indnatts; i++)
+    Datum indclassDatum = caql_getattr(pcqCtx, Anum_pg_index_indclass, &isnull);
+    if (isnull)
+    {
+            return opclass_oids;
+    }
+    oidvector *indclass = (oidvector *) DatumGetPointer(indclassDatum);
+
+
+	for (int i = 0; i < indnatts; i++)
 	{
-		Oid oidOpClass = index_tuple->indclass.values[i];
+		Oid oidOpClass = indclass->values[i];
 		opclass_oids = lappend_oid(opclass_oids, oidOpClass);
 	}
 	

@@ -1124,6 +1124,17 @@ insert into orca.t3 values  ('2015-07-03 00:00:00'::timestamp without time zone)
 select to_char(c1, 'YYYY-MM-DD HH24:MI:SS') from orca.t3 where c1 = TO_DATE('2015-07-03','YYYY-MM-DD');
 select to_char(c1, 'YYYY-MM-DD HH24:MI:SS') from orca.t3 where c1 = '2015-07-03'::date;
 
+-- MPP-25806: multi-column index
+create table orca.index_test (a int, b int, c int, d int, e int, constraint index_test_pkey PRIMARY KEY (a, b, c, d));
+insert into orca.index_test select i,i%2,i%3,i%4,i%5 from generate_series(1,100) i;
+-- force_explain
+explain select * from orca.index_test where a = 5;
+
+-- force_explain
+explain select * from orca.index_test where c = 5;
+
+-- force_explain
+explain select * from orca.index_test where a = 5 and c = 5;
 
 -- clean up
 drop schema orca cascade;
