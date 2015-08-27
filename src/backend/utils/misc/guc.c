@@ -7646,8 +7646,7 @@ static struct config_string ConfigureNamesString[] =
 	{
 		{"gp_autostats_mode_in_functions", PGC_USERSET, DEVELOPER_OPTIONS,
 			gettext_noop("Sets the autostats mode for statements in procedural language functions."),
-			gettext_noop("Valid values are NONE, ON_CHANGE, ON_NO_STATS. ON_CHANGE requires setting gp_autostats_on_change_threshold."),
-			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+			gettext_noop("Valid values are NONE, ON_CHANGE, ON_NO_STATS. ON_CHANGE requires setting gp_autostats_on_change_threshold.")
 		},
 		&gp_autostats_mode_in_functions_string,
 		"none", gpvars_assign_gp_autostats_mode_in_functions, gpvars_show_gp_autostats_mode_in_functions
