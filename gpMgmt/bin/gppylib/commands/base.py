@@ -249,7 +249,7 @@ class Worker(Thread):
         # haltWorkers() from actually halting all the workers.
         #
         c = self.cmd
-        if c is not None:
+        if c is not None and isinstance(c, Command):
             c.interrupt()
             c.cancel()
     
