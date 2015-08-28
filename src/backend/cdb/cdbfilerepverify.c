@@ -13,25 +13,13 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "access/htup.h"
-#include "access/itup.h"
 #include "access/nbtree.h"
-#include "access/slru.h"
-#include "access/twophase.h"
-#include "access/xlog_internal.h"
-#include "cdb/cdbvars.h"
 #include "cdb/cdbfilerepconnclient.h"
-#include "cdb/cdbfilerepprimary.h"
 #include "cdb/cdbfilerepservice.h"
 #include "cdb/cdbfilerepverify.h"
-#include "cdb/cdbfilerep.h"
-#include "cdb/cdbfilerepconnserver.h"
 #include "cdb/cdbfilerepprimaryack.h"
 #include "cdb/cdbpersistentfilespace.h"
-#include "cdb/cdbpersistentfilesysobj.h"
 #include "cdb/cdbpersistenttablespace.h"
-#include "libpq/pqsignal.h"
-#include "storage/buf.h"
 #include "storage/bufpage.h"
 #include "storage/ipc.h"
 #include "storage/lwlock.h"
@@ -40,17 +28,6 @@
 #include "storage/smgr.h"
 #include "storage/itemid.h"
 #include "utils/faultinjector.h"
-#include "utils/hsearch.h"
-#include "utils/pg_crc.h"
-#include "utils/ps_status.h"
-#include "utils/memutils.h"
-#include "utils/guc.h"
-#include "catalog/pg_am.h"
-#include "catalog/pg_tablespace.h"
-#include "catalog/catalog.h"
-#include "executor/spi.h"
-#include "utils/faultinjector.h"
-/* TODO - check if any of thsese includes is not really needed */
 
 /*
  * TODO list
