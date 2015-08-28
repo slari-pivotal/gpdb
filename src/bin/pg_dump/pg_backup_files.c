@@ -25,7 +25,6 @@
  *-------------------------------------------------------------------------
  */
 
-#include <sys/stat.h>
 #include "pg_backup_archiver.h"
 
 static void _ArchiveEntry(ArchiveHandle *AH, TocEntry *te);
@@ -117,12 +116,12 @@ InitArchiveFmt_Files(ArchiveHandle *AH)
 	if (AH->mode == archModeWrite)
 	{
 
-		/* Archive with file format, files will be written in the current working directory */
+		write_msg(modulename, "WARNING:\n"
+				  "  This format is for demonstration purposes; it is not intended for\n"
+				  "  normal use. Files will be written in the current working directory.\n");
 
 		if (AH->fSpec && strcmp(AH->fSpec, "") != 0)
-		{
 			AH->FH = fopen(AH->fSpec, PG_BINARY_W);
-		}
 		else
 			AH->FH = stdout;
 
@@ -276,33 +275,27 @@ _PrintFileData(ArchiveHandle *AH, char *filename, RestoreOptions *ropt)
 {
 	char		buf[4096];
 	size_t		cnt;
-	int		ret;
 
 	if (!filename)
 		return;
 
 #ifdef HAVE_LIBZ
-	gzFile *FH = gzopen(filename, "rb");
+	AH->FH = gzopen(filename, "rb");
 #else
-	FILE *FH = fopen(filename, PG_BINARY_R);
+	AH->FH = fopen(filename, PG_BINARY_R);
 #endif
 
-	if (FH == NULL)
+	if (AH->FH == NULL)
 		die_horribly(AH, modulename, "could not open input file: %s\n", strerror(errno));
 
-	while ((cnt = GZREAD(buf, 1, 4095, FH)) > 0)
+	while ((cnt = GZREAD(buf, 1, 4095, AH->FH)) > 0)
 	{
 		buf[cnt] = '\0';
 		ahwrite(buf, 1, cnt, AH);
 	}
 
-	if (GZCLOSE(FH) != 0)
+	if (GZCLOSE(AH->FH) != 0)
 		die_horribly(AH, modulename, "could not close data file after reading\n");
-
-	ret = remove(filename);	/*Clean the local data dump file created based of dumpId*/
-
-	if(ret != 0)
-		die_horribly(AH, modulename, "could not remove data file\n");
 }
 
 
@@ -436,31 +429,16 @@ _ReadBuf(ArchiveHandle *AH, void *buf, size_t len)
 static void
 _CloseArchive(ArchiveHandle *AH)
 {
-	RestoreOptions *ropt;
-
 	if (AH->mode == archModeWrite)
 	{
-					/* WriteHead(AH); commented as not used for current production. */
-					/* WriteToc(AH); commented as not used for current production. */
-		WriteDataChunks(AH);	/* Write dump data into local file */
-
-		AH->CustomOutPtr = _WriteBuf;
-
-		ropt = NewRestoreOptions();
-		ropt->dropSchema = 1;
-		ropt->compression = 0;
-		ropt->superuser = NULL;
-		ropt->suppressDumpWarnings = true;
-
-		RestoreArchive((Archive *) AH, ropt);
-
+		WriteHead(AH);
+		WriteToc(AH);
 		if (fclose(AH->FH) != 0)
 			die_horribly(AH, modulename, "could not close TOC file: %s\n", strerror(errno));
+		WriteDataChunks(AH);
 	}
 
 	AH->FH = NULL;
-	free(AH);
-	AH = NULL;
 }
 
 

@@ -46,7 +46,6 @@ static const char *modulename = gettext_noop("archiver");
 
 static ArchiveHandle *_allocAH(const char *FileSpec, const ArchiveFormat fmt,
 		 const int compression, ArchiveMode mode);
-static void _freeTocEntry(ArchiveHandle *AH);
 static void _getObjectDescription(PQExpBuffer buf, TocEntry *te,
 					  ArchiveHandle *AH);
 static void _printTocEntry(ArchiveHandle *AH, TocEntry *te, RestoreOptions *ropt, bool isData, bool acl_pass);
@@ -464,9 +463,6 @@ RestoreArchive(Archive *AHX, RestoreOptions *ropt)
 		PQfinish(AH->connection);
 		AH->connection = NULL;
 	}
-
-	free(ropt);
-	_freeTocEntry(AH);
 }
 
 /*
@@ -1667,21 +1663,6 @@ _discoverArchiveFormat(ArchiveHandle *AH)
 	return AH->format;
 }
 
-
-static void
-_freeTocEntry(ArchiveHandle *AH)
-{
-	TocEntry *preToc;
-
-	for (TocEntry *te = AH->toc->prev; te != AH->toc; te = preToc)
-	{
-		preToc = te->prev;
-		free(te);
-		te = NULL;
-	}
-	free(AH->toc);
-	AH->toc = NULL;
-}
 
 /*
  * Allocate an archive handle
