@@ -5,14 +5,15 @@
  *
  *
  */
-#include "postgres.h"
 #include <unistd.h>
 #include <sys/stat.h>
 #include <assert.h>
 #include <dirent.h>
 #include <sys/wait.h>
+
+#include "postgres.h"
+
 #include "regex/regex.h"
-#include "gp-libpq-fe.h"
 #include "libpq/libpq-be.h"
 #include "fmgr.h"
 #include "funcapi.h"
