@@ -406,7 +406,7 @@ void analyzeStmt(VacuumStmt *stmt, List *relids)
 				lRelOids = all_leaf_partition_relids(pn); /* all leaves */
 			}
 			lRelOids = lappend_oid(lRelOids, relationOid); /* root partition */
-			if (optimizer_multilevel_partitioning) /* TODO: eshen Jun 9, 2015 take this out once the collection of mid-level stats are fully tested */
+			if (optimizer_analyze_midlevel_partition)
 			{
 				lRelOids = list_concat(lRelOids, all_interior_partition_relids(pn)); /* interior partitions */
 			}
