@@ -906,12 +906,14 @@ pq_waitForDataUsingSelect(void)
 		return true;
 	}
 
+#ifdef USE_SSL
 	if ( MyProcPort->ssl )
 	{
 		elog(ERROR, "SSL connection cannot be used with pq_waitForDataUsingSelect");
 		return true; /* unreachable */
 	}
 	else
+#endif
 	{
 		int sock = MyProcPort->sock;
 		for ( ;; )
