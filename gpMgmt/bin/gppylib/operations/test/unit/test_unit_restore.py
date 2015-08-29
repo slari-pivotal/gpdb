@@ -1386,6 +1386,21 @@ CREATE DATABASE monkey WITH TEMPLATE = template0 ENCODING = 'UTF8' OWNER = thisg
         table_list = []
         validate_tablenames(table_list)        
 
+    def test_validate_tablenames_03(self):
+        table_list = ['public.ao1', 'public.ao1']
+        resolved_list = validate_tablenames(table_list)
+        self.assertEqual(resolved_list, ['public.ao1'])
+
+    def test_validate_tablenames_04(self):
+        table_list = ['public.*', 'public.ao1']
+        resolved_list = validate_tablenames(table_list)
+        self.assertEqual(resolved_list, ['public.*'])
+
+    def test_validate_tablenames_05(self):
+        table_list = ['public.*', 'other.*']
+        resolved_list = validate_tablenames(table_list)
+        self.assertEqual(resolved_list, ['public.*', 'other.*'])
+
     def test_get_restore_table_list_00(self):
         table_list = ['public.ao_table', 'public.ao_table2', 'public.co_table', 'public.heap_table']
         restore_tables = ['public.ao_table2', 'public.co_table']

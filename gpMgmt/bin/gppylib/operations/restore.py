@@ -405,15 +405,31 @@ def _build_gpdbrestore_cmd_line(ts, table_file, backup_dir, redirected_restore_d
     return cmd
 
 def truncate_restore_tables(restore_tables, master_port, dbname):
-    for table in restore_tables:
-        qry = 'Truncate %s' % table
-        try:
-            dburl = dbconn.DbURL(port=master_port, dbname=dbname)
-            conn = dbconn.connect(dburl)
-            execSQL(conn, qry)
-            conn.commit()
-        except Exception as e:
-            raise Exception("Could not truncate table %s.%s: %s" % (dbname, table, str(e).replace('\n', '')))
+    """
+    Truncate either specific table or all tables under a schema
+    """
+
+    try:
+        dburl = dbconn.DbURL(port=master_port, dbname=dbname)
+        conn = dbconn.connect(dburl)
+        for restore_table in restore_tables:
+            truncate_list = []
+            schema, table = restore_table.split('.')
+
+            if table == '*':
+                get_all_tables_qry = 'select schemaname || \'.\' || tablename from pg_tables where schemaname = \'%s\';' % schema
+                relations = execSQL(conn, get_all_tables_qry)
+                for relation in relations:
+                    truncate_list.append(relation[0])
+            else:
+                truncate_list.append(restore_table)
+
+            for t in truncate_list:
+                qry = 'Truncate %s' % t
+                execSQL(conn, qry)
+        conn.commit()
+    except Exception as e:
+        raise Exception("Could not truncate table %s.%s: %s" % (dbname, restore_table, str(e).replace('\n', '')))
 
 class RestoreDatabase(Operation):
     def __init__(self, restore_timestamp, no_analyze, drop_db, restore_global, master_datadir, backup_dir, 
@@ -560,18 +576,31 @@ class RestoreDatabase(Operation):
             with dbconn.connect(dbconn.DbURL(dbname=restore_db, port=self.master_port)) as conn:
                 num_sqls = 0
                 for restore_table in restore_tables:
-                    analyze_table = "analyze " + restore_table
-                    try:
-                        execSQL(conn, analyze_table)
-                    except Exception as e:
-                        raise Exception('Issue with \'ANALYZE\' of restored table \'%s\' in \'%s\' database' % (restore_table, restore_db))
+
+                    analyze_list = []
+                    schema, table = restore_table.split('.')
+
+                    if table == '*':
+                        get_all_tables_qry = 'select schemaname || \'.\' || tablename from pg_tables where schemaname = \'%s\';' % schema
+                        relations = execSQL(conn, get_all_tables_qry)
+                        for relation in relations:
+                            analyze_list.append(relation[0])
                     else:
-                        num_sqls += 1
-                        if num_sqls == 1000: # The choice of batch size was choosen arbitrarily
-                            batch_count +=1
-                            logger.debug('Completed executing batch of 1000 tuple count SQLs')
-                            conn.commit()
-                            num_sqls = 0
+                        analyze_list.append(restore_table)
+
+                    for tbl in analyze_list:
+                        analyze_table = "analyze " + tbl
+                        try:
+                            execSQL(conn, analyze_table)
+                        except Exception as e:
+                            raise Exception('Issue with \'ANALYZE\' of restored table \'%s\' in \'%s\' database' % (restore_table, restore_db))
+                        else:
+                            num_sqls += 1
+                            if num_sqls == 1000: # The choice of batch size was choosen arbitrarily
+                                batch_count +=1
+                                logger.debug('Completed executing batch of 1000 tuple count SQLs')
+                                conn.commit()
+                                num_sqls = 0
         except Exception as e:
             logger.warn('Restore of \'%s\' database succeeded but \'ANALYZE\' of restored tables failed' % restore_db)
             logger.warn('Please run ANALYZE manually on restored tables. Failure to run ANALYZE might result in poor database performance')
@@ -915,9 +944,25 @@ class ValidateSegments(Operation):
                     raise ExceptionNoStackTraceNeeded("No dump file on %s at %s" % (seg.getSegmentHostName(), path))
 
 def validate_tablenames(table_list):
+    """
+    verify table list and resolve overlaps
+    """
+    wildcard_tables = []
     for restore_table in table_list:
         if '.' not in restore_table:
             raise Exception("No schema name supplied for %s, removing from list of tables to restore" % restore_table)
+        elif restore_table.endswith('.*'):
+            wildcard_tables.append(restore_table)
+
+    table_set = wildcard_tables
+    for restore_table in table_list:
+        if restore_table not in table_set:
+            schema, _ = restore_table.split('.')
+            if schema + '.*' not in table_set:
+                table_set.append(restore_table)
+
+    return table_set
+
 
 class ValidateRestoreTables(Operation):
     def __init__(self, restore_tables, restore_db, master_port): 

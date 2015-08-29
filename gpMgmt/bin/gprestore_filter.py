@@ -117,7 +117,11 @@ def check_valid_schema(name, dump_schemas):
     return output
 
 def check_valid_table(schema, name, dump_tables):
-    if (schema, name) in dump_tables:
+    """
+    check if table is valid (can be from schema level restore)
+    """
+
+    if (schema, name) in dump_tables or (schema, '*') in dump_tables:
         output = True
     else:
         output = False
@@ -158,9 +162,12 @@ def extract_table(line):
     return table
 
 def check_dropped_table(line, dump_tables):
+    """
+    check if table to drop is valid (can be dropped from schema level restore)
+    """
     temp = line.split()[-1][:-1]
     (schema, table) = temp.split('.')
-    if (schema, table) in dump_tables:
+    if (schema, table) in dump_tables or (schema, '*') in dump_tables:
         return True
     return False
 
@@ -176,7 +183,7 @@ def process_data(dump_schemas, dump_tables, fdin, fdout):
         elif (line[0] == copy_start) and line.startswith(copy_expr) and line.endswith(copy_expr_end):
             table = extract_table(line)
             table = table.strip('"')
-            if table and (schema, table) in dump_tables:
+            if table and (schema, table) in dump_tables or (schema, '*') in dump_tables:
                 output = True
         elif output and (line[0] == copy_end_start) and line.startswith(copy_end_expr):
             table = None
