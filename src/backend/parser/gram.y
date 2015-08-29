@@ -12610,15 +12610,15 @@ unreserved_keyword:
 			| ROOTPARTITION
 			| RULE
 			| SAVEPOINT
-			| SEARCH
-			| SERVER
 			| SCHEMA
 			| SCROLL
+			| SEARCH
 			| SECOND_P
 			| SECURITY
 			| SEGMENT
 			| SEQUENCE
 			| SERIALIZABLE
+			| SERVER
 			| SESSION
 			| SET
 			| SHARE
@@ -13006,8 +13006,8 @@ col_name_keyword:
 			| EXTRACT
 			| FLOAT_P
 			| GREATEST
-			| GROUP_ID
 			| GROUPING
+			| GROUP_ID
 			| INOUT
 			| INT_P
 			| INTEGER
@@ -13167,10 +13167,10 @@ reserved_keyword:
 			| UNIQUE
 			| USER
 			| USING
-			| WINDOW
-			| WITH
 			| WHEN
 			| WHERE
+			| WINDOW
+			| WITH
 		;
 
 

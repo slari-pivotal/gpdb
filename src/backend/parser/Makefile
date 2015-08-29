@@ -35,6 +35,7 @@ gram.o: $(srcdir)/scan.c
 $(srcdir)/gram.h: $(srcdir)/gram.c ;
 
 $(srcdir)/gram.c: gram.y
+	$(PERL) $(srcdir)/check_keywords.pl $< $(top_srcdir)/src/include/parser/kwlist.h
 ifdef BISON
 	$(BISON) -d $(BISONFLAGS) -o $@ $<
 else

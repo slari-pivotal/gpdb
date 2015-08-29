@@ -13,7 +13,7 @@ top_builddir = ../..
 include $(top_builddir)/src/Makefile.global
 
 
-all: pg_config.h pg_config_os.h check_oids check_keywords
+all: pg_config.h pg_config_os.h check_oids
 
 
 # Subdirectories containing headers for server-side dev
@@ -68,9 +68,6 @@ uninstall:
 
 check_oids:
 	(cd $(abs_top_srcdir)/src/include/catalog/ && ./duplicate_oids) 
-
-check_keywords:
-	(cd $(abs_top_srcdir)/src/include/parser/ && PYTHONPATH=$(python_libdir) ${PYTHON} tidygram.py)
 
 clean:
 	rm -f utils/fmgroids.h parser/parse.h parser/gram.h utils/probes.h
