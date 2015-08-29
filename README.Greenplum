@@ -1,0 +1,78 @@
+Greenplum overview
+------------------
+
+Greeplum is an MPP (Massively Parallel Processing) database engine, based
+on PostgreSQL.
+
+A Greenplum cluster consists of a "master" server, and multiple "segment"
+servers. All user data resides in the segments, the master contains only
+metadata. The master server, and all the segments, share the same schema.
+
+Users always connect to the master server, which divides up the query into
+fragments that are executed in the segments, sends the fragments to the
+segments, and collects the results.
+
+Compiling
+---------
+
+./configure
+make
+
+There are some additional requirements in addition to what's needed by
+PostgreSQL:
+
+* libcurl - needed for e-mail alerts and external tables
+
+Code layout
+-----------
+
+The directory layout of the repository follows the same general layout as
+upstream PostgreSQL. There are changes compared to PostgreSQL throughout the
+codebase, but a few larger additions worth noting:
+
+gpMgmt/
+	Contains Greenplum-specific command-line tools for managing the
+	cluster. Scripts like gpinit, gpstart, gpstop live here. They are
+	mostly written in Python.
+
+doc/
+	In PostgreSQL, the user manual lives here. In Greenplum, the user
+	manual is distributed separately (see XXX), and only the reference
+	pages used to build man pages are here.
+
+
+src/backend/cdb/
+	Contains larger Greenplum-specific backend modules. For example,
+	communication between segments, turning plans into parallelizable
+	plans, mirroring, distributed transaction and snapshot management,
+	etc. "cdb" stands for "Cluster Database" - it was a workname used in
+	the early days. That name is no longer used, but the "cdb" prefix
+	remains.
+
+src/backend/gpopt
+	Contains the so-called "translator" library, for using the ORCA
+	optimizer with Greenplum. The translator library is written in C++
+	code, and contains glue code for translating plans and queries between
+	the DXL format used by ORCA, and the PostgreSQL internal
+	representation. This goes unused, unless building with --enable-orca.
+
+src/backend/gp_libpq_fe
+	A slightly modified copy of libpq. The master node uses this to
+	connect to segments, and to send fragments of a query plan to segments
+	for execution. It is linked directly into the backend, it is not a
+	shared library like libpq.
+
+src/backend/fts
+	FTS is a process that runs in the master node, and periodically polls
+	the segments to maintain the status of each segment.
+
+
+
+Glossary
+--------
+
+QD
+	Query Dispatcher. A synonym for the master server.
+
+QE
+	Query Executor. A synonym for a segment server.
