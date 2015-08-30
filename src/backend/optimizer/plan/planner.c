@@ -60,8 +60,6 @@
 #include "utils/debugbreak.h"
 #include "catalog/gp_policy.h"
 
-#include "postmaster/optserver.h"
-
 /* GUC parameter */
 double cursor_tuple_fraction = DEFAULT_CURSOR_TUPLE_FRACTION;
 
@@ -79,20 +77,6 @@ ParamListInfo PlannerBoundParamList = NULL;		/* current boundParams */
 #define EXPRKIND_ININFO			5
 #define EXPRKIND_APPINFO		6
 #define EXPRKIND_WINDOW_BOUND	7
-
-/*
- * struct containing optimization request parameters;
- * needs to be in sync with the argument expected by COptClient object;
- */
-struct optimizer_params
-{
-	// path where socket is initialized
-	const char *socketPath;
-
-	// input query
-	Query *query;
-};
-
 
 static Node *preprocess_expression(PlannerInfo *root, Node *expr, int kind);
 static void preprocess_qual_conditions(PlannerInfo *root, Node *jtnode);

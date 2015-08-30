@@ -132,7 +132,6 @@
 #include "postmaster/syslogger.h"
 #include "postmaster/backoff.h"
 #include "postmaster/perfmon_segmentinfo.h"
-#include "postmaster/optserver.h"
 #include "replication/walsender.h"
 #include "storage/fd.h"
 #include "storage/ipc.h"
@@ -191,7 +190,6 @@ typedef struct bkend
 
 static Dllist *BackendList;
 
-/* #define GP_OPT_PROCESS 1 */
 /* CDB */
 typedef enum pmsub_type
 {
@@ -202,9 +200,6 @@ typedef enum pmsub_type
 	PerfmonProc,
 	BackoffProc,
 	PerfmonSegmentInfoProc,
-#ifdef GP_OPT_PROCESS
-	OptProc,
-#endif	
 	MaxPMSubType
 } PMSubType;
 
@@ -478,11 +473,6 @@ static PMSubProc PMSubProcList[MaxPMSubType] =
 	{0, PerfmonSegmentInfoProc,
 	(PMSubStartCallback*)&perfmon_segmentinfo_start,
 	"stats sender process", PMSUBPROC_FLAG_QD_AND_QE, true},
-#ifdef GP_OPT_PROCESS
-	{0, OptProc,
-	(PMSubStartCallback*)&optimizer_start,
-	"optimizer process", PMSUBPROC_FLAG_QD, true},
-#endif // !GP_OPT_PROCESS
 };
 
 
