@@ -2326,13 +2326,13 @@ disconnectAndDestroyGang(Gang *gp)
 			PGTransactionStatusType status =
 			PQtransactionStatus(segdbDesc->conn);
 
-			elog((Debug_print_full_dtm ? LOG : (gp_log_gang >= GPVARS_VERBOSITY_TERSE ? LOG : DEBUG5)),
+			elog((Debug_print_full_dtm ? LOG : (gp_log_gang >= GPVARS_VERBOSITY_DEBUG ? LOG : DEBUG5)),
 				 "disconnectAndDestroyGang: got QEDistributedTransactionId = %u, QECommandId = %u, and QEDirty = %s",
 				 segdbDesc->conn->QEWriter_DistributedTransactionId,
 				 segdbDesc->conn->QEWriter_CommandId,
 				 (segdbDesc->conn->QEWriter_Dirty ? "true" : "false"));
 
-			if (gp_log_gang >= GPVARS_VERBOSITY_TERSE)
+			if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
 			{
 				const char *ts;
 
@@ -2366,7 +2366,7 @@ disconnectAndDestroyGang(Gang *gp)
 				char		errbuf[256];
 				PGcancel   *cn = PQgetCancel(segdbDesc->conn);
 
-				if (Debug_cancel_print || gp_log_gang >= GPVARS_VERBOSITY_TERSE)
+				if (Debug_cancel_print || gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
 					elog(LOG, "Calling PQcancel for %s", segdbDesc->whoami);
 
 				if (PQcancel(cn, errbuf, 256) == 0)
