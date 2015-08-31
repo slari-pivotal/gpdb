@@ -129,7 +129,6 @@
 #include "postmaster/fts.h"
 #include "postmaster/perfmon.h"
 #include "postmaster/primary_mirror_mode.h"
-#include "postmaster/ddaserver.h"
 #include "postmaster/syslogger.h"
 #include "postmaster/backoff.h"
 #include "postmaster/perfmon_segmentinfo.h"
@@ -192,7 +191,6 @@ typedef struct bkend
 
 static Dllist *BackendList;
 
-/* #define DO_DDA_SERV 1 */
 /* #define GP_OPT_PROCESS 1 */
 /* CDB */
 typedef enum pmsub_type
@@ -200,9 +198,6 @@ typedef enum pmsub_type
 	SeqServerProc = 0,
 	WalSendServerProc,
 	WalRedoServerProc,
-#ifdef DO_DDA_SERV
-	DdaServerProc,
-#endif
 	FtsProbeProc,
 	PerfmonProc,
 	BackoffProc,
@@ -488,11 +483,6 @@ static PMSubProc PMSubProcList[MaxPMSubType] =
 	(PMSubStartCallback*)&optimizer_start,
 	"optimizer process", PMSUBPROC_FLAG_QD, true},
 #endif // !GP_OPT_PROCESS
-#ifdef DO_DDA_SERV
-	{0, DdaServerProc,
-	 (PMSubStartCallback*)&ddaserver_start,
-	 "ddaserver process", PMSUBPROC_FLAG_QD_AND_QE, true},
-#endif
 };
 
 
