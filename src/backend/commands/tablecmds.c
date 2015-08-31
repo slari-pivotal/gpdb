@@ -16814,6 +16814,28 @@ ATPExecPartSplit(Relation *rel,
 
 							while (parvals)
 							{
+								/*
+								 * In multilevel partitioning with
+								 * lowest level as list, we don't find
+								 * AlterPartitionCmd->arg1 to be what
+								 * we expect.  We expect it as a list
+								 * of lists of A_Const, where the
+								 * A_Const is the value in AT()
+								 * clause.  Instead, what we get as
+								 * arg1 is a list whose member is
+								 * A_Const.  In order to prevent a
+								 * segfault and PANIC down the line,
+								 * we abort here.  It should be
+								 * removed after the issue is fixed.
+								 */
+								if (!IsA(lfirst(parvals), List))
+								{
+									ereport(ERROR,
+											(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
+											 errmsg("split partition is not "
+													"currently supported when the "
+													"lowest level is list partitioned")));
+								}
 								List *vals = lfirst(parvals);
 								ListCell *lcv = list_head(vals);
 								ListCell *lcc = list_head(cols);
