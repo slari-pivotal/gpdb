@@ -976,12 +976,10 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
 	bool		postDataSchemaOnly;
 	itimers 	savetimers;
 #ifdef USE_DDBOOST
-	char       *ddFileName = NULL;
 	char       *dd_boost_buffer_size = NULL;
-        char       *mkdirStr = NULL;
-        int        err = 0;
+	char       *mkdirStr = NULL;
+	int        err = 0;
 	
-	ddFileName = (char*)palloc(MAX_PATH_NAME);
 #endif	
 
 	postDataSchemaOnly = false;
