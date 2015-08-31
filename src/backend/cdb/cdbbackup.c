@@ -377,12 +377,6 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	pszKeyParm = (char *) palloc(strlen(pszBackupKey) +
 								 strlen(pszPassThroughCredentials) +
 								 3 + 10 + 10 + 1);
-	if (pszKeyParm == NULL)
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-	}
 
 	pszThrottleCmd = &emptyStr;       /* We do this to point to prevent memory leak*/
 	if(gp_backup_directIO)
@@ -411,12 +405,6 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	if (dd_boost_enabled)
 	{
 		dd_boost_buffer_size = (char*)palloc(MAX_DDBOOST_BUF_NAME);
-		if (!dd_boost_buffer_size)
-		{
-			ereport(ERROR,
-                		(errcode(ERRCODE_OUT_OF_MEMORY),
-                 	errmsg("out of memory")));
-		}
 
 		sprintf(dd_boost_buffer_size, "%d", ddboost_buf_size);
 
@@ -447,12 +435,6 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 			+ 20;
 
 		gpDDBoostCmdLine = (char *) palloc(len);
-        	if (gpDDBoostCmdLine == NULL)
-        	{
-                	ereport(ERROR,
-                                (errcode(ERRCODE_OUT_OF_MEMORY),
-                                 errmsg("out of memory")));
-        	}
 
 		if (pszDDBoostFileName == NULL)
 			elog(ERROR, "\nDDboost filename is NULL\n");
@@ -547,12 +529,6 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 	}
 
 	pszCmdLine = (char *) palloc(len);
-	if (pszCmdLine == NULL)
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-	}
 
 #ifdef USE_DDBOOST
 	if (dd_boost_enabled)
@@ -790,12 +766,6 @@ gp_backup_launch__(PG_FUNCTION_ARGS)
 		}
 
 		pszCmdLine = (char *) palloc(newlen);
-		if (pszCmdLine == NULL)
-		{
-			ereport(ERROR,
-					(errcode(ERRCODE_OUT_OF_MEMORY),
-					 errmsg("out of memory")));
-		}
 
 #ifdef USE_DDBOOST
 		if(dd_boost_enabled)
@@ -1012,11 +982,6 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
         int        err = 0;
 	
 	ddFileName = (char*)palloc(MAX_PATH_NAME);
-	if (!ddFileName)
-	{
-		elog(ERROR, "Out of memory\n");
-		return -1;		
-	}
 #endif	
 
 	postDataSchemaOnly = false;
@@ -1229,23 +1194,11 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
 		pszKeyParm = (char *) palloc(strlen(pszBackupKey) +
 									 strlen(pszPassThroughCredentials) +
 									 3 + 10 + 10 + 1);
-		if (pszKeyParm == NULL)
-		{
-			ereport(ERROR,
-					(errcode(ERRCODE_OUT_OF_MEMORY),
-					 errmsg("out of memory")));
-		}
 
 		sprintf(pszKeyParm, "%s_%d_%d_%s", pszBackupKey, instid, segid, pszPassThroughCredentials);
 
 #ifdef USE_DDBOOST
     dd_boost_buffer_size = (char*)palloc(MAX_DDBOOST_BUF_NAME);
-    if (!dd_boost_buffer_size)
-    {
-        ereport(ERROR,
-                (errcode(ERRCODE_OUT_OF_MEMORY),
-                 errmsg("out of memory")));
-    }
 
     sprintf(dd_boost_buffer_size, "%d", ddboost_buf_size);
 #endif
@@ -1303,12 +1256,6 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
 		len += 8; /* pass along "--gp-c" to tell restore file is compressed */
 
 		pszCmdLine = (char *) palloc(len);
-		if (pszCmdLine == NULL)
-		{
-			ereport(ERROR,
-					(errcode(ERRCODE_OUT_OF_MEMORY),
-					 errmsg("out of memory")));
-		}
 
 		/*
 		 * de-compress backupfile and pipe into stdin of gp_restore_agent along with its
@@ -1369,12 +1316,6 @@ gp_restore_launch__(PG_FUNCTION_ARGS)
 		len += strlen(pszBackupFileName) + 1;
 
 		pszCmdLine = (char *) palloc(len);
-		if (pszCmdLine == NULL)
-		{
-			ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-		}
 
 		/* Format gp_restore_agent with options, and Redirect both stdout and stderr into the status file */
 #ifdef USE_DDBOOST
@@ -1530,12 +1471,6 @@ gp_read_backup_file__(PG_FUNCTION_ARGS)
 
 	/* Allocate enough memory for entire file, and read it in. */
 	pszFullStatus = (char *) palloc(info.st_size + 1);
-	if (pszFullStatus == NULL)
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-	}
 
 	f = fopen(pszFileName, "r");
 	if (f == NULL)
@@ -1788,12 +1723,6 @@ findAcceptableBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, i
 			regex_len = base_len + strlen(DUMP_PREFIX) + strlen(pszBackupKey);
 			pg_wchar   *mask;
 		pszRegex = (char *) palloc(regex_len);
-		if (pszRegex == NULL)
-		{
-			ereport(ERROR,
-					(errcode(ERRCODE_OUT_OF_MEMORY),
-					 errmsg("out of memory")));
-		}
 
 		/* dump file can start with gp_ and also mpp_ for 2.3 backward compatibility */
 		snprintf(pszRegex, regex_len, "^%s(gp|mpp)_dump_[0-9]+_%d_%s(.gz)?$", DUMP_PREFIX, segid, pszBackupKey);
@@ -1927,13 +1856,6 @@ formBackupFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool is_com
 	}
 
 	pszBackupFileName = (char *) palloc(sizeof(char) * (1 + len));
-	if (pszBackupFileName == NULL)
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-	}
-
 	strcpy(pszBackupFileName, pszBackupDirectory);
 	if (pszBackupDirectory[strlen(pszBackupDirectory) - 1] != '/')
 	{
@@ -2002,13 +1924,6 @@ formStatusFilePathName(char *pszBackupDirectory, char *pszBackupKey, bool bIsBac
 	}
 
 	pszFileName = (char *) palloc(sizeof(char) * (1 + len));
-	if (pszFileName == NULL)
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-	}
-
 	strcpy(pszFileName, pszBackupDirectory);
 	if (pszBackupDirectory[strlen(pszBackupDirectory) - 1] != '/')
 		strcat(pszFileName, "/");
@@ -2034,12 +1949,6 @@ queryNBUBackupFilePathName(char *netbackupServiceHost, char *netbackupRestoreFil
    char *queryResultFileName;
 
    queryResultFileName = (char *) palloc(sizeof(char) * (1 + strlen(netbackupRestoreFileName)));
-   if (queryResultFileName == NULL)
-   {
-       ereport(ERROR,
-               (errcode(ERRCODE_OUT_OF_MEMORY),
-                errmsg("Failed to allocate memory for query for restore filename to NetBackup server")));
-   }
 
    snprintf(cmd, (strlen(gpNBUQueryPg) + strlen(" --netbackup-service-host ") + strlen(netbackupServiceHost) + strlen(" --netbackup-filename ") + strlen(netbackupRestoreFileName) + strlen("\n")),
 			"%s --netbackup-service-host %s --netbackup-filename %s\n", gpNBUQueryPg, netbackupServiceHost,  netbackupRestoreFileName);
@@ -2089,11 +1998,6 @@ formThrottleCmd(char *pszBackupFileName, int directIO_read_chunk_mb, bool bIsThr
 
 		/* Create the throttlingD.py string */
 		pszThrottleCmd = (char *)palloc(throttleCMDLen);
-		if (pszThrottleCmd == NULL)
-		{
-			ereport(ERROR,
-					(errcode(ERRCODE_OUT_OF_MEMORY), errmsg("out of memory")));
-		}
 		sprintf(pszThrottleCmd, "| throttlingD.py %d %s",directIO_read_chunk_mb ,pszBackupFileName);
 	}
 	else
@@ -2105,13 +2009,6 @@ formThrottleCmd(char *pszBackupFileName, int directIO_read_chunk_mb, bool bIsThr
 
 		/* Create the empty throttling string */
 		pszThrottleCmd = (char *)palloc(throttleCMDLen);
-
-		if (pszThrottleCmd == NULL)
-		{
-			ereport(ERROR,
-					(errcode(ERRCODE_OUT_OF_MEMORY), errmsg("out of memory")));
-		}
-
 		sprintf(pszThrottleCmd, " > %s",pszBackupFileName);
 	}
 
@@ -2137,17 +2034,6 @@ relativeToAbsolute(char *pszRelativeDirectory)
     if (pszRelativeDirectory != NULL)
     {
 	    pszAbsolutePath = (char *) palloc(strlen(DataDir) + 1 + strlen(pszRelativeDirectory) + 1);
-    } 
-
-	if (pszRelativeDirectory != NULL && pszAbsolutePath == NULL)
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-	}
-
-    if (pszRelativeDirectory != NULL)
-    {
 	    sprintf(pszAbsolutePath, "%s/%s", DataDir, pszRelativeDirectory);
     }
     else
@@ -2219,13 +2105,6 @@ testProgramExists(char *pszProgramName)
 	 * stop at the first whitespace
 	 */
 	pszProgramNameLocal = palloc(strlen(pszProgramName) + 1);
-	if (pszProgramNameLocal == NULL)
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-	}
-
 	strcpy(pszProgramNameLocal, pszProgramName);
 
 	p = pszProgramNameLocal;
@@ -2243,13 +2122,6 @@ testProgramExists(char *pszProgramName)
 	if (pszEnvPath != NULL)
 	{
 		pszTestPath = (char *) palloc(strlen(pszEnvPath) + 1 + strlen(pszProgramNameLocal) + 1);
-		if (pszTestPath == NULL)
-		{
-			ereport(ERROR,
-					(errcode(ERRCODE_OUT_OF_MEMORY),
-					 errmsg("out of memory")));
-		}
-
 		sprintf(pszTestPath, "%s/%s", pszEnvPath, pszProgramNameLocal);
 		if (stat(pszTestPath, &buf) >= 0)
 		{
@@ -2260,13 +2132,6 @@ testProgramExists(char *pszProgramName)
 	if (pszEnvPath == NULL)
 		return NULL;
 	pszPath = (char *) palloc(strlen(pszEnvPath) + 1);
-	if (pszPath == NULL)
-	{
-		ereport(ERROR,
-				(errcode(ERRCODE_OUT_OF_MEMORY),
-				 errmsg("out of memory")));
-	}
-
 	strcpy(pszPath, pszEnvPath);
 	/* Try to create each level of the hierarchy that doesn't already exist */
 	pColon = pszPath;
@@ -2286,13 +2151,6 @@ testProgramExists(char *pszProgramName)
 		{
 			/* See whether pszProgramName exists in subdirectory pColon */
 			pszTestPath = (char *) palloc(strlen(pColon) + 1 + strlen(pszProgramNameLocal) + 1);
-			if (pszTestPath == NULL)
-			{
-				ereport(ERROR,
-						(errcode(ERRCODE_OUT_OF_MEMORY),
-						 errmsg("out of memory")));
-			}
-
 			sprintf(pszTestPath, "%s/%s", pColon, pszProgramNameLocal);
 
 			if (stat(pszTestPath, &buf) >= 0)
@@ -2306,12 +2164,6 @@ testProgramExists(char *pszProgramName)
 
 		/* See whether pszProgramName exists in subdirectory pColon */
 		pszTestPath = (char *) palloc(strlen(pColon) + 1 + strlen(pszProgramNameLocal) + 1);
-		if (pszTestPath == NULL)
-		{
-			ereport(ERROR,
-					(errcode(ERRCODE_OUT_OF_MEMORY),
-					 errmsg("out of memory")));
-		}
 
 		sprintf(pszTestPath, "%s/%s", pColon, pszProgramNameLocal);
 		if (stat(pszTestPath, &buf) >= 0)
@@ -2469,12 +2321,6 @@ static char *formDDBoostFileName(char *pszBackupKey, bool isPostData, bool isCom
        }
 
        pszBackupFileName = (char *) palloc(sizeof(char) * (1 + len));
-       if (pszBackupFileName == NULL)
-       {
-               ereport(ERROR,
-                               (errcode(ERRCODE_OUT_OF_MEMORY),
-                                errmsg("out of memory")));
-       }
 
        memset(pszBackupFileName, 0, (1+len));
        strcat(pszBackupFileName, szFileNamePrefix);
