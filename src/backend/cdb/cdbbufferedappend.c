@@ -46,8 +46,6 @@ void BufferedAppendInit(
     int32                maxLargeWriteLen,
     char				 *relationName)
 {
-	int		relationNameLen;
-
 	Assert(bufferedAppend != NULL);
 	Assert(memory != NULL);
 	Assert(maxBufferLen > 0);
@@ -59,9 +57,7 @@ void BufferedAppendInit(
 	/*
 	 * Init level.
 	 */
-	relationNameLen = strlen(relationName);
-	bufferedAppend->relationName = (char *) palloc(relationNameLen + 1);
-	memcpy(bufferedAppend->relationName, relationName, relationNameLen + 1);
+	bufferedAppend->relationName = pstrdup(relationName);
 
 	/*
 	 * Large-read memory level members.
