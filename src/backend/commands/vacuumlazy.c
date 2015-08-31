@@ -263,7 +263,6 @@ lazy_vacuum_rel(Relation onerel, VacuumStmt *vacstmt, List *updated_stats)
 		{
 			elogif(Debug_appendonly_print_compaction, LOG,
 					"Vacuum cleanup phase %s", RelationGetRelationName(onerel));
-			vacuum_appendonly_indexes(onerel, vacstmt, updated_stats);
 			vacuum_appendonly_fill_stats(onerel, ActiveSnapshot, vacrelstats, false);
 		}
 	}
@@ -1013,12 +1012,12 @@ lazy_truncate_heap(Relation onerel, LVRelStats *vacrelstats)
 /*
  * Fills in the relation statistics for an append-only relation.
  *
- *	This information is used to update the reltuples and relpages information 
+ *	This information is used to update the reltuples and relpages information
  *	in pg_class. reltuples is the same as "pg_aoseg_<oid>:tupcount"
  *	column and we simulate relpages by subdividing the eof value
  *	("pg_aoseg_<oid>:eof") over the defined page size.
  */
-void 
+void
 vacuum_appendonly_fill_stats(Relation aorel, Snapshot snapshot,
 		void* vacrelstats, bool isVacFull)
 {
@@ -1063,7 +1062,7 @@ vacuum_appendonly_fill_stats(Relation aorel, Snapshot snapshot,
 
 	elogif (Debug_appendonly_print_compaction, LOG,
 			"Gather statistics after vacuum for append-only relation %s: "
-			"page count %d, tuple count %f", 
+			"page count %d, tuple count %f",
 			relname,
 			nblocks, num_tuples);
 
@@ -1175,7 +1174,7 @@ vacuum_appendonly_rel(Relation aorel, VacuumStmt *vacstmt)
 				"Vacuum compaction phase %s", RelationGetRelationName(aorel));
 			if (RelationIsAoRows(aorel))
 			{
-				AppendOnlyCompact(aorel, 
+				AppendOnlyCompact(aorel,
 					vacstmt->appendonly_compaction_segno,
 					insert_segno, vacstmt->full);
 			}

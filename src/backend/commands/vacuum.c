@@ -150,7 +150,7 @@ typedef ExecContextData *ExecContext;
 /*
  * State information used during the (full)
  * vacuum of indexes on append-only tables
- */ 
+ */
 typedef struct AppendOnlyIndexVacuumState
 {
 	AppendOnlyVisimap visiMap;
@@ -286,8 +286,8 @@ static void
 vacuum_combine_stats(CdbDispatchResults *primaryResults,
 						 void *ctx);
 
-static void vacuum_appendonly_index(Relation indexRelation, 
-		AppendOnlyIndexVacuumState *vacuumIndexState, 
+static void vacuum_appendonly_index(Relation indexRelation,
+		AppendOnlyIndexVacuumState *vacuumIndexState,
 		List *extra_oids, List* updated_stats, double rel_tuple_count, bool isfull);
 
 /****************************************************************************
@@ -313,7 +313,7 @@ vacuum(VacuumStmt *vacstmt, List *relids)
 	bool doVacuum = vacstmt->vacuum;
 
 	Assert(!(vacstmt != NULL && relids != NULL));
-	
+
 	if (doVacuum)
 	{
 		if (vacstmt->rootonly)
@@ -331,7 +331,7 @@ vacuum(VacuumStmt *vacstmt, List *relids)
 			vacuumStatement(vacstmt, NIL);
 		}
 	}
-	
+
 	if (doAnalyze)
 	{
 		/**
@@ -341,7 +341,7 @@ vacuum(VacuumStmt *vacstmt, List *relids)
 		analyzeStmt->vacuum = false;
 		analyzeStatement(analyzeStmt, NIL);
 	}
-	
+
 	vacstmt->analyze = doAnalyze;
 	vacstmt->vacuum = doVacuum;
 }
@@ -382,7 +382,7 @@ static bool vacuum_assign_compaction_segno(
 		return false;
 	}
 
-	new_compaction_list = SetSegnoForCompaction(onerel->rd_id, 
+	new_compaction_list = SetSegnoForCompaction(onerel->rd_id,
 			compactedSegmentFileList, insertedSegmentFileList, &is_drop);
 	if (new_compaction_list)
 	{
@@ -408,11 +408,11 @@ static bool vacuum_assign_compaction_segno(
 
 	if (!new_compaction_list)
 	{
-		elog(DEBUG3, "No valid compact segno for releation %s (%d)", 
+		elog(DEBUG3, "No valid compact segno for releation %s (%d)",
 				RelationGetRelationName(onerel),
 				RelationGetRelid(onerel));
 		return false;
-	} 
+	}
 	else
 	{
 		vacstmt->appendonly_compaction_insert_segno = insert_segno;
@@ -430,7 +430,7 @@ vacuumStatement_IsTemporary(Oid relid)
 	{
 		case PG_CATALOG_NAMESPACE:
 			/* MPP-7773: don't track objects in system namespace
-			 * if modifying system tables (eg during upgrade)  
+			 * if modifying system tables (eg during upgrade)
 			 */
 			if (allowSystemTableModsDDL)
 				bTemp = true;
@@ -466,7 +466,7 @@ vacuumStatement_AssignRelation(VacuumStmt *vacstmt, Oid relid, List *relations)
 	if (list_length(relations) > 1 || vacstmt->relation == NULL)
 	{
 		char	*relname		= get_rel_name(relid);
-		char	*namespace_name = 
+		char	*namespace_name =
 			get_namespace_name(get_rel_namespace(relid));
 
 		if (relname == NULL)
@@ -492,7 +492,7 @@ vacuumStatement_AssignRelation(VacuumStmt *vacstmt, Oid relid, List *relations)
  * Return false if we are done with all segfiles.
  */
 static bool
-vacuumStatement_AssignAppendOnlyCompactionInfo(VacuumStmt *vacstmt, 
+vacuumStatement_AssignAppendOnlyCompactionInfo(VacuumStmt *vacstmt,
 		Relation onerel,
 		List *compactedSegmentFileList,
 		List *insertedSegmentFileList,
@@ -556,9 +556,9 @@ bool
 vacuumStatement_IsInAppendOnlyCompactionPhase(VacuumStmt *vacstmt)
 {
 	Assert(vacstmt);
-	return (vacstmt->appendonly_compaction_segno && 
+	return (vacstmt->appendonly_compaction_segno &&
 			vacstmt->appendonly_compaction_insert_segno &&
-			!vacstmt->appendonly_compaction_vacuum_prepare && 
+			!vacstmt->appendonly_compaction_vacuum_prepare &&
 			!vacstmt->appendonly_compaction_vacuum_cleanup);
 }
 
@@ -663,8 +663,8 @@ vacuumStatement_Relation(VacuumStmt *vacstmt, Oid relid, List *relations)
 	/*
 	 * We compact segment file by segment file.
 	 * Therefore in some cases, we have multiple vacuum dispatches
-	 * per relation. 
-	 */ 
+	 * per relation.
+	 */
 	bool getnextrelation = false;
 
 	/* Number of rounds performed on this relation */
@@ -1061,7 +1061,7 @@ vacuumStatement_Relation(VacuumStmt *vacstmt, Oid relid, List *relations)
  * (if given) be allocated in a memory context that won't disappear
  * at transaction commit.  In fact this context must be QueryContext
  * to avoid complaints from PreventTransactionChain.
- * 
+ *
  * vacuum() has been changed so that it is an entry point only for vacuum
  * commands. ANALYZE is now handled by analyzeStatement() in analyze.c.
  */
@@ -1480,7 +1480,7 @@ vac_update_relstats(Relation rel, BlockNumber num_pages, double num_tuples,
 		pq_endmessage(&buf);
 	}
 
-	/* 
+	/*
 	 * We need a way to distinguish these 2 cases:
 	 * a) ANALYZEd/VACUUMed table is empty
 	 * b) Table has never been ANALYZEd/VACUUMed
@@ -2002,15 +2002,15 @@ static bool vacuum_appendonly_index_should_vacuum(Relation aoRelation,
 	}
 	hidden_tupcount = AppendOnlyVisimap_GetRelationHiddenTupleCount(&vacuumIndexState->visiMap);
 
-	if(rel_tuple_count) 
+	if(rel_tuple_count)
 	{
 		*rel_tuple_count = (double)(totals->totaltuples - hidden_tupcount);
 		Assert((*rel_tuple_count) > -1.0);
 	}
-	
+
 	pfree(totals);
 
-	if(hidden_tupcount > 0 || vacstmt->full || vacstmt->appendonly_compaction_vacuum_cleanup)
+	if(hidden_tupcount > 0 || vacstmt->full)
 	{
 		return true;
 	}
@@ -2026,10 +2026,10 @@ static bool vacuum_appendonly_index_should_vacuum(Relation aoRelation,
  * nindex value is set by this function.
  *
  * It returns the number of indexes on the relation.
- */ 
-int 
-vacuum_appendonly_indexes(Relation aoRelation, 
-		VacuumStmt *vacstmt, 
+ */
+int
+vacuum_appendonly_indexes(Relation aoRelation,
+		VacuumStmt *vacstmt,
 		List* updated_stats)
 {
 	int reindex_count = 1;
@@ -2305,7 +2305,7 @@ full_vacuum_rel(Relation onerel, VacuumStmt *vacstmt, List *updated_stats)
 		{
 			elogif(Debug_appendonly_print_compaction, LOG,
 					"Vacuum full prepare phase %s", RelationGetRelationName(onerel));
-			
+
 			vacuum_appendonly_indexes(onerel, vacstmt, updated_stats);
 			if (RelationIsAoRows(onerel))
 				AppendOnlyTruncateToEOF(onerel);
@@ -2322,7 +2322,6 @@ full_vacuum_rel(Relation onerel, VacuumStmt *vacstmt, List *updated_stats)
 		{
 			elogif(Debug_appendonly_print_compaction, LOG,
 					"Vacuum full cleanup phase %s", RelationGetRelationName(onerel));
-			vacuum_appendonly_indexes(onerel, vacstmt, updated_stats);
 			vacuum_appendonly_fill_stats(onerel, ActiveSnapshot, vacrelstats, true);
 		}
 	}
@@ -2895,10 +2894,10 @@ scan_heap(VRelStats *vacrelstats, Relation onerel,
 		}
 
 		UnlockReleaseBuffer(buf);
-		
+
 		MIRROREDLOCK_BUFMGR_UNLOCK;
 		// -------- MirroredLock ----------
-		
+
 	}
 
 	pfree(vacpage);
@@ -3117,10 +3116,10 @@ repair_frag(VRelStats *vacrelstats, Relation onerel,
 			}
 			if (isempty)
 			{
-				
+
 				MIRROREDLOCK_BUFMGR_UNLOCK;
 				// -------- MirroredLock ----------
-				
+
 				ReleaseBuffer(buf);
 				continue;
 			}
@@ -3693,10 +3692,10 @@ repair_frag(VRelStats *vacrelstats, Relation onerel,
 			}
 			vpage_insert(&Nvacpagelist, copy_vac_page(vacpage));
 		}
-		
+
 		MIRROREDLOCK_BUFMGR_UNLOCK;
 		// -------- MirroredLock ----------
-		
+
 		ReleaseBuffer(buf);
 
 		if (offnum <= maxoff)
@@ -4202,12 +4201,12 @@ scan_index(Relation indrel, double num_tuples, List *updated_stats, bool isfull,
  *
  * This is called after an append-only segment file compaction to move
  * all tuples from the compacted segment files.
- * The segmentFileList is an 
+ * The segmentFileList is an
  */
 static void
-vacuum_appendonly_index(Relation indexRelation, 
-		AppendOnlyIndexVacuumState* vacuumIndexState, 
-		List *extra_oids, 
+vacuum_appendonly_index(Relation indexRelation,
+		AppendOnlyIndexVacuumState* vacuumIndexState,
+		List *extra_oids,
 		List *updated_stats,
 		double rel_tuple_count,
 		bool isfull)
@@ -4228,7 +4227,7 @@ vacuum_appendonly_index(Relation indexRelation,
 	ivinfo.num_heap_tuples = rel_tuple_count;
 
 	/* Do bulk deletion */
-	stats = index_bulk_delete(&ivinfo, NULL, appendonly_tid_reaped, 
+	stats = index_bulk_delete(&ivinfo, NULL, appendonly_tid_reaped,
 			(void *) vacuumIndexState);
 
 	/* Do post-VACUUM cleanup */
@@ -4332,11 +4331,11 @@ vacuum_index(VacPageList vacpagelist, Relation indrel,
 }
 
 static bool
-appendonly_tid_reapded_check_block_directory(AppendOnlyIndexVacuumState* vacuumState, 
+appendonly_tid_reapded_check_block_directory(AppendOnlyIndexVacuumState* vacuumState,
 		AOTupleId* aoTupleId)
 {
 	if (vacuumState->blockDirectory.currentSegmentFileNum ==
-			AOTupleIdGet_segmentFileNum(aoTupleId) && 
+			AOTupleIdGet_segmentFileNum(aoTupleId) &&
 			AppendOnlyBlockDirectoryEntry_RangeHasRow(&vacuumState->blockDirectoryEntry,
 				AOTupleIdGet_rowNum(aoTupleId)))
 	{
@@ -4351,7 +4350,7 @@ appendonly_tid_reapded_check_block_directory(AppendOnlyIndexVacuumState* vacuumS
 		return false;
 	}
 	return (vacuumState->blockDirectory.currentSegmentFileNum ==
-			AOTupleIdGet_segmentFileNum(aoTupleId) && 
+			AOTupleIdGet_segmentFileNum(aoTupleId) &&
 			AppendOnlyBlockDirectoryEntry_RangeHasRow(&vacuumState->blockDirectoryEntry,
 				AOTupleIdGet_rowNum(aoTupleId)));
 }
@@ -4364,7 +4363,7 @@ appendonly_tid_reapded_check_block_directory(AppendOnlyIndexVacuumState* vacuumS
  * segment files.
  *
  * This has the right signature to be an IndexBulkDeleteCallback.
- */ 
+ */
 static bool
 appendonly_tid_reaped(ItemPointer itemptr, void *state)
 {
@@ -4384,7 +4383,7 @@ appendonly_tid_reaped(ItemPointer itemptr, void *state)
 	{
 		/* Also check visi map */
 		reaped = !AppendOnlyVisimap_IsVisible(&vacuumState->visiMap,
-		aoTupleId);	
+		aoTupleId);
 	}
 
 	elogif(Debug_appendonly_print_compaction, DEBUG3,
@@ -4804,7 +4803,7 @@ dispatchVacuum(VacuumStmt *vacstmt, VacuumStatsContext *ctx)
 	q = makeNode(Query);
 
 	Assert(q);
-	
+
 	q->commandType = CMD_UTILITY;
 	q->utilityStmt = (Node *) vacstmt;
 	q->querySource = QSRC_ORIGINAL;
@@ -4887,14 +4886,14 @@ open_relation_and_check_permission(VacuumStmt *vacstmt,
 	 * My marking the drop transaction as busy before checking, the worst
 	 * thing that can happen is that both transaction see each other and
 	 * both cancel the drop.
-	 */ 
+	 */
 
 	if (isDropTransaction)
 	{
 		MyProc->inDropTransaction = true;
 		if (HasDropTransaction(false))
 		{
-			elogif(Debug_appendonly_print_compaction, LOG, 
+			elogif(Debug_appendonly_print_compaction, LOG,
 					"Skip drop because of concurrent drop transaction");
 
 			return NULL;
@@ -5023,7 +5022,7 @@ gen_oids_for_bitmaps(VacuumStmt *vacstmt, Relation onerel)
 			vacstmt->extra_oids = lappend_oid(vacstmt->extra_oids,
 											  indoid);
 			Assert(NUM_EXTRA_OIDS_FOR_BITMAP % 3 == 0);
-			
+
 			for (i = 0; i < NUM_EXTRA_OIDS_FOR_BITMAP / 3; i++)
 			{
 				vacstmt->extra_oids = lappend_oid(vacstmt->extra_oids,
@@ -5067,7 +5066,7 @@ get_oids_for_bitmap(List *all_extra_oids, Relation Irel,
 	bool found = false;
 	ListCell *lc;
 	int oid_index = 0;
-	
+
 	if (!RelationIsBitmapIndex(Irel))
 		return extra_oids;
 
@@ -5122,7 +5121,7 @@ vacuum_combine_stats(CdbDispatchResults *primaryResults,
 {
 	int result_no;
 	VacuumStatsContext *stats_context = (VacuumStatsContext *)ctx;
-		
+
 	Assert(Gp_role == GP_ROLE_DISPATCH);
 
 	if (primaryResults == NULL)
