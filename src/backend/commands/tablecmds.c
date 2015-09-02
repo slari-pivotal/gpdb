@@ -25,6 +25,7 @@
 #include "access/genam.h"
 #include "access/hash.h"
 #include "access/heapam.h"
+#include "access/fileam.h"
 #include "access/extprotocol.h"
 #include "access/nbtree.h"
 #include "access/reloptions.h"
@@ -388,6 +389,7 @@ static bool prebuild_temp_table(Relation rel, RangeVar *tmpname, List *distro,
 								List *opts, List **hidden_types, bool isTmpTableAo,
 								bool useExistingColumnAttributes);
 static void ATPartitionCheck(AlterTableType subtype, Relation rel, bool rejectroot, bool recursing);
+static void ATExternalPartitionCheck(AlterTableType subtype, Relation rel, bool recursing);
 static void InvokeProtocolValidation(Oid procOid, char *procName, bool iswritable, List *locs);
 
 static char *alterTableCmdString(AlterTableType subtype);
@@ -1816,7 +1818,24 @@ ExecuteTruncate(TruncateStmt *stmt)
 		{
 			/* add the partitions to the relation list and try again */
 			if (partcheck == 1)
+			{
 				stmt->relations = list_concat(partList, stmt->relations);
+
+				cell = list_head(stmt->relations);
+				while (cell != NULL)
+				{
+					RangeVar   *rv = lfirst(cell);
+					Relation	rel;
+
+					cell = lnext(cell);
+					rel = heap_openrv(rv, AccessExclusiveLock);
+					if (RelationIsExternal(rel))
+					{
+						elog(ERROR, "Cannot truncate table having external partition:\"%s\".", RelationGetRelationName(rel));
+					}
+					heap_close(rel, NoLock);
+				}
+			}
 		}
 		else
 			/* no partitions - no need to try again */
@@ -4209,6 +4228,7 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			 * test that this is allowed for partitioning, but only if we aren't
 			 * recursing.
 			 */
+			ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 			ATPartitionCheck(cmd->subtype, rel, false, recursing);
 			/* Performs own recursion */
 			ATPrepAddColumn(rel, recurse, cmd);
@@ -4246,6 +4266,7 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			break;
 		case AT_DropNotNull:	/* ALTER COLUMN DROP NOT NULL */
 			ATSimplePermissions(rel, false);
+			ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 			ATPartitionCheck(cmd->subtype, rel, false, recursing);
 			ATSimpleRecursion(wqueue, rel, cmd, recurse);
 			/* No command-specific prep needed */
@@ -4253,6 +4274,7 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			break;
 		case AT_SetNotNull:		/* ALTER COLUMN SET NOT NULL */
 			ATSimplePermissions(rel, false);
+			ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 			ATSimpleRecursion(wqueue, rel, cmd, recurse);
 			if (!cmd->part_expanded)
 				ATPartitionCheck(cmd->subtype, rel, false, recursing);
@@ -4274,6 +4296,7 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 		case AT_DropColumn:		/* DROP COLUMN */
 		case AT_DropColumnRecurse:
 			ATSimplePermissions(rel, false);
+			ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 			ATPartitionCheck(cmd->subtype, rel, false, recursing);
 			/* Recursion occurs during execution phase */
 			/* No command-specific prep needed except saving recurse flag */
@@ -4283,6 +4306,7 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			break;
 		case AT_AddIndex:		/* ADD INDEX */
 			ATSimplePermissions(rel, false);
+			ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 			/* Any recursion for partitioning is done in ATExecAddIndex() itself */
 			/* However, if the index supports a PK or UNIQUE constraint and the
 			 * relation is partitioned, we need to assure the constraint is named
@@ -4341,6 +4365,7 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			 * We allow operations on the root of a partitioning hierarchy, but
 			 * not ONLY the root.
 			 */
+			ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 			ATPartitionCheck(cmd->subtype, rel, (!recurse && !recursing), recursing);
 			/*
 			 * Currently we recurse only for CHECK constraints, never for
@@ -4365,6 +4390,7 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			 * We allow operations on the root of a partitioning hierarchy, but
 			 * not ONLY the root.
 			 */
+			ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 			ATPartitionCheck(cmd->subtype, rel, (!recurse && !recursing), recursing);
 			/* Performs own recursion */
 			ATPrepDropConstraint(wqueue, rel, recurse, cmd);
@@ -4378,6 +4404,7 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			break;
 		case AT_AlterColumnType:		/* ALTER COLUMN TYPE */
 			ATSimplePermissions(rel, false);
+			ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 			ATPartitionCheck(cmd->subtype, rel, false, recursing);
 			/* Performs own recursion */
 			ATPrepAlterColumnType(wqueue, tab, rel, recurse, recursing, cmd);
@@ -4482,6 +4509,8 @@ ATPrepCmd(List **wqueue, Relation rel, AlterTableCmd *cmd,
 			{
 				Oid relid = RelationGetRelid(rel);
 				PartStatus ps = rel_part_status(relid);
+
+				ATExternalPartitionCheck(cmd->subtype, rel, recursing);
 
 				if ( recurse ) /* Normal ALTER TABLE */
 				{
@@ -5659,6 +5688,12 @@ ATRewriteTables(List **wqueue,
 
 		/* We will lock the table iff we decide to actually rewrite it */
 		rel = relation_open(tab->relid, NoLock);
+		if (RelationIsExternal(rel) || RelationIsForeign(rel))
+		{
+			heap_close(rel, NoLock);
+			continue;
+		}
+
 		relisshared   = rel->rd_rel->relisshared;
 		relisnailed   = rel->rd_isnailed;
 		relNamespace  = RelationGetNamespace(rel);
@@ -6318,7 +6353,7 @@ ATRewriteTable(AlteredTableInfo *tab, Oid OIDNewHeap)
 		 * Scan through the rows, generating a new row if needed and then
 		 * checking all the constraints.
 		 */
-		if(relstorage == RELSTORAGE_HEAP)
+		if(relstorage == RELSTORAGE_HEAP) 
 		{
 			heapscan = heap_beginscan(oldrel, SnapshotNow, 0, NULL);
 
@@ -6796,6 +6831,30 @@ ATPartitionCheck(AlterTableType subtype, Relation rel, bool rejectroot, bool rec
 						alterTableCmdString(subtype),
 						RelationGetRelationName(rel)),
 				 errhint("You may be able to perform the operation on the partitioned table as a whole."),
+				 errOmitLocation(true)));
+	}
+}
+
+/*
+ * ATExternalPartitionCheck
+ * Reject certain operations if the partitioned table has external partition.
+ */
+static void
+ATExternalPartitionCheck(AlterTableType subtype, Relation rel, bool recursing)
+{
+	if (recursing)
+	{
+		return;
+	}
+
+	Oid relid = RelationGetRelid(rel);
+	if (rel_has_external_partition(relid))
+	{
+		ereport(ERROR,
+				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+				 errmsg("Cannot %s \"%s\"; it has external partition(s)",
+						alterTableCmdString(subtype),
+						RelationGetRelationName(rel)),
 				 errOmitLocation(true)));
 	}
 }
@@ -7766,6 +7825,11 @@ ATPrepColumnDefault(Relation rel, bool recurse, AlterTableCmd *cmd)
 				continue;
 
 			childrel = heap_open(childrelid, AccessShareLock);
+			if (RelationIsExternal(childrel))
+			{
+				heap_close(childrel, NoLock);
+				continue;
+			}
 			CheckTableNotInUse(childrel, "ALTER TABLE");
 
 			/* Recurse to child */
@@ -15031,6 +15095,7 @@ ATPExecPartExchange(AlteredTableInfo *tab, Relation rel, AlterPartitionCmd *pc)
 		RangeVar		   *oldrelrv;
 		PartitionNode 	   *pn;
 		Relation			oldrel;
+		Relation			newrel;
 
 		pn = RelationBuildPartitionDesc(rel, false);
 		pcols = get_partition_attrs(pn);
@@ -15050,11 +15115,25 @@ ATPExecPartExchange(AlteredTableInfo *tab, Relation rel, AlterPartitionCmd *pc)
 							 ),
 									   errOmitLocation(true)));
 
+		newrelid = RangeVarGetRelid(newrelrv, false);
+		Assert(OidIsValid(newrelid));
+		newrel = heap_open(newrelid, NoLock);
+		if (RelationIsExternal(newrel))
+		{
+			if (prule && prule->topRule && prule->topRule->parparentoid)
+			{
+				heap_close(newrel, NoLock);
+				ereport(ERROR,
+						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+						 errmsg("cannot exchange sub partition with external table"),
+						 errOmitLocation(true)));
+			}
+		}
+		heap_close(newrel, NoLock);
+
 		orig_pid_type = pid->idtype;
 		orig_prule = prule;
-
 		oldrelid = prule->topRule->parchildrelid;
-		newrelid = RangeVarGetRelid(newrelrv, false);
 
 		pfree(pc->partid);
 
@@ -15133,6 +15212,12 @@ ATPExecPartExchange(AlteredTableInfo *tab, Relation rel, AlterPartitionCmd *pc)
 		char			*oldNspName = NULL;
 
 		newrel = heap_open(newrelid, AccessExclusiveLock);
+		if (RelationIsExternal(newrel) && validate)
+		{
+			heap_close(newrel, NoLock);
+			elog(ERROR, "Validation of external tables not supported. Use WITHOUT VALIDATION.");
+		}
+
 		oldrel = heap_open(oldrelid, AccessExclusiveLock);
 
 		oldnspid = RelationGetNamespace(oldrel);
@@ -16327,6 +16412,16 @@ ATPExecPartSplit(Relation *rel,
 		/* Get target meta data */
 		prule = get_part_rule(*rel, pid, true, true,
 							  CurrentMemoryContext, NULL, false);
+
+		/* Error out on external partition */
+		existrel = heap_open(prule->topRule->parchildrelid, NoLock);
+		if (RelationIsExternal(existrel))
+		{
+			heap_close(existrel, NoLock);
+			elog(ERROR, "Cannot split external partition");
+		}
+		heap_close(existrel, NoLock);
+
 		/*
 		 * In order to implement SPLIT, we do the following:
 		 *
@@ -17276,6 +17371,11 @@ ATPExecPartTruncate(Relation rel,
 		Relation	  	 rel2;
 
 		rel2 = heap_open(prule->topRule->parchildrelid, AccessShareLock);
+		if (RelationIsExternal(rel2))
+		{
+			heap_close(rel2, NoLock);
+			elog(ERROR, "Cannot truncate external partition");
+		}
 		rv = makeRangeVar(get_namespace_name(RelationGetNamespace(rel2)),
 						  pstrdup(RelationGetRelationName(rel2)), -1);
 
@@ -18627,6 +18727,7 @@ char *alterTableCmdString(AlterTableType subtype)
 			
 		case AT_AddIndex: /* add index */
 		case AT_ReAddIndex: /* internal to commands/tablecmds.c */
+			cmdstring = pstrdup("add index or primary/unique key to");
 			break;
 			
 		case AT_AddConstraint: /* add constraint */
@@ -18680,6 +18781,7 @@ char *alterTableCmdString(AlterTableType subtype)
 			break;
 			
 		case AT_SetDistributedBy: /* SET DISTRIBUTED BY */
+			cmdstring = pstrdup("set distributed on");
 			break;
 			
 		case AT_PartAdd: /* Add */

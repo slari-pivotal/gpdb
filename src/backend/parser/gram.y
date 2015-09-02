@@ -202,7 +202,7 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 		ViewStmt CheckPointStmt CreateConversionStmt
 		DeallocateStmt PrepareStmt ExecuteStmt
 		DropOwnedStmt ReassignOwnedStmt
-		AlterTypeStmt
+		AlterTypeStmt 
 
 %type <node>    deny_login_role deny_interval deny_point deny_day_specifier
 
@@ -336,7 +336,7 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 %type <boolean> opt_dxl
 %type <defelt>	opt_binary opt_oids copy_delimiter
 
-%type <boolean> copy_from opt_hold
+%type <boolean> copy_from opt_hold skip_external_partition
 
 %type <ival>	opt_column event cursor_options
 %type <objtype>	reindex_type drop_type comment_type
@@ -3100,7 +3100,7 @@ ClosePortalStmt:
 
 CopyStmt:	COPY opt_binary qualified_name opt_column_list opt_oids
 			copy_from copy_file_name copy_delimiter opt_with copy_opt_list
-			OptSingleRowErrorHandling
+			OptSingleRowErrorHandling skip_external_partition
 				{
 					CopyStmt *n = makeNode(CopyStmt);
 					n->relation = $3;
@@ -3112,6 +3112,7 @@ CopyStmt:	COPY opt_binary qualified_name opt_column_list opt_oids
 					n->partitions = NULL;
 					n->ao_segnos = NIL;
 					n->options = NIL;
+					n->skip_ext_partition = $12;
 					
 					/* Concatenate user-supplied flags */
 					if ($2)
@@ -3136,6 +3137,7 @@ CopyStmt:	COPY opt_binary qualified_name opt_column_list opt_oids
 					n->options = $6;
 					n->partitions = NULL;
 					n->ao_segnos = NIL;
+					n->skip_ext_partition = false;
 					$$ = (Node *)n;
 				}
 		;
@@ -3145,6 +3147,10 @@ copy_from:
 			| TO									{ $$ = FALSE; }
 		;
 
+skip_external_partition:
+			IGNORE_P EXTERNAL PARTITIONS			{ $$ = TRUE; }
+			| /*EMPTY*/								{ $$ = FALSE; }
+		;
 /*
  * copy_file_name NULL indicates stdio is used. Whether stdin or stdout is
  * used depends on the direction. (It really doesn't make sense to copy from

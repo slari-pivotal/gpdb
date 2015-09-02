@@ -28,9 +28,69 @@
 #include "utils/memutils.h"
 #include "parser/parsetree.h"
 #include "optimizer/var.h"
+#include "optimizer/clauses.h"
 
 static TupleTableSlot *ExternalNext(ExternalScanState *node);
 
+static bool
+ExternalConstraintCheck(TupleTableSlot *slot, ExternalScanState *node)
+{
+	FileScanDesc	scandesc = node->ess_ScanDesc;
+	Relation		rel = scandesc->fs_rd;
+	TupleConstr		*constr = rel->rd_att->constr;
+	ConstrCheck		*check = constr->check;
+	uint16			ncheck = constr->num_check;
+	EState			*estate = node->ss.ps.state;
+	ExprContext		*econtext = NULL;
+	MemoryContext	oldContext = NULL;
+	List	*qual = NULL;
+	int		i = 0;
+
+	/* No constraints */
+	if (ncheck == 0)
+	{
+		return true;
+	}
+
+	/*
+	 * Build expression nodetrees for rel's constraint expressions.
+	 * Keep them in the per-query memory context so they'll survive throughout the query.
+	 */
+	if (scandesc->fs_constraintExprs == NULL)
+	{
+		oldContext = MemoryContextSwitchTo(estate->es_query_cxt);
+		scandesc->fs_constraintExprs =
+			(List **) palloc(ncheck * sizeof(List *));
+		for (i = 0; i < ncheck; i++)
+		{
+			/* ExecQual wants implicit-AND form */
+			qual = make_ands_implicit(stringToNode(check[i].ccbin));
+			scandesc->fs_constraintExprs[i] = (List *)
+				ExecPrepareExpr((Expr *) qual, estate);
+		}
+		MemoryContextSwitchTo(oldContext);
+	}
+
+	/*
+	 * We will use the EState's per-tuple context for evaluating constraint
+	 * expressions (creating it if it's not already there).
+	 */
+	econtext = GetPerTupleExprContext(estate);
+
+	/* Arrange for econtext's scan tuple to be the tuple under test */
+	econtext->ecxt_scantuple = slot;
+
+	/* And evaluate the constraints */
+	for (i = 0; i < ncheck; i++)
+	{
+		qual = scandesc->fs_constraintExprs[i];
+
+		if (!ExecQual(qual, econtext, true))
+			return false;
+	}
+	
+	return true;
+}
 /* ----------------------------------------------------------------
 *						Scan Support
 * ----------------------------------------------------------------
@@ -50,6 +110,7 @@ ExternalNext(ExternalScanState *node)
 	EState	   *estate;
 	ScanDirection direction;
 	TupleTableSlot *slot;
+	bool		scanNext = true;
 
 	/*
 	 * get information from the estate and scan state
@@ -63,39 +124,47 @@ ExternalNext(ExternalScanState *node)
 	/*
 	 * get the next tuple from the file access methods
 	 */
-	tuple = external_getnext(scandesc, direction);
-
-	/*
-	 * save the tuple and the buffer returned to us by the access methods in
-	 * our scan tuple slot and return the slot.  Note: we pass 'false' because
-	 * tuples returned by heap_getnext() are pointers onto disk pages and were
-	 * not created with palloc() and so should not be pfree()'d.  Note also
-	 * that ExecStoreTuple will increment the refcount of the buffer; the
-	 * refcount will not be dropped until the tuple table slot is cleared.
-	 */
-	if (tuple)
+	while(scanNext)
 	{
-		Gpmon_M_Incr_Rows_Out(GpmonPktFromExtScanState(node));
-		CheckSendPlanStateGpmonPkt(&node->ss.ps);
-		ExecStoreGenericTuple(tuple, slot, true);
+		tuple = external_getnext(scandesc, direction);
 
-	    /*
-	     * CDB: Label each row with a synthetic ctid if needed for subquery dedup.
-	     */
-	    if (node->cdb_want_ctid &&
-	        !TupIsNull(slot))
-	    {
-	    	slot_set_ctid_from_fake(slot, &node->cdb_fake_ctid);
-	    }
-	}
-	else
-	{
-		ExecClearTuple(slot);
-
-		if (!node->ss.ps.delayEagerFree)
+		/*
+		 * save the tuple and the buffer returned to us by the access methods in
+		 * our scan tuple slot and return the slot.  Note: we pass 'false' because
+		 * tuples returned by heap_getnext() are pointers onto disk pages and were
+		 * not created with palloc() and so should not be pfree()'d.  Note also
+		 * that ExecStoreTuple will increment the refcount of the buffer; the
+		 * refcount will not be dropped until the tuple table slot is cleared.
+		 */
+		if (tuple)
 		{
-			ExecEagerFreeExternalScan(node);
+			ExecStoreGenericTuple(tuple, slot, true);
+			if (node->ess_ScanDesc->fs_hasConstraints && !ExternalConstraintCheck(slot, node))
+			{
+				ExecClearTuple(slot);
+				continue;
+			}
+			Gpmon_M_Incr_Rows_Out(GpmonPktFromExtScanState(node));
+			CheckSendPlanStateGpmonPkt(&node->ss.ps);
+		    /*
+		     * CDB: Label each row with a synthetic ctid if needed for subquery dedup.
+		     */
+		    if (node->cdb_want_ctid &&
+		        !TupIsNull(slot))
+		    {
+		    	slot_set_ctid_from_fake(slot, &node->cdb_fake_ctid);
+		    }
 		}
+		else
+		{
+			ExecClearTuple(slot);
+
+			if (!node->ss.ps.delayEagerFree)
+			{
+				ExecEagerFreeExternalScan(node);
+			}
+		}
+		scanNext = false;
 	}
 	
 

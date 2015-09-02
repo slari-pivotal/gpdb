@@ -53,6 +53,7 @@
 #include "cdb/cdbmutate.h" 	/* apply_shareinput */
 #include "cdb/cdbpath.h"        /* cdbpath_segments */
 #include "cdb/cdbpathtoplan.h"  /* cdbpathtoplan_create_flow() */
+#include "cdb/cdbpartition.h" /* query_has_external_partition() */
 #include "cdb/cdbgroup.h" /* grouping_planner extensions */
 #include "cdb/cdbsetop.h" /* motion utilities */
 #include "cdb/cdbsubselect.h"   /* cdbsubselect_flatten_sublinks() */
@@ -254,7 +255,10 @@ planner(Query *parse, int cursorOptions,
 	 * TODO: caragg 02/05/2014: Enable ORCA when running on the segments (MPP-22515)
 	 */
 #ifdef USE_ORCA
-	if (optimizer && (GP_ROLE_UTILITY != Gp_role) && (MASTER_CONTENT_ID == GpIdentity.segindex))
+	if (optimizer
+		&& (GP_ROLE_UTILITY != Gp_role)
+		&& (MASTER_CONTENT_ID == GpIdentity.segindex)
+		&& !query_has_external_partition(parse))
 	{
 		if (gp_log_optimization_time)
 		{

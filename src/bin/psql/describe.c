@@ -1914,6 +1914,37 @@ describeOneTableDetails(const char *schemaname,
 				if(add_distributed_by_footer(oid, &tmpbuf, &buf))
 					goto error_return;
 
+			if (tableinfo.checks)
+			{
+				int tuples = 0;
+				PGresult *res = NULL;
+				printfPQExpBuffer(&buf,
+								  "SELECT r.conname, "
+								  "pg_catalog.pg_get_constraintdef(r.oid, true)\n"
+								  "FROM pg_catalog.pg_constraint r\n"
+					   "WHERE r.conrelid = '%s' AND r.contype = 'c'\nORDER BY 1",
+								  oid);
+				res = PSQLexec(buf.data, false);
+				if (!res)
+					goto error_return;
+
+				tuples = PQntuples(res);
+
+				if (tuples > 0)
+				{
+					printTableAddFooter(&cont, _("Check constraints:"));
+					for (i = 0; i < tuples; i++)
+					{
+						/* untranslated contraint name and def */
+						printfPQExpBuffer(&buf, "    \"%s\" %s",
+										  PQgetvalue(res, i, 0),
+										  PQgetvalue(res, i, 1));
+
+						printTableAddFooter(&cont, buf.data);
+					}
+				}
+				PQclear(res);
+			}
 			add_tablespace_footer(&cont, tableinfo.relkind, tableinfo.tablespace, true);
 		}
 

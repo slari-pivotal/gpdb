@@ -404,13 +404,29 @@ ExecInsert(TupleTableSlot *slot,
 	rel_is_external = RelationIsExternal(resultRelationDesc);
 
 	partslot = reconstructMatchingTupleSlot(slot, resultRelInfo);
-	if (rel_is_heap || rel_is_external)
+	if (rel_is_heap)
 	{
 		tuple = ExecFetchSlotHeapTuple(partslot);
 	}
 	else if (rel_is_aorows)
 	{
 		tuple = ExecFetchSlotMemTuple(partslot, false);
+	}
+	else if (rel_is_external) 
+	{
+		if (estate->es_result_partitions && 
+			estate->es_result_partitions->part->parrelid != 0)
+		{
+			ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				errmsg("Insert into external partitions not supported."),
+				errOmitLocation(true)));			
+			return;
+		}
+		else
+		{
+			tuple = ExecFetchSlotHeapTuple(partslot);
+		}
 	}
 	else
 	{
@@ -632,7 +648,17 @@ ExecDelete(ItemPointer tupleid,
 	bool isHeapTable = RelationIsHeap(resultRelationDesc);
 	bool isAORowsTable = RelationIsAoRows(resultRelationDesc);
 	bool isAOColsTable = RelationIsAoCols(resultRelationDesc);
+	bool isExternalTable = RelationIsExternal(resultRelationDesc);
 
+	if (isExternalTable && estate->es_result_partitions && 
+		estate->es_result_partitions->part->parrelid != 0)
+	{
+		ereport(ERROR,
+			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+			errmsg("Delete from external partitions not supported."),
+			errOmitLocation(true)));			
+		return;
+	}
 	/*
 	 * delete the tuple
 	 *
@@ -842,7 +868,7 @@ ExecUpdate(TupleTableSlot *slot,
 	 * get the heap tuple out of the tuple table slot, making sure we have a
 	 * writable copy
 	 */
-	if (rel_is_heap || rel_is_external)
+	if (rel_is_heap)
 	{
 		partslot = slot;
 		tuple = ExecFetchSlotHeapTuple(partslot);
@@ -863,6 +889,23 @@ ExecUpdate(TupleTableSlot *slot,
 		 * would create two references to the same toasted value.
 		 */
 		tuple = ExecFetchSlotMemTuple(partslot, true);
+	}
+	else if (rel_is_external) 
+	{
+		if (estate->es_result_partitions && 
+			estate->es_result_partitions->part->parrelid != 0)
+		{
+			ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				errmsg("Update external partitions not supported."),
+				errOmitLocation(true)));			
+			return;
+		}
+		else
+		{
+			partslot = slot;
+			tuple = ExecFetchSlotHeapTuple(partslot);
+		}
 	}
 	else 
 	{
@@ -932,7 +975,7 @@ lreplace:;
 		 * serialize error if not.	This is a special-case behavior needed for
 		 * referential integrity updates in serializable transactions.
 		 */
-		if (rel_is_heap || rel_is_external)
+		if (rel_is_heap)
 		{
 			result = heap_update(resultRelationDesc, tupleid, tuple,
 							 &update_ctid, &update_xmax,

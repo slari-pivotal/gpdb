@@ -102,6 +102,7 @@ SimpleOidList table_exclude_oids = {NULL, NULL};
 static NamespaceInfo *g_namespaces;
 static int	g_numNamespaces;
 
+const char *EXT_PARTITION_NAME_POSTFIX = "_ext_partition__";
 
 /*
  * fmtQualifiedId - convert a qualified name to the proper format for
@@ -1690,6 +1691,7 @@ getTables(int *numTables)
 	int			i_owning_col;
 	int			i_reltablespace;
 	int			i_reloptions;
+	int			i_parrelid;
 
 	/* Make sure we are in proper schema */
 	selectSourceSchema("pg_catalog");
@@ -1727,23 +1729,25 @@ getTables(int *numTables)
 					  "d.refobjid as owning_tab, "
 					  "d.refobjsubid as owning_col, "
 					  "(SELECT spcname FROM pg_tablespace t WHERE t.oid = c.reltablespace) AS reltablespace, "
-					  "array_to_string(c.reloptions, ', ') as reloptions "
+					  "array_to_string(c.reloptions, ', ') as reloptions, "
+					  "p.parrelid as parrelid "
 					  "from pg_class c "
 					  "left join pg_depend d on "
 					  "(c.relkind = '%c' and "
 					  "d.classid = c.tableoid and d.objid = c.oid and "
 					  "d.objsubid = 0 and "
 					  "d.refclassid = c.tableoid and d.deptype = 'a') "
-					  "where relkind in ('%c', '%c', '%c', '%c') %s"
+					  "left join pg_partition_rule pr on c.oid = pr.parchildrelid "
+					  "left join pg_partition p on pr.paroid = p.oid "
+					  "where relkind in ('%c', '%c', '%c', '%c') %s "
 					  "order by c.oid",
 					  username_subquery,
 					  RELKIND_SEQUENCE,
 					  RELKIND_RELATION, RELKIND_SEQUENCE,
 					  RELKIND_VIEW, RELKIND_COMPOSITE_TYPE,
 					  g_gp_supportsPartitioning ?
-					  "AND c.oid NOT IN (select parchildrelid from "
-					  "pg_partition_rule)" : "");
-
+					  "AND c.oid NOT IN (select p.parchildrelid from pg_partition_rule p left "
+					  "join pg_exttable e on p.parchildrelid=e.reloid where e.reloid is null)" : "");
 	res = PQexec(g_conn, query->data);
 	check_sql_result(res, g_conn, query->data, PGRES_TUPLES_OK);
 
@@ -1779,6 +1783,7 @@ getTables(int *numTables)
 	i_owning_col = PQfnumber(res, "owning_col");
 	i_reltablespace = PQfnumber(res, "reltablespace");
 	i_reloptions = PQfnumber(res, "reloptions");
+	i_parrelid = PQfnumber(res, "parrelid");
 
 	for (i = 0; i < ntups; i++)
 	{
@@ -1810,6 +1815,13 @@ getTables(int *numTables)
 		}
 		tblinfo[i].reltablespace = strdup(PQgetvalue(res, i, i_reltablespace));
 		tblinfo[i].reloptions = strdup(PQgetvalue(res, i, i_reloptions));
+		tblinfo[i].parrelid = atooid(PQgetvalue(res, i, i_parrelid));
+		if (tblinfo[i].parrelid != 0)
+		{
+			char tmpStr[500];
+			snprintf(tmpStr, sizeof(tmpStr), "%s%s", tblinfo[i].dobj.name, EXT_PARTITION_NAME_POSTFIX);
+			tblinfo[i].dobj.name = strdup(tmpStr);
+		}
 
 		/* other fields were zeroed above */
 
@@ -1833,7 +1845,7 @@ getTables(int *numTables)
 		 * NOTE: it'd be kinda nice to lock views and sequences too, not only
 		 * plain tables, but the backend doesn't presently allow that.
 		 */
-		if (tblinfo[i].dobj.dump && tblinfo[i].relkind == RELKIND_RELATION)
+		if (tblinfo[i].dobj.dump && tblinfo[i].relkind == RELKIND_RELATION && tblinfo[i].parrelid == 0)
 		{
 			resetPQExpBuffer(lockquery);
 			appendPQExpBuffer(lockquery, "LOCK TABLE %s IN %s MODE",

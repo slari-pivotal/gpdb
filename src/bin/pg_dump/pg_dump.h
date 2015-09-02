@@ -307,6 +307,7 @@ typedef struct _tableInfo
 	 */
 	int			numParents;		/* number of (immediate) parent tables */
 	struct _tableInfo **parents;	/* TableInfos of immediate parents */
+	Oid			parrelid;			/* external partition's parent oid */
 } TableInfo;
 
 typedef struct _attrDefInfo
@@ -440,6 +441,7 @@ extern char g_comment_end[10];
 
 extern char g_opaque_type[10];	/* name for the opaque type */
 
+extern const char *EXT_PARTITION_NAME_POSTFIX;
 /*
  *	common utility functions
  */

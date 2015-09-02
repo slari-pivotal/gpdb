@@ -240,6 +240,7 @@ typedef struct CopyStateData
 
 	PartitionNode *partitions; /* partitioning meta data from dispatcher */
 	List		  *ao_segnos;  /* AO table meta data from dispatcher */
+	bool          skip_ext_partition;  /* skip external partition */
 	/* end Greenplum Database specific variables */
 
 } CopyStateData;

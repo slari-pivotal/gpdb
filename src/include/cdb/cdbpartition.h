@@ -79,11 +79,17 @@ typedef struct LogicalIndexes
 #define parkindIsRange(c)  ((c) == 'r')
 #define parkindIsList(c)   ((c) == 'l')
 
+extern bool rel_is_default_partition(Oid relid);
+
 extern bool rel_is_partitioned(Oid relid);
 
 extern List *rel_partition_key_attrs(Oid relid);
 
 extern List *rel_partition_keys_ordered(Oid relid);
+
+extern bool rel_has_external_partition(Oid relid);
+
+extern bool query_has_external_partition(Query *query);
 
 extern bool rel_is_child_partition(Oid relid);
 

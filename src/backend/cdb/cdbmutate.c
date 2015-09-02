@@ -2405,6 +2405,8 @@ Plan *zap_trivial_result(PlannerInfo *root, Plan *plan)
 			app->plan.targetlist = plan->targetlist;
 			app->plan.qual = plan->qual;
 			app->isZapped = true;
+			/* pass on the dispatch flag of Result to Append, which may has been set by cdbparallelize */
+			app->plan.dispatch = plan->dispatch;
 			return (Plan *) app;
 		}
 		else

@@ -8856,6 +8856,13 @@ transformIndexStmt(ParseState *pstate, IndexStmt *stmt,
 				Oid relid = lfirst_oid(l);
 				Relation crel = heap_open(relid, NoLock); /* lock on master
 															 is enough */
+				if (RelationIsExternal(crel))
+				{
+					elog(NOTICE, "skip building index for external partition \"%s\"",
+						 RelationGetRelationName(crel));
+					heap_close(crel, NoLock);
+					continue;
+				}
 				IndexStmt *chidx;
 				Relation partrel;
 				HeapTuple tuple;

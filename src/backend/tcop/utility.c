@@ -66,6 +66,7 @@
 #include "cdb/cdbcat.h"
 #include "cdb/cdbdisp.h"
 #include "cdb/cdbsrlz.h"
+#include "cdb/cdbpartition.h"
 #include "cdb/cdbtm.h"
 #include "cdb/cdbvars.h"
 
@@ -246,7 +247,7 @@ CheckDropRelStorage(RangeVar *rel, ObjectType removeType)
 {
 	Oid			relOid;
 	HeapTuple	tuple;
-	Form_pg_class classform;
+	char		relstorage;
 	cqContext	*pcqCtx;
 
 	relOid = RangeVarGetRelid(rel, true);
@@ -254,6 +255,7 @@ CheckDropRelStorage(RangeVar *rel, ObjectType removeType)
 	if (!OidIsValid(relOid))
 		return false;
 
+	/* Find out the relstorage */
 	pcqCtx = caql_beginscan(
 			NULL,
 			cql("SELECT * FROM pg_class "
@@ -261,16 +263,24 @@ CheckDropRelStorage(RangeVar *rel, ObjectType removeType)
 				ObjectIdGetDatum(relOid)));
 
 	tuple = caql_getnext(pcqCtx);
-
 	if (!HeapTupleIsValid(tuple))
 		elog(ERROR, "cache lookup failed for relation %u", relOid);
 
-	classform = (Form_pg_class) GETSTRUCT(tuple);
+	relstorage = ((Form_pg_class) GETSTRUCT(tuple))->relstorage;
+	caql_endscan(pcqCtx);
 
-	if ((removeType == OBJECT_EXTTABLE && classform->relstorage != RELSTORAGE_EXTERNAL) ||
-		(removeType == OBJECT_FOREIGNTABLE && classform->relstorage != RELSTORAGE_FOREIGN) ||	
-		(removeType == OBJECT_TABLE && (classform->relstorage == RELSTORAGE_EXTERNAL || 
-										classform->relstorage == RELSTORAGE_FOREIGN)))
+	/* 
+	 * skip the check if it's external partition. 
+	 * 1.remember rel_is_child_partition is only working on QD. 
+	 * 2.we do the check on QD, no need to do it again on QE.
+	 */
+	if (relstorage == RELSTORAGE_EXTERNAL && (Gp_segment != -1 || rel_is_child_partition(relOid)))
+		return true;
+
+	if ((removeType == OBJECT_EXTTABLE && relstorage != RELSTORAGE_EXTERNAL) ||
+		(removeType == OBJECT_FOREIGNTABLE && relstorage != RELSTORAGE_FOREIGN) ||
+		(removeType == OBJECT_TABLE && (relstorage == RELSTORAGE_EXTERNAL ||
+										relstorage == RELSTORAGE_FOREIGN)))
 	{
 		/* we have a mismatch. format an error string and shoot */
 		
@@ -284,9 +294,9 @@ CheckDropRelStorage(RangeVar *rel, ObjectType removeType)
 		else
 			want_type = pstrdup("a base");
 
-		if (classform->relstorage == RELSTORAGE_EXTERNAL)
+		if (relstorage == RELSTORAGE_EXTERNAL)
 			hint = pstrdup("Use DROP EXTERNAL TABLE to remove an external table");
-		else if (classform->relstorage == RELSTORAGE_FOREIGN)
+		else if (relstorage == RELSTORAGE_FOREIGN)
 			hint = pstrdup("Use DROP FOREIGN TABLE to remove a foreign table");
 		else
 			hint = pstrdup("Use DROP TABLE to remove a base table");
@@ -298,7 +308,6 @@ CheckDropRelStorage(RangeVar *rel, ObjectType removeType)
 				 errOmitLocation(true)));
 	}
 	
-	caql_endscan(pcqCtx);
 
 	return true;
 }
@@ -578,7 +587,7 @@ ProcessDropStatement(DropStmt *stmt)
 				rel = makeRangeVarFromNameList(names);
 				if (CheckDropPermissions(rel, RELKIND_RELATION,
 										 stmt->missing_ok) &&
-					CheckDropRelStorage(rel, stmt->removeType))
+						CheckDropRelStorage(rel, stmt->removeType))
 					RemoveRelation(rel, stmt->behavior, stmt);
 				else
 					dispatchDrop = false;

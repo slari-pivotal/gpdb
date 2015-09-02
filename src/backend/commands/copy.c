@@ -1109,6 +1109,8 @@ DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate)
 		cstate->errMode = ALL_OR_NOTHING; /* default */
 	}
 
+	cstate->skip_ext_partition = stmt->skip_ext_partition;
+
 	/* We must be a QE if we received the partitioning config */
 	if (stmt->partitions)
 	{
@@ -1689,6 +1691,25 @@ DoCopyTo(CopyState cstate)
 						 errhint("Try the COPY (SELECT ...) TO variant."),
 								 errOmitLocation(true)));
 		}
+		else if (rel_has_external_partition(cstate->rel->rd_id))
+		{
+			if (!cstate->skip_ext_partition)
+			{
+				ereport(ERROR,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+					 errmsg("cannot copy from relation \"%s\" which has external partition(s)",
+							RelationGetRelationName(cstate->rel)),
+					 errhint("Try the COPY (SELECT ...) TO variant."),
+							 errOmitLocation(true)));
+			}
+			else
+			{
+				ereport(NOTICE,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+					 errmsg("COPY ignores external partition(s)"),
+							errOmitLocation(true)));
+			}
+		}
 	}
 
 	PG_TRY();
@@ -1835,6 +1856,7 @@ CopyToDispatch(CopyState cstate)
 	cdbCopy = makeCdbCopy(false);
 
 	cdbCopy->partitions = RelationBuildPartitionDesc(cstate->rel, false);
+	cdbCopy->skip_ext_partition = cstate->skip_ext_partition;
 
 	/* XXX: lock all partitions */
 
@@ -2169,43 +2191,51 @@ CopyTo(CopyState cstate)
 			}
 			else if(RelationIsAoCols(rel))
 			{
-                AOCSScanDesc scan = NULL;
-                TupleTableSlot *slot = MakeSingleTupleTableSlot(tupDesc);
-                bool *proj = NULL;
+				AOCSScanDesc scan = NULL;
+				TupleTableSlot *slot = MakeSingleTupleTableSlot(tupDesc);
+				bool *proj = NULL;
 
-                int nvp = tupDesc->natts;
-                int i;
+				int nvp = tupDesc->natts;
+				int i;
 
-                if (tupDesc->tdhasoid)
-                {
-                    elog(ERROR, "OIDS=TRUE is not allowed on tables that use column-oriented storage. Use OIDS=FALSE");
-                }
+				if (tupDesc->tdhasoid)
+				{
+				    elog(ERROR, "OIDS=TRUE is not allowed on tables that use column-oriented storage. Use OIDS=FALSE");
+				}
 
-                proj = palloc(sizeof(bool) * nvp);
-                for(i=0; i<nvp; ++i)
-                    proj[i] = true;
+				proj = palloc(sizeof(bool) * nvp);
+				for(i=0; i<nvp; ++i)
+				    proj[i] = true;
 
-                scan = aocs_beginscan(rel, ActiveSnapshot, ActiveSnapshot, NULL /* relationTupleDesc */, proj);
-                for(;;)
-                {
-                    CHECK_FOR_INTERRUPTS();
+				scan = aocs_beginscan(rel, ActiveSnapshot, ActiveSnapshot, NULL /* relationTupleDesc */, proj);
+				for(;;)
+				{
+				    CHECK_FOR_INTERRUPTS();
 
-                    aocs_getnext(scan, ForwardScanDirection, slot);
-                    if (TupIsNull(slot))
-                        break;
+				    aocs_getnext(scan, ForwardScanDirection, slot);
+				    if (TupIsNull(slot))
+				        break;
 
-                    slot_getallattrs(slot);
-                    values = slot_get_values(slot);
-                    nulls = slot_get_isnull(slot);
+				    slot_getallattrs(slot);
+				    values = slot_get_values(slot);
+				    nulls = slot_get_isnull(slot);
 
 					CopyOneRowTo(cstate, InvalidOid, values, nulls);
-                }
+				}
 
 				ExecDropSingleTupleTableSlot(slot);
-                aocs_endscan(scan);
+				aocs_endscan(scan);
 
-                pfree(proj);
-            }
+				pfree(proj);
+			}
+			else if(RelationIsExternal(rel))
+			{
+				/* should never get here */
+				if (!cstate->skip_ext_partition)
+				{
+				    elog(ERROR, "internal error");
+				}
+			}
 			else
 			{
 				/* should never get here */

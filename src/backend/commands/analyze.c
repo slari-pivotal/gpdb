@@ -1266,6 +1266,7 @@ static Oid buildSampleTable(Oid relationOid,
 {
 	int nAttributes = -1;
 	StringInfoData str;
+	StringInfoData columnStr;
 	int i = 0;
 	ListCell *le = NULL;
 	const char *schemaName = NULL;
@@ -1286,33 +1287,83 @@ static Oid buildSampleTable(Oid relationOid,
 	sampleTableName = temporarySampleTableName(relationOid); // must be pfreed 
 
 	initStringInfo(&str);
-	appendStringInfo(&str, "create table %s.%s as (select ", 
+	initStringInfo(&columnStr);
+	appendStringInfo(&str, "create table %s.%s as ( ",
 			quote_identifier(sampleSchemaName), quote_identifier(sampleTableName)); 
 	
 	nAttributes = list_length(lAttributeNames);
 
 	foreach_with_count(le, lAttributeNames, i)
 	{
-		appendStringInfo(&str, "Ta.%s", quote_identifier((const char *) lfirst(le)));
+		appendStringInfo(&columnStr, "Ta.%s", quote_identifier((const char *) lfirst(le)));
 		if (i < nAttributes - 1)
 		{
-			appendStringInfo(&str, ", ");
+			appendStringInfo(&columnStr, ", ");
 		}
 		else
 		{
-			appendStringInfo(&str, " ");			
+			appendStringInfo(&columnStr, " ");
 		}
 	}
 	
-	// if table is partitioned, we create a sample over all parts
-	appendStringInfo(&str, "from %s.%s as Ta where random() < %.38f limit %lu) distributed randomly", 
-			quote_identifier(schemaName), 
-			quote_identifier(tableName), randomThreshold, (unsigned long) requestedSampleSize);
+	/*
+	 * If table is partitioned, we create a sample over all parts.
+	 * The external partitions are skipped.
+	 */
+
+	if (rel_has_external_partition(relationOid))
+	{
+		PartitionNode *pn = get_parts(relationOid, 0 /*level*/ ,
+								0 /*parent*/, false /* inctemplate */, CurrentMemoryContext, false /*includesubparts*/);
+
+		ListCell *lc = NULL;
+		bool isFirst = true;
+		foreach(lc, pn->rules)
+		{
+			PartitionRule *rule = lfirst(lc);
+			Relation rel = heap_open(rule->parchildrelid, NoLock);
+
+			if (RelationIsExternal(rel))
+			{
+				heap_close(rel, NoLock);
+				continue;
+			}
+
+			if (isFirst)
+			{
+				isFirst = false;
+			}
+			else
+			{
+				appendStringInfo(&str, " UNION ALL ");
+			}
+
+			appendStringInfo(&str, " select %s from %s.%s as Ta ",
+					columnStr.data,
+					quote_identifier(schemaName),
+					quote_identifier(RelationGetRelationName(rel)));
+
+			heap_close(rel, NoLock);
+		}
+
+		appendStringInfo(&str, " where random() < %.38f limit %lu ",
+				randomThreshold, (unsigned long) requestedSampleSize);
+	}
+	else
+	{
+		appendStringInfo(&str, " select %s from %s.%s as Ta where random() < %.38f limit %lu ",
+				columnStr.data,
+				quote_identifier(schemaName),
+				quote_identifier(tableName), randomThreshold, (unsigned long) requestedSampleSize);
+	}
+
+	appendStringInfo(&str, " ) distributed randomly");
 
 	spiExecuteWithCallback(str.data, false /*readonly*/, 0 /*tcount */, 
 	                        spiCallback_getProcessedAsFloat4, sampleTableRelTuples);
 
 	pfree(str.data);
+	pfree(columnStr.data);
 		
 	elog(elevel, "Created sample table %s.%s with nrows=%.0f", 
 			quote_identifier(sampleSchemaName), 

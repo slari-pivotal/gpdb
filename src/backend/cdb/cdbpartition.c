@@ -21,6 +21,7 @@
 #include "catalog/dependency.h"
 #include "catalog/heap.h"
 #include "catalog/pg_constraint.h"
+#include "catalog/pg_exttable.h"
 #include "catalog/pg_inherits.h"
 #include "catalog/pg_type.h"
 #include "catalog/pg_operator.h"
@@ -199,6 +200,32 @@ get_partition_key_bitmapset(Oid relid);
 static List *get_deparsed_partition_encodings(Oid relid, Oid paroid);
 static List *rel_get_leaf_relids_from_rule(Oid ruleOid);
 
+/*
+ * Is the given relation the default partition of a partition table.
+ */
+bool
+rel_is_default_partition(Oid relid)
+{
+	HeapTuple tuple = NULL;
+	bool parisdefault = false;
+	/* Though pg_partition and pg_partition_rule are only populated
+	 * on the entry database, we accept calls from QEs running a
+	 * segment, but return false.
+	 */
+	if (Gp_segment != -1)
+		return false;
+
+	tuple = caql_getfirst(NULL,
+						  cql("SELECT * FROM pg_partition_rule "
+							   " WHERE parchildrelid = :1 ",
+							   ObjectIdGetDatum(relid)));
+
+	Insist(HeapTupleIsValid(tuple));
+
+	parisdefault = ((Form_pg_partition_rule)GETSTRUCT(tuple))->parisdefault;
+	return parisdefault;
+}
+
 /* Is the given relation the top relation of a partitioned table?
  *
  *   exists (select *
@@ -358,6 +385,79 @@ rel_partition_keys_ordered(Oid relid)
 	list_free(keysUnordered);
 
 	return pkeys;
+}
+ /*
+ * Dose relation have a external partition?
+ * Returns true only when the input is the root partition
+ * of a partitioned table and it has external partitions.
+ */
+bool
+rel_has_external_partition(Oid relid)
+{
+	ListCell *lc = NULL;
+	PartitionNode *n = get_parts(relid, 0 /*level*/ ,
+							0 /*parent*/, false /* inctemplate */, CurrentMemoryContext, false /*includesubparts*/);
+
+	if (n == NULL || n->rules == NULL)
+		return false;
+
+	foreach(lc, n->rules)
+	{
+		PartitionRule *rule = lfirst(lc);
+		Relation rel = heap_open(rule->parchildrelid, NoLock);
+
+		if (RelationIsExternal(rel))
+		{
+			heap_close(rel, NoLock);
+			return true;
+		}
+
+		heap_close(rel, NoLock);
+	}
+
+	return false;
+}
+
+/*
+ * check if a Query struct has external partion relation
+ */
+bool
+query_has_external_partition(Query *query)
+{
+	if (query == NULL)
+		return false;
+
+	ListCell *lc = NULL;
+	foreach(lc, query->rtable)
+	{
+		RangeTblEntry *rte = (RangeTblEntry *) lfirst(lc);
+		if (rte->rtekind == RTE_RELATION)
+		{
+			Assert(OidIsValid(rte->relid));
+			if (rel_has_external_partition(rte->relid))
+			{
+				return true;
+			}
+		}
+		else if (rte->rtekind == RTE_SUBQUERY)
+		{
+			Assert(rte->subquery != NULL);
+			if (query_has_external_partition(rte->subquery))
+			{
+				return true;
+			}
+		}
+	}
+
+	foreach(lc, query->cteList)
+	{
+		CommonTableExpr *cte = (CommonTableExpr *) lfirst(lc);
+		if (query_has_external_partition((Query *)cte->ctequery))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 /*
@@ -8032,6 +8132,30 @@ is_exchangeable(Relation rel, Relation oldrel, Relation newrel, bool throw)
 							"which is not a table")));
 	}
 
+	if (RelationIsExternal(newrel))
+	{
+		if (rel_is_default_partition(oldrel->rd_id))
+		{
+			congruent = FALSE;
+			if ( throw )
+				ereport(ERROR,
+						(errcode(ERRCODE_SYNTAX_ERROR),
+						 errmsg("cannot exchange DEFAULT partition "
+								"with external table")));
+		}
+
+		ExtTableEntry *extEntry = GetExtTableEntry(newrel->rd_id);
+		if (extEntry && extEntry->iswritable)
+		{
+			congruent = FALSE;
+			if ( throw )
+				ereport(ERROR,
+						(errcode(ERRCODE_SYNTAX_ERROR),
+						 errmsg("cannot exchange relation "
+								"which is a WRITABLE external table")));
+		}
+	}
+ 
 	/* Attributes of the existing part (oldrel) must be compatible with the
 	 * partitioned table as a whole.  This might be an assertion, but we don't
 	 * want this case to pass in a production build, so we use an internal
@@ -8124,8 +8248,10 @@ is_exchangeable(Relation rel, Relation oldrel, Relation newrel, bool throw)
 	 * table.  However, we can only check this where the policy table is
 	 * populated, i.e., on the entry database.  Note checking the policy
 	 * of the existing part is defensive.  It SHOULD match.
+	 * Skip the check when either the oldpart or the newpart is external. 
 	 */
-	if (congruent && Gp_role == GP_ROLE_DISPATCH)
+	if (congruent && Gp_role == GP_ROLE_DISPATCH &&
+	    !RelationIsExternal(newrel) && !RelationIsExternal(oldrel))
 	{
 		GpPolicy *parpol = rel->rd_cdbpolicy;
 		GpPolicy *oldpol = oldrel->rd_cdbpolicy;

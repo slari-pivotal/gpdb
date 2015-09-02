@@ -39,6 +39,8 @@ typedef struct CdbCopy
 	bool		remote_data_err;/* data error occurred on a remote COPY session */
 	bool		io_errors;		/* true if any I/O error occurred trying to
 								 * communicate with segDB's */
+	bool		skip_ext_partition;/* skip external partition */ 
+
 	SegDbState		**segdb_state;
 	
 	StringInfoData	err_msg;		/* error message for cdbcopy operations */

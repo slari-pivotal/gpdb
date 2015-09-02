@@ -1127,6 +1127,12 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
 		char*	path = strchr(url + strlen(PROTOCOL_FILE), '/');
 		struct fstream_options fo;
 
+		if (forwrite)
+		{
+			free(file);
+			elog(ERROR, "cannot change a readable external table \"%s\"", pstate->cur_relname);
+		}
+
 		Insist(!forwrite);
 		
 		memset(&fo, 0, sizeof fo);

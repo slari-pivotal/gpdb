@@ -1523,6 +1523,7 @@ create_append_path(PlannerInfo *root, RelOptInfo *rel, List *subpaths)
     else
 	{
 		bool fIsNotPartitioned = false;
+		bool fIsPartitionInEntry = false;
 		
 		/*
 		 * Do a first pass over the children to determine if
@@ -1536,7 +1537,13 @@ create_append_path(PlannerInfo *root, RelOptInfo *rel, List *subpaths)
 				CdbPathLocus_IsReplicated(subpath->locus))
 			{
 				fIsNotPartitioned = true;
-				break;
+
+				/* check whether any partition is on entry db */
+				if (CdbPathLocus_IsEntry(subpath->locus))
+				{
+					fIsPartitionInEntry = true;
+					break;
+				}
 			}
 		}
 		
@@ -1550,13 +1557,29 @@ create_append_path(PlannerInfo *root, RelOptInfo *rel, List *subpaths)
 			 * In case any of the children is not partitioned convert all children
 			 * to have singleQE locus
 			 */
-			if (fIsNotPartitioned && 
-				!CdbPathLocus_IsSingleQE(subpath->locus))
+			if (fIsNotPartitioned)
 			{
-				CdbPathLocus    singleQE;
-				CdbPathLocus_MakeSingleQE(&singleQE);
-				
-				subpath = cdbpath_create_motion_path(root, subpath, NIL, false, singleQE);
+				/* if any partition is on entry db, we should gather all the partitions to QD to do the append */
+				if (fIsPartitionInEntry)
+				{
+					if (!CdbPathLocus_IsEntry(subpath->locus))
+					{
+						CdbPathLocus singleEntry;
+						CdbPathLocus_MakeEntry(&singleEntry);
+
+						subpath = cdbpath_create_motion_path(root, subpath, NIL, false, singleEntry);
+					}
+				}
+				else /* fIsNotPartitioned true, fIsPartitionInEntry false */
+				{
+					if (!CdbPathLocus_IsSingleQE(subpath->locus))
+					{
+						CdbPathLocus    singleQE;
+						CdbPathLocus_MakeSingleQE(&singleQE);
+
+						subpath = cdbpath_create_motion_path(root, subpath, NIL, false, singleQE);
+					}
+				}
 			}
 			
 			/* Transform subpath locus into the appendrel's space for comparison. */
