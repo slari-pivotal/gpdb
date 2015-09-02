@@ -162,9 +162,6 @@ InitSerTupInfo(TupleDesc tupdesc, SerTupInfo * pSerInfo)
 		 */
 		attrInfo->atttypid = tupdesc->attrs[i]->atttypid;
 		
-		if (attrInfo->atttypid == RECORDOID)
-			elog(ERROR,"Can't serialize transient record types");
-		
 		/*
 		 * Ok, we want the Binary input/output routines for the type if they exist,
 		 * else we want the normal text input/output routines.

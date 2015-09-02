@@ -30,6 +30,7 @@
 #include "nodes/makefuncs.h"
 #include "utils/memutils.h"
 #include "utils/debugbreak.h"
+#include "utils/typcache.h"
 
 
 
@@ -1495,6 +1496,54 @@ doSendEndOfStream(Motion * motion, MotionState * node)
 
 
 /*
+ * Change segment typemod to qd typmod for transient type.
+ */
+static void mapTransientTypeMod(TupleTableSlot *slot)
+{
+	TupleDesc	typeinfo = slot->tts_tupleDescriptor;
+	int			natts = typeinfo->natts;
+	int			i = 0;
+
+	for (i = 0; i < natts; ++i)
+	{
+		bool		orignull;
+		Datum		origattr;
+		Datum 		attr;
+		Form_pg_attribute attrData = typeinfo->attrs[i];
+		HeapTupleHeader rec;
+		TupleDesc	tupleDesc;
+
+		if (attrData->atttypid != RECORDOID)
+		{
+			continue;
+		}
+
+		origattr = slot_getattr(slot, i+1, &orignull);
+		if (orignull)
+		{
+			continue;
+		}
+
+		attr = PointerGetDatum(PG_DETOAST_DATUM(origattr));
+
+		rec = DatumGetHeapTupleHeader(attr);
+		tupleDesc = lookup_rowtype_tupdesc_noerror(RECORDOID,
+												   HeapTupleHeaderGetTypMod(rec),
+												   true);
+		if (tupleDesc->tdqdtypmod == -1 ||
+			tupleDesc->tdqdtypmod == tupleDesc->tdtypmod)
+		{
+			ReleaseTupleDesc(tupleDesc);
+			continue;
+		}
+
+		HeapTupleHeaderSetTypMod(rec, tupleDesc->tdqdtypmod);
+		ReleaseTupleDesc(tupleDesc);
+	}
+}
+
+
+/*
  * A crufty confusing part of the current code is how contentId is used within
  * the motion structures and then how that gets translated to targetRoutes by
  * this motion nodes.
@@ -1589,7 +1638,14 @@ doSendTuple(Motion * motion, MotionState * node, TupleTableSlot *outerTupleSlot)
 		targetRoute = Int32GetDatum(segidColIdxDatum);
 		Assert(!is_null);
 	}
-	
+
+	/* If it's a gather motion sending tuple to master, need to change segment typmod to
+	 * qd typmod for transient type */
+	if (isMotionGatherToMaster(motion))
+	{
+		mapTransientTypeMod(outerTupleSlot);
+	}
+
 	tuple = ExecFetchSlotGenericTuple(outerTupleSlot, true);
 	
 	/* send the tuple out. */

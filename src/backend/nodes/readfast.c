@@ -41,6 +41,10 @@
 #define READ_INT_FIELD(fldname) \
 	memcpy(&local_node->fldname, *str, sizeof(int));  (*str)+=sizeof(int)
 
+/* Read an int16 field  */
+#define READ_INT16_FIELD(fldname) \
+	memcpy(&local_node->fldname, *str, sizeof(int16));  (*str)+=sizeof(int16)
+
 /* Read an unsigned integer field) */
 #define READ_UINT_FIELD(fldname) \
 	memcpy(&local_node->fldname, *str, sizeof(int)); (*str)+=sizeof(int)
@@ -2754,7 +2758,7 @@ _readPlannedStmt(const char ** str)
 	READ_NODE_FIELD(sliceTable);
 	
 	READ_UINT64_FIELD(query_mem);
-
+	READ_NODE_FIELD(transientTypeRecords);
 	READ_DONE();
 }
 
@@ -3846,6 +3850,39 @@ _readAlterTypeStmt(const char **str)
 	READ_DONE();
 }
 
+static TupleDescNode *
+_readTupleDescNode(const char **str)
+{
+	READ_LOCALS(TupleDescNode);
+	READ_INT_FIELD(natts);
+
+	local_node->tuple = CreateTemplateTupleDesc(local_node->natts, false);
+
+	READ_INT_FIELD(tuple->natts);
+	if (local_node->tuple->natts > 0)
+	{
+		int i = 0;
+		for (; i < local_node->tuple->natts; i++)
+		{
+			memcpy(local_node->tuple->attrs[i], *str, ATTRIBUTE_FIXED_PART_SIZE);
+			(*str)+=ATTRIBUTE_FIXED_PART_SIZE;
+		}
+	}
+
+	READ_OID_FIELD(tuple->tdtypeid);
+	READ_INT_FIELD(tuple->tdtypmod);
+	READ_INT_FIELD(tuple->tdqdtypmod);
+	READ_BOOL_FIELD(tuple->tdhasoid);
+	READ_INT_FIELD(tuple->tdrefcount);
+
+	// Transient type don't have constraint.
+	local_node->tuple->constr = NULL;
+
+	Assert(local_node->tuple->tdtypeid == RECORDOID);
+
+	READ_DONE();
+}
+
 static Node *
 _readValue(const char ** str, NodeTag nt)
 {
@@ -4643,6 +4680,9 @@ readNodeBinary(const char ** str)
 
 			case T_AlterTypeStmt:
 				return_value = _readAlterTypeStmt(str);
+				break;
+			case T_TupleDescNode:
+				return_value = _readTupleDescNode(str);
 				break;
 
 			default:

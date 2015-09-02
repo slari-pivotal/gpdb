@@ -281,6 +281,47 @@ get_func_result_type(Oid functionId,
 }
 
 /*
+ * assign_func_result_transient_type
+ *		assign typmod if the result of function is transient type.
+ *
+ */
+void
+assign_func_result_transient_type(Oid funcid)
+{
+	HeapTuple	tp;
+	Form_pg_proc procform;
+	TupleDesc	tupdesc;
+	cqContext  *pcqCtx;
+
+	pcqCtx = caql_beginscan(
+			NULL,
+			cql("SELECT * FROM pg_proc "
+				" WHERE oid = :1 ",
+				ObjectIdGetDatum(funcid)));
+
+	tp = caql_getnext(pcqCtx);
+
+	caql_endscan(pcqCtx);
+
+	if (!HeapTupleIsValid(tp))
+		elog(ERROR, "cache lookup failed for function %u", funcid);
+	procform = (Form_pg_proc) GETSTRUCT(tp);
+
+	tupdesc = build_function_result_tupdesc_t(tp);
+	if (tupdesc == NULL)
+		return;
+
+	if (resolve_polymorphic_tupdesc(tupdesc,
+									&procform->proargtypes,
+									NULL))
+	{
+		if (tupdesc->tdtypeid == RECORDOID &&
+			tupdesc->tdtypmod < 0)
+			assign_record_type_typmod(tupdesc);
+	}
+}
+
+/*
  * internal_get_result_type -- workhorse code implementing all the above
  *
  * funcid must always be supplied.	call_expr and rsinfo can be NULL if not
@@ -1113,6 +1154,7 @@ TypeGetTupleDesc(Oid typeoid, List *colaliases)
 			/* The tuple type is now an anonymous record type */
 			tupdesc->tdtypeid = RECORDOID;
 			tupdesc->tdtypmod = -1;
+			tupdesc->tdqdtypmod = -1;
 		}
 	}
 	else if (functypclass == TYPEFUNC_SCALAR)

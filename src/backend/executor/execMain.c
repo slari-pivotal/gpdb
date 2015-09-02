@@ -72,6 +72,7 @@
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/ps_status.h"
+#include "utils/typcache.h"
 #include "utils/workfile_mgr.h"
 
 #include "catalog/pg_statistic.h"
@@ -363,6 +364,15 @@ ExecutorStart(QueryDesc *queryDesc, int eflags)
 		/* Initialize per-query resource (diskspace) tracking */
 		WorkfileQueryspace_InitEntry(gp_session_id, gp_command_count);
 
+		if (Gp_role != GP_ROLE_DISPATCH && queryDesc->plannedstmt->transientTypeRecords != NULL)
+		{
+			ListCell   *cell;
+			foreach(cell, queryDesc->plannedstmt->transientTypeRecords)
+			{
+				TupleDescNode *tmp = lfirst(cell);
+				assign_record_type_typmod(tmp->tuple);
+			}
+		}
 		/*
 		 * Handling of the Slice table depends on context.
 		 */
@@ -646,6 +656,8 @@ ExecutorStart(QueryDesc *queryDesc, int eflags)
 																	   queryDesc->params,
 																	   queryDesc->estate->es_param_exec_vals);
 				}
+
+				build_tuple_node_list(&queryDesc->plannedstmt->transientTypeRecords);
 
 				/*
 				 * This call returns after launching the threads that send the

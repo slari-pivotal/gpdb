@@ -74,10 +74,17 @@ typedef struct tupleDesc
 	TupleConstr *constr;		/* constraints, or NULL if none */
 	Oid			tdtypeid;		/* composite type ID for tuple type */
 	int32		tdtypmod;		/* typmod for tuple type */
+	int32		tdqdtypmod;	/* typmod for tuple type on Master */
 	bool		tdhasoid;		/* tuple has oid attribute in its header */
 	int			tdrefcount;		/* reference count, or -1 if not counting */
 }	*TupleDesc;
 
+typedef struct tupleDescNode
+{
+	NodeTag		type;
+	int			natts;
+	TupleDesc	tuple;
+} TupleDescNode;
 
 extern TupleDesc CreateTemplateTupleDesc(int natts, bool hasoid);
 

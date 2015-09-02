@@ -157,6 +157,7 @@ typedef enum NodeTag
 	T_AssertOpState,
 	T_PartitionSelectorState,
 	T_PlanState_End,
+	T_TupleDescNode,
 
 	/*
 	 * TAGS FOR PRIMITIVE NODES (primnodes.h)

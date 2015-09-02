@@ -38,6 +38,8 @@
 #include "access/heapam.h"
 #include "access/nbtree.h"
 #include "access/tuptoaster.h"
+#include "catalog/catquery.h"
+#include "catalog/pg_proc.h"
 #include "catalog/pg_type.h"
 #include "cdb/cdbvars.h"
 #include "cdb/partitionselection.h"
@@ -50,6 +52,7 @@
 #include "nodes/makefuncs.h"
 #include "optimizer/clauses.h"
 #include "optimizer/planmain.h"
+#include "parser/parse_coerce.h"
 #include "parser/parse_expr.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
@@ -4431,7 +4434,6 @@ ExecEvalExprSwitchContext(ExprState *expression,
 	return retDatum;
 }
 
-
 /*
  * ExecInitExpr: prepare an expression tree for execution
  *
@@ -4628,6 +4630,7 @@ ExecInitExpr(Expr *node, PlanState *parent)
 				fstate->func.fn_oid = InvalidOid;		/* not initialized */
 				FastPathStrict2Func(funcexpr->funcid, fstate);
 				state = (ExprState *) fstate;
+				assign_func_result_transient_type(funcexpr->funcid);
 			}
 			break;
 		case T_OpExpr:

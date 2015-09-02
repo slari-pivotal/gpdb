@@ -166,6 +166,8 @@ typedef struct PlannedStmt
 		/* The overall memory consumption account (i.e., outside of an operator) */
 		MemoryAccount *memoryAccount;
 
+		List *transientTypeRecords;
+
 } PlannedStmt;
 
 

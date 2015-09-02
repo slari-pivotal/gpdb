@@ -52,6 +52,7 @@
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
 #include "utils/typcache.h"
+#include "cdb/cdbvars.h"
 
 
 /* The main type cache hashtable searched by lookup_type_cache */
@@ -85,7 +86,6 @@ static HTAB *RecordCacheHash = NULL;
 static TupleDesc *RecordCacheArray = NULL;
 static int32 RecordCacheArrayLen = 0;	/* allocated length of array */
 static int32 NextRecordTypmod = 0;		/* number of entries used */
-
 
 /*
  * lookup_type_cache
@@ -448,6 +448,20 @@ assign_record_type_typmod(TupleDesc tupDesc)
 		if (equalTupleDescs(tupDesc, entDesc, true))
 		{
 			tupDesc->tdtypmod = entDesc->tdtypmod;
+
+			if (entDesc->tdqdtypmod != -1 && tupDesc->tdqdtypmod != -1)
+			{
+				Assert(tupDesc->tdqdtypmod == entDesc->tdqdtypmod);
+			}
+			else if (entDesc->tdqdtypmod != -1)
+			{
+				tupDesc->tdqdtypmod = entDesc->tdqdtypmod;
+			}
+			else if (tupDesc->tdqdtypmod != -1)
+			{
+				entDesc->tdqdtypmod = tupDesc->tdqdtypmod;
+			}
+
 			return;
 		}
 	}
@@ -518,4 +532,31 @@ flush_rowtype_cache(Oid type_id)
 		FreeTupleDesc(typentry->tupDesc);
 
 	typentry->tupDesc = NULL;
+}
+
+
+/*
+ * build_tuple_node_list
+ *
+ * Wrap TupleDesc with TupleDescNode. Return all record type in record cache.
+ */
+void
+build_tuple_node_list(List **transientTypeList)
+{
+	int i = 0;
+
+	if (NextRecordTypmod == 0)
+		return;
+
+	for (; i < NextRecordTypmod; i++)
+	{
+		TupleDesc tmp = RecordCacheArray[i];
+
+		TupleDescNode *node = palloc0(sizeof(TupleDescNode));
+		node->type = T_TupleDescNode;
+		node->natts = tmp->natts;
+		node->tuple = CreateTupleDescCopy(tmp);
+		node->tuple->tdqdtypmod = tmp->tdtypmod;
+		*transientTypeList = lappend(*transientTypeList, node);
+	}
 }
