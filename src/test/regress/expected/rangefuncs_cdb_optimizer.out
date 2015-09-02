@@ -734,7 +734,15 @@ HINT:  Use DROP FUNCTION first.
 CREATE OR REPLACE FUNCTION foor(in f1 int, out f2 int, out text)
 AS $$select $1-1, $1::text || 'z'$$ LANGUAGE sql;
 SELECT f1, foor(f1) FROM int4_tbl;
-ERROR:  Can't serialize transient record types (tupser.c:166)
+     f1      |            foor
+-------------+----------------------------
+           0 | (-1,0z)
+      123456 | (123455,123456z)
+     -123456 | (-123457,-123456z)
+ -2147483647 | (-2147483648,-2147483647z)
+  2147483647 | (2147483646,2147483647z)
+(5 rows)
+
 SELECT * FROM foor(42);
  f2 | column2 
 ----+---------
@@ -750,7 +758,16 @@ SELECT * FROM foor(42) AS p(a,b);
 CREATE OR REPLACE FUNCTION foob(in f1 int, inout f2 int, out text)
 AS $$select $2-1, $1::text || 'z'$$ LANGUAGE sql;
 SELECT f1, foob(f1, f1/2) FROM int4_tbl;
-ERROR:  Can't serialize transient record types (tupser.c:166)
+SELECT f1, foob(f1, f1/2) FROM int4_tbl;
+     f1      |            foob
+-------------+----------------------------
+           0 | (-1,0z)
+      123456 | (61727,123456z)
+     -123456 | (-61729,-123456z)
+  2147483647 | (1073741822,2147483647z)
+ -2147483647 | (-1073741824,-2147483647z)
+(5 rows)
+
 SELECT * FROM foob(42, 99);
  f2 | column2 
 ----+---------
