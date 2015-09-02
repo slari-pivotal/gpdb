@@ -22,7 +22,7 @@ static bool expand_table_start_fail = false;
  * Any value that is power of 2 should be ok, but a smaller size hits
  * the error quickly.
  */
-#define DEF_SEGSIZE (16)
+#define TEST_SEGSIZE (16)
 
 /*
  * This special allocation routine will issue an error only if it is told
@@ -33,7 +33,7 @@ static bool expand_table_start_fail = false;
 void *
 alloc_for_expand_table_failure(Size size)
 {
-	if (expand_table_start_fail && size == sizeof(void *) * DEF_SEGSIZE)
+	if (expand_table_start_fail && size == sizeof(void *) * TEST_SEGSIZE)
 		elog(ERROR, "out of memory");
 	return malloc(size);
 }
@@ -59,7 +59,7 @@ test__expand_table(void **state)
 	info.entrysize = sizeof(OidKeyVal);
 	info.hash = oid_hash;
 	info.alloc = alloc_for_expand_table_failure;
-	info.ssize = DEF_SEGSIZE;
+	info.ssize = TEST_SEGSIZE;
 	hash_flags = (HASH_ELEM | HASH_FUNCTION | HASH_ALLOC | HASH_SEGMENT);
 
 	/* prepare for hash_create */
