@@ -12,9 +12,11 @@
 #ifndef CDBRELSIZE_H_
 #define CDBRELSIZE_H_
 
-void clear_relsize_cache(void);
+#include "utils/rel.h"
 
-int64 cdbRelSize(Oid relOid);
+extern void clear_relsize_cache(void);
+
+extern int64 cdbRelSize(Relation rel);
 
 
 #endif /*CDBRELSIZE_H_*/

@@ -51,7 +51,7 @@ void clear_relsize_cache(void)
 	last_cache_entry = -1;
 }
 
-int64 cdbRelSize(Oid relOid)
+int64 cdbRelSize(Relation rel)
 {
 	int64	size = 0;
 	int		i;
@@ -67,7 +67,7 @@ int64 cdbRelSize(Oid relOid)
 	{
 		for (i=0; i < relsize_cache_size; i++)
 		{
-			if (relsize_cache[i].relOid == relOid)
+			if (relsize_cache[i].relOid == RelationGetRelid(rel))
 				return relsize_cache[i].size;
 		}
 	}
@@ -78,11 +78,11 @@ int64 cdbRelSize(Oid relOid)
 	initStringInfo(&buffer);
 	initStringInfo(&errbuf);
 
-	schemaName = get_namespace_name(get_rel_namespace(relOid));
-	relName = get_rel_name(relOid);
-
-	if (schemaName == NULL || relName == NULL)
-		elog(ERROR, "Relation with oid %d does not exist", relOid);
+	schemaName = get_namespace_name(RelationGetNamespace(rel));
+	if (schemaName == NULL)
+		elog(ERROR, "cache lookup failed for namespace %d",
+			 RelationGetNamespace(rel));
+	relName = RelationGetRelationName(rel);
 
 	/* 
 	 * Safer to pass names than oids, just in case they get out of sync between QD and QE,
@@ -147,7 +147,7 @@ int64 cdbRelSize(Oid relOid)
 		if (last_cache_entry < 0)
 			last_cache_entry = 0;
 
-		relsize_cache[last_cache_entry].relOid = relOid;
+		relsize_cache[last_cache_entry].relOid = RelationGetRelid(rel);
 		relsize_cache[last_cache_entry].size = size;
 		last_cache_entry = (last_cache_entry+1) % relsize_cache_size;
 	}

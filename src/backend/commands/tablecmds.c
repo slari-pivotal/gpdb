@@ -9891,7 +9891,7 @@ ATExecAlterColumnType(AlteredTableInfo *tab, Relation rel,
 								{
 									int			ia = 0;
 
-									if (cdbRelSize(RelationGetRelid(rel)) != 0)
+									if (cdbRelSize(rel) != 0)
 
 									for (ia = 0; ia < policy->nattrs; ia++)
 									{
@@ -9940,7 +9940,7 @@ ATExecAlterColumnType(AlteredTableInfo *tab, Relation rel,
 						{
 							int			ia = 0;
 
-							if (cdbRelSize(RelationGetRelid(rel)) != 0)
+							if (cdbRelSize(rel) != 0)
 
 							for (ia = 0; ia < policy->nattrs; ia++)
 							{
@@ -10086,7 +10086,7 @@ ATExecAlterColumnType(AlteredTableInfo *tab, Relation rel,
 							 errOmitLocation(true)));
 			}
 
-			if (cdbRelSize(RelationGetRelid(rel)) != 0)
+			if (cdbRelSize(rel) != 0)
 			{
 				for (ia = 0; ia < policy->nattrs; ia++)
 				{
