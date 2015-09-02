@@ -38,6 +38,7 @@ COMMON_REAL_OBJS=\
 
 reloptions_REAL_OBJS=\
 	$(COMMON_REAL_OBJS) \
+	$(top_srcdir)/src/backend/utils/adt/bool.o \
 
 tupdesc_REAL_OBJS=\
 	$(COMMON_REAL_OBJS) \

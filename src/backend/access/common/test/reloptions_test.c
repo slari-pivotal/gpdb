@@ -12,33 +12,18 @@ test__parse_AO_options(void **state)
 	Datum opts;
 	ArrayType *array;
 	int nelems;
-	expect_any(parse_bool, value);
-	expect_any(parse_bool, result);
-	will_return(parse_bool, true);
-	expect_any(parse_bool, value);
-	expect_any(parse_bool, result);
-	will_return(parse_bool, true);
 	opts = parseAOStorageOpts("checksum=false", &aovalue);
 	assert_false(aovalue);
 	array = DatumGetArrayTypeP(opts);
 	nelems = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	assert_int_equal(nelems, 2);
 
-	expect_any(parse_bool, value);
-	expect_any(parse_bool, result);
-	will_return(parse_bool, true);
 	opts = parseAOStorageOpts("blocksize=8192", &aovalue);
 	array = DatumGetArrayTypeP(opts);
 	nelems = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
 	assert_int_equal(nelems, 2);
 
 	assert_false(aovalue);
-	expect_any(parse_bool, value);
-	expect_any(parse_bool, result);
-	will_return(parse_bool, true);
-	expect_any(parse_bool, value);
-	expect_any(parse_bool, result);
-	will_return(parse_bool, true);
 	opts = parseAOStorageOpts(
 			"appendonly = True, checkSum= FALSE, orientation=Column",
 			&aovalue);
