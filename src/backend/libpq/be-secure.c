@@ -318,6 +318,7 @@ rloop:
  * This function holds an interrupt before reporting this error to avoid
  * a self deadlock situation, see MPP-13718 for more info.
  */
+#ifdef USE_SSL
 static void
 report_commerror(const char *err_msg)
 {
@@ -329,6 +330,7 @@ report_commerror(const char *err_msg)
 
 	RESUME_INTERRUPTS();
 }
+#endif
 
 /*
  *	Write data to a secure connection.
