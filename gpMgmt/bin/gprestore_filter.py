@@ -34,9 +34,23 @@ def get_table_info(line):
     return (name, type, schema) 
 
 def process_schema(dump_schemas, dump_tables, fdin, fdout):
+    """
+    Filter the dump file line by line from restore
+    dump_schemas: set of schemas to restore
+    dump_tables: set of (schema, table) tuple to restore
+    fdin: stdin from dump file
+    fdout: to write filtered content to stdout
+    """
+
     schema, table = None, None
     line_buff = ''
+
+    # to help decide whether or not to filter out
     output = False
+
+    # to help exclude SET clause within a function's ddl statement
+    function_ddl = False
+
     further_investigation_required = False
     search_path = True
     passedDropSchemaSection = False
@@ -49,7 +63,7 @@ def process_schema(dump_schemas, dump_tables, fdin, fdout):
                 search_path = False
             else:
                 output = False
-        elif (line[0] == set_start) and line.startswith(set_expr):
+        elif (line[0] == set_start) and line.startswith(set_expr) and not function_ddl:
             output = True
         elif (line[0] == drop_start) and line.startswith(drop_expr):
             if line.startswith('DROP TABLE') or line.startswith('DROP EXTERNAL TABLE'):
@@ -64,6 +78,7 @@ def process_schema(dump_schemas, dump_tables, fdin, fdout):
             # if type is SCHEMA, then the value of name returned is schema's name, and returned schema is represented by '-'
             name, type, schema = get_table_info(line)
             output = False
+            function_ddl = False
             passedDropSchemaSection = True
             if type in ['TABLE', 'EXTERNAL TABLE']:
                 further_investigation_required = False
@@ -82,6 +97,8 @@ def process_schema(dump_schemas, dump_tables, fdin, fdout):
                 output = check_valid_schema(name, dump_schemas)
                 if output:
                     search_path = True
+            elif type in ['FUNCTION']:
+                function_ddl = True
         elif (line[:3] == comment_start_expr) and (line.startswith(comment_data_expr_a) or line.startswith(comment_data_expr_b)):
             passedDropSchemaSection = True
             further_investigation_required = False
