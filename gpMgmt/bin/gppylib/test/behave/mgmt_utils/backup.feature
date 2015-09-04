@@ -4996,7 +4996,10 @@ Feature: Validate command line arguments
         And all the data from "fullbkdb" is saved for verification
         And the user runs "gpdbrestore -T public.ao_index_table --redirect=testdb --truncate -a" with the stored timestamp
         And gpdbrestore should return a return code of 2
-        And gpdbrestore should print Could not truncate table testdb.public.ao_index_table to stdout
+        And gpdbrestore should print Failure from truncating tables, FATAL:  database "testdb" does not exist to stdout
+        And the user runs "gpdbrestore -T public.ao_index_table_1 --truncate -a" with the stored timestamp
+        And gpdbrestore should return a return code of 2
+        And gpdbrestore should print Could not truncate table fullbkdb.public.ao_index_table_1 to stdout
         And there is a "ao" table "ao_index_table" with compression "None" in "testdb" with data
         And the user runs "gpdbrestore -T public.ao_index_table --redirect=testdb --truncate -a" with the stored timestamp
         And gpdbrestore should return a return code of 0

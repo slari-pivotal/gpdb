@@ -412,8 +412,8 @@ def truncate_restore_tables(restore_tables, master_port, dbname):
     try:
         dburl = dbconn.DbURL(port=master_port, dbname=dbname)
         conn = dbconn.connect(dburl)
+        truncate_list = []
         for restore_table in restore_tables:
-            truncate_list = []
             schema, table = restore_table.split('.')
 
             if table == '*':
@@ -424,12 +424,16 @@ def truncate_restore_tables(restore_tables, master_port, dbname):
             else:
                 truncate_list.append(restore_table)
 
-            for t in truncate_list:
+        for t in truncate_list:
+            try:
                 qry = 'Truncate %s' % t
                 execSQL(conn, qry)
+            except Exception as e:
+                raise Exception("Could not truncate table %s.%s: %s" % (dbname, t, str(e).replace('\n', '')))
+
         conn.commit()
     except Exception as e:
-        raise Exception("Could not truncate table %s.%s: %s" % (dbname, restore_table, str(e).replace('\n', '')))
+        raise Exception("Failure from truncating tables, %s" % (str(e).replace('\n', '')))
 
 class RestoreDatabase(Operation):
     def __init__(self, restore_timestamp, no_analyze, drop_db, restore_global, master_datadir, backup_dir, 
