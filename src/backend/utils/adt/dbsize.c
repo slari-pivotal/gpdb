@@ -15,7 +15,6 @@
 #include <sys/stat.h>
 #include <glob.h>
 
-#include "gp-libpq-fe.h"
 #include "lib/stringinfo.h"
 
 #include "access/heapam.h"
@@ -39,7 +38,6 @@
 #include "utils/syscache.h"
 
 #include "cdb/cdbvars.h"
-#include "cdb/cdbdisp.h"
 #include "cdb/cdbpersistenttablespace.h"
 
 
