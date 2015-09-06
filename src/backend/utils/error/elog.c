@@ -194,8 +194,6 @@ static char formatted_start_time[FORMATTED_TS_LEN];
 		} \
 	} while (0)
 
-bool SuppressPanic = false;   /* GP */
-
 static void cdb_tidy_message(ErrorData *edata);
 static void log_line_prefix(StringInfo buf);
 static void send_message_to_server_log(ErrorData *edata);
@@ -318,11 +316,7 @@ errstart(int elevel, const char *filename, int lineno,
 		 * If we are inside a critical section, all errors become PANIC
 		 * errors.	See miscadmin.h.
 		 */
-         /*
-          * TODO  Chuck asks:  Isn't it dangerous to supress the PANIC?
-          * Can't we do this in a better way?
-          */
-		if (CritSectionCount > 0 && !SuppressPanic)
+		if (CritSectionCount > 0)
 			elevel = PANIC;
 
 		/*
@@ -561,9 +555,6 @@ errfinish(int dummy __attribute__((unused)),...)
 		 * GP: While doing local error try/catch, do not reset all these
 		 * important variables!
 		 */
-		if (!SuppressPanic)
-		{  // GP: Don't indent so we can watch this section...
-
 		/*
 		 * We do some minimal cleanup before longjmp'ing so that handlers can
 		 * execute in a reasonably sane state.
@@ -582,7 +573,6 @@ errfinish(int dummy __attribute__((unused)),...)
 		InterruptHoldoffCount = 0;
 
 		CritSectionCount = 0;	/* should be unnecessary, but... */
-		}// GP: End watching section.
 
 		/*
 		 * Note that we leave CurrentMemoryContext set to ErrorContext. The

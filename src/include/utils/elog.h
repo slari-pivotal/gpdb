@@ -269,9 +269,6 @@ extern int errSendAlert(bool sendAlert);		/* GPDB: Send alert via e-mail or SNMP
 
 extern int errSuppressOutputToLog(void);   /* GP */
 
-// Generally a good idea!
-extern bool SuppressPanic;   /* GP */
-
 /*----------
  * Old-style error reporting API: to be used in this way:
  *		elog(ERROR, "portal \"%s\" not found", stmt->portalname);

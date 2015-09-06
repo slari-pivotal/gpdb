@@ -243,8 +243,6 @@ typedef enum FaultInjectorType_e {
 	
 	FaultInjectorTypeStatus,
 	
-	FaultInjectorTypePanicSuppress,
-
 	FaultInjectorTypeSegv,
 	
 	FaultInjectorTypeInterrupt,

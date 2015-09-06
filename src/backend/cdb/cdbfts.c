@@ -28,7 +28,6 @@
 
 #include "executor/spi.h"
 
-#include "postmaster/service.h"
 #include "postmaster/fts.h"
 #include "postmaster/primary_mirror_mode.h"
 #include "utils/faultinjection.h"

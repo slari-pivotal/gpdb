@@ -27,7 +27,6 @@
 #include "postmaster/checkpoint.h"
 #include "cdb/cdbutil.h"
 #include "postmaster/fts.h"
-#include "postmaster/service.h"
 #include "storage/spin.h"
 #include "storage/shmem.h"
 #include "utils/faultinjector.h"
@@ -773,24 +772,6 @@ FaultInjector_InjectFaultIfSet(
 		case FaultInjectorTypeResume:
 			break;
 			
-		case FaultInjectorTypePanicSuppress:
-		{
-			DECLARE_SAVE_SUPPRESS_PANIC();
-			
-			entryLocal->faultInjectorState = FaultInjectorStateCompleted;
-			
-			FaultInjector_UpdateHashEntry(entryLocal);	
-			
-			SUPPRESS_PANIC();
-			
-			ereport(FATAL, 
-					(errmsg("fault triggered, fault name:'%s' fault type:'%s' ",
-							FaultInjectorIdentifierEnumToString[entryLocal->faultInjectorIdentifier],
-							FaultInjectorTypeEnumToString[entryLocal->faultInjectorType])));	
-			
-			break;
-		}
-
 		case FaultInjectorTypeSegv:
 		{
 			*(int *) 0 = 1234;
