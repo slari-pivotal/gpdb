@@ -198,11 +198,19 @@ Feature: Validate command line arguments
         Given there is a mixed storage partition table "part_mixed_1" in "bkdb" with data
         Then data for partition table "part_mixed_1" with partition level "1" is distributed across all segments on "bkdb"
         And verify that storage_types of the partition table "part_mixed_1" are as expected in "bkdb"
+    
+	@backupsmoke
+    @dataset
+    Scenario: Partition tables with external partition 
+        Given there is a partition table "part_external" has external partitions in "bkdb" with data
+        Then data for partition table "part_external" with partition level "0" is distributed across all segments on "bkdb"
+        And verify that storage_types of the partition table "part_external" are as expected in "bkdb"
 
     @backupsmoke
     Scenario: Negative test for Incremental Backup
         Given the database is running
         And partition "1" of partition table "ao_part_table, co_part_table_comp" is assumed to be in dirty state in "bkdb" in schema "public"
+        And partition "1" in partition level "0" of partition table "part_external" is assumed to be in dirty state in "bkdb" in schema "public"
         And table "public.ao_index_table" is assumed to be in dirty state in "bkdb"
         And there are no backup files
         When the user runs "gpcrondump -a --incremental -x bkdb"
@@ -297,6 +305,7 @@ Feature: Validate command line arguments
         And the state files are generated under " " for stored "full" timestamp
         And the "last_operation" files are generated under " " for stored "full" timestamp
         When partition "1" of partition table "ao_part_table, co_part_table_comp, part_mixed_1" is assumed to be in dirty state in "bkdb" in schema "public"
+        When partition "1" in partition level "0" of partition table "part_external" is assumed to be in dirty state in "bkdb" in schema "public"
         And table "public.ao_index_table" is assumed to be in dirty state in "bkdb"
         And the temp files "dirty_backup_list" are removed from the system
         And the user runs "gpcrondump -a --incremental -x bkdb"
@@ -316,6 +325,7 @@ Feature: Validate command line arguments
         And gpdbrestore should print Table public.ao_index_table_comp to stdout 
         And gpdbrestore should print Table public.ao_part_table to stdout 
         And gpdbrestore should print Table public.ao_part_table_comp to stdout 
+        And gpdbrestore should print Table public.part_external to stdout 
         And gpdbrestore should print Table public.ao_table to stdout 
         And gpdbrestore should print Table public.ao_table_comp to stdout 
         And gpdbrestore should print Table public.co_index_table to stdout 
@@ -334,6 +344,7 @@ Feature: Validate command line arguments
         And gp_restore should return a return code of 0
         And verify that partitioned tables "ao_part_table, co_part_table, heap_part_table" in "bkdb" have 6 partitions
         And verify that partitioned tables "ao_part_table_comp, co_part_table_comp" in "bkdb" have 6 partitions
+        And verify that partitioned tables "part_external" in "bkdb" have 5 partitions in partition level "0"
         And verify that partitioned tables "ao_part_table, co_part_table_comp" in "bkdb" has 5 empty partitions
         And verify that partitioned tables "co_part_table, ao_part_table_comp" in "bkdb" has 6 empty partitions
         And verify that partitioned tables "heap_part_table" in "bkdb" has 0 empty partitions
@@ -345,6 +356,7 @@ Feature: Validate command line arguments
         And verify that there is partition "2" of "heap" partition table "heap_part_table" in "bkdb" in "public"
         And verify that there is partition "3" of "heap" partition table "heap_part_table" in "bkdb" in "public"
         And verify that there is partition "1" of mixed partition table "part_mixed_1" with storage_type "c"  in "bkdb" in "public"
+        And verify that there is partition "2" in partition level "0" of mixed partition table "part_external" with storage_type "x"  in "bkdb" in "public"
         And verify that tables "public.ao_table, public.co_table, public.ao_table_comp, public.co_table_comp" in "bkdb" has no rows
         And verify that tables "public.co_index_table, public.ao_index_table_comp, public.co_index_table_comp" in "bkdb" has no rows
         And verify that the data of the dirty tables under " " in "bkdb" is validated after restore
@@ -405,6 +417,7 @@ Feature: Validate command line arguments
         And the backup files in "/tmp" are deleted
         When the user runs "gpcrondump -a -x bkdb -u /tmp"
         And partition "1" of partition table "ao_part_table, co_part_table_comp" is assumed to be in dirty state in "bkdb" in schema "public"
+        And partition "1" in partition level "0" of partition table "part_external" is assumed to be in dirty state in "bkdb" in schema "public"
         And table "public.ao_index_table" is assumed to be in dirty state in "bkdb"
         And the user runs "gpcrondump -a --incremental -x bkdb -u /tmp"
         Then gpcrondump should return a return code of 0
@@ -419,12 +432,14 @@ Feature: Validate command line arguments
         And gp_restore should return a return code of 0
         And verify that partitioned tables "ao_part_table, co_part_table, heap_part_table" in "bkdb" have 6 partitions
         And verify that partitioned tables "ao_part_table_comp, co_part_table_comp" in "bkdb" have 6 partitions
+        And verify that partitioned tables "part_external" in "bkdb" have 5 partitions in partition level "0"
         And verify that partitioned tables "ao_part_table, co_part_table_comp" in "bkdb" has 5 empty partitions
         And verify that partitioned tables "co_part_table, ao_part_table_comp" in "bkdb" has 6 empty partitions
         And verify that partitioned tables "heap_part_table" in "bkdb" has 0 empty partitions
         And verify that there is a "heap" table "heap_table" in "bkdb"
         And verify that there is a "heap" table "heap_index_table" in "bkdb"
         And verify that there is partition "1" of "ao" partition table "ao_part_table" in "bkdb" in "public"
+        And verify that there is partition "2" in partition level "0" of mixed partition table "part_external" with storage_type "x"  in "bkdb" in "public"
         And verify that there is partition "1" of "co" partition table "co_part_table_comp" in "bkdb" in "public"
         And verify that there is partition "1" of "heap" partition table "heap_part_table" in "bkdb" in "public"
         And verify that there is partition "2" of "heap" partition table "heap_part_table" in "bkdb" in "public"

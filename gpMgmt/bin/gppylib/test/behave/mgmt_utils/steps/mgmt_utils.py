@@ -35,7 +35,7 @@ from gppylib.test.behave_utils.utils import bring_nic_down, bring_nic_up, run_cm
                                             get_partition_tablenames, check_partition_table_exists, create_indexes, get_partition_names, \
                                             validate_restore_data, backup_data, backup_db_data, cleanup_report_files, run_command, \
                                             get_distribution_policy, validate_distribution_policy, cleanup_backup_files, create_schema, drop_schema_if_exists, \
-                                            create_mixed_storage_partition, validate_mixed_partition_storage_types, validate_storage_type, truncate_table, \
+                                            create_mixed_storage_partition, create_external_partition, validate_mixed_partition_storage_types, validate_storage_type, truncate_table, \
                                             get_table_oid, verify_truncate_in_pg_stat_last_operation, verify_truncate_not_in_pg_stat_last_operation, insert_numbers, \
                                             populate_partition_diff_data_same_eof, populate_partition_same_data, execute_sql, verify_integer_tuple_counts,  validate_no_aoco_stats, \
                                             check_string_not_present_stdout, clear_all_saved_data_verify_files, copy_file_to_all_db_hosts, validate_num_restored_tables, \
@@ -198,6 +198,12 @@ def impl(context, tablename, dbname):
     create_database_if_not_exists(context, dbname)
     drop_table_if_exists(context, table_name=tablename, dbname=dbname)
     create_mixed_storage_partition(context, tablename, dbname)
+
+@given('there is a partition table "{tablename}" has external partitions in "{dbname}" with data')
+def impl(context, tablename, dbname):
+    create_database_if_not_exists(context, dbname)
+    drop_table_if_exists(context, table_name=tablename, dbname=dbname)
+    create_external_partition(context, tablename, dbname)
  
 @given('there is {table_type} table {table_name} in "{dbname}" with data')
 def impl(context, table_type, table_name, dbname):
@@ -526,10 +532,13 @@ def impl(context, dbname):
 @then('partition "{partition}" of partition table "{table_list}" is assumed to be in dirty state in "{dbname}" in schema "{schema}"')
 @when('partition "{partition}" of partition table "{table_list}" is assumed to be in dirty state in "{dbname}" in schema "{schema}"')
 @given('partition "{partition}" of partition table "{table_list}" is assumed to be in dirty state in "{dbname}" in schema "{schema}"')
-def impl(context, partition, table_list, dbname, schema):
+@then('partition "{partition}" in partition level "{partitionlevel}" of partition table "{table_list}" is assumed to be in dirty state in "{dbname}" in schema "{schema}"')
+@when('partition "{partition}" in partition level "{partitionlevel}" of partition table "{table_list}" is assumed to be in dirty state in "{dbname}" in schema "{schema}"')
+@given('partition "{partition}" in partition level "{partitionlevel}" of partition table "{table_list}" is assumed to be in dirty state in "{dbname}" in schema "{schema}"')
+def impl(context, partition, table_list, dbname, schema, partitionlevel=1):
     tables = table_list.split(',')
     for t in tables:
-        part_t = get_partition_names(schema, t.strip(), dbname, 1, partition)
+        part_t = get_partition_names(schema, t.strip(), dbname, partitionlevel, partition)
         if len(part_t) < 1 or len(part_t[0]) < 1:
             print part_t 
         dirty_table_name = part_t[0][0].strip()
@@ -856,8 +865,9 @@ def impl(context, partition, table_type, tablename, dbname, schemaname):
         raise Exception("Partition %s for table '%s' of type '%s' does not exist when expected" % (partition, tablename, table_type))
 
 @then('verify that there is partition "{partition}" of mixed partition table "{tablename}" with storage_type "{storage_type}"  in "{dbname}" in "{schemaname}"')
-def impl(context, partition, tablename, storage_type, dbname, schemaname):
-    part_t = get_partition_names(schemaname, tablename, dbname, 1, partition)
+@then('verify that there is partition "{partition}" in partition level "{partitionlevel}" of mixed partition table "{tablename}" with storage_type "{storage_type}"  in "{dbname}" in "{schemaname}"')
+def impl(context, partition, tablename, storage_type, dbname, schemaname, partitionlevel=1):
+    part_t = get_partition_names(schemaname, tablename, dbname, partitionlevel, partition)
     partname = part_t[0][0].strip()
     validate_storage_type(context, partname, storage_type, dbname)
 
@@ -925,11 +935,12 @@ def impl(context, tname, dbname, orderby):
     match_table_select(context, tname, dbname, orderby)
 
 @then('verify that partitioned tables "{table_list}" in "{dbname}" have {num_parts} partitions')
-def impl(context, table_list, dbname, num_parts):
+@then('verify that partitioned tables "{table_list}" in "{dbname}" have {num_parts} partitions in partition level "{partitionlevel}"')
+def impl(context, table_list, dbname, num_parts, partitionlevel=1):
     num_parts = int(num_parts.strip())
     tables = [t.strip() for t in table_list.split(',')] 
     for t in tables:
-        names = get_partition_tablenames(t, dbname)
+        names = get_partition_tablenames(t, dbname, partitionlevel)
         if len(names) != num_parts:
             raise Exception("%s.%s should have %d partitions but has %d" % (dbname, t, num_parts, len(names)))
 

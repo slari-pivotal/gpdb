@@ -465,12 +465,44 @@ def create_mixed_storage_partition(context, tablename, dbname):
                         subpartition s_5  start(date '2014-01-01') end(date '2015-01-01') ) \
                         (partition p1 values('backup') , partition p2 values('restore')) \
                         ;" % (tablename, table_definition)
-
+    
     with dbconn.connect(dbconn.DbURL(dbname=dbname)) as conn:
         dbconn.execSQL(conn, create_table_str)
         conn.commit()
 
     populate_partition(tablename, '2010-01-01', dbname, 0)
+
+def create_external_partition(context, tablename, dbname):
+    
+    table_definition = 'Column1 int, Column2 varchar(20), Column3 date'
+    create_table_str = "Create table %s (%s) Distributed randomly \
+                        Partition by range(Column3) ( \
+                        partition p_1  start(date '2010-01-01') end(date '2011-01-01') with (appendonly=true, orientation=column, compresstype=quicklz, compresslevel=1), \
+                        partition p_2  start(date '2011-01-01') end(date '2012-01-01') with (appendonly=true, orientation=row, compresstype=zlib, compresslevel=1), \
+                        partition s_3  start(date '2012-01-01') end(date '2013-01-01') with (appendonly=true, orientation=column), \
+                        partition s_4  start(date '2013-01-01') end(date '2014-01-01') with (appendonly=true, orientation=row), \
+                        partition s_5  start(date '2014-01-01') end(date '2015-01-01') ) \
+                        ;" % (tablename, table_definition)
+    
+    master_hostname = get_master_hostname();
+    create_ext_table_str = "Create readable external table %s_ret (%s) \
+                            location ('file://%s/tmp/ret1') \
+                            format 'csv' encoding 'utf-8' \
+                            log errors segment reject limit 1000 \
+                            ;" % (tablename, table_definition, master_hostname[0][0].strip())
+
+    alter_table_str = "Alter table %s exchange partition p_2 \
+                       with table %s_ret without validation \
+                       ;" % (tablename, tablename)
+
+    with dbconn.connect(dbconn.DbURL(dbname=dbname)) as conn:
+        dbconn.execSQL(conn, create_table_str)
+        dbconn.execSQL(conn, create_ext_table_str)
+        dbconn.execSQL(conn, alter_table_str)
+        conn.commit()
+
+    populate_partition(tablename, '2010-01-01', dbname, 0, 100)
+
 
 def modify_partition_data(context, tablename, dbname, partitionnum):
 
