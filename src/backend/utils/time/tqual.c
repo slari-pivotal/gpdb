@@ -62,6 +62,7 @@
 #include "access/transam.h"
 #include "access/xact.h"
 #include "storage/bufmgr.h"
+#include "storage/procarray.h"
 
 #include "utils/tqual.h"
 
@@ -72,7 +73,6 @@
 #include "utils/guc.h"
 #include "utils/memutils.h"
 
-#include "storage/procarray.h"
 
 #include "catalog/pg_type.h"
 #include "funcapi.h"
@@ -122,11 +122,9 @@ uint8 WatchVisibilityFlags[WATCH_VISIBILITY_BYTE_LEN];
 #endif
 
 /* local functions */
-static bool
-XidInSnapshot(TransactionId xid, Snapshot snapshot, bool isXmax,
+static bool XidInSnapshot(TransactionId xid, Snapshot snapshot, bool isXmax,
 			  bool distributedSnapshotIgnore, bool *setDistributedSnapshotIgnore);
-static bool
-XidInSnapshot_Local(TransactionId xid, Snapshot snapshot, bool isXmax);
+static bool XidInSnapshot_Local(TransactionId xid, Snapshot snapshot, bool isXmax);
 
 /* MPP Addition. Distributed Snapshot that gets sent in from the QD to processes
  * running in EXECUTE mode.
@@ -261,9 +259,9 @@ SharedSnapshotDump(void)
 {
 	StringInfoData str;
 	volatile SharedSnapshotStruct *arrayP = sharedSnapshotArray;
-	int index;
+	int			index;
 
-    initStringInfo(&str);
+	initStringInfo(&str);
 
 	appendStringInfo(&str, "Local SharedSnapshot Slot Dump: currSlots: %d maxSlots: %d ",
 					 arrayP->numSlots, arrayP->maxSlots);
@@ -906,8 +904,8 @@ readSharedLocalSnapshot_forCursor(Snapshot snapshot)
 /*
  * Set the buffer dirty after setting t_infomask
  */
-static inline
-void markDirty(Buffer buffer, bool disabled, Relation relation, HeapTupleHeader tuple, bool isXmin)
+static inline void
+markDirty(Buffer buffer, bool disabled, Relation relation, HeapTupleHeader tuple, bool isXmin)
 {
 	TransactionId xid;
 
@@ -2241,9 +2239,7 @@ HeapTupleSatisfiesVacuum(HeapTupleHeader tuple, TransactionId OldestXmin,
 	if (!(tuple->t_infomask & HEAP_XMIN_COMMITTED))
 	{
 		if (tuple->t_infomask & HEAP_XMIN_INVALID)
-		{
 			return HEAPTUPLE_DEAD;
-		}
 		else if (tuple->t_infomask & HEAP_MOVED_OFF)
 		{
 			TransactionId xvac = HeapTupleHeaderGetXvac(tuple);
@@ -2359,9 +2355,7 @@ HeapTupleSatisfiesVacuum(HeapTupleHeader tuple, TransactionId OldestXmin,
 	if (!(tuple->t_infomask & HEAP_XMAX_COMMITTED))
 	{
 		if (TransactionIdIsInProgress(HeapTupleHeaderGetXmax(tuple)))
-		{
 			return HEAPTUPLE_DELETE_IN_PROGRESS;
-		}
 		else if (TransactionIdDidCommit(HeapTupleHeaderGetXmax(tuple)))
 		{
 			tuple->t_infomask |= HEAP_XMAX_COMMITTED;
@@ -2406,6 +2400,7 @@ HeapTupleSatisfiesVacuum(HeapTupleHeader tuple, TransactionId OldestXmin,
 	/* Otherwise, it's dead and removable */
 	return HEAPTUPLE_DEAD;
 }
+
 
 /*
  * GetTransactionSnapshot
@@ -2574,7 +2569,6 @@ FreeXactSnapshot(void)
 	 */
 	SerializableSnapshot = NULL;
 	LatestSnapshot = NULL;
-
 	ActiveSnapshot = NULL;		/* just for cleanliness */
 }
 
@@ -2584,7 +2578,8 @@ FreeXactSnapshot(void)
  *
  * The 'prefix' is used to prefix the log message.
  */
-void LogDistributedSnapshotInfo(Snapshot snapshot, const char *prefix)
+void
+LogDistributedSnapshotInfo(Snapshot snapshot, const char *prefix)
 {
 	static const int MESSAGE_LEN = 500;
 
@@ -3704,4 +3699,3 @@ char *GetTupleVisibilitySummaryString(
 
 	return buf.data;
 }
-

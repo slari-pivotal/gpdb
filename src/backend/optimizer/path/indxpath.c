@@ -1768,8 +1768,8 @@ best_inner_indexscan(PlannerInfo *root, RelOptInfo *rel,
 	if (bitindexpaths != NIL &&
         (root->config->enable_bitmapscan || root->config->mpp_trying_fallback_plan))
 	{
-		Path *bitmapqual;
-		Path *bpath;
+		Path	   *bitmapqual;
+		Path	   *bpath;
 
 		bitmapqual = choose_bitmap_and(root, rel, bitindexpaths, outer_rel);
 		bpath = create_bitmap_scan_path(relstorage, root, rel, bitmapqual, outer_rel);
@@ -3116,11 +3116,11 @@ string_to_datum(const char *str, Oid datatype)
 	 * varchar constants too...
 	 */
 	if (datatype == NAMEOID)
-		return DirectFunctionCall1(namein, CStringGetDatum((char *) str));
+		return DirectFunctionCall1(namein, CStringGetDatum(str));
 	else if (datatype == BYTEAOID)
-		return DirectFunctionCall1(byteain, CStringGetDatum((char *) str));
+		return DirectFunctionCall1(byteain, CStringGetDatum(str));
 	else
-		return DirectFunctionCall1(textin, CStringGetDatum((char *) str));
+		return DirectFunctionCall1(textin, CStringGetDatum(str));
 }
 
 /*

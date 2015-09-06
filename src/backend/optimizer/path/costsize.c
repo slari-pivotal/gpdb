@@ -1902,7 +1902,6 @@ cost_mergejoin(MergePath *path, PlannerInfo *root)
 	 * cpu_tuple_cost plus the cost of evaluating additional restriction
 	 * clauses that are to be applied at the join.	(This is pessimistic since
 	 * not all of the quals may get evaluated at each tuple.)  This work is
-	
 	 * skipped in JOIN_IN mode, so apply the factor.
 	 */
 	startup_cost += qp_qual_cost.startup;
@@ -1943,7 +1942,7 @@ cost_hashjoin(HashPath *path, PlannerInfo *root)
 	Selectivity innerbucketsize;
 	Selectivity joininfactor;
 	ListCell   *hcl;
-	
+
 	/*
 	 * Compute cost and selectivity of the hashquals and qpquals (other
 	 * restriction clauses) separately.  We use approx_selectivity here for
@@ -1980,7 +1979,7 @@ cost_hashjoin(HashPath *path, PlannerInfo *root)
 	startup_cost += (cpu_operator_cost * num_hashclauses + cpu_tuple_cost)
 		* inner_path_rows;
 	run_cost += cpu_operator_cost * num_hashclauses * outer_path_rows;
-	
+
 	/* Get hash table size that executor would use for inner relation */
 	hash_table_size(inner_path_rows,
 							inner_path->parent->width,
@@ -2159,16 +2158,16 @@ cost_qual_eval(QualCost *cost, List *quals, PlannerInfo *root)
 	context.root = root;
 	context.total.startup = 0;
 	context.total.per_tuple = 0;
-	
+
 	/* We don't charge any cost for the implicit ANDing at top level ... */
-	
+
 	foreach(l, quals)
 	{
 		Node	   *qual = (Node *) lfirst(l);
-		
+
 		cost_qual_eval_walker(qual, &context);
 	}
-	
+
 	*cost = context.total;
 }
 
@@ -2177,7 +2176,7 @@ cost_qual_eval_walker(Node *node,  cost_qual_eval_context *context)
 {
 	if (node == NULL)
 		return false;
-	
+
 	/*
 	 * RestrictInfo nodes contain an eval_cost field reserved for this
 	 * routine's use, so that it's not necessary to evaluate the qual clause's
@@ -2187,15 +2186,15 @@ cost_qual_eval_walker(Node *node,  cost_qual_eval_context *context)
 	if (IsA(node, RestrictInfo))
 	{
 		RestrictInfo *rinfo = (RestrictInfo *) node;
-		
+
 		if (rinfo->eval_cost.startup < 0)
 		{
 			cost_qual_eval_context locContext;
-			
+
 			locContext.root = context->root;
 			locContext.total.startup = 0;
 			locContext.total.per_tuple = 0;
-			
+
 			/*
 			 * For an OR clause, recurse into the marked-up tree so that we
 			 * set the eval_cost for contained RestrictInfos too.
@@ -2204,7 +2203,7 @@ cost_qual_eval_walker(Node *node,  cost_qual_eval_context *context)
 				cost_qual_eval_walker((Node *) rinfo->orclause, &locContext);
 			else
 				cost_qual_eval_walker((Node *) rinfo->clause, &locContext);
-			
+
 			/*
 			 * If the RestrictInfo is marked pseudoconstant, it will be tested
 			 * only once, so treat its cost as all startup cost.
@@ -2222,8 +2221,7 @@ cost_qual_eval_walker(Node *node,  cost_qual_eval_context *context)
 		/* do NOT recurse into children */
 		return false;
 	}
-	
-	
+
 	/*
 	 * Our basic strategy is to charge one cpu_operator_cost for each operator
 	 * or function node in the given tree.	Vars and Consts are charged zero,
@@ -2274,7 +2272,7 @@ cost_qual_eval_walker(Node *node,  cost_qual_eval_context *context)
 			/* Cannot cost subplans without root. */
 			return 0;
 		}
-		
+
 		/*
 		 * A subplan node in an expression typically indicates that the
 		 * subplan will be executed on each evaluation, so charge accordingly.
@@ -2386,7 +2384,7 @@ approx_selectivity(PlannerInfo *root, List *quals, JoinType jointype)
 		Node	   *qual = (Node *) lfirst(l);
 
 		/* Note that clause_selectivity will be able to cache its result */
-		total *= clause_selectivity(root, qual, 0, jointype, 
+		total *= clause_selectivity(root, qual, 0, jointype,
 									false /* use_damping */);
 	}
 	return total;
@@ -2453,13 +2451,13 @@ adjust_selectivity_for_nulltest(Selectivity selec,
 {
 	Assert(IS_OUTER_JOIN(jointype));
 
-	/* 
+	/*
 	 * consider only singletons; the case of multiple
-	 * nulltests on the inner side of an outer join is not very 
+	 * nulltests on the inner side of an outer join is not very
 	 * useful in practice;
 	 */
 	if (JOIN_FULL != jointype &&
-		1 == list_length(pushed_quals))	
+		1 == list_length(pushed_quals))
 	{
 		Node *clause = (Node *) lfirst(list_head(pushed_quals));
 
@@ -2469,10 +2467,10 @@ adjust_selectivity_for_nulltest(Selectivity selec,
 
 			if (IsA(clause, NullTest))
 			{
-				int nulltesttype = 0;
-				Node *node = NULL;
-				Node *basenode = NULL;
-	
+				int			nulltesttype;
+				Node	   *node;
+				Node	   *basenode;
+
 				/* extract information */
 				nulltesttype = ((NullTest *) clause)->nulltesttype;
 				node = (Node *) ((NullTest *) clause)->arg;
@@ -2791,11 +2789,10 @@ set_table_function_size_estimates(PlannerInfo *root, RelOptInfo *rel)
 		rel->tuples = 1;
 	else
 		rel->tuples = rel->subplan->plan_rows;
-	
+
 	/* Now estimate number of output rows, etc */
 	set_baserel_size_estimates(root, rel);
 }
-
 
 /*
  * set_values_size_estimates
@@ -3204,5 +3201,3 @@ static void hash_table_size(double ntuples, int tupwidth, double memory_bytes,
 	*numbuckets = nbuckets;
 	*numbatches = nbatch;
 }
-
-

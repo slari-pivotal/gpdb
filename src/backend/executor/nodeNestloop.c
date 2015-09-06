@@ -22,12 +22,8 @@
 
 #include "postgres.h"
 
-#include "cdb/cdbvars.h"
 #include "executor/execdebug.h"
 #include "executor/nodeNestloop.h"
-#include "executor/nodeHash.h"
-#include "executor/nodeHashjoin.h"
-
 #include "utils/memutils.h"
 
 static void splitJoinQualExpr(NestLoopState *nlstate);
@@ -121,7 +117,7 @@ ExecNestLoop(NestLoopState *node)
 	{
 		innerTupleSlot = ExecProcNode(innerPlan);
 		Gpmon_M_Incr(GpmonPktFromNLJState(node), GPMON_NLJ_INNERTUPLE);
-		Gpmon_M_Incr(GpmonPktFromNLJState(node), GPMON_QEXEC_M_ROWSIN); 
+		Gpmon_M_Incr(GpmonPktFromNLJState(node), GPMON_QEXEC_M_ROWSIN);
 
 		node->reset_inner = true;
 		econtext->ecxt_innertuple = innerTupleSlot;
@@ -182,10 +178,10 @@ ExecNestLoop(NestLoopState *node)
 		 */
 		if (node->nl_NeedNewOuter)
 		{
-            ENL1_printf("getting new outer tuple");
-            outerTupleSlot = ExecProcNode(outerPlan);
-            Gpmon_M_Incr(GpmonPktFromNLJState(node), GPMON_NLJ_OUTERTUPLE);
-            Gpmon_M_Incr(GpmonPktFromNLJState(node), GPMON_QEXEC_M_ROWSIN); 
+			ENL1_printf("getting new outer tuple");
+			outerTupleSlot = ExecProcNode(outerPlan);
+			Gpmon_M_Incr(GpmonPktFromNLJState(node), GPMON_NLJ_OUTERTUPLE);
+			Gpmon_M_Incr(GpmonPktFromNLJState(node), GPMON_QEXEC_M_ROWSIN);
 
 			/*
 			 * if there are no more outer tuples, then the join is complete..
@@ -267,7 +263,7 @@ ExecNestLoop(NestLoopState *node)
 			node->nl_innerSideScanned = true;
 
 			if (!node->nl_MatchedOuter &&
-				(node->js.jointype == JOIN_LEFT || 
+				(node->js.jointype == JOIN_LEFT ||
 				 node->js.jointype == JOIN_LASJ ||
 				 node->js.jointype == JOIN_LASJ_NOTIN))
 			{
@@ -543,13 +539,9 @@ ExecInitNestLoop(NestLoop *node, EState *estate, int eflags)
 int
 ExecCountSlotsNestLoop(NestLoop *node)
 {
-	int count;
-
-	count = ExecCountSlotsNode(outerPlan(node));
-	count += ExecCountSlotsNode(innerPlan(node));
-	count += NESTLOOP_NSLOTS;
-
-	return count;
+	return ExecCountSlotsNode(outerPlan(node)) +
+		ExecCountSlotsNode(innerPlan(node)) +
+		NESTLOOP_NSLOTS;
 }
 
 /* ----------------------------------------------------------------
@@ -575,7 +567,7 @@ ExecEndNestLoop(NestLoopState *node)
 	ExecClearTuple(node->js.ps.ps_ResultTupleSlot);
 
 	/*
-	 * close down subplans.
+	 * close down subplans
 	 */
 	if (!node->shared_outer)
 		ExecEndNode(outerPlanState(node));

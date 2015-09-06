@@ -89,6 +89,7 @@ typedef struct PredIterInfoData
 		(info).cleanup_fn(&(info)); \
 	} while (0)
 
+
 static bool predicate_implied_by_recurse(Node *clause, Node *predicate);
 static bool predicate_refuted_by_recurse(Node *clause, Node *predicate);
 static PredClass predicate_classify(Node *clause, PredIterInfo info);
@@ -149,7 +150,8 @@ predicate_implied_by(List *predicate_list, List *restrictinfo_list)
 		return false;			/* no restriction: implication must fail */
 
 	/* Otherwise, away we go ... */
-	return predicate_implied_by_recurse((Node *) restrictinfo_list, (Node *) predicate_list);
+	return predicate_implied_by_recurse((Node *) restrictinfo_list,
+										(Node *) predicate_list);
 }
 
 /*

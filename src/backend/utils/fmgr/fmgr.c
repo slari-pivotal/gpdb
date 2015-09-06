@@ -205,7 +205,6 @@ fmgr_info_cxt_security(Oid functionId, FmgrInfo *finfo, MemoryContext mcxt,
 		finfo->fn_stats = TRACK_FUNC_ALL;		/* ie, never track */
 		finfo->fn_addr = fbp->func;
 		finfo->fn_oid = functionId;
-		
 		return;
 	}
 
@@ -225,13 +224,13 @@ fmgr_info_cxt_security(Oid functionId, FmgrInfo *finfo, MemoryContext mcxt,
 	finfo->fn_nargs = procedureStruct->pronargs;
 	finfo->fn_strict = procedureStruct->proisstrict;
 	finfo->fn_retset = procedureStruct->proretset;
-	
+
 	if (procedureStruct->prosecdef && !ignore_security)
 	{
 		finfo->fn_addr = fmgr_security_definer;
 		finfo->fn_stats = TRACK_FUNC_ALL;		/* ie, never track */
 		finfo->fn_oid = functionId;
-		
+
 		caql_endscan(procqCtx);
 
 		return;
@@ -877,7 +876,7 @@ struct fmgr_security_definer_cache
  * look up the owner of the function and cache both the fmgr info and
  * the owner ID.  During the call we temporarily replace the flinfo
  * with the cached/looked-up one, while keeping the outer fcinfo
- * (which contains all the actual arguments, etc.) 
+ * (which contains all the actual arguments, etc.)
  * intact. 	This is not re-entrant, but then the fcinfo itself can't be used
  * re-entrantly anyway.
  */
@@ -2061,6 +2060,7 @@ pg_detoast_datum_packed(struct varlena * datum)
 	else
 		return datum;
 }
+
 /*-------------------------------------------------------------------------
  *		Support routines for extracting info from fn_expr parse tree
  *

@@ -237,7 +237,6 @@ set_rel_pathlist(PlannerInfo *root, RelOptInfo *rel, Index rti)
 	{
 		set_cte_pathlist(root, rel, rte);
 	}
-	
 	else
 	{
 		/* Plain relation */

@@ -58,7 +58,7 @@
 
 /*
  * We now maintain two hashtables.
- * 
+ *
  * 1) local hash for lookup of combocid with the key (cmin, cmax) by the writer
  * 2) shared-hash for lookup of cmin/cmax with the key (parent-xid, combocid, writer-pid) by the readers.
  */
@@ -71,13 +71,14 @@ static HTAB *comboHash = NULL;
 typedef struct
 {
 	ComboCidKeyData key;
-	CommandId combocid;
+	CommandId	combocid;
 } ComboCidEntryData;
 
 typedef ComboCidEntryData *ComboCidEntry;
 
 /* Initial size of the hash table */
 #define CCID_HASH_SIZE			100
+
 
 /*
  * An array of cmin,cmax pairs, indexed by combo command id.
@@ -92,7 +93,7 @@ volatile int sizeComboCids = 0;			/* allocated size of array */
 
 /*
  * HASH TABLE 2:
- * 
+ *
  * Used by reader gangs to lookup using combocid/xmin to find cmin/cmax.
  */
 static HTAB *readerComboHash = NULL;
@@ -119,7 +120,7 @@ static CommandId GetComboCommandId(TransactionId xmin, CommandId cmin, CommandId
 static CommandId GetRealCmin(TransactionId xmin, CommandId combocid);
 static CommandId GetRealCmax(TransactionId xmin, CommandId combocid);
 
-static BufFile *combocid_map=NULL;
+static BufFile *combocid_map = NULL;
 static void dumpSharedComboCommandId(TransactionId xmin, CommandId cmin, CommandId cmax, CommandId combocid);
 static void loadSharedComboCommandId(TransactionId xmin, CommandId combocid, CommandId *cmin, CommandId *cmax);
 
@@ -135,7 +136,7 @@ static void loadSharedComboCommandId(TransactionId xmin, CommandId combocid, Com
 CommandId
 HeapTupleHeaderGetCmin(HeapTupleHeader tup)
 {
-	CommandId cid = HeapTupleHeaderGetRawCommandId(tup);
+	CommandId	cid = HeapTupleHeaderGetRawCommandId(tup);
 
 	Assert(!(tup->t_infomask & HEAP_MOVED));
 
@@ -148,7 +149,7 @@ HeapTupleHeaderGetCmin(HeapTupleHeader tup)
 CommandId
 HeapTupleHeaderGetCmax(HeapTupleHeader tup)
 {
-	CommandId cid = HeapTupleHeaderGetRawCommandId(tup);
+	CommandId	cid = HeapTupleHeaderGetRawCommandId(tup);
 
 	/* We do not store cmax when locking a tuple */
 	Assert(!(tup->t_infomask & (HEAP_MOVED | HEAP_IS_LOCKED)));
@@ -191,7 +192,7 @@ HeapTupleHeaderAdjustCmax(HeapTupleHeader tup,
 	if (!(tup->t_infomask & HEAP_XMIN_COMMITTED) &&
 		TransactionIdIsCurrentTransactionId(HeapTupleHeaderGetXmin(tup)))
 	{
-		CommandId cmin = HeapTupleHeaderGetRawCommandId(tup);
+		CommandId	cmin = HeapTupleHeaderGetRawCommandId(tup);
 
 		*cmax = GetComboCommandId(HeapTupleHeaderGetXmin(tup), cmin, *cmax);
 		*iscombo = true;
@@ -210,8 +211,8 @@ void
 AtEOXact_ComboCid(void)
 {
 	/*
-	 * Don't bother to pfree. These are allocated in TopTransactionContext,
-	 * so they're going to go away at the end of transaction anyway.
+	 * Don't bother to pfree. These are allocated in TopTransactionContext, so
+	 * they're going to go away at the end of transaction anyway.
 	 */
 	comboHash = NULL;
 
@@ -233,10 +234,10 @@ AtEOXact_ComboCid(void)
 static CommandId
 GetComboCommandId(TransactionId xmin, CommandId cmin, CommandId cmax)
 {
-	CommandId combocid;
+	CommandId	combocid;
 	ComboCidKeyData key;
 	ComboCidEntry entry;
-	bool found;
+	bool		found;
 
 	if (Gp_role == GP_ROLE_EXECUTE && !Gp_is_writer)
 	{
@@ -247,14 +248,14 @@ GetComboCommandId(TransactionId xmin, CommandId cmin, CommandId cmax)
 	}
 
 	/* We're either GP_ROLE_DISPATCH, GP_ROLE_UTILITY, or a QE-writer */
-	
+
 	/*
-	 * Create the hash table and array the first time we need to use
-	 * combo cids in the transaction.
+	 * Create the hash table and array the first time we need to use combo
+	 * cids in the transaction.
 	 */
 	if (comboHash == NULL)
 	{
-		HASHCTL hash_ctl;
+		HASHCTL		hash_ctl;
 
 		memset(&hash_ctl, 0, sizeof(hash_ctl));
 		hash_ctl.keysize = sizeof(ComboCidKeyData);
@@ -293,13 +294,13 @@ GetComboCommandId(TransactionId xmin, CommandId cmin, CommandId cmax)
 	}
 
 	/*
-	 * We have to create a new combo cid. Check that there's room
-	 * for it in the array, and grow it if there isn't.
+	 * We have to create a new combo cid. Check that there's room for it in
+	 * the array, and grow it if there isn't.
 	 */
 	if (usedComboCids >= sizeComboCids)
 	{
 		/* We need to grow the array */
-		int		newsize = sizeComboCids * 2;
+		int			newsize = sizeComboCids * 2;
 
 		comboCids = (ComboCidKeyData *)
 			repalloc(comboCids, sizeof(ComboCidKeyData) * newsize);
@@ -338,11 +339,12 @@ enum minmax
 static CommandId
 getSharedComboCidEntry(TransactionId xmin, CommandId combocid, enum minmax min_or_max)
 {
-	bool found;
+	bool		found;
 	readerComboCidKeyData reader_key;
 	readerComboCidEntryData *reader_entry;
 
-	CommandId cmin=0, cmax=0;
+	CommandId	cmin = 0,
+				cmax = 0;
 
 	if (lockHolderProcPtr == NULL)
 	{
@@ -356,7 +358,7 @@ getSharedComboCidEntry(TransactionId xmin, CommandId combocid, enum minmax min_o
 	 */
 	if (readerComboHash == NULL)
 	{
-		HASHCTL hash_ctl;
+		HASHCTL		hash_ctl;
 
 		memset(&hash_ctl, 0, sizeof(hash_ctl));
 		hash_ctl.keysize = sizeof(readerComboCidKeyData);
@@ -374,7 +376,8 @@ getSharedComboCidEntry(TransactionId xmin, CommandId combocid, enum minmax min_o
 	reader_key.session = gp_session_id;
 	reader_key.combocid = combocid;
 
-	reader_entry = (readerComboCidEntryData *)hash_search(readerComboHash, &reader_key, HASH_FIND, &found);
+	reader_entry = (readerComboCidEntryData *)
+		hash_search(readerComboHash, &reader_key, HASH_FIND, &found);
 
 	if (reader_entry != NULL)
 	{
@@ -385,7 +388,7 @@ getSharedComboCidEntry(TransactionId xmin, CommandId combocid, enum minmax min_o
 	{
 		loadSharedComboCommandId(xmin, combocid, &cmin, &cmax);
 	}
-		
+
 	return (min_or_max == CMIN ? cmin : cmax);
 }
 
@@ -403,7 +406,7 @@ GetRealCmin(TransactionId xmin, CommandId combocid)
 		/* We're a reader */
 		return getSharedComboCidEntry(xmin, combocid, CMIN);
 	}
-	
+
 	Assert(combocid < usedComboCids);
 	return comboCids[combocid].cmin;
 }
@@ -483,7 +486,7 @@ dumpSharedComboCommandId(TransactionId xmin, CommandId cmin, CommandId cmax, Com
 	entry.combocid = combocid;
 
 	/* write our entry */
-    if (BufFileWrite(combocid_map, &entry, sizeof(entry)) != sizeof(entry))
+	if (BufFileWrite(combocid_map, &entry, sizeof(entry)) != sizeof(entry))
 	{
 		elog(ERROR, "Combocid map I/O error!");
 	}
@@ -498,9 +501,9 @@ dumpSharedComboCommandId(TransactionId xmin, CommandId cmin, CommandId cmax, Com
 void
 loadSharedComboCommandId(TransactionId xmin, CommandId combocid, CommandId *cmin, CommandId *cmax)
 {
-	bool found=false;
+	bool		found = false;
 	ComboCidEntryData entry;
-	int i;
+	int			i;
 
 	Assert(Gp_role == GP_ROLE_EXECUTE);
 	Assert(!Gp_is_writer);
@@ -533,12 +536,12 @@ loadSharedComboCommandId(TransactionId xmin, CommandId combocid, CommandId *cmin
 	}
 
 	/*
-	 * Read this entry in ... 
+	 * Read this entry in ...
 	 *
 	 * We're going to read in the entire table, caching all occurrences of
 	 * our xmin.
 	 */
-	for (i=0; i < lockHolderProcPtr->combocid_map_count; i++)
+	for (i = 0; i < lockHolderProcPtr->combocid_map_count; i++)
 	{
 		if (BufFileRead(combocid_map, &entry, sizeof(ComboCidEntryData)) != sizeof(ComboCidEntryData))
 		{
@@ -547,7 +550,7 @@ loadSharedComboCommandId(TransactionId xmin, CommandId combocid, CommandId *cmin
 
 		if (entry.key.xmin == xmin)
 		{
-			bool cached=false;
+			bool		cached = false;
 			readerComboCidKeyData reader_key;
 			readerComboCidEntryData *reader_entry;
 
@@ -557,7 +560,8 @@ loadSharedComboCommandId(TransactionId xmin, CommandId combocid, CommandId *cmin
 			reader_key.session = gp_session_id;
 			reader_key.combocid = entry.combocid;
 
-			reader_entry = (readerComboCidEntryData *)hash_search(readerComboHash, &reader_key, HASH_ENTER, &cached);
+			reader_entry = (readerComboCidEntryData *)
+				hash_search(readerComboHash, &reader_key, HASH_ENTER, &cached);
 
 			if (!cached)
 			{

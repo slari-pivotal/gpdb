@@ -375,14 +375,14 @@ errstart(int elevel, const char *filename, int lineno,
 			}
 		}
 
-         /*
-		  * If the error level is ERROR or more, errfinish is not going to
-		  * return to caller; therefore, if there is any stacked error already
-		  * in progress it will be lost.  This is more or less okay, except we
-		  * do not want to have a FATAL or PANIC error downgraded because the
-		  * reporting process was interrupted by a lower-grade error.  So check
-		  * the stack and make sure we panic if panic is warranted.
-		  */
+		/*
+		 * If the error level is ERROR or more, errfinish is not going to
+		 * return to caller; therefore, if there is any stacked error already
+		 * in progress it will be lost.  This is more or less okay, except we
+		 * do not want to have a FATAL or PANIC error downgraded because the
+		 * reporting process was interrupted by a lower-grade error.  So check
+		 * the stack and make sure we panic if panic is warranted.
+		 */
 		for (i = 0; i <= errordata_stack_depth; i++)
 			elevel = Max(elevel, errordata[i].elevel);
 	}

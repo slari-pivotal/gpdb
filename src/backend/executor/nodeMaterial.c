@@ -79,8 +79,8 @@ ExecMaterial(MaterialState *node)
 	 */
 	if (ts == NULL && (ma->share_type != SHARE_NOTSHARED || node->randomAccess))
 	{
-		/* 
-		 * For cross slice material, we only run ExecMaterial on DriverSlice 
+		/*
+		 * For cross slice material, we only run ExecMaterial on DriverSlice
 		 */
 		if(ma->share_type == SHARE_MATERIAL_XSLICE)
 		{
@@ -91,8 +91,8 @@ ExecMaterial(MaterialState *node)
 				elog(LOG, "Material Exec on CrossSlice, current slice %d", currentSliceId);
 				return NULL;
 			}
-			
-			shareinput_create_bufname_prefix(rwfile_prefix, sizeof(rwfile_prefix), ma->share_id); 
+
+			shareinput_create_bufname_prefix(rwfile_prefix, sizeof(rwfile_prefix), ma->share_id);
 			elog(LOG, "Material node creates shareinput rwfile %s", rwfile_prefix);
 
 			ts = ntuplestore_create_readerwriter(rwfile_prefix, PlanStateOperatorMemKB((PlanState *)node) * 1024, true);
@@ -149,7 +149,7 @@ ExecMaterial(MaterialState *node)
 					PlanStateOperatorMemKB((PlanState *) node) * 1024);
 			tsa = ntuplestore_create_accessor(ts, isWriter);
 		}
-		
+
 		Assert(ts && tsa);
 		node->ts_state->matstore = ts;
 		node->ts_pos = (void *) tsa;
@@ -201,11 +201,11 @@ ExecMaterial(MaterialState *node)
 
 				break;
 			}
-			Gpmon_M_Incr(GpmonPktFromMaterialState(node), GPMON_QEXEC_M_ROWSIN); 
+			Gpmon_M_Incr(GpmonPktFromMaterialState(node), GPMON_QEXEC_M_ROWSIN);
 
 			ntuplestore_acc_put_tupleslot(tsa, outerslot);
 		}
-	
+
 		CheckSendPlanStateGpmonPkt(&node->ss.ps);
 
 		if(forward)
@@ -217,11 +217,11 @@ ExecMaterial(MaterialState *node)
 		if(ma->share_type != SHARE_NOTSHARED)
 		{
 			Assert(ma->share_type == SHARE_MATERIAL || ma->share_type == SHARE_MATERIAL_XSLICE);
-			/* 
+			/*
 			 * if the material is shared across slice, notify consumers that
 			 * it is ready.
 			 */
-			if(ma->share_type == SHARE_MATERIAL_XSLICE) 
+			if (ma->share_type == SHARE_MATERIAL_XSLICE)
 			{
 				if (ma->driver_slice == currentSliceId)
 				{
@@ -248,14 +248,14 @@ ExecMaterial(MaterialState *node)
 	else
 		eof_tuplestore = (tsa == NULL) || !ntuplestore_acc_advance(tsa, -1);
 
-	if(tsa!=NULL && ntuplestore_acc_tell(tsa, NULL))
+	if(tsa != NULL && ntuplestore_acc_tell(tsa, NULL))
 	{
 		ntuplestore_acc_current_tupleslot(tsa, slot);
-          	if (!TupIsNull(slot))
-                {
-          		Gpmon_M_Incr_Rows_Out(GpmonPktFromMaterialState(node)); 
-                        CheckSendPlanStateGpmonPkt(&node->ss.ps);
-                }
+		if (!TupIsNull(slot))
+		{
+			Gpmon_M_Incr_Rows_Out(GpmonPktFromMaterialState(node));
+			CheckSendPlanStateGpmonPkt(&node->ss.ps);
+		}
 		return slot;
 	}
 
@@ -298,7 +298,7 @@ ExecMaterial(MaterialState *node)
 			return NULL;
 		}
 
-		Gpmon_M_Incr(GpmonPktFromMaterialState(node), GPMON_QEXEC_M_ROWSIN); 
+		Gpmon_M_Incr(GpmonPktFromMaterialState(node), GPMON_QEXEC_M_ROWSIN);
 
 		if (tsa)
 			ntuplestore_acc_put_tupleslot(tsa, outerslot);
@@ -307,9 +307,9 @@ ExecMaterial(MaterialState *node)
 		 * And return a copy of the tuple.	(XXX couldn't we just return the
 		 * outerslot?)
 		 */
-          	Gpmon_M_Incr_Rows_Out(GpmonPktFromMaterialState(node)); 
-                CheckSendPlanStateGpmonPkt(&node->ss.ps);
-		return ExecCopySlot(slot, outerslot); 
+		Gpmon_M_Incr_Rows_Out(GpmonPktFromMaterialState(node));
+		CheckSendPlanStateGpmonPkt(&node->ss.ps);
+		return ExecCopySlot(slot, outerslot);
 	}
 
 
@@ -435,9 +435,9 @@ ExecInitMaterial(Material *node, EState *estate, int eflags)
 	/*
 	 * If share input, need to register with range table entry
 	 */
-	if(node->share_type != SHARE_NOTSHARED) 
+	if (node->share_type != SHARE_NOTSHARED)
 	{
-		ShareNodeEntry *snEntry = ExecGetShareNodeEntry(estate, node->share_id, true); 
+		ShareNodeEntry *snEntry = ExecGetShareNodeEntry(estate, node->share_id, true);
 		snEntry->sharePlan = (Node *) node;
 		snEntry->shareState = (Node *) matstate;
 	}
@@ -461,7 +461,7 @@ ExecCountSlotsMaterial(Material *node)
  *      Called before ExecutorEnd to finish EXPLAIN ANALYZE reporting.
  *
  * Some of the cleanup that ordinarily would occur during ExecEndMaterial()
- * needs to be done earlier in order to report statistics to EXPLAIN ANALYZE.  
+ * needs to be done earlier in order to report statistics to EXPLAIN ANALYZE.
  * Note that ExecEndMaterial() will be called again during ExecutorEnd().
  */
 void
@@ -625,10 +625,9 @@ ExecChildRescan(MaterialState *node, ExprContext *exprCtxt)
 		Gpmon_M_Incr(GpmonPktFromMaterialState(node), GPMON_MATERIAL_RESCAN);
 		CheckSendPlanStateGpmonPkt(&node->ss.ps);
 		ExecReScan(((PlanState *) node)->lefttree, exprCtxt);
-  	}
+	}
 	node->eof_underlying = false;
 }
-
 
 /* ----------------------------------------------------------------
  *		ExecMaterialReScan
@@ -687,13 +686,11 @@ void
 initGpmonPktForMaterial(Plan *planNode, gpmon_packet_t *gpmon_pkt, EState *estate)
 {
 	Assert(planNode != NULL && gpmon_pkt != NULL && IsA(planNode, Material));
-	
-	{
-		Assert(GPMON_MATERIAL_TOTAL <= (int)GPMON_QEXEC_M_COUNT);
-		InitPlanNodeGpmonPkt(planNode, gpmon_pkt, estate, PMNT_Materialize,
-							 (int64)planNode->plan_rows,
-							 NULL);
-	}
+	Assert(GPMON_MATERIAL_TOTAL <= (int) GPMON_QEXEC_M_COUNT);
+
+	InitPlanNodeGpmonPkt(planNode, gpmon_pkt, estate, PMNT_Materialize,
+						 (int64)planNode->plan_rows,
+						 NULL);
 }
 
 void
@@ -735,7 +732,7 @@ ExecEagerFreeMaterial(MaterialState *node)
 			return;
 		}
 		Assert(node->ts_pos);
-		
+
 		DestroyTupleStore(node);
 	}
 }

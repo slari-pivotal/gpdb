@@ -27,7 +27,6 @@
 #include "utils/builtins.h"
 #include "utils/date.h"
 #include "utils/nabstime.h"
-#include "utils/timestamp.h"
 
 /*
  * gcc's -ffast-math switch breaks routines that expect exact results from
@@ -317,7 +316,7 @@ date2timestamptz(DateADT dateVal)
 	tm->tm_hour = 0;
 	tm->tm_min = 0;
 	tm->tm_sec = 0;
-		tz = DetermineTimeZoneOffset(tm, session_timezone);
+	tz = DetermineTimeZoneOffset(tm, session_timezone);
 
 #ifdef HAVE_INT64_TIMESTAMP
 	result = dateVal * USECS_PER_DAY + tz * USECS_PER_SEC;
@@ -1203,19 +1202,6 @@ time_cmp(PG_FUNCTION_ARGS)
 		PG_RETURN_INT32(1);
 	PG_RETURN_INT32(0);
 }
-
-#if  0
-Datum
-time_hash(PG_FUNCTION_ARGS)
-{
-	/* We can use either hashint8 or hashfloat8 directly */
-#ifdef HAVE_INT64_TIMESTAMP
-	return hashint8(fcinfo);
-#else
-	return hashfloat8(fcinfo);
-#endif
-}
-#endif
 
 Datum
 time_larger(PG_FUNCTION_ARGS)
@@ -2643,9 +2629,10 @@ timetz_zone(PG_FUNCTION_ARGS)
 		if (tzp)
 		{
 			/* Get the offset-from-GMT that is valid today for the zone */
-			pg_time_t	now = (pg_time_t) time(NULL);
+			pg_time_t	now;
 			struct pg_tm *tm;
 
+			now = time(NULL);
 			tm = pg_localtime(&now, tzp);
 			tz = -tm->tm_gmtoff;
 		}
