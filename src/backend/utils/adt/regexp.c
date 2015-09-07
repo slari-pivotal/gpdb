@@ -191,8 +191,7 @@ RE_compile_and_cache(text *text_re, int cflags)
 		/* XXX should we pg_regfree here? */
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_REGULAR_EXPRESSION),
-				 errmsg("invalid regular expression: %s", errMsg),
-						 errOmitLocation(true)));
+				 errmsg("invalid regular expression: %s", errMsg)));
 	}
 
 	/*
@@ -271,8 +270,7 @@ RE_wchar_execute(regex_t *re, pg_wchar *data, int data_len,
 		pg_regerror(regexec_result, re, errMsg, sizeof(errMsg));
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_REGULAR_EXPRESSION),
-				 errmsg("regular expression failed: %s", errMsg),
-						 errOmitLocation(true)));
+				 errmsg("regular expression failed: %s", errMsg)));
 	}
 
 	return (regexec_result == REG_OKAY);
@@ -434,8 +432,7 @@ parse_re_flags(pg_re_flags *flags, text *opts)
 					ereport(ERROR,
 							(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 							 errmsg("invalid regexp option: \"%c\"",
-									opt_p[i]),
-											 errOmitLocation(true)));
+									opt_p[i])));
 					break;
 			}
 		}
@@ -708,8 +705,7 @@ similar_escape(PG_FUNCTION_ARGS)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_ESCAPE_SEQUENCE),
 					 errmsg("invalid escape string"),
-				  errhint("Escape string must be empty or one character."),
-							 errOmitLocation(true)));
+				  errhint("Escape string must be empty or one character.")));
 	}
 
 	/*----------
@@ -891,8 +887,7 @@ setup_regexp_matches(text *orig_str, text *pattern, text *flags,
 		if (re_flags.glob)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("regexp_split does not support the global option"),
-						 errOmitLocation(true)));
+				 errmsg("regexp_split does not support the global option")));
 		/* but we find all the matches anyway */
 		re_flags.glob = true;
 	}

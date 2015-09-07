@@ -272,8 +272,7 @@ heap_create(const char *relname,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 				 errmsg("permission denied to create \"%s.%s\"",
 						get_namespace_name(relnamespace), relname),
-		errdetail("System catalog modifications are currently disallowed."),
-				   errOmitLocation(true)));
+		errdetail("System catalog modifications are currently disallowed.")));
 
 	/*
 	 * Decide if we need storage or not, and handle a couple other special
@@ -523,8 +522,7 @@ CheckAttributeNamesTypes(TupleDesc tupdesc, char relkind)
 				ereport(ERROR,
 						(errcode(ERRCODE_DUPLICATE_COLUMN),
 						 errmsg("column name \"%s\" is duplicated",
-								NameStr(tupdesc->attrs[j]->attname)),
-										   errOmitLocation(true)));
+								NameStr(tupdesc->attrs[j]->attname))));
 		}
 	}
 
@@ -563,8 +561,7 @@ CheckAttributeType(const char *attname, Oid atttypid)
 			ereport(WARNING,
 					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					 errmsg("column \"%s\" has type \"unknown\"", attname),
-					 errdetail("Proceeding with relation creation anyway."),
-							   errOmitLocation(true)));
+					 errdetail("Proceeding with relation creation anyway.")));
 		else if (att_typtype == 'p')
 		{
 			/* Special hack for pg_statistic: allow ANYARRAY during initdb */
@@ -572,8 +569,7 @@ CheckAttributeType(const char *attname, Oid atttypid)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 						 errmsg("column \"%s\" has pseudo-type %s",
-								attname, format_type_be(atttypid)),
-										   errOmitLocation(true)));
+								attname, format_type_be(atttypid))));
 		}
 	}
 }
@@ -1412,16 +1408,14 @@ heap_create_with_catalog(const char *relname,
 					 errmsg(
 							 "OIDS=TRUE is not allowed on tables that "
 							 "use column-oriented storage. Use OIDS=FALSE"
-							 ),
-					 errOmitLocation(true)));
+							 )));
 		else
 			ereport(NOTICE,
 					(errmsg(
 							 "OIDS=TRUE is not recommended for user-created "
 							 "tables. Use OIDS=FALSE to prevent wrap-around "
 							 "of the OID counter"
-							 ),
-					 errOmitLocation(true)));
+							 )));
 	}
 
 	CheckAttributeNamesTypes(tupdesc, relkind);
@@ -1429,8 +1423,7 @@ heap_create_with_catalog(const char *relname,
 	if (get_relname_relid(relname, relnamespace))
 		ereport(ERROR,
 				(errcode(ERRCODE_DUPLICATE_TABLE),
-				 errmsg("relation \"%s\" already exists", relname),
-						   errOmitLocation(true)));
+				 errmsg("relation \"%s\" already exists", relname)));
 
 	/*
 	 * Allocate an OID for the relation, unless we were told what to use.
@@ -2676,8 +2669,7 @@ AddRelationConstraints(Relation rel,
 				ereport(ERROR,
 						(errcode(ERRCODE_DUPLICATE_OBJECT),
 						 errmsg("constraint \"%s\" for relation \"%s\" already exists",
-								ccname, RelationGetRelationName(rel)),
-								errOmitLocation(true)));
+								ccname, RelationGetRelationName(rel))));
 
 			/* Check against other new constraints */
 			/* Needed because we don't do CommandCounterIncrement in loop */
@@ -2687,8 +2679,7 @@ AddRelationConstraints(Relation rel,
 					ereport(ERROR,
 							(errcode(ERRCODE_DUPLICATE_OBJECT),
 							 errmsg("check constraint \"%s\" already exists",
-									ccname),
-									errOmitLocation(true)));
+									ccname)));
 			}
 		}
 		else
@@ -2780,25 +2771,22 @@ cookConstraint (ParseState 	*pstate,
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
 		errmsg("only table \"%s\" can be referenced in check constraint",
-			   relname), errOmitLocation(true)));
+			   relname)));
 	/*
 	 * No subplans or aggregates, either...
 	 */
 	if (pstate->p_hasSubLinks)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("cannot use subquery in check constraint"),
-						   errOmitLocation(true)));
+				 errmsg("cannot use subquery in check constraint")));
 	if (pstate->p_hasAggs)
 		ereport(ERROR,
 				(errcode(ERRCODE_GROUPING_ERROR),
-		   errmsg("cannot use aggregate function in check constraint"),
-				   errOmitLocation(true)));
+		   errmsg("cannot use aggregate function in check constraint")));
 	if (pstate->p_hasWindFuncs)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-		   errmsg("cannot use window function in check constraint"),
-		   errOmitLocation(true)));
+		   errmsg("cannot use window function in check constraint")));
 
 	return expr;
 }
@@ -2898,8 +2886,7 @@ cookDefault(ParseState *pstate,
 	if (expression_returns_set(expr))
 		ereport(ERROR,
 				(errcode(ERRCODE_DATATYPE_MISMATCH),
-				 errmsg("default expression must not return a set"),
-						   errOmitLocation(true)));
+				 errmsg("default expression must not return a set")));
 
 	/*
 	 * No subplans or aggregates, either...
@@ -2907,18 +2894,15 @@ cookDefault(ParseState *pstate,
 	if (pstate->p_hasSubLinks)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("cannot use subquery in default expression"),
-						   errOmitLocation(true)));
+				 errmsg("cannot use subquery in default expression")));
 	if (pstate->p_hasAggs)
 		ereport(ERROR,
 				(errcode(ERRCODE_GROUPING_ERROR),
-			 errmsg("cannot use aggregate function in default expression"),
-					   errOmitLocation(true)));
+			 errmsg("cannot use aggregate function in default expression")));
 	if (pstate->p_hasWindFuncs)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-			 errmsg("cannot use window function in default expression"),
-					   errOmitLocation(true)));
+			 errmsg("cannot use window function in default expression")));
 	/*
 	 * Coerce the expression to the correct type and typmod, if given. This
 	 * should match the parser's processing of non-defaulted expressions ---
@@ -2941,8 +2925,7 @@ cookDefault(ParseState *pstate,
 							attname,
 							format_type_be(atttypid),
 							format_type_be(type_id)),
-			   errhint("You will need to rewrite or cast the expression."),
-					   errOmitLocation(true)));
+			   errhint("You will need to rewrite or cast the expression.")));
 	}
 
 	return expr;
@@ -3243,8 +3226,7 @@ heap_truncate_check_FKs(List *relations, bool tempTables)
 							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 							 errmsg("unsupported ON COMMIT and foreign key combination"),
 							 errdetail("Table \"%s\" references \"%s\", but they do not have the same ON COMMIT setting.",
-									   relname2, relname),
-											   errOmitLocation(true)));
+									   relname2, relname)));
 				else
 					ereport(ERROR,
 							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
@@ -3253,8 +3235,7 @@ heap_truncate_check_FKs(List *relations, bool tempTables)
 									   relname2, relname),
 						   errhint("Truncate table \"%s\" at the same time, "
 								   "or use TRUNCATE ... CASCADE.",
-								   relname2),
-										   errOmitLocation(true)));
+								   relname2)));
 			}
 		}
 	}

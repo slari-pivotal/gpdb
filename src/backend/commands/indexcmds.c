@@ -204,14 +204,12 @@ DefineIndex(RangeVar *heapRelation,
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_TABLE),
 					 errmsg("relation \"%s.%s\" does not exist",
-							heapRelation->schemaname, heapRelation->relname),
-					 errOmitLocation(true)));
+							heapRelation->schemaname, heapRelation->relname)));
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_TABLE),
 					 errmsg("relation \"%s\" does not exist",
-							heapRelation->relname),
-					 errOmitLocation(true)));
+							heapRelation->relname)));
 		PG_RE_THROW();
 	}
 	PG_END_TRY();		
@@ -230,8 +228,7 @@ DefineIndex(RangeVar *heapRelation,
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				 errmsg("\"%s\" is not a table",
-						heapRelation->relname),
-				 errOmitLocation(true)));
+						heapRelation->relname)));
 
 	/*
 	 * Don't try to CREATE INDEX on temp tables of other backends.
@@ -239,8 +236,7 @@ DefineIndex(RangeVar *heapRelation,
 	if (isOtherTempNamespace(namespaceId))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("cannot create indexes on temporary tables of other sessions"),
-				 errOmitLocation(true)));
+				 errmsg("cannot create indexes on temporary tables of other sessions")));
 
 	/*
 	 * Verify we (still) have CREATE rights in the rel's namespace.
@@ -272,8 +268,7 @@ DefineIndex(RangeVar *heapRelation,
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("tablespace \"%s\" does not exist",
-							tableSpaceName),
-					 errOmitLocation(true)));
+							tableSpaceName)));
 	}
 	else
 	{
@@ -898,18 +893,15 @@ CheckPredicate(Expr *predicate)
 	if (contain_subplans((Node *) predicate))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("cannot use subquery in index predicate"),
-						   errOmitLocation(true)));
+				 errmsg("cannot use subquery in index predicate")));
 	if (contain_agg_clause((Node *) predicate))
 		ereport(ERROR,
 				(errcode(ERRCODE_GROUPING_ERROR),
-				 errmsg("cannot use aggregate in index predicate"),
-						   errOmitLocation(true)));
+				 errmsg("cannot use aggregate in index predicate")));
 	if (checkExprHasWindFuncs((Node *)predicate))
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("cannot use window function in index predicate"),
-						   errOmitLocation(true)));
+				 errmsg("cannot use window function in index predicate")));
 	/*
 	 * A predicate using mutable functions is probably wrong, for the same
 	 * reasons that we don't allow an index expression to use one.
@@ -917,8 +909,7 @@ CheckPredicate(Expr *predicate)
 	if (contain_mutable_functions((Node *) predicate))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-		   errmsg("functions in index predicate must be marked IMMUTABLE"),
-				   errOmitLocation(true)));
+		   errmsg("functions in index predicate must be marked IMMUTABLE")));
 }
 
 static void

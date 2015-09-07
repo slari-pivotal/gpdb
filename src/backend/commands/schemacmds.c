@@ -262,8 +262,7 @@ RemoveSchema_internal(const char *schemaName, DropBehavior behavior,
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_SCHEMA),
-					 errmsg("schema \"%s\" does not exist", schemaName),
-					 errOmitLocation(true)));
+					 errmsg("schema \"%s\" does not exist", schemaName)));
 		}
 		if (!is_internal && Gp_role != GP_ROLE_EXECUTE)
 		{

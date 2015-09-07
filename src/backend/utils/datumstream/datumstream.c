@@ -194,8 +194,7 @@ datumstreamread_getlarge(DatumStreamRead * acc, Datum *datum, bool *null)
 					ereport(LOG,
 							(errmsg("Datum stream block read is returning large variable-length object "
 									"(length %d)",
-									len),
-							 errOmitLocation(true)));
+									len)));
 				}
 
 				*datum = PointerGetDatum(acc->buffer_beginp);

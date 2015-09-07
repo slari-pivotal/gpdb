@@ -1209,8 +1209,7 @@ create_externalscan_plan(PlannerInfo *root, Path *best_path,
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				errmsg("it is not possible to read from a WRITABLE external table."),
-				errhint("Create the table as READABLE instead"),
-						 errOmitLocation(true)));
+				errhint("Create the table as READABLE instead")));
 
 
 	if(rel->rejectlimit != -1)
@@ -1230,8 +1229,7 @@ create_externalscan_plan(PlannerInfo *root, Path *best_path,
 				(errcode(ERRCODE_GP_FEATURE_NOT_CONFIGURED), /* any better errcode? */
 				errmsg("Using external tables with OS level commands "
 					   "(EXECUTE clause) is disabled"),
-				errhint("To enable set gp_external_enable_exec=on"),
-						 errOmitLocation(true)));
+				errhint("To enable set gp_external_enable_exec=on")));
 
 	/* 
 	 * take a peek at the first URI so we know which protocol we'll deal with 
@@ -1353,8 +1351,7 @@ create_externalscan_plan(PlannerInfo *root, Path *best_path,
 								(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 								 errmsg("Could not assign a segment database for \"%s\". "
 										"There are more external files than primary segment "
-										"databases on host \"%s\"", uri_str, uri->hostname),
-												 errOmitLocation(true)));
+										"databases on host \"%s\"", uri_str, uri->hostname)));
 					}
 					else
 					{
@@ -1362,8 +1359,7 @@ create_externalscan_plan(PlannerInfo *root, Path *best_path,
 								(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 								 errmsg("Could not assign a segment database for \"%s\". "
 										"There isn't a valid primary segment database "
-										"on host \"%s\"", uri_str, uri->hostname),
-												 errOmitLocation(true)));
+										"on host \"%s\"", uri_str, uri->hostname)));
 					}
 				}
 				else /* HTTP */
@@ -1372,8 +1368,7 @@ create_externalscan_plan(PlannerInfo *root, Path *best_path,
 							(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 							 errmsg("Could not assign a segment database for \"%s\". "
 									"There are more URIs than total primary segment "
-									"databases", uri_str),
-											 errOmitLocation(true)));
+									"databases", uri_str)));
 				}
 			}		
 		}
@@ -1450,8 +1445,7 @@ create_externalscan_plan(PlannerInfo *root, Path *best_path,
 					 errmsg("There are more external files (URLs) than primary "
 							"segments that can read them. Found %d URLs and "
 							"%d primary segments.",list_length(rel->locationlist),
-							num_segs_participating),
-									 errOmitLocation(true)));
+							num_segs_participating)));
 
 		/* 
 		 * restart location list and fill in new list until number of
@@ -1666,8 +1660,7 @@ create_externalscan_plan(PlannerInfo *root, Path *best_path,
 						 errmsg("Could not assign a segment database for "
 								"command \"%s\". No valid primary segment was "
 								"found in the requested host name \"%s\" ",
-								command, hostname),
-										 errOmitLocation(true)));
+								command, hostname)));
 		}
 		else if(strncmp(on_clause, "SEGMENT_ID:", strlen("SEGMENT_ID:")) == 0)
 		{
@@ -1693,8 +1686,7 @@ create_externalscan_plan(PlannerInfo *root, Path *best_path,
 						 errmsg("Could not assign a segment database for "
 								"command \"%s\". The requested segment id "
 								"%d is not a valid primary segment or doesn't "
-								"exist in the database", command, target_segid),
-										 errOmitLocation(true)));
+								"exist in the database", command, target_segid)));
 		}
 		else if(strncmp(on_clause, "TOTAL_SEGS:", strlen("TOTAL_SEGS:")) == 0)
 		{

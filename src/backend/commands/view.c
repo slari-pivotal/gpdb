@@ -182,8 +182,7 @@ DefineVirtualRelation(const RangeVar *relation, List *tlist, bool replace, Oid v
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					 errmsg("\"%s\" is not a view",
-							RelationGetRelationName(rel)),
-									   errOmitLocation(true)));
+							RelationGetRelationName(rel))));
 
 		if (!pg_class_ownercheck(viewOid, GetUserId()))
 			aclcheck_error(ACLCHECK_NOT_OWNER, ACL_KIND_CLASS,
@@ -268,13 +267,11 @@ checkViewTupleDesc(TupleDesc newdesc, TupleDesc olddesc)
 	if (!gp_upgrade_mode && newdesc->natts != olddesc->natts)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-				 errmsg("cannot change number of columns in view"),
-						   errOmitLocation(true)));
+				 errmsg("cannot change number of columns in view")));
 	if (gp_upgrade_mode && newdesc->natts < olddesc->natts)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-				 errmsg("cannot reduce the number of columns in view"),
-						   errOmitLocation(true)));
+				 errmsg("cannot reduce the number of columns in view")));
 
 	/* we can ignore tdhasoid */
 
@@ -287,23 +284,20 @@ checkViewTupleDesc(TupleDesc newdesc, TupleDesc olddesc)
 		if (newattr->attisdropped != oldattr->attisdropped)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					 errmsg("cannot change number of columns in view"),
-							   errOmitLocation(true)));
+					 errmsg("cannot change number of columns in view")));
 
 		if (strcmp(NameStr(newattr->attname), NameStr(oldattr->attname)) != 0)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					 errmsg("cannot change name of view column \"%s\"",
-							NameStr(oldattr->attname)),
-									   errOmitLocation(true)));
+							NameStr(oldattr->attname))));
 		/* XXX would it be safe to allow atttypmod to change?  Not sure */
 		if (newattr->atttypid != oldattr->atttypid ||
 			newattr->atttypmod != oldattr->atttypmod)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					 errmsg("cannot change data type of view column \"%s\"",
-							NameStr(oldattr->attname)),
-									   errOmitLocation(true)));
+							NameStr(oldattr->attname))));
 		/* We can ignore the remaining attributes of an attribute... */
 	}
 
@@ -465,8 +459,7 @@ DefineView(ViewStmt *stmt)
 			if (Gp_role != GP_ROLE_EXECUTE)
 			ereport(NOTICE,
 					(errmsg("view \"%s\" will be a temporary view",
-							view->relname),
-									   errOmitLocation(true)));
+							view->relname)));
 	}
 
 	/*

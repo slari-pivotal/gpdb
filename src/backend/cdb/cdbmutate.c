@@ -292,8 +292,7 @@ apply_motion(PlannerInfo *root, Plan *plan, Query *query)
 					ereport(NOTICE,
 						(errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 						 errmsg("Using default RANDOM distribution since no distribution was specified."),
-						 errhint("Consider including the 'DISTRIBUTED BY' clause to determine the distribution of rows."),
-						 errOmitLocation(true)));
+						 errhint("Consider including the 'DISTRIBUTED BY' clause to determine the distribution of rows.")));
 				}
 				else
 				{
@@ -415,8 +414,7 @@ apply_motion(PlannerInfo *root, Plan *plan, Query *query)
 									    "named '%s' as the Greenplum Database data distribution key for this "
 									    "table. ", columns),
 							     errhint("The 'DISTRIBUTED BY' clause determines the distribution of data."
-							     		 " Make sure column(s) chosen are the optimal data distribution key to minimize skew."),
-							     errOmitLocation(true)));
+							     		 " Make sure column(s) chosen are the optimal data distribution key to minimize skew.")));
 					}
 				}
 				
@@ -709,8 +707,7 @@ apply_motion(PlannerInfo *root, Plan *plan, Query *query)
 					doesUpdateAffectPartitionCols(root, plan,query))
 				{
 					ereport(ERROR, (errcode(ERRCODE_CDB_FEATURE_NOT_YET),
-									errmsg("Cannot parallelize an UPDATE statement that updates the distribution columns"),
-									errOmitLocation(true)));
+									errmsg("Cannot parallelize an UPDATE statement that updates the distribution columns")));
 				}
 				
 				if (IsA(plan, Append))

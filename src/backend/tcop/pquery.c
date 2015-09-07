@@ -965,8 +965,7 @@ PortalSetResultFormat(Portal portal, int nFormats, int16 *formats)
 			ereport(ERROR,
 					(errcode(ERRCODE_PROTOCOL_VIOLATION),
 					 errmsg("bind message has %d result formats but query has %d columns",
-							nFormats, natts),
-									   errOmitLocation(true)));
+							nFormats, natts)));
 		memcpy(portal->formats, formats, natts * sizeof(int16));
 	}
 	else if (nFormats > 0)
@@ -1040,8 +1039,7 @@ PortalRun(Portal portal, int64 count, bool isTopLevel,
 	if (PortalGetStatus(portal) != PORTAL_READY && PortalGetStatus(portal) != PORTAL_QUEUE)
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
-				 errmsg("portal \"%s\" cannot be run", portal->name),
-						   errOmitLocation(true)));
+				 errmsg("portal \"%s\" cannot be run", portal->name)));
 
 	PortalSetStatus(portal, PORTAL_ACTIVE);
 
@@ -1283,8 +1281,7 @@ PortalRunSelect(Portal portal,
 			ereport(ERROR,
 					(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 					 errmsg("cursor can only scan forward"),
-					 errhint("Declare it with SCROLL option to enable backward scan."),
-							   errOmitLocation(true)));
+					 errhint("Declare it with SCROLL option to enable backward scan.")));
 
 		if (portal->atStart || count <= 0)
 			direction = NoMovementScanDirection;
@@ -1812,8 +1809,7 @@ DoPortalRunFetch(Portal portal,
 				/* until we enable backward scan - bail out here */
 				ereport(ERROR,
 						(errcode(ERRCODE_GP_FEATURE_NOT_YET),
-						 errmsg("backward scan is not supported in this version of Greenplum Database"),
-								   errOmitLocation(true)));
+						 errmsg("backward scan is not supported in this version of Greenplum Database")));
 			}
 			/* fall out of switch to share code with FETCH_BACKWARD */
 			break;
@@ -1828,8 +1824,7 @@ DoPortalRunFetch(Portal portal,
 				/* until we enable backward scan - bail out here */
 				ereport(ERROR,
 						(errcode(ERRCODE_GP_FEATURE_NOT_YET),
-						 errmsg("backward scan is not supported in this version of Greenplum Database"),
-								   errOmitLocation(true)));
+						 errmsg("backward scan is not supported in this version of Greenplum Database")));
 			}
 			/* fall out of switch to share code with FETCH_FORWARD */
 			break;
@@ -1851,8 +1846,7 @@ DoPortalRunFetch(Portal portal,
 					if(portal->portalPos > 0)
 						ereport(ERROR,
 								(errcode(ERRCODE_GP_FEATURE_NOT_YET),
-								 errmsg("backward scan is not supported in this version of Greenplum Database"),
-										   errOmitLocation(true)));
+								 errmsg("backward scan is not supported in this version of Greenplum Database")));
 					
 					DoPortalRewind(portal);
 					if (count > 1)
@@ -1887,8 +1881,7 @@ DoPortalRunFetch(Portal portal,
 				/* until we enable backward scan - bail out here */
 				ereport(ERROR,
 						(errcode(ERRCODE_GP_FEATURE_NOT_YET),
-						 errmsg("backward scan is not supported in this version of Greenplum Database"),
-								   errOmitLocation(true)));
+						 errmsg("backward scan is not supported in this version of Greenplum Database")));
 				
 				PortalRunSelect(portal, true, FETCH_ALL, None_Receiver);
 				if (count < -1)
@@ -1902,8 +1895,7 @@ DoPortalRunFetch(Portal portal,
 				/* until we enable backward scan - bail out here */
 				ereport(ERROR,
 						(errcode(ERRCODE_GP_FEATURE_NOT_YET),
-						 errmsg("backward scan is not supported in this version of Greenplum Database"),
-								   errOmitLocation(true)));
+						 errmsg("backward scan is not supported in this version of Greenplum Database")));
 				
 				/* Rewind to start, return zero rows */
 				DoPortalRewind(portal);
@@ -1998,8 +1990,7 @@ DoPortalRunFetch(Portal portal,
 		/* until we enable backward scan - bail out here */
 		ereport(ERROR,
 				(errcode(ERRCODE_GP_FEATURE_NOT_YET),
-				 errmsg("backward scan is not supported in this version of Greenplum Database"),
-						   errOmitLocation(true)));
+				 errmsg("backward scan is not supported in this version of Greenplum Database")));
 		
 		if (result > 0 && !portal->atEnd)
 			result--;

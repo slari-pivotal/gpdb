@@ -291,8 +291,7 @@ path_encode(bool closed, int npts, Point *pt)
 	if ((size - 2) / npts != (P_MAXLEN + 3))
 		ereport(ERROR,
 				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
-				 errmsg("too many points requested"),
-						 errOmitLocation(true)));
+				 errmsg("too many points requested")));
 
 	result = palloc(size);
 
@@ -315,8 +314,7 @@ path_encode(bool closed, int npts, Point *pt)
 		if (!pair_encode(pt->x, pt->y, cp))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					 errmsg("could not format \"path\" value"),
-							 errOmitLocation(true)));
+					 errmsg("could not format \"path\" value")));
 
 		cp += strlen(cp);
 		*cp++ = RDELIM;
@@ -391,8 +389,7 @@ box_in(PG_FUNCTION_ARGS)
 		|| (*s != '\0'))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type box: \"%s\"", str),
-						 errOmitLocation(true)));
+				 errmsg("invalid input syntax for type box: \"%s\"", str)));
 
 	/* reorder corners if necessary... */
 	if (box->high.x < box->low.x)
@@ -1404,8 +1401,7 @@ path_in(PG_FUNCTION_ARGS)
 	if ((npts = pair_count(str, ',')) <= 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type path: \"%s\"", str),
-						 errOmitLocation(true)));
+				 errmsg("invalid input syntax for type path: \"%s\"", str)));
 
 	s = str;
 	while (isspace((unsigned char) *s))
@@ -1428,8 +1424,7 @@ path_in(PG_FUNCTION_ARGS)
 	&& (!((depth == 0) && (*s == '\0'))) && !((depth >= 1) && (*s == RDELIM)))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type path: \"%s\"", str),
-						 errOmitLocation(true)));
+				 errmsg("invalid input syntax for type path: \"%s\"", str)));
 
 	path->closed = (!isopen);
 	/* prevent instability in unused pad bytes */
@@ -1468,8 +1463,7 @@ path_recv(PG_FUNCTION_ARGS)
 	if (npts <= 0 || npts >= (int32) ((INT_MAX - offsetof(PATH, p[0])) / sizeof(Point)))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_BINARY_REPRESENTATION),
-			 errmsg("invalid number of points in external \"path\" value"),
-					 errOmitLocation(true)));
+			 errmsg("invalid number of points in external \"path\" value")));
 
 	size = offsetof(PATH, p[0]) +sizeof(path->p[0]) * npts;
 	path = (PATH *) palloc(size);
@@ -1810,8 +1804,7 @@ point_in(PG_FUNCTION_ARGS)
 	if (!pair_decode(str, &x, &y, &s) || (*s != '\0'))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type point: \"%s\"", str),
-						 errOmitLocation(true)));
+				 errmsg("invalid input syntax for type point: \"%s\"", str)));
 
 	point = (Point *) palloc(sizeof(Point));
 
@@ -2039,8 +2032,7 @@ lseg_in(PG_FUNCTION_ARGS)
 		|| (*s != '\0'))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type lseg: \"%s\"", str),
-						 errOmitLocation(true)));
+				 errmsg("invalid input syntax for type lseg: \"%s\"", str)));
 
 #ifdef NOT_USED
 	lseg->m = point_sl(&lseg->p[0], &lseg->p[1]);
@@ -3446,8 +3438,7 @@ poly_in(PG_FUNCTION_ARGS)
 	if ((npts = pair_count(str, ',')) <= 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			  errmsg("invalid input syntax for type polygon: \"%s\"", str),
-						 errOmitLocation(true)));
+			  errmsg("invalid input syntax for type polygon: \"%s\"", str)));
 
 	size = offsetof(POLYGON, p[0]) +sizeof(poly->p[0]) * npts;
 	poly = (POLYGON *) palloc0(size);	/* zero any holes */
@@ -3459,8 +3450,7 @@ poly_in(PG_FUNCTION_ARGS)
 		|| (*s != '\0'))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			  errmsg("invalid input syntax for type polygon: \"%s\"", str),
-						 errOmitLocation(true)));
+			  errmsg("invalid input syntax for type polygon: \"%s\"", str)));
 
 	make_bound_box(poly);
 
@@ -3500,8 +3490,7 @@ poly_recv(PG_FUNCTION_ARGS)
 	if (npts <= 0 || npts >= (int32) ((INT_MAX - offsetof(POLYGON, p[0])) / sizeof(Point)))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_BINARY_REPRESENTATION),
-		  errmsg("invalid number of points in external \"polygon\" value"),
-					 errOmitLocation(true)));
+		  errmsg("invalid number of points in external \"polygon\" value")));
 
 	size = offsetof(POLYGON, p[0]) +sizeof(poly->p[0]) * npts;
 	poly = (POLYGON *) palloc0(size);	/* zero any holes */
@@ -3968,8 +3957,7 @@ point_div(PG_FUNCTION_ARGS)
 	if (div == 0.0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 
 	result->x = ((p1->x * p2->x) + (p1->y * p2->y)) / div;
 	result->y = ((p2->x * p1->y) - (p2->y * p1->x)) / div;
@@ -4090,8 +4078,7 @@ path_add(PG_FUNCTION_ARGS)
 		size <= base_size)
 		ereport(ERROR,
 				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
-				 errmsg("too many points requested"),
-						 errOmitLocation(true)));
+				 errmsg("too many points requested")));
 
 	result = (PATH *) palloc(size);
 
@@ -4218,8 +4205,7 @@ path_poly(PG_FUNCTION_ARGS)
 	if (!path->closed)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("open path cannot be converted to polygon"),
-						 errOmitLocation(true)));
+				 errmsg("open path cannot be converted to polygon")));
 
 	size = offsetof(POLYGON, p[0]) +sizeof(poly->p[0]) * path->npts;
 	poly = (POLYGON *) palloc(size);
@@ -4386,8 +4372,7 @@ circle_in(PG_FUNCTION_ARGS)
 	if (!pair_decode(s, &circle->center.x, &circle->center.y, &s))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			   errmsg("invalid input syntax for type circle: \"%s\"", str),
-						 errOmitLocation(true)));
+			   errmsg("invalid input syntax for type circle: \"%s\"", str)));
 
 	if (*s == DELIM)
 		s++;
@@ -4397,8 +4382,7 @@ circle_in(PG_FUNCTION_ARGS)
 	if ((!single_decode(s, &circle->radius, &s)) || (circle->radius < 0))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			   errmsg("invalid input syntax for type circle: \"%s\"", str),
-						 errOmitLocation(true)));
+			   errmsg("invalid input syntax for type circle: \"%s\"", str)));
 
 	while (depth > 0)
 	{
@@ -4413,15 +4397,13 @@ circle_in(PG_FUNCTION_ARGS)
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			   errmsg("invalid input syntax for type circle: \"%s\"", str),
-						 errOmitLocation(true)));
+			   errmsg("invalid input syntax for type circle: \"%s\"", str)));
 	}
 
 	if (*s != '\0')
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-			   errmsg("invalid input syntax for type circle: \"%s\"", str),
-						 errOmitLocation(true)));
+			   errmsg("invalid input syntax for type circle: \"%s\"", str)));
 
 	PG_RETURN_CIRCLE_P(circle);
 }
@@ -4443,8 +4425,7 @@ circle_out(PG_FUNCTION_ARGS)
 	if (!pair_encode(circle->center.x, circle->center.y, cp))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("could not format \"circle\" value"),
-						 errOmitLocation(true)));
+				 errmsg("could not format \"circle\" value")));
 
 	cp += strlen(cp);
 	*cp++ = RDELIM;
@@ -4452,8 +4433,7 @@ circle_out(PG_FUNCTION_ARGS)
 	if (!single_encode(circle->radius, cp))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("could not format \"circle\" value"),
-						 errOmitLocation(true)));
+				 errmsg("could not format \"circle\" value")));
 
 	cp += strlen(cp);
 	*cp++ = RDELIM_C;
@@ -4480,8 +4460,7 @@ circle_recv(PG_FUNCTION_ARGS)
 	if (circle->radius < 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_BINARY_REPRESENTATION),
-				 errmsg("invalid radius in external \"circle\" value"),
-						 errOmitLocation(true)));
+				 errmsg("invalid radius in external \"circle\" value")));
 
 	PG_RETURN_CIRCLE_P(circle);
 }
@@ -5002,14 +4981,12 @@ circle_poly(PG_FUNCTION_ARGS)
 	if (FPzero(circle->radius))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			   errmsg("cannot convert circle with radius zero to polygon"),
-						 errOmitLocation(true)));
+			   errmsg("cannot convert circle with radius zero to polygon")));
 
 	if (npts < 2)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("must request at least 2 points"),
-						 errOmitLocation(true)));
+				 errmsg("must request at least 2 points")));
 
 	base_size = sizeof(poly->p[0]) * npts;
 	size = offsetof(POLYGON, p[0]) +base_size;
@@ -5018,8 +4995,7 @@ circle_poly(PG_FUNCTION_ARGS)
 	if (base_size / npts != sizeof(poly->p[0]) || size <= base_size)
 		ereport(ERROR,
 				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
-				 errmsg("too many points requested"),
-						 errOmitLocation(true)));
+				 errmsg("too many points requested")));
 
 	poly = (POLYGON *) palloc0(size);	/* zero any holes */
 	SET_VARSIZE(poly, size);
@@ -5054,8 +5030,7 @@ poly_circle(PG_FUNCTION_ARGS)
 	if (poly->npts < 2)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot convert empty polygon to circle"),
-						 errOmitLocation(true)));
+				 errmsg("cannot convert empty polygon to circle")));
 
 	circle = (CIRCLE *) palloc(sizeof(CIRCLE));
 
@@ -5078,8 +5053,7 @@ poly_circle(PG_FUNCTION_ARGS)
 	if (FPzero(circle->radius))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot convert empty polygon to circle"),
-						 errOmitLocation(true)));
+				 errmsg("cannot convert empty polygon to circle")));
 
 	PG_RETURN_CIRCLE_P(circle);
 }

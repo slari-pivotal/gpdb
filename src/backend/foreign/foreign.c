@@ -91,8 +91,7 @@ GetForeignDataWrapperOidByName(const char *fdwname, bool missing_ok)
 	if (!OidIsValid(fdwId) && !missing_ok)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-			 errmsg("foreign-data wrapper \"%s\" does not exist", fdwname),
-					 errOmitLocation(true)));
+			 errmsg("foreign-data wrapper \"%s\" does not exist", fdwname)));
 
 	return fdwId;
 }
@@ -185,8 +184,7 @@ GetForeignServerOidByName(const char *srvname, bool missing_ok)
 	if (!OidIsValid(serverid) && !missing_ok)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("server \"%s\" does not exist", srvname),
-						 errOmitLocation(true)));
+				 errmsg("server \"%s\" does not exist", srvname)));
 
 	return serverid;
 }
@@ -240,8 +238,7 @@ GetUserMapping(Oid userid, Oid serverid)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("user mapping not found for \"%s\"",
-						MappingUserName(userid)),
-								 errOmitLocation(true)));
+						MappingUserName(userid))));
 
 	umform = (Form_pg_user_mapping) GETSTRUCT(tp);
 
@@ -281,14 +278,12 @@ deflist_to_tuplestore(ReturnSetInfo *rsinfo, List *options)
 	if (rsinfo == NULL || !IsA(rsinfo, ReturnSetInfo))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("set-valued function called in context that cannot accept a set"),
-						 errOmitLocation(true)));
+				 errmsg("set-valued function called in context that cannot accept a set")));
 	if (!(rsinfo->allowedModes & SFRM_Materialize) ||
 		rsinfo->expectedDesc == NULL)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("materialize mode required, but it is not allowed in this context"),
-						 errOmitLocation(true)));
+				 errmsg("materialize mode required, but it is not allowed in this context")));
 
 	per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
 	oldcontext = MemoryContextSwitchTo(per_query_ctx);
@@ -423,8 +418,7 @@ gpdb_fdw_validator(PG_FUNCTION_ARGS)
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
 					 errmsg("invalid option \"%s\"", def->defname),
-				errhint("Valid options in this context are: %s", buf.data),
-						 errOmitLocation(true)));
+				errhint("Valid options in this context are: %s", buf.data)));
 
 			PG_RETURN_BOOL(false);
 		}

@@ -366,8 +366,7 @@ cq_list *cql1(const char* caqlStr, const char* filename, int lineno, ...)
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg(
 					 "Invalid or undefined CaQL string"
-				 ),
-				 errOmitLocation(true)));
+				 )));
 
 	pcql->bGood	   = true;
 	pcql->caqlStr  = caqlStr;
@@ -466,16 +465,14 @@ cq_list *cql1(const char* caqlStr, const char* filename, int lineno, ...)
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg(
 					 "bind parameter out of range (1-5)"
-				 ),
-				 errOmitLocation(true)));
+				 )));
 	else
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg(
 					 "missing bind parameter before :%d, or out of sequence", 
 					 badbind
-				 ),
-				 errOmitLocation(true)));
+				 )));
 
 	return (NULL);
 } /* end cql1 */

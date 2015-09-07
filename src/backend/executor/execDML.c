@@ -305,8 +305,7 @@ checkPartitionUpdate(EState *estate, TupleTableSlot *partslot,
 				 errmsg("moving tuple from partition \"%s\" to "
 						"partition \"%s\" not supported",
 						get_rel_name(RelationGetRelid(resultRelationDesc)),
-						get_rel_name(targetid)),
-				 errOmitLocation(true)));
+						get_rel_name(targetid))));
 }
 
 /* ----------------------------------------------------------------
@@ -383,8 +382,7 @@ ExecInsert(TupleTableSlot *slot,
 						 errmsg("Trying to insert row into wrong partition"),
 						 errdetail("Expected partition: %s, provided partition: %s",
 							resultRelInfo->ri_RelationDesc->rd_rel->relname.data,
-							estate->es_result_relation_info->ri_RelationDesc->rd_rel->relname.data),
-							errOmitLocation(true)));
+							estate->es_result_relation_info->ri_RelationDesc->rd_rel->relname.data)));
 			}
 		}
 		estate->es_result_relation_info = resultRelInfo;
@@ -419,8 +417,7 @@ ExecInsert(TupleTableSlot *slot,
 		{
 			ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				errmsg("Insert into external partitions not supported."),
-				errOmitLocation(true)));			
+				errmsg("Insert into external partitions not supported.")));			
 			return;
 		}
 		else
@@ -655,8 +652,7 @@ ExecDelete(ItemPointer tupleid,
 	{
 		ereport(ERROR,
 			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			errmsg("Delete from external partitions not supported."),
-			errOmitLocation(true)));			
+			errmsg("Delete from external partitions not supported.")));			
 		return;
 	}
 	/*
@@ -683,13 +679,11 @@ ldelete:;
 			if (!isUpdate)
 				ereport(ERROR,
 					   (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						errmsg("Deletes on append-only tables are not supported in serializable transactions."),
-						errOmitLocation(true)));		
+						errmsg("Deletes on append-only tables are not supported in serializable transactions.")));		
 			else
 				ereport(ERROR,
 					   (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						errmsg("Updates on append-only tables are not supported in serializable transactions."),
-						errOmitLocation(true)));	
+						errmsg("Updates on append-only tables are not supported in serializable transactions.")));	
 		}
 
 		if (resultRelInfo->ri_deleteDesc == NULL)
@@ -708,13 +702,11 @@ ldelete:;
 			if (!isUpdate)
 				ereport(ERROR,
 					   (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						errmsg("Deletes on append-only tables are not supported in serializable transactions."),
-						errOmitLocation(true)));		
+						errmsg("Deletes on append-only tables are not supported in serializable transactions.")));		
 			else
 				ereport(ERROR,
 					   (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						errmsg("Updates on append-only tables are not supported in serializable transactions."),
-						errOmitLocation(true)));		
+						errmsg("Updates on append-only tables are not supported in serializable transactions.")));		
 		}
 
 		if (resultRelInfo->ri_deleteDesc == NULL)
@@ -897,8 +889,7 @@ ExecUpdate(TupleTableSlot *slot,
 		{
 			ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				errmsg("Update external partitions not supported."),
-				errOmitLocation(true)));			
+				errmsg("Update external partitions not supported.")));			
 			return;
 		}
 		else
@@ -989,8 +980,7 @@ lreplace:;
 			{
 				ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-					errmsg("Updates on append-only tables are not supported in serializable transactions."),
-					errOmitLocation(true)));			
+					errmsg("Updates on append-only tables are not supported in serializable transactions.")));			
 			}
 
 			if (resultRelInfo->ri_updateDesc == NULL)
@@ -1008,8 +998,7 @@ lreplace:;
 			{
 				ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-					errmsg("Updates on append-only tables are not supported in serializable transactions."),
-					errOmitLocation(true)));			
+					errmsg("Updates on append-only tables are not supported in serializable transactions.")));			
 			}
 
 			if (resultRelInfo->ri_updateDesc == NULL)

@@ -777,8 +777,7 @@ ErrorIfRejectLimitReached(CdbSreh *cdbsreh, CdbCopy *cdbCopy)
 					 errmsg("All %d first rows in this segment were rejected. "
 							"Aborting operation regardless of REJECT LIMIT value. "
 							"Last error was: %s",
-							gp_initial_bad_row_limit, cdbsreh->errmsg),
-					 errOmitLocation(true)));
+							gp_initial_bad_row_limit, cdbsreh->errmsg)));
 			break;
 		case REJECT_UNPARSABLE_CSV:
 			/* the special "csv un-parsable" case */
@@ -788,8 +787,7 @@ ErrorIfRejectLimitReached(CdbSreh *cdbsreh, CdbCopy *cdbCopy)
 							"ability to parse data rows. This usually means "
 							"several unescaped embedded QUOTE characters. "
 							"Data is not parsable. Last error was: %s",
-							cdbsreh->errmsg),
-					 errOmitLocation(true)));
+							cdbsreh->errmsg)));
 			break;
 		case REJECT_LIMIT_REACHED:
 			/* the normal case */
@@ -797,8 +795,7 @@ ErrorIfRejectLimitReached(CdbSreh *cdbsreh, CdbCopy *cdbCopy)
 					(errcode(ERRCODE_T_R_GP_REJECT_LIMIT_REACHED),
 					 errmsg("Segment reject limit reached. Aborting operation. "
 							"Last error was: %s",
-							cdbsreh->errmsg),
-					 errOmitLocation(true)));
+							cdbsreh->errmsg)));
 			break;
 		default:
 			elog(ERROR, "unknown reject code %d", code);

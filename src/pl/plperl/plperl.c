@@ -1868,8 +1868,7 @@ plperl_create_sub(plperl_proc_desc *prodesc, char *s, Oid fn_oid)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
 						errmsg("creation of Perl function failed"),
-						errdetail("%s", strip_trailing_ws(SvPV(ERRSV, PL_na))),
-						errOmitLocation(true)));
+						errdetail("%s", strip_trailing_ws(SvPV(ERRSV, PL_na)))));
 
 	if (!subref)
 		ereport(ERROR,
@@ -2171,8 +2170,7 @@ plperl_func_handler(PG_FUNCTION_ARGS)
 			ereport(ERROR,
 					(errcode(ERRCODE_DATATYPE_MISMATCH),
 					 errmsg("composite-returning PL/Perl function "
-							 "must return reference to hash"),
-							 errOmitLocation(true)));
+							 "must return reference to hash")));
 		}
 
 		/* XXX should cache the attinmeta data instead of recomputing */
@@ -2181,8 +2179,7 @@ plperl_func_handler(PG_FUNCTION_ARGS)
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 					 errmsg("function returning record called in context "
-							 "that cannot accept type record"),
-							 errOmitLocation(true)));
+							 "that cannot accept type record")));
 		}
 
 		retval = plperl_hash_to_datum(perlret, td);

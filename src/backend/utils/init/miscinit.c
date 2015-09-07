@@ -444,8 +444,7 @@ InitializeSessionUserId(const char *rolename)
 	if (!HeapTupleIsValid(roleTup))
 		ereport(FATAL,
 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
-				 errmsg("role \"%s\" does not exist", rolename),
-				 errOmitLocation(true), errSendAlert(false)));
+				 errmsg("role \"%s\" does not exist", rolename), errSendAlert(false)));
 
 	rform = (Form_pg_authid) GETSTRUCT(roleTup);
 	roleid = HeapTupleGetOid(roleTup);
@@ -476,8 +475,7 @@ InitializeSessionUserId(const char *rolename)
 			ereport(FATAL,
 					(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
 					 errmsg("role \"%s\" is not permitted to log in",
-							rolename),
-					 errOmitLocation(true)));
+							rolename)));
 
 		/*
 		 * Check connection limit for this role.
@@ -499,8 +497,7 @@ InitializeSessionUserId(const char *rolename)
 			ereport(FATAL,
 					(errcode(ERRCODE_TOO_MANY_CONNECTIONS),
 					 errmsg("too many connections for role \"%s\"",
-							rolename),
-					 errOmitLocation(true)));
+							rolename)));
 	}
 
 	/*
@@ -566,8 +563,7 @@ SetSessionAuthorization(Oid userid, bool is_superuser)
 		!AuthenticatedUserIsSuperuser)
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 errmsg("permission denied to set session authorization"),
-				 errOmitLocation(true)));
+				 errmsg("permission denied to set session authorization")));
 
 	SetSessionUserId(userid, is_superuser);
 
@@ -891,8 +887,7 @@ CreateLockFile(const char *filename, bool amPostmaster,
 						  	errhint("Is another postgres (PID %d) using socket file \"%s\"?",
 								  	(int) other_pid, refName) :
 						  	errhint("Is another postmaster (PID %d) using socket file \"%s\"?",
-								  	(int) other_pid, refName)),
-						  	errOmitLocation(true)));
+								  	(int) other_pid, refName))));
 #if defined(__linux__)
 				}
 #endif

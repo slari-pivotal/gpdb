@@ -483,16 +483,14 @@ CreateRole(CreateRoleStmt *stmt)
 			ereport(ERROR,
 					(errcode(ERRCODE_RESERVED_NAME),
 					 errmsg("resource queue name \"%s\" is reserved",
-							resqueue),
-									   errOmitLocation(true)));
+							resqueue)));
 
 		queueid = GetResQueueIdForName(resqueue);
 		if (queueid == InvalidOid)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("resource queue \"%s\" does not exist",
-							resqueue),
-									   errOmitLocation(true)));
+							resqueue)));
 
 		new_record[Anum_pg_authid_rolresqueue - 1] = 
 		ObjectIdGetDatum(queueid);
@@ -505,8 +503,7 @@ CreateRole(CreateRoleStmt *stmt)
 			if (!issuper)
 				ereport(WARNING,
 						(errmsg("resource scheduling is disabled"),
-						 errhint("To enable set resource_scheduler=on"),
-						 errOmitLocation(true)));
+						 errhint("To enable set resource_scheduler=on")));
 		}
 	}
 	else
@@ -684,8 +681,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dpassword)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dpassword = defel;
 			if (strcmp(defel->defname, "encryptedPassword") == 0)
 				encrypt_password = true;
@@ -699,8 +695,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dissuper)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dissuper = defel;
 			if (1 == numopts) alter_subtype = "SUPERUSER";
 		}
@@ -709,8 +704,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dinherit)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dinherit = defel;
 			if (1 == numopts) alter_subtype = "INHERIT";
 		}
@@ -719,8 +713,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dcreaterole)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dcreaterole = defel;
 			if (1 == numopts) alter_subtype = "CREATEROLE";
 		}
@@ -729,8 +722,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dcreatedb)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dcreatedb = defel;
 			if (1 == numopts) alter_subtype = "CREATEDB";
 		}
@@ -739,8 +731,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dcanlogin)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dcanlogin = defel;
 			if (1 == numopts) alter_subtype = "LOGIN";
 		}
@@ -749,8 +740,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dconnlimit)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dconnlimit = defel;
 			if (1 == numopts) alter_subtype = "CONNECTION LIMIT";
 		}
@@ -760,8 +750,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (drolemembers)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			drolemembers = defel;
 			if (1 == numopts) alter_subtype = "ROLE";
 		}
@@ -770,8 +759,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dvalidUntil)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dvalidUntil = defel;
 			if (1 == numopts) alter_subtype = "VALID UNTIL";
 		}
@@ -780,8 +768,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (dresqueue)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-								   errOmitLocation(true)));
+						 errmsg("conflicting or redundant options")));
 			dresqueue = defel;
 			if (1 == numopts) alter_subtype = "RESOURCE QUEUE";
 		}
@@ -900,8 +887,7 @@ AlterRole(AlterRoleStmt *stmt)
 			  roleid == GetUserId()))
 			ereport(ERROR,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-					 errmsg("permission denied"),
-							   errOmitLocation(true)));
+					 errmsg("permission denied")));
 	}
 
 	/*
@@ -1075,8 +1061,7 @@ AlterRole(AlterRoleStmt *stmt)
 				ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("resource queue \"%s\" does not exist",
-							resqueue),
-									   errOmitLocation(true)));
+							resqueue)));
 			new_record[Anum_pg_authid_rolresqueue - 1] = 
 			ObjectIdGetDatum(GetResQueueIdForName(resqueue));
 		}
@@ -1090,8 +1075,7 @@ AlterRole(AlterRoleStmt *stmt)
 			if (!bWas_super)
 				ereport(WARNING,
 						(errmsg("resource scheduling is disabled"),
-						 errhint("To enable set resource_scheduler=on"),
-						 errOmitLocation(true)));
+						 errhint("To enable set resource_scheduler=on")));
 		}
 	}
 
@@ -1223,8 +1207,7 @@ AlterRoleSet(AlterRoleSetStmt *stmt)
 	if (!HeapTupleIsValid(oldtuple))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("role \"%s\" does not exist", stmt->role),
-						   errOmitLocation(true)));
+				 errmsg("role \"%s\" does not exist", stmt->role)));
 
 	/*
 	 * To mess with a superuser you gotta be superuser; else you need
@@ -1235,8 +1218,7 @@ AlterRoleSet(AlterRoleSetStmt *stmt)
 		if (!superuser())
 			ereport(ERROR,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-					 errmsg("must be superuser to alter superusers"),
-							   errOmitLocation(true)));
+					 errmsg("must be superuser to alter superusers")));
 	}
 	else
 	{
@@ -1244,8 +1226,7 @@ AlterRoleSet(AlterRoleSetStmt *stmt)
 			HeapTupleGetOid(oldtuple) != GetUserId())
 			ereport(ERROR,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-					 errmsg("permission denied"),
-							   errOmitLocation(true)));
+					 errmsg("permission denied")));
 	}
 
 	memset(repl_repl, false, sizeof(repl_repl));
@@ -1342,8 +1323,7 @@ DropRole(DropRoleStmt *stmt)
 	if (!have_createrole_privilege())
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 errmsg("permission denied to drop role"),
-						   errOmitLocation(true)));
+				 errmsg("permission denied to drop role")));
 
 	/*
 	 * Scan the pg_authid relation to find the Oid of the role(s) to be
@@ -1376,15 +1356,13 @@ DropRole(DropRoleStmt *stmt)
 			{
 				ereport(ERROR,
 						(errcode(ERRCODE_UNDEFINED_OBJECT),
-						 errmsg("role \"%s\" does not exist", role),
-								   errOmitLocation(true)));
+						 errmsg("role \"%s\" does not exist", role)));
 			}
 			else
 			{
 				ereport(NOTICE,
 						(errmsg("role \"%s\" does not exist, skipping",
-								role),
-										   errOmitLocation(true)));
+								role)));
 			}
 
 			continue;
@@ -1395,18 +1373,15 @@ DropRole(DropRoleStmt *stmt)
 		if (roleid == GetUserId())
 			ereport(ERROR,
 					(errcode(ERRCODE_OBJECT_IN_USE),
-					 errmsg("current user cannot be dropped"),
-							   errOmitLocation(true)));
+					 errmsg("current user cannot be dropped")));
 		if (roleid == GetOuterUserId())
 			ereport(ERROR,
 					(errcode(ERRCODE_OBJECT_IN_USE),
-					 errmsg("current user cannot be dropped"),
-							   errOmitLocation(true)));
+					 errmsg("current user cannot be dropped")));
 		if (roleid == GetSessionUserId())
 			ereport(ERROR,
 					(errcode(ERRCODE_OBJECT_IN_USE),
-					 errmsg("session user cannot be dropped"),
-							   errOmitLocation(true)));
+					 errmsg("session user cannot be dropped")));
 
 		/*
 		 * For safety's sake, we allow createrole holders to drop ordinary
@@ -1431,8 +1406,7 @@ DropRole(DropRoleStmt *stmt)
 					(errcode(ERRCODE_DEPENDENT_OBJECTS_STILL_EXIST),
 					 errmsg("role \"%s\" cannot be dropped because some objects depend on it",
 							role),
-					 errdetail("%s", detail),
-					 errOmitLocation(true)));
+					 errdetail("%s", detail)));
 
 		/*
 		 * Remove the role from the pg_authid table
@@ -1548,8 +1522,7 @@ RenameRole(const char *oldname, const char *newname)
 	if (!HeapTupleIsValid(oldtuple))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("role \"%s\" does not exist", oldname),
-				 errOmitLocation(true)));
+				 errmsg("role \"%s\" does not exist", oldname)));
 
 	/*
 	 * XXX Client applications probably store the session user somewhere, so
@@ -1744,8 +1717,7 @@ DropOwnedObjects(DropOwnedStmt *stmt)
 		if (!has_privs_of_role(GetUserId(), roleid))
 			ereport(ERROR,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-					 errmsg("permission denied to drop objects"),
-					 errOmitLocation(true)));
+					 errmsg("permission denied to drop objects")));
 	}
 	
 	if (Gp_role == GP_ROLE_DISPATCH)
@@ -1777,8 +1749,7 @@ ReassignOwnedObjects(ReassignOwnedStmt *stmt)
 		if (!has_privs_of_role(GetUserId(), roleid))
 			ereport(ERROR,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-					 errmsg("permission denied to reassign objects"),
-					 errOmitLocation(true)));
+					 errmsg("permission denied to reassign objects")));
 	}
 
 	/* Must have privileges on the receiving side too */
@@ -1787,8 +1758,7 @@ ReassignOwnedObjects(ReassignOwnedStmt *stmt)
 	if (!has_privs_of_role(GetUserId(), newrole))
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 errmsg("permission denied to reassign objects"),
-				 errOmitLocation(true)));
+				 errmsg("permission denied to reassign objects")));
 				 
 	if (Gp_role == GP_ROLE_DISPATCH)
     {
@@ -2026,8 +1996,7 @@ static void CheckValueBelongsToKey(char *key, char *val, const char **keys, cons
 		if (strcasecmp(val, "gphdfs") == 0 && Gp_role == GP_ROLE_DISPATCH)
 			ereport(WARNING,
 					(errmsg("GRANT/REVOKE on gphdfs is deprecated"),
-					 errhint("Issue the GRANT or REVOKE on the protocol itself"),
-					 errOmitLocation(true)));
+					 errhint("Issue the GRANT or REVOKE on the protocol itself")));
 
 		if(strcasecmp(val, "gpfdist") != 0 && 
 		   strcasecmp(val, "gpfdists") != 0 &&

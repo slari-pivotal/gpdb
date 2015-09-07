@@ -72,8 +72,7 @@ ConversionCreate(const char *conname, Oid connamespace,
 	{
 		ereport(ERROR,
 				(errcode(ERRCODE_DUPLICATE_OBJECT),
-				 errmsg("conversion \"%s\" already exists", conname),
-						   errOmitLocation(true)));
+				 errmsg("conversion \"%s\" already exists", conname)));
 	}
 
 	if (def)
@@ -89,8 +88,7 @@ ConversionCreate(const char *conname, Oid connamespace,
 					(errcode(ERRCODE_DUPLICATE_OBJECT),
 					 errmsg("default conversion for %s to %s already exists",
 							pg_encoding_to_char(conforencoding),
-							pg_encoding_to_char(contoencoding)),
-									   errOmitLocation(true)));
+							pg_encoding_to_char(contoencoding))));
 	}
 
 	pcqCtx = caql_beginscan(
@@ -336,8 +334,7 @@ pg_convert_using(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("conversion \"%s\" does not exist",
-						NameListToString(parsed_name)),
-								   errOmitLocation(true)));
+						NameListToString(parsed_name))));
 
 	pcqCtx = caql_beginscan(
 			NULL,

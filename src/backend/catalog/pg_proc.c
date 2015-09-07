@@ -197,15 +197,13 @@ ProcedureCreate(const char *procedureName,
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 				 errmsg("cannot determine result data type"),
-				 errdetail("A function returning \"anyarray\" or \"anyelement\" must have at least one argument of either type."),
-						   errOmitLocation(true)));
+				 errdetail("A function returning \"anyarray\" or \"anyelement\" must have at least one argument of either type.")));
 
 	if ((returnType == INTERNALOID || internalOutParam) && !internalInParam)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 				 errmsg("unsafe use of pseudo-type \"internal\""),
-				 errdetail("A function returning \"internal\" must have at least one \"internal\" argument."),
-						   errOmitLocation(true)));
+				 errdetail("A function returning \"internal\" must have at least one \"internal\" argument.")));
 
 	/*
 	 * don't allow functions of complex types that have the same name as
@@ -219,8 +217,7 @@ ProcedureCreate(const char *procedureName,
 				(errcode(ERRCODE_DUPLICATE_COLUMN),
 				 errmsg("\"%s\" is already an attribute of type %s",
 						procedureName,
-						format_type_be(parameterTypes->values[0])),
-								   errOmitLocation(true)));
+						format_type_be(parameterTypes->values[0]))));
 
 	/*
 	 * All seems OK; prepare the data to be inserted into pg_proc.
@@ -295,8 +292,7 @@ ProcedureCreate(const char *procedureName,
 			ereport(ERROR,
 					(errcode(ERRCODE_DUPLICATE_FUNCTION),
 			errmsg("function \"%s\" already exists with same argument types",
-				   procedureName),
-						   errOmitLocation(true)));
+				   procedureName)));
 		if (!pg_proc_ownercheck(oldOid, GetUserId()))
 			aclcheck_error(ACLCHECK_NOT_OWNER, ACL_KIND_PROC,
 						   procedureName);
@@ -310,8 +306,7 @@ ProcedureCreate(const char *procedureName,
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 					 errmsg("cannot change return type of existing function"),
-					 errhint("Use DROP FUNCTION first."),
-							   errOmitLocation(true)));
+					 errhint("Use DROP FUNCTION first.")));
 
 		/*
 		 * If it returns RECORD, check for possible change of record type
@@ -334,8 +329,7 @@ ProcedureCreate(const char *procedureName,
 						(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 					errmsg("cannot change return type of existing function"),
 				errdetail("Row type defined by OUT parameters is different."),
-						 errhint("Use DROP FUNCTION first."),
-								   errOmitLocation(true)));
+						 errhint("Use DROP FUNCTION first.")));
 		}
 
 		/*
@@ -365,8 +359,7 @@ ProcedureCreate(const char *procedureName,
 				{
 					ereport(ERROR,
 							(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
-							 errmsg("cannot add DESCRIBE callback to function used in view(s)"),
-							 errOmitLocation(true)));
+							 errmsg("cannot add DESCRIBE callback to function used in view(s)")));
 				}
 			}
 			caql_endscan(pcqCtx2);
@@ -379,14 +372,12 @@ ProcedureCreate(const char *procedureName,
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 						 errmsg("function \"%s\" is an aggregate",
-								procedureName),
-										   errOmitLocation(true)));
+								procedureName)));
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 						 errmsg("function \"%s\" is not an aggregate",
-								procedureName),
-										   errOmitLocation(true)));
+								procedureName)));
 		}
 		if (oldproc->proiswin != isWin)
 		{
@@ -394,14 +385,12 @@ ProcedureCreate(const char *procedureName,
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 						 errmsg("function \"%s\" is a window function",
-								procedureName),
-										   errOmitLocation(true)));
+								procedureName)));
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 						 errmsg("function \"%s\" is not a window function",
-								procedureName),
-										   errOmitLocation(true)));
+								procedureName)));
 		}
 
 		/* do not change existing ownership or permissions, either */
@@ -546,8 +535,7 @@ fmgr_internal_validator(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_FUNCTION),
 				 errmsg("there is no built-in function named \"%s\"",
-						prosrc),
-				 errOmitLocation(true)));
+						prosrc)));
 
 	PG_RETURN_VOID();
 }

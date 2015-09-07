@@ -1003,8 +1003,7 @@ ExecutorEnd(QueryDesc *queryDesc)
 		{
 			case 1:
 			case 2:
-				ereport(LOG, (errmsg("duration to ExecutorEnd starting: %s ms", msec_str),
-						errOmitLocation(true)));
+				ereport(LOG, (errmsg("duration to ExecutorEnd starting: %s ms", msec_str)));
 				break;
 		}
 	}
@@ -1124,8 +1123,7 @@ ExecutorEnd(QueryDesc *queryDesc)
 		{
 			case 1:
 			case 2:
-				ereport(LOG, (errmsg("duration to ExecutorEnd end: %s ms", msec_str),
-						errOmitLocation(true)));
+				ereport(LOG, (errmsg("duration to ExecutorEnd end: %s ms", msec_str)));
 				break;
 		}
 	}
@@ -1568,8 +1566,7 @@ InitPlan(QueryDesc *queryDesc, int eflags)
 		{
 			case 1:
 			case 2:
-				ereport(LOG, (errmsg("duration to InitPlan start: %s ms", msec_str),
-							  errOmitLocation(true)));
+				ereport(LOG, (errmsg("duration to InitPlan start: %s ms", msec_str)));
 				break;
 			default:
 				/* do nothing */
@@ -1974,8 +1971,7 @@ InitPlan(QueryDesc *queryDesc, int eflags)
 				{
 					case 1:
 					case 2:
-						ereport(LOG, (errmsg("duration to InitPlan end: %s ms", msec_str),
-								errOmitLocation(true)));
+						ereport(LOG, (errmsg("duration to InitPlan end: %s ms", msec_str)));
 						break;
 				}
 			}
@@ -2284,8 +2280,7 @@ SendAOTupCounts(EState *estate)
 
 					if (Debug_appendonly_print_insert)
 						ereport(LOG,(errmsg("sent tupcount " INT64_FORMAT " for "
-											"relation %d", tupcount, relid),
-											errOmitLocation(true)));
+											"relation %d", tupcount, relid)));
 
 				}
 				resultRelInfo++;
@@ -2901,8 +2896,7 @@ ExecConstraints(ResultRelInfo *resultRelInfo,
 				ereport(ERROR,
 						(errcode(ERRCODE_NOT_NULL_VIOLATION),
 						 errmsg("null value in column \"%s\" violates not-null constraint",
-						NameStr(rel->rd_att->attrs[attrChk - 1]->attname)),
-						errOmitLocation(true)));
+						NameStr(rel->rd_att->attrs[attrChk - 1]->attname))));
 		}
 	}
 
@@ -2914,8 +2908,7 @@ ExecConstraints(ResultRelInfo *resultRelInfo,
 			ereport(ERROR,
 					(errcode(ERRCODE_CHECK_VIOLATION),
 					 errmsg("new row for relation \"%s\" violates check constraint \"%s\"",
-							RelationGetRelationName(rel), failed),
-					 errOmitLocation(true)));
+							RelationGetRelationName(rel), failed)));
 	}
 }
 
@@ -3606,8 +3599,7 @@ OpenIntoRel(QueryDesc *queryDesc)
 	if (intoClause->onCommit != ONCOMMIT_NOOP && !intoClause->rel->istemp)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-				 errmsg("ON COMMIT can only be used on temporary tables"),
-				 errOmitLocation(true)));
+				 errmsg("ON COMMIT can only be used on temporary tables")));
 	
 	/* MPP specific stuff */
     intoOid = intoClause->oidInfo.relOid;
@@ -4068,8 +4060,7 @@ get_part(EState *estate, Datum *values, bool *isnull, TupleDesc tupdesc)
 	if (!OidIsValid(targetid))
 		ereport(ERROR,
 				(errcode(ERRCODE_NO_PARTITION_FOR_PARTITIONING_KEY),
-				 errmsg("no partition for partitioning key"),
-				 errOmitLocation(true)));
+				 errmsg("no partition for partitioning key")));
 
 	if (estate->es_partition_state->result_partition_hash == NULL)
 	{
@@ -4476,8 +4467,7 @@ map_part_attrs(Relation base, Relation part, AttrMap **map_ptr, bool throw)
 						 errmsg("relation \"%s\" must have the same "
 								"column names and column order as \"%s\"",
 								RelationGetRelationName(part),
-								RelationGetRelationName(base)),
-						 errOmitLocation(true)));
+								RelationGetRelationName(base))));
 			is_compatible = FALSE;
 			break;
 		}
@@ -4489,8 +4479,7 @@ map_part_attrs(Relation base, Relation part, AttrMap **map_ptr, bool throw)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						 errmsg("type mismatch for attribute \"%s\"",
-								NameStr((battr->attname))),
-						 errOmitLocation(true)));
+								NameStr((battr->attname)))));
 			is_compatible = FALSE;
 			break;
 		}
@@ -4502,8 +4491,7 @@ map_part_attrs(Relation base, Relation part, AttrMap **map_ptr, bool throw)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						 errmsg("alignment mismatch for attribute \"%s\"",
-								NameStr((battr->attname))),
-						 errOmitLocation(true)));
+								NameStr((battr->attname)))));
 			is_compatible = FALSE;
 			break;
 		}
@@ -4542,8 +4530,7 @@ map_part_attrs(Relation base, Relation part, AttrMap **map_ptr, bool throw)
 							(errcode(ERRCODE_SYNTAX_ERROR),
 							 errmsg("relation \"%s\" must have the same number columns as relation \"%s\"",
 									RelationGetRelationName(part),
-									RelationGetRelationName(base)),
-							 errOmitLocation(true)));
+									RelationGetRelationName(base))));
 				is_compatible = FALSE;
 			}
 		}
@@ -4559,8 +4546,7 @@ map_part_attrs(Relation base, Relation part, AttrMap **map_ptr, bool throw)
 							(errcode(ERRCODE_SYNTAX_ERROR),
 							 errmsg("relation \"%s\" must have the same number columns as relation \"%s\"",
 									RelationGetRelationName(part),
-									RelationGetRelationName(base)),
-							 errOmitLocation(true)));
+									RelationGetRelationName(base))));
 				is_compatible = FALSE;
 			}
 		}

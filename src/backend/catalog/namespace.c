@@ -223,14 +223,12 @@ RangeVarGetRelid(const RangeVar *relation, bool failOK)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_TABLE),
 					 errmsg("relation \"%s.%s\" does not exist",
-							relation->schemaname, relation->relname),
-					 errOmitLocation(true)));
+							relation->schemaname, relation->relname)));
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_TABLE),
 					 errmsg("relation \"%s\" does not exist",
-							relation->relname),
-					 errOmitLocation(true)));
+							relation->relname)));
 	}
 	return relId;
 }
@@ -272,8 +270,7 @@ RangeVarGetCreationNamespace(const RangeVar *newRelation)
 			if (strcmp(newRelation->schemaname,namespaceName)!=0)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
-					  errmsg("temporary tables may not specify a schema name"),
-							   errOmitLocation(true)));
+					  errmsg("temporary tables may not specify a schema name")));
 		}
 		/* Initialize temp namespace if first time through */
 		if (!TempNamespaceValid(false))
@@ -302,8 +299,7 @@ RangeVarGetCreationNamespace(const RangeVar *newRelation)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_SCHEMA),
 					 errmsg("schema \"%s\" does not exist",
-							newRelation->schemaname),
-									   errOmitLocation(true)));
+							newRelation->schemaname)));
 		/* we do not check for USAGE rights here! */
 	}
 	else
@@ -320,8 +316,7 @@ RangeVarGetCreationNamespace(const RangeVar *newRelation)
 		if (!OidIsValid(namespaceId))
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_SCHEMA),
-					 errmsg("no schema has been selected to create in"),
-							   errOmitLocation(true)));
+					 errmsg("no schema has been selected to create in")));
 	}
 
 	/* Note: callers will check for CREATE rights when appropriate */
@@ -1396,8 +1391,7 @@ LookupExplicitNamespace(const char *nspname)
 	if (!OidIsValid(namespaceId))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_SCHEMA),
-				 errmsg("schema \"%s\" does not exist", nspname),
-				 errOmitLocation(true)));
+				 errmsg("schema \"%s\" does not exist", nspname)));
 
 	aclresult = pg_namespace_aclcheck(namespaceId, GetUserId(), ACL_USAGE);
 	if (aclresult != ACLCHECK_OK)
@@ -1441,8 +1435,7 @@ LookupCreationNamespace(const char *nspname)
 	if (!OidIsValid(namespaceId))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_SCHEMA),
-				 errmsg("schema \"%s\" does not exist", nspname),
-				 errOmitLocation(true)));
+				 errmsg("schema \"%s\" does not exist", nspname)));
 
 	aclresult = pg_namespace_aclcheck(namespaceId, GetUserId(), ACL_CREATE);
 	if (aclresult != ACLCHECK_OK)
@@ -1493,8 +1486,7 @@ QualifiedNameGetCreationNamespace(List *names, char **objname_p)
 		if (!OidIsValid(namespaceId))
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_SCHEMA),
-					 errmsg("schema \"%s\" does not exist", schemaname),
-				     errOmitLocation(true)));
+					 errmsg("schema \"%s\" does not exist", schemaname)));
 		/* we do not check for USAGE rights here! */
 	}
 	else
@@ -2281,8 +2273,7 @@ assign_search_path(const char *newval, bool doit, GucSource source)
 				if (Gp_role != GP_ROLE_EXECUTE)
 					ereport((source == PGC_S_TEST) ? NOTICE : ERROR,
 							(errcode(ERRCODE_UNDEFINED_SCHEMA),
-							 errmsg("schema \"%s\" does not exist", curname),
-							 errOmitLocation(true)));
+							 errmsg("schema \"%s\" does not exist", curname)));
 			}
 		}
 	}

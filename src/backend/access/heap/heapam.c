@@ -1080,16 +1080,14 @@ CdbOpenRelationRv(const RangeVar *relation, LOCKMODE reqmode, bool noWait,
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_TABLE),
 					 errmsg("relation \"%s.%s\" does not exist",
-							relation->schemaname, relation->relname),
-					 errOmitLocation(true)));
+							relation->schemaname, relation->relname)));
 		}
 		else
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_TABLE),
 					 errmsg("relation \"%s\" does not exist",
-							relation->relname),
-					 errOmitLocation(true)));
+							relation->relname)));
 		}
 	}
 
@@ -1187,16 +1185,14 @@ relation_openrv(const RangeVar *relation, LOCKMODE lockmode)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_TABLE),
 					 errmsg("relation \"%s.%s\" does not exist",
-							relation->schemaname, relation->relname),
-					 errOmitLocation(true)));
+							relation->schemaname, relation->relname)));
 		}
 		else
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_TABLE),
 					 errmsg("relation \"%s\" does not exist",
-							relation->relname),
-					 errOmitLocation(true)));
+							relation->relname)));
 		}
 	}
 

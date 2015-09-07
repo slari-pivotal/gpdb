@@ -272,14 +272,12 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					 errmsg("DISTINCT specified, but %s is not an aggregate function",
 							NameListToString(funcname)),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
         if (agg_order)
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					 errmsg("ORDER BY specified, but %s is not an ordered aggregate function",
 							NameListToString(funcname)),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 		if (agg_filter)
 		    ereport(ERROR,
@@ -287,7 +285,6 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 					 errmsg("filter clause specified, but "
 							"%s is not an aggregate function",
 							NameListToString(funcname)),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 	}
 	else if (fdresult != FUNCDETAIL_AGGREGATE)
@@ -317,7 +314,6 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 												  actual_arg_types)),
 					 errhint("Could not choose a best candidate function. "
 							 "You may need to add explicit type casts."),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 		else
 			ereport(ERROR,
@@ -327,7 +323,6 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 												  actual_arg_types)),
 					 errhint("No function matches the given name and argument types. "
 							 "You may need to add explicit type casts."),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 	}
 
@@ -343,7 +338,6 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 						NameListToString(funcname)),
 				 errhint("No function matches the given name and argument types. "
 						 "You may need to add explicit type casts."),
-				 errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 	}
 
@@ -502,16 +496,14 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 							func_signature_string(funcname, nargs, 
 												  actual_arg_types)),
 					 errhint("The filter clause is only supported over functions "
-							 "defined as STRICT."),
-									 errOmitLocation(true)));
+							 "defined as STRICT.")));
 		}
 
 		if (retset)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 					 errmsg("aggregates may not return sets"),
-					 parser_errposition(pstate, location),
-							 errOmitLocation(true)));
+					 parser_errposition(pstate, location)));
 
 		/* 
 		 * If this is not an ordered aggregate, but it was called with an
@@ -523,7 +515,6 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					 errmsg("ORDER BY specified, but %s is not an ordered aggregate function",
 							NameListToString(funcname)),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));			
 		}
 
@@ -535,7 +526,6 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 			ereport(ERROR,
 					(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 					 errmsg("ORDER BY and DISTINCT are mutually exclusive"),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 		}
         
@@ -1398,7 +1388,6 @@ unknown_attribute(ParseState *pstate, Node *relref, char *attname,
 				(errcode(ERRCODE_UNDEFINED_COLUMN),
 				 errmsg("column %s.%s does not exist",
 						rte->eref->aliasname, attname),
-				 errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 	}
 	else
@@ -1411,14 +1400,12 @@ unknown_attribute(ParseState *pstate, Node *relref, char *attname,
 					(errcode(ERRCODE_UNDEFINED_COLUMN),
 					 errmsg("column \"%s\" not found in data type %s",
 							attname, format_type_be(relTypeId)),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 		else if (relTypeId == RECORDOID)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_COLUMN),
 			   errmsg("could not identify column \"%s\" in record data type",
 					  attname),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 		else
 			ereport(ERROR,
@@ -1426,7 +1413,6 @@ unknown_attribute(ParseState *pstate, Node *relref, char *attname,
 					 errmsg("column notation .%s applied to type %s, "
 							"which is not a composite type",
 							attname, format_type_be(relTypeId)),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 	}
 }
@@ -1502,8 +1488,7 @@ LookupFuncName(List *funcname, int nargs, const Oid *argtypes, bool noError)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_FUNCTION),
 				 errmsg("function %s does not exist",
-						func_signature_string(funcname, nargs, argtypes)),
-				 errOmitLocation(true)));
+						func_signature_string(funcname, nargs, argtypes))));
 
 	return InvalidOid;
 }
@@ -1539,8 +1524,7 @@ LookupFuncNameTypeNames(List *funcname, List *argtypes, bool noError)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("type \"%s\" does not exist",
-							TypeNameToString(t)),
-				     errOmitLocation(true)));
+							TypeNameToString(t))));
 
 		args_item = lnext(args_item);
 	}
@@ -1586,8 +1570,7 @@ LookupAggNameTypeNames(List *aggname, List *argtypes, bool noError)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("type \"%s\" does not exist",
-							TypeNameToString(t)),
-					 errOmitLocation(true)));
+							TypeNameToString(t))));
 		i++;
 	}
 
@@ -1601,15 +1584,13 @@ LookupAggNameTypeNames(List *aggname, List *argtypes, bool noError)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_FUNCTION),
 					 errmsg("aggregate %s(*) does not exist",
-							NameListToString(aggname)),
-					 errOmitLocation(true)));
+							NameListToString(aggname))));
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_FUNCTION),
 					 errmsg("aggregate %s does not exist",
 							func_signature_string(aggname,
-												  argcount, argoids)),
-					 errOmitLocation(true)));
+												  argcount, argoids))));
 	}
 
 	/* Make sure it's an aggregate */

@@ -143,8 +143,7 @@ transformGenericOptions(Datum oldOptions,
 					ereport(ERROR,
 							(errcode(ERRCODE_UNDEFINED_OBJECT),
 							 errmsg("option \"%s\" not found",
-									od->defname),
-									errOmitLocation(true)));
+									od->defname)));
 				resultOptions = list_delete_cell(resultOptions, cell, prev);
 				break;
 
@@ -153,8 +152,7 @@ transformGenericOptions(Datum oldOptions,
 					ereport(ERROR,
 							(errcode(ERRCODE_UNDEFINED_OBJECT),
 							 errmsg("option \"%s\" not found",
-									od->defname),
-											errOmitLocation(true)));
+									od->defname)));
 				lfirst(cell) = od;
 				break;
 
@@ -164,8 +162,7 @@ transformGenericOptions(Datum oldOptions,
 					ereport(ERROR,
 							(errcode(ERRCODE_DUPLICATE_OBJECT),
 							 errmsg("option \"%s\" provided more than once",
-									od->defname),
-											errOmitLocation(true)));
+									od->defname)));
 				resultOptions = lappend(resultOptions, od);
 				break;
 
@@ -226,8 +223,7 @@ AlterForeignDataWrapperOwner(const char *name, Oid newOwnerId)
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 				 errmsg("permission denied to change owner of foreign-data wrapper \"%s\"",
 						name),
-				 errhint("Must be superuser to change owner of a foreign-data wrapper."),
-							errOmitLocation(true)));
+				 errhint("Must be superuser to change owner of a foreign-data wrapper.")));
 
 	/* New owner must also be a superuser */
 	if (!superuser_arg(newOwnerId))
@@ -235,8 +231,7 @@ AlterForeignDataWrapperOwner(const char *name, Oid newOwnerId)
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 				 errmsg("permission denied to change owner of foreign-data wrapper \"%s\"",
 						name),
-		errhint("The owner of a foreign-data wrapper must be a superuser."),
-				errOmitLocation(true)));
+		errhint("The owner of a foreign-data wrapper must be a superuser.")));
 
 	rel = heap_open(ForeignDataWrapperRelationId, RowExclusiveLock);
 
@@ -252,8 +247,7 @@ AlterForeignDataWrapperOwner(const char *name, Oid newOwnerId)
 	if (!HeapTupleIsValid(tup))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("foreign-data wrapper \"%s\" does not exist", name),
-							errOmitLocation(true)));
+				 errmsg("foreign-data wrapper \"%s\" does not exist", name)));
 
 	fdwId = HeapTupleGetOid(tup);
 	form = (Form_pg_foreign_data_wrapper) GETSTRUCT(tup);
@@ -303,8 +297,7 @@ AlterForeignServerOwner(const char *name, Oid newOwnerId)
 	if (!HeapTupleIsValid(tup))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("server \"%s\" does not exist", name),
-							errOmitLocation(true)));
+				 errmsg("server \"%s\" does not exist", name)));
 
 	srvId = HeapTupleGetOid(tup);
 	form = (Form_pg_foreign_server) GETSTRUCT(tup);
@@ -384,8 +377,7 @@ CreateForeignDataWrapper(CreateFdwStmt *stmt)
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 			errmsg("permission denied to create foreign-data wrapper \"%s\"",
 				   stmt->fdwname),
-			errhint("Must be superuser to create a foreign-data wrapper."),
-					errOmitLocation(true)));
+			errhint("Must be superuser to create a foreign-data wrapper.")));
 
 	/* For now the owner cannot be specified on create. Use effective user ID. */
 	ownerId = GetUserId();
@@ -397,8 +389,7 @@ CreateForeignDataWrapper(CreateFdwStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_DUPLICATE_OBJECT),
 				 errmsg("foreign-data wrapper \"%s\" already exists",
-						stmt->fdwname),
-								errOmitLocation(true)));
+						stmt->fdwname)));
 
 	/*
 	 * Insert tuple into pg_foreign_data_wrapper.
@@ -490,8 +481,7 @@ AlterForeignDataWrapper(AlterFdwStmt *stmt)
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 			 errmsg("permission denied to alter foreign-data wrapper \"%s\"",
 					stmt->fdwname),
-			 errhint("Must be superuser to alter a foreign-data wrapper."),
-						errOmitLocation(true)));
+			 errhint("Must be superuser to alter a foreign-data wrapper.")));
 
 	rel = heap_open(ForeignDataWrapperRelationId, RowExclusiveLock);
 
@@ -507,8 +497,7 @@ AlterForeignDataWrapper(AlterFdwStmt *stmt)
 	if (!HeapTupleIsValid(tp))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-		errmsg("foreign-data wrapper \"%s\" does not exist", stmt->fdwname),
-				errOmitLocation(true)));
+		errmsg("foreign-data wrapper \"%s\" does not exist", stmt->fdwname)));
 
 	fdwId = HeapTupleGetOid(tp);
 
@@ -529,8 +518,7 @@ AlterForeignDataWrapper(AlterFdwStmt *stmt)
 		if (stmt->validator)
 			ereport(WARNING,
 			 (errmsg("changing the foreign-data wrapper validator can cause "
-					 "the options for dependent objects to become invalid"),
-								errOmitLocation(true)));
+					 "the options for dependent objects to become invalid")));
 	}
 	else
 	{
@@ -601,8 +589,7 @@ RemoveForeignDataWrapper(DropFdwStmt *stmt)
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 			  errmsg("permission denied to drop foreign-data wrapper \"%s\"",
 					 stmt->fdwname),
-			  errhint("Must be superuser to drop a foreign-data wrapper."),
-						errOmitLocation(true)));
+			  errhint("Must be superuser to drop a foreign-data wrapper.")));
 
 	if (!OidIsValid(fdwId))
 	{
@@ -610,14 +597,12 @@ RemoveForeignDataWrapper(DropFdwStmt *stmt)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("foreign-data wrapper \"%s\" does not exist",
-							stmt->fdwname),
-									errOmitLocation(true)));
+							stmt->fdwname)));
 
 		/* IF EXISTS specified, just note it */
 		ereport(NOTICE,
 			  (errmsg("foreign-data wrapper \"%s\" does not exist, skipping",
-					  stmt->fdwname),
-								errOmitLocation(true)));
+					  stmt->fdwname)));
 		return;
 	}
 
@@ -684,8 +669,7 @@ CreateForeignServer(CreateForeignServerStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_DUPLICATE_OBJECT),
 				 errmsg("server \"%s\" already exists",
-						stmt->servername),
-								errOmitLocation(true)));
+						stmt->servername)));
 
 	/*
 	 * Check that the FDW exists and that we have USAGE on it. Also get the
@@ -798,8 +782,7 @@ AlterForeignServer(AlterForeignServerStmt *stmt)
 	if (!HeapTupleIsValid(tp))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("server \"%s\" does not exist", stmt->servername),
-							errOmitLocation(true)));
+				 errmsg("server \"%s\" does not exist", stmt->servername)));
 
 	srvId = HeapTupleGetOid(tp);
 	srvForm = (Form_pg_foreign_server) GETSTRUCT(tp);
@@ -889,14 +872,12 @@ RemoveForeignServer(DropForeignServerStmt *stmt)
 		if (!stmt->missing_ok)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
-				  errmsg("server \"%s\" does not exist", stmt->servername),
-							errOmitLocation(true)));
+				  errmsg("server \"%s\" does not exist", stmt->servername)));
 
 		/* IF EXISTS specified, just note it */
 		ereport(NOTICE,
 				(errmsg("server \"%s\" does not exist, skipping",
-						stmt->servername),
-								errOmitLocation(true)));
+						stmt->servername)));
 		return;
 	}
 
@@ -1013,8 +994,7 @@ CreateUserMapping(CreateUserMappingStmt *stmt)
 				(errcode(ERRCODE_DUPLICATE_OBJECT),
 				 errmsg("user mapping \"%s\" already exists for server %s",
 						MappingUserName(useId),
-						stmt->servername),
-								errOmitLocation(true)));
+						stmt->servername)));
 
 	fdw = GetForeignDataWrapper(srv->fdwid);
 
@@ -1098,8 +1078,7 @@ AlterUserMapping(AlterUserMappingStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("user mapping \"%s\" does not exist for the server",
-						MappingUserName(useId)),
-								errOmitLocation(true)));
+						MappingUserName(useId))));
 
 	user_mapping_ddl_aclcheck(useId, srv->serverid, stmt->servername);
 
@@ -1199,11 +1178,9 @@ RemoveUserMapping(DropUserMappingStmt *stmt)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("server \"%s\" does not exist",
-							stmt->servername),
-									errOmitLocation(true)));
+							stmt->servername)));
 		/* IF EXISTS, just note it */
-		ereport(NOTICE, (errmsg("server does not exist, skipping"),
-				errOmitLocation(true)));
+		ereport(NOTICE, (errmsg("server does not exist, skipping")));
 		return;
 	}
 
@@ -1221,8 +1198,7 @@ RemoveUserMapping(DropUserMappingStmt *stmt)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 				  errmsg("user mapping \"%s\" does not exist for the server",
-						 MappingUserName(useId)),
-									errOmitLocation(true)));
+						 MappingUserName(useId))));
 
 		/* IF EXISTS specified, just note it */
 		ereport(NOTICE,

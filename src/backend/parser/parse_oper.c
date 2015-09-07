@@ -117,7 +117,6 @@ LookupOperName(ParseState *pstate, List *opername, Oid oprleft, Oid oprright,
 				 errmsg("operator does not exist: %s",
 						op_signature_string(opername, oprkind,
 											oprleft, oprright)),
-				 errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 	}
 
@@ -205,8 +204,7 @@ equality_oper(Oid argtype, bool noError)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_FUNCTION),
 				 errmsg("could not identify an equality operator for type %s",
-						format_type_be(argtype)),
-				 errOmitLocation(true)));
+						format_type_be(argtype))));
 	return NULL;
 }
 
@@ -268,8 +266,7 @@ ordering_oper(Oid argtype, bool noError)
 				(errcode(ERRCODE_UNDEFINED_FUNCTION),
 				 errmsg("could not identify an ordering operator for type %s",
 						format_type_be(argtype)),
-		 errhint("Use an explicit ordering operator or modify the query."),
-		 errOmitLocation(true)));
+		 errhint("Use an explicit ordering operator or modify the query.")));
 	return NULL;
 }
 
@@ -331,8 +328,7 @@ reverse_ordering_oper(Oid argtype, bool noError)
 				(errcode(ERRCODE_UNDEFINED_FUNCTION),
 				 errmsg("could not identify an ordering operator for type %s",
 						format_type_be(argtype)),
-		 errhint("Use an explicit ordering operator or modify the query."),
-		 errOmitLocation(true)));
+		 errhint("Use an explicit ordering operator or modify the query.")));
 	return NULL;
 }
 
@@ -614,7 +610,6 @@ compatible_oper(ParseState *pstate, List *op, Oid arg1, Oid arg2,
 				(errcode(ERRCODE_UNDEFINED_FUNCTION),
 				 errmsg("operator requires run-time type coercion: %s",
 						op_signature_string(op, 'b', arg1, arg2)),
-								errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 
 	return (Operator) NULL;
@@ -805,7 +800,6 @@ op_error(ParseState *pstate, List *op, char oprkind,
 						op_signature_string(op, oprkind, arg1, arg2)),
 				 errhint("Could not choose a best candidate operator. "
 						 "You may need to add explicit type casts."),
-								 errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 	else
 		ereport(ERROR,
@@ -814,7 +808,6 @@ op_error(ParseState *pstate, List *op, char oprkind,
 						op_signature_string(op, oprkind, arg1, arg2)),
 		  errhint("No operator matches the given name and argument type(s). "
 				  "You may need to add explicit type casts."),
-						  errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 }
 
@@ -907,7 +900,6 @@ make_scalar_array_op(ParseState *pstate, List *opname,
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				   errmsg("op ANY/ALL (array) requires array on right side"),
-						   errOmitLocation(true),
 					 parser_errposition(pstate, location)));
 	}
 
@@ -938,13 +930,11 @@ make_scalar_array_op(ParseState *pstate, List *opname,
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 			 errmsg("op ANY/ALL (array) requires operator to yield boolean"),
-					 errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 	if (get_func_retset(opform->oprcode))
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 		  errmsg("op ANY/ALL (array) requires operator not to return a set"),
-				  errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 
 	/*
@@ -957,7 +947,6 @@ make_scalar_array_op(ParseState *pstate, List *opname,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("could not find array type for data type %s",
 						format_type_be(declared_arg_types[1])),
-				 errOmitLocation(true),
 				 parser_errposition(pstate, location)));
 	actual_arg_types[1] = atypeId;
 	declared_arg_types[1] = res_atypeId;

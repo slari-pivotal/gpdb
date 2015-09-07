@@ -50,8 +50,7 @@ pg_start_backup(PG_FUNCTION_ARGS)
 	ereport(NOTICE,
 			(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 			 errmsg("pg_start_backup() is not supported in Greenplum Database"),
-			 errhint("Contact support to get more information and resolve the issue"),
-			 errOmitLocation(true)));
+			 errhint("Contact support to get more information and resolve the issue")));
 
 	snprintf(startxlogstr, sizeof(startxlogstr), "%X/%X",
 			 startpoint.xlogid, startpoint.xrecoff);
@@ -82,8 +81,7 @@ pg_stop_backup(PG_FUNCTION_ARGS)
 	ereport(NOTICE,
 			(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 			 errmsg("pg_stop_backup() is not supported in Greenplum Database"),
-			 errhint("Contact support to get more information and resolve the issue"),
-			 errOmitLocation(true)));
+			 errhint("Contact support to get more information and resolve the issue")));
 
 	snprintf(stopxlogstr, sizeof(stopxlogstr), "%X/%X",
 			 stoppoint.xlogid, stoppoint.xrecoff);

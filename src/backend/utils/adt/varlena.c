@@ -220,8 +220,7 @@ byteain(PG_FUNCTION_ARGS)
 			 */
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-					 errmsg("invalid input syntax for type bytea"),
-							 errOmitLocation(true)));
+					 errmsg("invalid input syntax for type bytea")));
 		}
 	}
 
@@ -260,8 +259,7 @@ byteain(PG_FUNCTION_ARGS)
 			 */
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-					 errmsg("invalid input syntax for type bytea"),
-							 errOmitLocation(true)));
+					 errmsg("invalid input syntax for type bytea")));
 		}
 	}
 
@@ -772,8 +770,7 @@ text_substring(Datum str, int32 start, int32 length, bool length_not_specified)
 			if (E < S)
 				ereport(ERROR,
 						(errcode(ERRCODE_SUBSTRING_ERROR),
-						 errmsg("negative substring length not allowed"),
-								 errOmitLocation(true)));
+						 errmsg("negative substring length not allowed")));
 
 			/*
 			 * A zero or negative value for the end position can happen if the
@@ -837,8 +834,7 @@ text_substring(Datum str, int32 start, int32 length, bool length_not_specified)
 			if (E < S)
 				ereport(ERROR,
 						(errcode(ERRCODE_SUBSTRING_ERROR),
-						 errmsg("negative substring length not allowed"),
-								 errOmitLocation(true)));
+						 errmsg("negative substring length not allowed")));
 
 			/*
 			 * A zero or negative value for the end position can happen if the
@@ -1561,8 +1557,7 @@ bytea_substr(PG_FUNCTION_ARGS)
 		if (E < S)
 			ereport(ERROR,
 					(errcode(ERRCODE_SUBSTRING_ERROR),
-					 errmsg("negative substring length not allowed"),
-							 errOmitLocation(true)));
+					 errmsg("negative substring length not allowed")));
 
 		/*
 		 * A zero or negative value for the end position can happen if the
@@ -1661,8 +1656,7 @@ byteaGetByte(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
 				 errmsg("index %d out of valid range, 0..%d",
-						n, len0 - 1),
-								 errOmitLocation(true)));
+						n, len0 - 1)));
 
 	result = (unsigned char) p0[n];
 
@@ -1697,8 +1691,7 @@ byteaGetBit(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
 				 errmsg("index %d out of valid range, 0..%d",
-						n, len0 * 8 - 1),
-								 errOmitLocation(true)));
+						n, len0 * 8 - 1)));
 
 	byteNo = n / 8;
 	bitNo = n % 8;
@@ -1737,8 +1730,7 @@ byteaSetByte(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
 				 errmsg("index %d out of valid range, 0..%d",
-						n, len - 1),
-								 errOmitLocation(true)));
+						n, len - 1)));
 
 	/*
 	 * Make a copy of the original varlena.
@@ -1781,8 +1773,7 @@ byteaSetBit(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
 				 errmsg("index %d out of valid range, 0..%d",
-						n, len * 8 - 1),
-								 errOmitLocation(true)));
+						n, len * 8 - 1)));
 
 	byteNo = n / 8;
 	bitNo = n % 8;
@@ -1793,8 +1784,7 @@ byteaSetBit(PG_FUNCTION_ARGS)
 	if (newBit != 0 && newBit != 1)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("new bit must be 0 or 1"),
-						 errOmitLocation(true)));
+				 errmsg("new bit must be 0 or 1")));
 
 	/*
 	 * Make a copy of the original varlena.
@@ -1885,14 +1875,12 @@ textToQualifiedNameList(text *textval)
 	if (!SplitIdentifierString(rawname, '.', &namelist))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_NAME),
-				 errmsg("invalid name syntax"),
-						 errOmitLocation(true)));
+				 errmsg("invalid name syntax")));
 
 	if (namelist == NIL)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_NAME),
-				 errmsg("invalid name syntax"),
-						 errOmitLocation(true)));
+				 errmsg("invalid name syntax")));
 
 	foreach(l, namelist)
 	{
@@ -2415,8 +2403,7 @@ replace_text_regexp(text *src_text, void *regexp,
 			pg_regerror(regexec_result, re, errMsg, sizeof(errMsg));
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_REGULAR_EXPRESSION),
-					 errmsg("regular expression failed: %s", errMsg),
-							 errOmitLocation(true)));
+					 errmsg("regular expression failed: %s", errMsg)));
 		}
 
 		/*
@@ -2537,8 +2524,7 @@ split_text(PG_FUNCTION_ARGS)
 	if (fldnum < 1)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("field position must be greater than zero"),
-						 errOmitLocation(true)));
+				 errmsg("field position must be greater than zero")));
 
 	/* return empty string for empty input string */
 	if (inputstring_len < 1)

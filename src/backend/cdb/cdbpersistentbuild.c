@@ -1076,8 +1076,7 @@ gp_persistent_set_relation_bufpool_kind_all(PG_FUNCTION_ARGS)
         if (!gp_upgrade_mode)
                 ereport(ERROR,
                         (errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
-                         errmsg("function is not supported"),
-                         errOmitLocation(true)));
+                         errmsg("function is not supported")));
 
 	// UNDONE: Verify we are in some sort of single-user mode.
 

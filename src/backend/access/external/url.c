@@ -330,8 +330,7 @@ check_response(URL_FILE *file, int *rc, const char **response_string, bool do_cl
 							errmsg("connection with gpfdist failed for %s. "
 									"effective url: %s. %s\n%s", url_dup, effective_url_dup,
 									(oserrno != 0 ? connmsg : ""),
-									(curl_Error_Buffer[0] != '\0' ? curl_Error_Buffer : "")),
-						    errOmitLocation(true)));
+									(curl_Error_Buffer[0] != '\0' ? curl_Error_Buffer : ""))));
 		}
 		else if (response_code == FDIST_TIMEOUT)	// gpfdist server return timeout code
 		{
@@ -1048,8 +1047,7 @@ url_execute_fopen(char* url, char *cmd, bool forwrite, extvar_t *ev)
 		ereport(ERROR,
 				(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
 						errmsg("cannot start external table command: %m"),
-						errdetail("Command: %s", cmd),
-						errOmitLocation(true)));
+						errdetail("Command: %s", cmd)));
 
 	}
 
@@ -1732,8 +1730,7 @@ url_fclose(URL_FILE *file, bool failOnError, const char *relname)
 						(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
 								errmsg("cannot close external table %s command: %m", 
 										(relname ? relname : "")),
-								errdetail("command: %s", url),
-								errOmitLocation(true)));
+								errdetail("command: %s", url)));
 			}
 			else
 			{
@@ -1749,8 +1746,7 @@ url_fclose(URL_FILE *file, bool failOnError, const char *relname)
 								errmsg("external table %s command ended with %s",
 										(relname ? relname : ""),
 										interpretError(ret, buf, sizeof(buf)/sizeof(char), sinfo.data, sinfo.len)),
-								errdetail("Command: %s", url),
-								errOmitLocation(true)));
+								errdetail("Command: %s", url)));
 			}
 			pfree(url);
 			pfree(sinfo.data);

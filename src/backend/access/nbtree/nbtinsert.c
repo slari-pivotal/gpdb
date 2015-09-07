@@ -196,8 +196,7 @@ _bt_ao_check_unique(Relation rel, Relation aoRel, ItemPointer tid)
 				ereport(ERROR,
 						(errcode(ERRCODE_UNIQUE_VIOLATION),
 						 errmsg("duplicate key violates unique constraint \"%s\"",
-								RelationGetRelationName(rel)),
-						 errOmitLocation(true)));
+								RelationGetRelationName(rel))));
 		}
 	
 		appendonly_fetch_finish(aoFetchDesc);
@@ -227,8 +226,7 @@ _bt_ao_check_unique(Relation rel, Relation aoRel, ItemPointer tid)
 				ereport(ERROR,
 						(errcode(ERRCODE_UNIQUE_VIOLATION),
 						 errmsg("duplicate key violates unique constraint \"%s\"",
-								RelationGetRelationName(rel)),
-						 errOmitLocation(true)));
+								RelationGetRelationName(rel))));
 		}
 	
 		pfree(proj);
@@ -386,8 +384,7 @@ _bt_check_unique(Relation rel, IndexTuple itup, Relation heapRel,
 						ereport(ERROR,
 								(errcode(ERRCODE_UNIQUE_VIOLATION),
 								 errmsg("duplicate key violates unique constraint \"%s\"",
-										RelationGetRelationName(rel)),
-								 errOmitLocation(true)));
+										RelationGetRelationName(rel))));
 					}
 					else if (htup.t_data != NULL)
 					{

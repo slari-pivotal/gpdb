@@ -274,8 +274,7 @@ DemoUri *ParseDemoUri(const char *uri_str)
 	{
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("invalid demo prot URI \'%s\'", uri_str),
-				 errOmitLocation(true)));
+				 errmsg("invalid demo prot URI \'%s\'", uri_str)));
 	}
 
 	protocol_len = post_protocol - uri_str;
@@ -286,8 +285,7 @@ DemoUri *ParseDemoUri(const char *uri_str)
 	if (strlen(uri_str) <= protocol_len)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-		errmsg("invalid demo prot URI \'%s\' : missing path", uri_str),
-		errOmitLocation(true)));
+		errmsg("invalid demo prot URI \'%s\' : missing path", uri_str)));
 
 	/*
 	 * parse path

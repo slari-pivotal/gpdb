@@ -296,8 +296,7 @@ ProcessRoleGUC(void)
 	if (!HeapTupleIsValid(roleTup))
 		ereport(FATAL,
 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
-				 errmsg("role %u does not exist", roleId),
-				 errOmitLocation(true), errSendAlert(false)));
+				 errmsg("role %u does not exist", roleId), errSendAlert(false)));
 
 	/*
 	 * Set up user-specific configuration variables.  This is a good place to
@@ -676,7 +675,6 @@ InitPostgres(const char *in_dbname, Oid dboid, const char *username,
 		ereport(FATAL,
 				(errcode(ERRCODE_TOO_MANY_CONNECTIONS),
 				 errmsg("connection limit exceeded for non-superusers"),
-				 errOmitLocation(true),
 				 errSendAlert(true)));
 
 	/*
@@ -884,7 +882,6 @@ InitPostgres(const char *in_dbname, Oid dboid, const char *username,
 		ereport(FATAL,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 				 errmsg("upgrade in progress, connection refused"),
-				 errOmitLocation(true),
 				 errSendAlert(false)));
 
 	/*
@@ -897,7 +894,6 @@ InitPostgres(const char *in_dbname, Oid dboid, const char *username,
 		ereport(FATAL,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 				 errmsg("maintenance mode: connected by superuser only"),
-				 errOmitLocation(true),
 				 errSendAlert(false)));
 
 	/*

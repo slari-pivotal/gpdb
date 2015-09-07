@@ -225,7 +225,7 @@ static int send_snmp_inform_or_trap(const GpErrorData * errorData, const char * 
 	{
 		static bool firsttime = 1;
 
-		ereport(firsttime ? LOG : DEBUG1,(errmsg("SNMP inform/trap alerts are disabled"),errOmitLocation(true)));
+		ereport(firsttime ? LOG : DEBUG1,(errmsg("SNMP inform/trap alerts are disabled")));
 		firsttime = false;
 
 		return -1;
@@ -566,7 +566,7 @@ send_alert_via_email(const GpErrorData *errorData,
 	{
 		static bool firsttime = 1;
 
-		ereport(firsttime ? LOG : DEBUG1,(errmsg("e-mail alerts are disabled"),errOmitLocation(true)));
+		ereport(firsttime ? LOG : DEBUG1,(errmsg("e-mail alerts are disabled")));
 		firsttime = false;
 		return;
 	}

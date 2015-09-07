@@ -2933,7 +2933,6 @@ retry1:
 		ereport(FATAL,
 				(errcode(ERRCODE_CANNOT_CONNECT_NOW),
 				 errSendAlert(true),
-				 errOmitLocation(true),
 				 errmsg("GPAgent deprecated.")));
 	}
 
@@ -2953,35 +2952,30 @@ retry1:
 			ereport(FATAL,
 					(errcode(ERRCODE_CANNOT_CONNECT_NOW),
 					 errSendAlert(false),
-					 errOmitLocation(true),
 					 errmsg(POSTMASTER_IN_STARTUP_MSG)));
 			break;
 		case CAC_SHUTDOWN:
 			ereport(FATAL,
 					(errcode(ERRCODE_CANNOT_CONNECT_NOW),
 					 errSendAlert(false),
-					 errOmitLocation(true),
 					 errmsg("the database system is shutting down")));
 			break;
 		case CAC_RECOVERY:
 			ereport(FATAL,
 					(errcode(ERRCODE_CANNOT_CONNECT_NOW),
 					 errSendAlert(true),
-					 errOmitLocation(true),
 					 errmsg(POSTMASTER_IN_RECOVERY_MSG)));
 			break;
 		case CAC_MIRROR_OR_QUIESCENT:
 			ereport(FATAL,
 					(errcode(ERRCODE_MIRROR_OR_QUIESCENT),
 					 errSendAlert(true),
-					 errOmitLocation(true),
 					 errmsg("the database system is in mirror or uninitialized mode")));
 			break;
 		case CAC_TOOMANY:
 			ereport(FATAL,
 					(errcode(ERRCODE_TOO_MANY_CONNECTIONS),
 					 errSendAlert(true),
-					 errOmitLocation(true),
 					 errmsg("sorry, too many clients already")));
 			break;
 		case CAC_OK:
@@ -4294,8 +4288,7 @@ SIGHUP_handler(SIGNAL_ARGS)
 	if (Shutdown <= SmartShutdown)
 	{
 		ereport(LOG,
-				(errmsg("received SIGHUP, reloading configuration files"),
-				 errOmitLocation(true)));
+				(errmsg("received SIGHUP, reloading configuration files")));
 		ProcessConfigFile(PGC_SIGHUP);
 		SignalChildren(SIGHUP);
 		signal_child_if_up(StartupPID, SIGHUP);
@@ -4368,8 +4361,7 @@ pmdie(SIGNAL_ARGS)
 			Shutdown = SmartShutdown;
 			ereport(LOG,
 					(errmsg("received smart shutdown request"),
-					 errSendAlert(true),
-					 errOmitLocation(true)));
+					 errSendAlert(true)));
 
 			need_call_reaper = true;
 			if ( pmState < PM_CHILD_STOP_BEGIN)
@@ -4390,8 +4382,7 @@ pmdie(SIGNAL_ARGS)
 			Shutdown = FastShutdown;
 			ereport(LOG,
 					(errmsg("received fast shutdown request"),
-					 errSendAlert(true),
-					 errOmitLocation(true)));
+					 errSendAlert(true)));
 
 			need_call_reaper = true;
 			if ( pmState < PM_CHILD_STOP_BEGIN)
@@ -4415,8 +4406,7 @@ pmdie(SIGNAL_ARGS)
 			 */
 			ereport(LOG,
 					(errmsg("received immediate shutdown request"),
-				     errSendAlert(true),
-					 errOmitLocation(true)));
+				     errSendAlert(true)));
 
             signal_filerep_to_shutdown(SegmentStateImmediateShutdown);
 
@@ -4632,8 +4622,7 @@ static bool CommenceNormalOperations(void)
 		ereport(LOG,
 			 (errmsg("database system is ready to accept connections"),
 			  errdetail("%s",version),
-			  errSendAlert(true),
-			  errOmitLocation(true)));
+			  errSendAlert(true)));
 	}
 
 	return didServiceProcessWork;
@@ -6835,8 +6824,7 @@ BackendInitialize(Port *port)
 		ereport(LOG,
 				(errmsg("connection received: host=%s%s%s",
 						remote_host, remote_port[0] ? " port=" : "",
-						remote_port),
-				 errOmitLocation(true)));
+						remote_port)));
 
 	/*
 	 * save remote_host and remote_port in port structure
@@ -6895,8 +6883,7 @@ BackendInitialize(Port *port)
 	if (Log_connections)
 		ereport(LOG,
 				(errmsg("connection authorized: user=%s database=%s",
-						port->user_name, port->database_name),
-				 errOmitLocation(true)));
+						port->user_name, port->database_name)));
 }
 
 

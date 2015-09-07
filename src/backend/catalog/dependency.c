@@ -197,8 +197,7 @@ performDeletion(const ObjectAddress *object,
 				(errcode(ERRCODE_DEPENDENT_OBJECTS_STILL_EXIST),
 				 errmsg("cannot drop %s because other objects depend on it",
 						objDescription),
-		errhint("Use DROP ... CASCADE to drop the dependent objects too."),
-		errOmitLocation(true)));
+		errhint("Use DROP ... CASCADE to drop the dependent objects too.")));
 
 	free_object_addresses(oktodelete);
 
@@ -251,8 +250,7 @@ performDeletionWithList(const ObjectAddress *object,
 				(errcode(ERRCODE_DEPENDENT_OBJECTS_STILL_EXIST),
 				 errmsg("cannot drop %s because other objects depend on it",
 						objDescription),
-		errhint("Use DROP ... CASCADE to drop the dependent objects too."),
-		errOmitLocation(true)));
+		errhint("Use DROP ... CASCADE to drop the dependent objects too.")));
 
 	heap_close(depRel, RowExclusiveLock);
 
@@ -632,8 +630,7 @@ recursiveDeletion(const ObjectAddress *object,
 							 errmsg("cannot drop %s because %s requires it",
 									objDescription, otherObjDesc),
 							 errhint("You may drop %s instead.",
-									 otherObjDesc),
-							 errOmitLocation(true)));
+									 otherObjDesc)));
 				}
 
 				/*
@@ -709,8 +706,7 @@ recursiveDeletion(const ObjectAddress *object,
 			ereport(DEBUG1,
 					(errmsg("%s depends on %s",
 							getObjectDescription(&owningObject),
-							objDescription),
-					 errOmitLocation(true)));
+							objDescription)));
 			else
 			ereport(msglevel,
 					(errmsg("%s depends on %s",

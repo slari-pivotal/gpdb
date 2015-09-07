@@ -142,8 +142,7 @@ DropErrorMsgWrongType(char *relname, char wrongkind, char rightkind)
 	ereport(ERROR,
 			(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 			 errmsg(rentry->nota_msg, relname),
-			 (wentry->kind != '\0') ? errhint("%s", wentry->drophint_msg) : 0,
-			 errOmitLocation(true)));
+			 (wentry->kind != '\0') ? errhint("%s", wentry->drophint_msg) : 0));
 }
 
 /*
@@ -163,14 +162,12 @@ DropErrorMsgNonExistent(RangeVar *rel, char rightkind, bool missing_ok)
 	        {
 				ereport(ERROR,
 						(errcode(rentry->nonexistent_code),
-						 errmsg(rentry->nonexistent_msg, rel->relname),
-						 errOmitLocation(true)));
+						 errmsg(rentry->nonexistent_msg, rel->relname)));
 			}
             else
             {
             	if (Gp_role != GP_ROLE_EXECUTE)
-                	ereport(NOTICE, (errmsg(rentry->skipping_msg, rel->relname),
-									 errOmitLocation(true)));
+                	ereport(NOTICE, (errmsg(rentry->skipping_msg, rel->relname)));
                 break;
             }
 		}
@@ -304,8 +301,7 @@ CheckDropRelStorage(RangeVar *rel, ObjectType removeType)
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				 errmsg("\"%s\" is not %s table", rel->relname, want_type),
-				 errhint("%s", hint),
-				 errOmitLocation(true)));
+				 errhint("%s", hint)));
 	}
 	
 

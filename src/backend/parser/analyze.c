@@ -1351,14 +1351,12 @@ transformInsertRow(ParseState *pstate, List *exprlist,
 	if (list_length(exprlist) > list_length(icolumns))
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("INSERT has more expressions than target columns"),
-				 errOmitLocation(true)));
+				 errmsg("INSERT has more expressions than target columns")));
 	if (stmtcols != NIL &&
 		list_length(exprlist) < list_length(icolumns))
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("INSERT has more target columns than expressions"),
-				 errOmitLocation(true)));
+				 errmsg("INSERT has more target columns than expressions")));
 
 	/*
 	 * Prepare columns for assignment to target table.
@@ -1668,8 +1666,7 @@ validateColumnStorageEncodingClauses(List *stenc, CreateStmt *stmt)
 				ereport(ERROR,
 						(errcode(ERRCODE_DUPLICATE_COLUMN),
 						 errmsg("column \"%s\" duplicated",
-								colname),
-						 errOmitLocation(true)));
+								colname)));
 				
 			}
 			ce->count = 0;
@@ -2953,8 +2950,7 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 			ereport(NOTICE,
 				(errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 				 errmsg("Using default RANDOM distribution since no distribution was specified."),
-				 errhint("Consider including the 'DISTRIBUTED BY' clause to determine the distribution of rows."),
-				 errOmitLocation(true)));
+				 errhint("Consider including the 'DISTRIBUTED BY' clause to determine the distribution of rows.")));
 		}
 	}
 	else if (distributedBy == NIL)
@@ -3026,8 +3022,7 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 										"named '%s' from parent table as the Greenplum Database data distribution key for this "
 										"table. ", inhname),
 								 errhint("The 'DISTRIBUTED BY' clause determines the distribution of data."
-								 		 " Make sure column(s) chosen are the optimal data distribution key to minimize skew."),
-								 errOmitLocation(true)));
+								 		 " Make sure column(s) chosen are the optimal data distribution key to minimize skew.")));
 						found = true;
 						break;
 					}
@@ -3066,8 +3061,7 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 									"named '%s' as the Greenplum Database data distribution key for this "
 									"table. ", column->colname),
 							 errhint("The 'DISTRIBUTED BY' clause determines the distribution of data."
-							 		 " Make sure column(s) chosen are the optimal data distribution key to minimize skew."),
-							 errOmitLocation(true)));
+							 		 " Make sure column(s) chosen are the optimal data distribution key to minimize skew.")));
 					break;
 				}
 
@@ -3192,8 +3186,7 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 					ereport(ERROR,
 							(errcode(ERRCODE_UNDEFINED_COLUMN),
 							 errmsg("column \"%s\" named in 'DISTRIBUTED BY' clause does not exist",
-									key),
-							 errOmitLocation(true)));
+									key)));
 
 				policy->attrs[policy->nattrs++] = colindex;
 
@@ -3312,8 +3305,7 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 							 errhint("When there is both a PRIMARY KEY, and a "
 									"DISTRIBUTED BY clause, the DISTRIBUTED BY "
 									"clause must be equal to or a left-subset "
-									"of the PRIMARY KEY"),
-							 errOmitLocation(true)));
+									"of the PRIMARY KEY")));
 				}
 
 				i++;
@@ -5432,7 +5424,6 @@ range_partition_walker(Node *node, void *context)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					 errmsg("cannot use NULL with range partition specification"),
-					 errOmitLocation(true),
 					 parser_errposition(ctx->pstate, ctx->location)));
 		return false;
 	}
@@ -5443,7 +5434,6 @@ range_partition_walker(Node *node, void *context)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					 errmsg("cannot use NULL with range partition specification"),
-					 errOmitLocation(true),
 					 parser_errposition(ctx->pstate, ctx->location)));
 		return false;
 	}
@@ -5505,7 +5495,6 @@ validate_range_partition(partValidationState *vstate)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 				 errmsg("missing boundary specification"),
-				 errOmitLocation(true),
 				 parser_errposition(vstate->pstate, vstate->pElem->location)));
 
 	}
@@ -5546,7 +5535,6 @@ validate_range_partition(partValidationState *vstate)
 							"unnamed RANGE boundary "
 							"specifications%s",
 							vstate->at_depth),
-					 errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 
@@ -5616,7 +5604,6 @@ validate_range_partition(partValidationState *vstate)
 									"than START of previous%s",
 							vstate->namBuf,
 							vstate->at_depth),
-					 errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 
@@ -5647,7 +5634,6 @@ validate_range_partition(partValidationState *vstate)
 						 errmsg("start of partition%s overlaps previous%s",
 								vstate->namBuf,
 								vstate->at_depth),
-						 errOmitLocation(true),
 						 parser_errposition(vstate->pstate,
 											spec->location)));
 
@@ -5665,7 +5651,6 @@ validate_range_partition(partValidationState *vstate)
 							"previous%s",
 							vstate->namBuf,
 							vstate->at_depth),
-									errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 
@@ -5729,7 +5714,6 @@ L_setprevElem:
 					 errmsg("START greater than END for partition%s%s",
 							vstate->namBuf,
 							vstate->at_depth),
-									errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 
@@ -5751,7 +5735,6 @@ L_setprevElem:
 					 errmsg("START equal to END for partition%s%s",
 							vstate->namBuf,
 							vstate->at_depth),
-									errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 
@@ -5794,7 +5777,6 @@ L_setprevElem:
 							"overlaps previous range%s",
 							vstate->namBuf,
 							vstate->at_depth),
-									errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 
@@ -5825,7 +5807,6 @@ L_setprevElem:
 							"overlaps previous range%s",
 							vstate->namBuf,
 							vstate->at_depth),
-									errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 		}
@@ -6051,7 +6032,6 @@ L_setprevElem:
 					 errmsg("invalid range comparison for partition%s%s",
 							vstate->namBuf,
 							vstate->at_depth),
-									errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 
@@ -6066,7 +6046,6 @@ L_setprevElem:
 							vstate->namBuf,
 							otherPartPos,
 							vstate->at_depth),
-									errOmitLocation(true),
 					 parser_errposition(vstate->pstate,
 										spec->location)));
 		}
@@ -6169,8 +6148,7 @@ coerce_partition_value(Node *node, Oid typid, int32 typmod,
 						"to column type (%s)",
 						specTName,
 						pparam,
-						format_type_be(typid)),
-						errOmitLocation(true)));
+						format_type_be(typid))));
 	}
 
 
@@ -6254,7 +6232,6 @@ validate_list_partition(partValidationState *vstate)
 						"partition%s of type LIST%s",
 						vstate->namBuf,
 						vstate->at_depth),
-								errOmitLocation(true),
 				 parser_errposition(vstate->pstate, vstate->pElem->location)));
 
 	}
@@ -6264,7 +6241,6 @@ validate_list_partition(partValidationState *vstate)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 				 errmsg("invalid boundary specification for LIST partition"),
-						 errOmitLocation(true),
 				 parser_errposition(vstate->pstate, vstate->pElem->location)));
 
 
@@ -6298,7 +6274,6 @@ validate_list_partition(partValidationState *vstate)
 								list_length(vstate->pBy->keys) ? "s" : "",
 							   	nvals,
 								nvals ? "s" : ""),
-										errOmitLocation(true),
 						 parser_errposition(vstate->pstate, spec->location)));
 			}
 
@@ -6352,7 +6327,6 @@ validate_list_partition(partValidationState *vstate)
 										"in partition%s%s",
 										vstate->namBuf,
 										vstate->at_depth),
-												errOmitLocation(true),
 							 parser_errposition(vstate->pstate, spec->location)));
 					}
 				}
@@ -6663,7 +6637,6 @@ validate_partition_spec(ParseState *pstate, CreateStmtContext *cxt,
 							(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 							 errmsg("multiple default partitions are not "
 									"allowed"),
-											errOmitLocation(true),
 							 parser_errposition(pstate, pElem->location)));
 
 				}
@@ -6678,7 +6651,6 @@ validate_partition_spec(ParseState *pstate, CreateStmtContext *cxt,
 									"for partition%s of type HASH%s",
 									namBuf,
 									at_depth),
-											errOmitLocation(true),
 							 parser_errposition(pstate, pElem->location)));
 
 				}
@@ -6691,7 +6663,6 @@ validate_partition_spec(ParseState *pstate, CreateStmtContext *cxt,
 									"for DEFAULT partition%s%s",
 									namBuf,
 									at_depth),
-											errOmitLocation(true),
 							 parser_errposition(pstate, pElem->location)));
 
 				}
@@ -6719,7 +6690,6 @@ validate_partition_spec(ParseState *pstate, CreateStmtContext *cxt,
 										"for partition%s%s",
 										namBuf,
 										at_depth),
-												errOmitLocation(true),
 								 parser_errposition(pstate, pElem->location)));
 					}
 					allPartNames = lappend(allPartNames, pElem->partName);
@@ -6764,7 +6734,6 @@ validate_partition_spec(ParseState *pstate, CreateStmtContext *cxt,
 									specTName,
 									vstate->namBuf,
 									vstate->at_depth),
-											errOmitLocation(true),
 						 /* MPP-4249: use value spec location if have one */
 						 ((IsA(vstate->spec, PartitionValuesSpec)) ?
 			  parser_errposition(pstate,
@@ -6789,7 +6758,6 @@ validate_partition_spec(ParseState *pstate, CreateStmtContext *cxt,
 						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 						 errmsg("unknown partition type %d %s",
 								pBy->partType, at_depth),
-										errOmitLocation(true),
 						 parser_errposition(pstate, pBy->location)));
 				break;
 
@@ -6818,7 +6786,6 @@ validate_partition_spec(ParseState *pstate, CreateStmtContext *cxt,
 				 errmsg("PARTITIONS \"%d\" must match \"%d\" elements "
 						"in specification%s",
 						 partNumber, partno, vstate->at_depth),
-								 errOmitLocation(true),
 				 parser_errposition(pstate, pBy->location)));
 
 	if (vstate->allRangeVals)
@@ -7189,7 +7156,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 								"for DEFAULT partition%s%s",
 								namBuf,
 								at_depth),
-						 errOmitLocation(true),
 						 parser_errposition(pstate, pElem->location)));
 			} /* end if is default */
 
@@ -7202,7 +7168,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 								"in partition%s of type RANGE%s",
 								namBuf,
 								at_depth),
-										errOmitLocation(true),
 						 /* MPP-4249: use value spec location if have one */
 						 ((IsA(pBSpec, PartitionValuesSpec)) ?
 			  parser_errposition(pstate,
@@ -7232,7 +7197,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 							"requires START and END%s",
 							namBuf,
 							at_depth),
-									errOmitLocation(true),
 					 parser_errposition(pstate, pBSpec->location)));
 		}
 
@@ -7302,7 +7266,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 							"in partition%s%s",
 							namBuf,
 							at_depth),
-									errOmitLocation(true),
 					 parser_errposition(pstate, pBSpec->location)));
 
 		}
@@ -7460,7 +7423,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 							ereport(ERROR,
 									(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 									 errmsg("EVERY parameter produces ambiguous partition rule"),
-											 errOmitLocation(true),
 									 parser_errposition(pstate,
 													((A_Const *)n3)->location)));
 
@@ -7494,7 +7456,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 							ereport(ERROR,
 									(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 									 errmsg("EVERY parameter too small"),
-											 errOmitLocation(true),
 									 parser_errposition(pstate,
 													((A_Const *)n3)->location)));
 						}
@@ -7507,7 +7468,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 							ereport(ERROR,
 									(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 									 errmsg("END parameter not reached before type overflows"),
-											 errOmitLocation(true),
 									 parser_errposition(pstate,
 													((A_Const *)n2)->location)));
 						}
@@ -7938,7 +7898,6 @@ partition_col_walker(Node *node, void *context)
 							 errmsg("column \"%s\" specified in multiple "
 									"partitioning keys",
 									colname),
-											errOmitLocation(true),
 					 parser_errposition(cxt->pstate, p->location)));
 			}
 			cxt->cols = lappend(cxt->cols, colname);
@@ -8080,7 +8039,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					 errmsg("%sPARTITIONS clause requires a HASH partition%s",
 							pBy->partDepth != 0 ? "SUB" : "", at_depth),
-									errOmitLocation(true),
 					 parser_errposition(pstate, pBy->location)));
 		}
 
@@ -8090,7 +8048,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 					(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 					 errmsg("%sPARTITIONS cannot be less than one%s",
 							pBy->partDepth != 0 ? "SUB" : "", at_depth),
-									errOmitLocation(true),
 					 parser_errposition(pstate, pBy->location)));
 		}
 	}
@@ -8108,7 +8065,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 				 errmsg("too many columns for RANGE partition%s -- "
 						"only one column is allowed.",
 						at_depth),
-								errOmitLocation(true),
 				 parser_errposition(pstate, pBy->location)));
 	}
 
@@ -8139,7 +8095,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 							 errmsg("column \"%s\" specified more than once "
 									"in partitioning key",
 									colname),
-											errOmitLocation(true),
 					 parser_errposition(pstate, pBy->location)));
 
 
@@ -8168,7 +8123,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 					(errcode(ERRCODE_UNDEFINED_COLUMN),
 					 errmsg("column \"%s\" does not exist in relation \"%s\"",
 							colname, cxt->relation->relname),
-									errOmitLocation(true),
 					 parser_errposition(pstate, pBy->location)));
 		}
 
@@ -8193,8 +8147,7 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 				ereport(ERROR,
 						(errcode(ERRCODE_UNDEFINED_OBJECT),
 						 errmsg("data type %s has no default operator class",
-								format_type_be(typeid)),
-								errOmitLocation(true)));
+								format_type_be(typeid))));
 			pBy->keyopclass = lappend_oid(pBy->keyopclass, opclass);
 		}
 	}
@@ -8261,7 +8214,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 				 		 errmsg("hash partition requires PARTITIONS clause "
 								"or partition specification"),
-						 errOmitLocation(true),
 				 		 parser_errposition(pstate, pBy->location)));
 
 			/*
@@ -8289,7 +8241,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 				(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 				 errmsg("no partitions specified at depth %d",
 						partDepth),
-								errOmitLocation(true),
 				 parser_errposition(pstate, pBy->location)));
 	}
 
@@ -8323,7 +8274,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 						 errmsg("missing SUBPARTITION BY clause for "
 								"subpartition specification%s",
 								at_depth),
-										errOmitLocation(true),
 						 parser_errposition(pstate, pBy->location)));
 			}
 			if (psubBy && psubBy->partSpec)
@@ -8332,7 +8282,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 						(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 						 errmsg("subpartition specification conflict%s",
 								at_depth),
-										errOmitLocation(true),
 						 parser_errposition(pstate, psubBy->location)));
 			}
 			psubBy->partSpec = (Node *)subSpec;
@@ -8456,7 +8405,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 							 errmsg("missing SUBPARTITION BY clause "
 									"for subpartition specification%s",
 									at_depth),
-							 errOmitLocation(true),
 							 parser_errposition(pstate, pElem->location)));
 				}
 
@@ -8468,7 +8416,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 							(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 							 errmsg("subpartition configuration conflicts "
 									"with subpartition template"),
-							 errOmitLocation(true),
 							 parser_errposition(pstate, psubBy->location)));
 				}
 
@@ -8825,14 +8772,12 @@ transformIndexStmt(ParseState *pstate, IndexStmt *stmt,
 				ereport(ERROR,
 						(errcode(ERRCODE_UNDEFINED_TABLE),
 						 errmsg("relation \"%s.%s\" does not exist",
-								stmt->relation->schemaname, stmt->relation->relname),
-						 errOmitLocation(true)));
+								stmt->relation->schemaname, stmt->relation->relname)));
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_UNDEFINED_TABLE),
 						 errmsg("relation \"%s\" does not exist",
-								stmt->relation->relname),
-						 errOmitLocation(true)));
+								stmt->relation->relname)));
 			PG_RE_THROW();
 		}
 		PG_END_TRY();
@@ -8995,8 +8940,7 @@ transformIndexStmt(ParseState *pstate, IndexStmt *stmt,
 			if (expression_returns_set(ielem->expr))
 				ereport(ERROR,
 						(errcode(ERRCODE_DATATYPE_MISMATCH),
-						 errmsg("index expression may not return a set"),
-						 errOmitLocation(true)));
+						 errmsg("index expression may not return a set")));
 		}
 	}
 
@@ -9088,21 +9032,18 @@ transformRuleStmt(ParseState *pstate, RuleStmt *stmt,
 	if (list_length(pstate->p_rtable) != 2)		/* naughty, naughty... */
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-				 errmsg("rule WHERE condition may not contain references to other relations"),
-				 errOmitLocation(true)));
+				 errmsg("rule WHERE condition may not contain references to other relations")));
 
 	/* aggregates not allowed (but subselects are okay) */
 	if (pstate->p_hasAggs)
 		ereport(ERROR,
 				(errcode(ERRCODE_GROUPING_ERROR),
-		   errmsg("cannot use aggregate function in rule WHERE condition"),
-		   errOmitLocation(true)));
+		   errmsg("cannot use aggregate function in rule WHERE condition")));
 
 	if (pstate->p_hasWindFuncs)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("cannot use window function in rule WHERE condition"),
-				 errOmitLocation(true)));
+				 errmsg("cannot use window function in rule WHERE condition")));
 
 
 	/* save info about sublinks in where clause */
@@ -9172,8 +9113,7 @@ transformRuleStmt(ParseState *pstate, RuleStmt *stmt,
 				stmt->whereClause != NULL)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-						 errmsg("rules with WHERE conditions may only have SELECT, INSERT, UPDATE, or DELETE actions"),
-						 errOmitLocation(true)));
+						 errmsg("rules with WHERE conditions may only have SELECT, INSERT, UPDATE, or DELETE actions")));
 
 			/*
 			 * If the action is INSERT...SELECT, OLD/NEW have been pushed down
@@ -9191,8 +9131,7 @@ transformRuleStmt(ParseState *pstate, RuleStmt *stmt,
 			if (sub_qry->setOperations != NULL && stmt->whereClause != NULL)
 				ereport(ERROR,
 						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						 errmsg("conditional UNION/INTERSECT/EXCEPT statements are not implemented"),
-						 errOmitLocation(true)));
+						 errmsg("conditional UNION/INTERSECT/EXCEPT statements are not implemented")));
 
 			/*
 			 * Validate action's use of OLD/NEW, qual too
@@ -9210,13 +9149,11 @@ transformRuleStmt(ParseState *pstate, RuleStmt *stmt,
 					if (has_old)
 						ereport(ERROR,
 								(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-								 errmsg("ON SELECT rule may not use OLD"),
-								 errOmitLocation(true)));
+								 errmsg("ON SELECT rule may not use OLD")));
 					if (has_new)
 						ereport(ERROR,
 								(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-								 errmsg("ON SELECT rule may not use NEW"),
-										 errOmitLocation(true)));
+								 errmsg("ON SELECT rule may not use NEW")));
 					break;
 				case CMD_UPDATE:
 					/* both are OK */
@@ -9225,15 +9162,13 @@ transformRuleStmt(ParseState *pstate, RuleStmt *stmt,
 					if (has_old)
 						ereport(ERROR,
 								(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-								 errmsg("ON INSERT rule may not use OLD"),
-										 errOmitLocation(true)));
+								 errmsg("ON INSERT rule may not use OLD")));
 					break;
 				case CMD_DELETE:
 					if (has_new)
 						ereport(ERROR,
 								(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-								 errmsg("ON DELETE rule may not use NEW"),
-										 errOmitLocation(true)));
+								 errmsg("ON DELETE rule may not use NEW")));
 					break;
 				default:
 					elog(ERROR, "unrecognized event type: %d",
@@ -9266,8 +9201,7 @@ transformRuleStmt(ParseState *pstate, RuleStmt *stmt,
 				if (sub_qry->setOperations != NULL)
 					ereport(ERROR,
 							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-							 errmsg("conditional UNION/INTERSECT/EXCEPT statements are not implemented"),
-									 errOmitLocation(true)));
+							 errmsg("conditional UNION/INTERSECT/EXCEPT statements are not implemented")));
 				/* hack so we can use addRTEtoQuery() */
 				sub_pstate->p_rtable = sub_qry->rtable;
 				sub_pstate->p_joinlist = sub_qry->jointree->fromlist;
@@ -9749,8 +9683,7 @@ static Node* grouped_window_mutator(Node *node, void *context)
 					(errcode(ERRCODE_WINDOWING_ERROR),
 					 errmsg("unresolved grouping key in window query"),
 					 errhint("You may need to use explicit aliases and/or to refer to grouping "
-							 "keys in the same way throughout the query."),
-					 errOmitLocation(true)));
+							 "keys in the same way throughout the query.")));
 	}
 	else
 	{
@@ -10156,8 +10089,7 @@ transformValuesClause(ParseState *pstate, SelectStmt *stmt)
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
-					 errmsg("VALUES lists must all be the same length"),
-							 errOmitLocation(true)));
+					 errmsg("VALUES lists must all be the same length")));
 		}
 
 		exprsLists = lappend(exprsLists, sublist);
@@ -10170,8 +10102,7 @@ transformValuesClause(ParseState *pstate, SelectStmt *stmt)
 			if (IsA(col, SetToDefault))
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("DEFAULT can only appear in a VALUES list within INSERT"),
-								 errOmitLocation(true)));
+						 errmsg("DEFAULT can only appear in a VALUES list within INSERT")));
 			coltype_lists[i] = lappend_oid(coltype_lists[i], exprType(col));
 			i++;
 		}
@@ -10243,8 +10174,7 @@ transformValuesClause(ParseState *pstate, SelectStmt *stmt)
 	if (stmt->lockingClause)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			 errmsg("SELECT FOR UPDATE/SHARE cannot be applied to VALUES"),
-					 errOmitLocation(true)));
+			 errmsg("SELECT FOR UPDATE/SHARE cannot be applied to VALUES")));
 
 	if (stmt->distributedBy && Gp_role == GP_ROLE_DISPATCH)
 		setQryDistributionPolicy(stmt, qry);
@@ -10267,8 +10197,7 @@ transformValuesClause(ParseState *pstate, SelectStmt *stmt)
 	if (list_length(pstate->p_joinlist) != 1)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("VALUES must not contain table references"),
-						 errOmitLocation(true)));
+				 errmsg("VALUES must not contain table references")));
 
 	/*
 	 * Another thing we can't currently support is NEW/OLD references in rules
@@ -10281,8 +10210,7 @@ transformValuesClause(ParseState *pstate, SelectStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				 errmsg("VALUES must not contain OLD or NEW references"),
-				 errhint("Use SELECT ... UNION ALL ... instead."),
-						 errOmitLocation(true)));
+				 errhint("Use SELECT ... UNION ALL ... instead.")));
 
 	qry->rtable = pstate->p_rtable;
 	qry->jointree = makeFromExpr(pstate->p_joinlist, NULL);
@@ -10292,14 +10220,12 @@ transformValuesClause(ParseState *pstate, SelectStmt *stmt)
 	if (pstate->p_hasAggs)
 		ereport(ERROR,
 				(errcode(ERRCODE_GROUPING_ERROR),
-				 errmsg("cannot use aggregate function in VALUES"),
-						 errOmitLocation(true)));
+				 errmsg("cannot use aggregate function in VALUES")));
 
 	if (pstate->p_hasWindFuncs)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("cannot use window function in VALUES"),
-						 errOmitLocation(true)));
+				 errmsg("cannot use window function in VALUES")));
 
 	return qry;
 }
@@ -10391,8 +10317,7 @@ transformSetOperationStmt(ParseState *pstate, SelectStmt *stmt)
 	if (lockingClause)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("SELECT FOR UPDATE/SHARE is not allowed with UNION/INTERSECT/EXCEPT"),
-						 errOmitLocation(true)));
+				 errmsg("SELECT FOR UPDATE/SHARE is not allowed with UNION/INTERSECT/EXCEPT")));
 
 	/*
 	 * Before transforming the subtrees, we collect all the data types
@@ -10633,8 +10558,7 @@ transformSetOperationStmt(ParseState *pstate, SelectStmt *stmt)
 	if (tllen != list_length(qry->targetList))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("ORDER BY on a UNION/INTERSECT/EXCEPT result must be on one of the result columns"),
-						 errOmitLocation(true)));
+				 errmsg("ORDER BY on a UNION/INTERSECT/EXCEPT result must be on one of the result columns")));
 
 	qry->limitOffset = transformLimitClause(pstate, limitOffset,
 											"OFFSET");
@@ -10691,14 +10615,12 @@ transformSetOperationTree(ParseState *pstate, SelectStmt *stmt)
 	if (stmt->intoClause)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("INTO is only allowed on first SELECT of UNION/INTERSECT/EXCEPT"),
-						 errOmitLocation(true)));
+				 errmsg("INTO is only allowed on first SELECT of UNION/INTERSECT/EXCEPT")));
 	/* We don't support FOR UPDATE/SHARE with set ops at the moment. */
 	if (stmt->lockingClause)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("SELECT FOR UPDATE/SHARE is not allowed with UNION/INTERSECT/EXCEPT"),
-						 errOmitLocation(true)));
+				 errmsg("SELECT FOR UPDATE/SHARE is not allowed with UNION/INTERSECT/EXCEPT")));
 
 	if (isSetopLeaf(stmt))
 	{
@@ -10733,8 +10655,7 @@ transformSetOperationTree(ParseState *pstate, SelectStmt *stmt)
 			if (contain_vars_of_level((Node *) selectQuery, 1))
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
-						 errmsg("UNION/INTERSECT/EXCEPT member statement may not refer to other relations of same query level"),
-								 errOmitLocation(true)));
+						 errmsg("UNION/INTERSECT/EXCEPT member statement may not refer to other relations of same query level")));
 		}
 
 		/*
@@ -10993,8 +10914,7 @@ collectSetopTypes(ParseState *pstate, SelectStmt *stmt,
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
 					 errmsg("each %s query must have the same number of columns",
-							context),
-					 errOmitLocation(true)));
+							context)));
 
 		return lnum;
 	}
@@ -11076,8 +10996,7 @@ applyColumnNames(List *dst, List *src)
 	if (src_item != NULL)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("CREATE TABLE AS specifies too many column names"),
-						 errOmitLocation(true)));
+				 errmsg("CREATE TABLE AS specifies too many column names")));
 }
 
 
@@ -11122,8 +11041,7 @@ transformUpdateStmt(ParseState *pstate, UpdateStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				 errmsg("The RETURNING clause of the UPDATE statement is not "
-						"supported in this version of Greenplum Database."),
-								 errOmitLocation(true)));
+						"supported in this version of Greenplum Database.")));
 	}
 #else
 	qry->returningList = transformReturningList(pstate, stmt->returningList);
@@ -11156,14 +11074,12 @@ transformUpdateStmt(ParseState *pstate, UpdateStmt *stmt)
 	if (pstate->p_hasAggs)
 		ereport(ERROR,
 				(errcode(ERRCODE_GROUPING_ERROR),
-				 errmsg("cannot use aggregate function in UPDATE"),
-				 errOmitLocation(true)));
+				 errmsg("cannot use aggregate function in UPDATE")));
 
 	if (pstate->p_hasWindFuncs)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("cannot use window function in UPDATE"),
-				 errOmitLocation(true)));
+				 errmsg("cannot use window function in UPDATE")));
 
 	/*
 	 * Now we are done with SELECT-like processing, and can get on with
@@ -11211,7 +11127,6 @@ transformUpdateStmt(ParseState *pstate, UpdateStmt *stmt)
 					 errmsg("column \"%s\" of relation \"%s\" does not exist",
 							origTarget->name,
 						 RelationGetRelationName(pstate->p_target_relation)),
-				     errOmitLocation(true),
 					 parser_errposition(pstate, origTarget->location)));
 
 		updateTargetListEntry(pstate, tle, origTarget->name,
@@ -11917,8 +11832,7 @@ transformExecuteStmt(ParseState *pstate, ExecuteStmt *stmt)
 			errmsg("wrong number of parameters for prepared statement \"%s\"",
 				   stmt->name),
 					 errdetail("Expected %d parameters but got %d.",
-							   nexpected, nparams),
-					 errOmitLocation(true)));
+							   nexpected, nparams)));
 
 		forboth(l, stmt->params, l2, paramtypes)
 		{
@@ -11958,8 +11872,7 @@ transformExecuteStmt(ParseState *pstate, ExecuteStmt *stmt)
 								i,
 								format_type_be(given_type_id),
 								format_type_be(expected_type_id)),
-				errhint("You will need to rewrite or cast the expression."),
-				errOmitLocation(true)));
+				errhint("You will need to rewrite or cast the expression.")));
 
 			lfirst(l) = expr;
 			i++;
@@ -12572,8 +12485,7 @@ setQryDistributionPolicy(SelectStmt *stmt, Query *qry)
 						(errcode(ERRCODE_UNDEFINED_COLUMN),
 						 errmsg("column \"%s\" named in DISTRIBUTED BY "
 								"clause does not exist",
-								key),
-						 errOmitLocation(true)));
+								key)));
 
 			policy->attrs[policy->nattrs++] = colindex;
 

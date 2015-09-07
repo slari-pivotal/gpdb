@@ -216,7 +216,7 @@ svec_in(PG_FUNCTION_ARGS)
 	if ((values=strchr(str,':'))==NULL)
 	{
 		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),errOmitLocation(true),
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg("Invalid input string for svec")));
 	} else {
 		*values = '\0';
@@ -237,7 +237,7 @@ svec_in(PG_FUNCTION_ARGS)
 	if (num_values != *(ARR_DIMS(pgarray_ix)))
 	{
 		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),errOmitLocation(true),
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg("Unique value count not equal to run length count")));
 	}
 

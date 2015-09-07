@@ -124,8 +124,7 @@ load_external_function(char *filename, char *funcname,
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_FUNCTION),
 				 errmsg("could not find function \"%s\" in file \"%s\"",
-						funcname, fullname),
-				 errOmitLocation(true)));
+						funcname, fullname)));
 
 	pfree(fullname);
 	return retval;

@@ -204,20 +204,17 @@ transformWindowFrameEdge(ParseState *pstate, WindowFrameEdge *e,
 				if (con->consttype != INT4OID)
 					ereport(ERROR,
 							(errcode(ERROR_INVALID_WINDOW_FRAME_PARAMETER),
-							 errmsg("ROWS parameter must be an integer expression"),
-									   errOmitLocation(true)));
+							 errmsg("ROWS parameter must be an integer expression")));
 				if (DatumGetInt32(con->constvalue) < 0)
 					ereport(ERROR,
 							(errcode(ERROR_INVALID_WINDOW_FRAME_PARAMETER),
-							 errmsg("ROWS parameter cannot be negative"),
-									   errOmitLocation(true)));
+							 errmsg("ROWS parameter cannot be negative")));
 			}
 
 			if (expr_contains_null_const((Expr *)e->val))
 				ereport(ERROR,
 						(errcode(ERROR_INVALID_WINDOW_FRAME_PARAMETER),
-						 errmsg("ROWS parameter cannot contain NULL value"),
-								   errOmitLocation(true)));
+						 errmsg("ROWS parameter cannot contain NULL value")));
 		}
 		else
 		{
@@ -235,8 +232,7 @@ transformWindowFrameEdge(ParseState *pstate, WindowFrameEdge *e,
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						 errmsg("only one ORDER BY column may be specified when"
-								" RANGE is used in a window specification"),
-										   errOmitLocation(true)));
+								" RANGE is used in a window specification")));
 
 			/* e->val should already be transformed */
 			typmod = exprTypmod(e->val);
@@ -248,8 +244,7 @@ transformWindowFrameEdge(ParseState *pstate, WindowFrameEdge *e,
 				if (con->constisnull)
 					ereport(ERROR,
 							(errcode(ERROR_INVALID_WINDOW_FRAME_PARAMETER),
-							 errmsg("RANGE parameter cannot be NULL"),
-									   errOmitLocation(true)));
+							 errmsg("RANGE parameter cannot be NULL")));
 			}
 
 			sort = (SortClause *)linitial(spec->order);
@@ -270,8 +265,7 @@ transformWindowFrameEdge(ParseState *pstate, WindowFrameEdge *e,
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						 errmsg("window specification RANGE parameter type "
-								"must be coercible to ORDER BY column type"),
-										   errOmitLocation(true)));
+								"must be coercible to ORDER BY column type")));
 
 			oprresult = ((Form_pg_operator)GETSTRUCT(tup))->oprresult;
 			newrtype = ((Form_pg_operator)GETSTRUCT(tup))->oprright;
@@ -305,8 +299,7 @@ transformWindowFrameEdge(ParseState *pstate, WindowFrameEdge *e,
 							 errhint("Operations between window specification "
 									 "the ORDER BY column and RANGE parameter "
 									 "must result in a data type which can be "
-									 "cast back to the ORDER BY column type"),
-											   errOmitLocation(true)));
+									 "cast back to the ORDER BY column type")));
 				}
 				else
 					e->val = (Node *)expr;
@@ -322,8 +315,7 @@ transformWindowFrameEdge(ParseState *pstate, WindowFrameEdge *e,
 							 errhint("Operations between window specification "
 									 "the ORDER BY column and RANGE parameter "
 									 "must result in a data type which can be "
-									 "cast back to the ORDER BY column type"),
-											   errOmitLocation(true)));
+									 "cast back to the ORDER BY column type")));
 
 				/* The executor will do the rest of the work */
 			}
@@ -352,8 +344,7 @@ transformWindowFrameEdge(ParseState *pstate, WindowFrameEdge *e,
 					if (result)
 						ereport(ERROR,
 								(errcode(ERROR_INVALID_WINDOW_FRAME_PARAMETER),
-								 errmsg("RANGE parameter cannot be negative"),
-										   errOmitLocation(true)));
+								 errmsg("RANGE parameter cannot be negative")));
 
 					ReleaseOperator(tup);
 					ReleaseType(typ);
@@ -390,16 +381,14 @@ winref_checkspec_walker(Node *node, void *ctx)
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						 errmsg("DISTINCT cannot be used with "
 								"window specification containing an "
-								"ORDER BY clause"),
-										   errOmitLocation(true)));
+								"ORDER BY clause")));
 
 			if (ref->has_frame)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						 errmsg("DISTINCT cannot be used with "
 								"window specification containing a "
-								"framing clause"),
-										   errOmitLocation(true)));
+								"framing clause")));
 		}
 
 		/*
@@ -523,8 +512,7 @@ transformWindowClause(ParseState *pstate, Query *qry)
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
 					 errmsg("cannot use window function in a window "
-							"specification"),
-									   errOmitLocation(true)));
+							"specification")));
 		}
 		/*
 		 * Loop through those clauses we've already processed to
@@ -543,8 +531,7 @@ transformWindowClause(ParseState *pstate, Query *qry)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
 						 errmsg("window \"%s\" cannot reference itself",
-								ws->name),
-										   errOmitLocation(true)));
+								ws->name)));
 
 			foreach(tmp, winout)
 			{
@@ -555,8 +542,7 @@ transformWindowClause(ParseState *pstate, Query *qry)
 					ereport(ERROR,
 							(errcode(ERRCODE_DUPLICATE_OBJECT),
 							 errmsg("window name \"%s\" occurs more than once "
-									"in WINDOW clause", ws->name),
-											   errOmitLocation(true)));
+									"in WINDOW clause", ws->name)));
 
 				/*
 				 * If this spec has a parent reference, we need to test that
@@ -582,15 +568,13 @@ transformWindowClause(ParseState *pstate, Query *qry)
 						ereport(ERROR,
 								(errcode(ERRCODE_SYNTAX_ERROR),
 								 errmsg("PARTITION BY not allowed when "
-										"an existing window name is specified"),
-												   errOmitLocation(true)));
+										"an existing window name is specified")));
 
 					if (ws->order != NIL && ws2->order != NIL)
 						ereport(ERROR,
 								(errcode(ERRCODE_SYNTAX_ERROR),
 								 errmsg("conflicting ORDER BY clauses in window "
-										"specification"),
-												   errOmitLocation(true)));
+										"specification")));
 
 					/*
 					 * We only want to disallow the specification of a
@@ -609,7 +593,6 @@ transformWindowClause(ParseState *pstate, Query *qry)
 										 "referenced by other window "
 										 "specifications cannot have framing "
 										 "clauses"),
-								 errOmitLocation(true),
                                  parser_errposition(pstate, ws2->location)
                                  ));
 
@@ -633,8 +616,7 @@ transformWindowClause(ParseState *pstate, Query *qry)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						errmsg("window specification \"%s\" not found",
-							   ws->parent),
-									   errOmitLocation(true)));
+							   ws->parent)));
 		}
 
 		newspec->name = ws->name;
@@ -707,8 +689,7 @@ transformWindowClause(ParseState *pstate, Query *qry)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						 errmsg("window specifications with a framing clause "
-								"must have an ORDER BY clause"),
-										   errOmitLocation(true)));
+								"must have an ORDER BY clause")));
 
 			if (nf->is_between)
 			{
@@ -721,16 +702,14 @@ transformWindowClause(ParseState *pstate, Query *qry)
 							 errmsg("conflicting bounds in window framing "
 									"clause"),
 							 errhint("First bound of BETWEEN clause in window "
-									"specification cannot be UNBOUNDED FOLLOWING"),
-											   errOmitLocation(true)));
+									"specification cannot be UNBOUNDED FOLLOWING")));
 				if (nf->lead->kind == WINDOW_UNBOUND_PRECEDING)
 					ereport(ERROR,
 							(errcode(ERRCODE_SYNTAX_ERROR),
 							 errmsg("conflicting bounds in window framing "
 									"clause"),
 							 errhint("Second bound of BETWEEN clause in window "
-									"specification cannot be UNBOUNDED PRECEDING"),
-											   errOmitLocation(true)));
+									"specification cannot be UNBOUNDED PRECEDING")));
 				if (nf->trail->kind == WINDOW_CURRENT_ROW &&
 					(nf->lead->kind == WINDOW_BOUND_PRECEDING ||
 					 nf->lead->kind == WINDOW_UNBOUND_PRECEDING))
@@ -739,8 +718,7 @@ transformWindowClause(ParseState *pstate, Query *qry)
 							 errmsg("conflicting bounds in window framing "
 									"clause"),
 							 errhint("Second bound cannot be PRECEDING "
-									 "when first bound is CURRENT ROW"),
-											   errOmitLocation(true)));
+									 "when first bound is CURRENT ROW")));
 				if ((nf->trail->kind == WINDOW_BOUND_FOLLOWING ||
 					 nf->trail->kind == WINDOW_UNBOUND_FOLLOWING) &&
 					!(nf->lead->kind == WINDOW_BOUND_FOLLOWING ||
@@ -750,8 +728,7 @@ transformWindowClause(ParseState *pstate, Query *qry)
 							 errmsg("conflicting bounds in window framing "
 									"clause"),
 							 errhint("Second bound must be FOLLOWING if first "
-									 "bound is FOLLOWING"),
-											   errOmitLocation(true)));
+									 "bound is FOLLOWING")));
 
 			}
 			else
@@ -874,16 +851,14 @@ setTargetTable(ParseState *pstate, RangeVar *relation,
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				 errmsg("permission denied: \"%s\" is a system catalog",
-						 RelationGetRelationName(pstate->p_target_relation)),
-				 errOmitLocation(true)));
+						 RelationGetRelationName(pstate->p_target_relation))));
 
 	/* special check for DML on foreign relations */
 	if(RelationIsForeign(pstate->p_target_relation))
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				 errmsg("foreign tables are read only. cannot change \"%s\"",
-						 RelationGetRelationName(pstate->p_target_relation)),
-				 errOmitLocation(true)));
+						 RelationGetRelationName(pstate->p_target_relation))));
 
 
 	/* special check for DML on external relations */
@@ -895,8 +870,7 @@ setTargetTable(ParseState *pstate, RangeVar *relation,
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 					 errmsg("cannot update or delete from external relation \"%s\"",
-							RelationGetRelationName(pstate->p_target_relation)),
-					 errOmitLocation(true)));
+							RelationGetRelationName(pstate->p_target_relation))));
 		}
 		else
 		{
@@ -910,8 +884,7 @@ setTargetTable(ParseState *pstate, RangeVar *relation,
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 						 errmsg("cannot change a readable external table \"%s\"",
-								 RelationGetRelationName(pstate->p_target_relation)),
-						 errOmitLocation(true)));
+								 RelationGetRelationName(pstate->p_target_relation))));
 
 			pfree(extentry);
 		}
@@ -924,8 +897,7 @@ setTargetTable(ParseState *pstate, RangeVar *relation,
     	ereport(ERROR,
     			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     			 errmsg("Directly modifying intermediate part of a partitioned table is disallowed"),
-    			 errhint("Modify either the root or a leaf partition instead"),
-    			 errOmitLocation(true)));
+    			 errhint("Modify either the root or a leaf partition instead")));
     }
 
 	/*
@@ -1232,8 +1204,7 @@ transformRangeSubselect(ParseState *pstate, RangeSubselect *r)
 		if (contain_vars_of_level((Node *) query, 1))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
-					 errmsg("subquery in FROM may not refer to other relations of same query level"),
-							 errOmitLocation(true)));
+					 errmsg("subquery in FROM may not refer to other relations of same query level")));
 	}
 
 	/*
@@ -1339,8 +1310,7 @@ transformRangeFunction(ParseState *pstate, RangeFunction *r)
 		if (contain_vars_of_level(funcexpr, 0))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
-					 errmsg("function expression in FROM may not refer to other relations of same query level"),
-					 errOmitLocation(true)));
+					 errmsg("function expression in FROM may not refer to other relations of same query level")));
 	}
 
 	/*
@@ -1352,8 +1322,7 @@ transformRangeFunction(ParseState *pstate, RangeFunction *r)
 		if (checkExprHasAggs(funcexpr))
 			ereport(ERROR,
 					(errcode(ERRCODE_GROUPING_ERROR),
-					 errmsg("cannot use aggregate function in function expression in FROM"),
-					 errOmitLocation(true)));
+					 errmsg("cannot use aggregate function in function expression in FROM")));
 	}
 
 	/*
@@ -2252,8 +2221,7 @@ findTargetlistEntrySQL92(ParseState *pstate, Node *node, List **tlist,
 				(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
 		/* translator: %s is name of a SQL construct, eg ORDER BY */
 				 errmsg("%s position %d is not in select list",
-						clauseText[clause], target_pos),
-				 errOmitLocation(true)));
+						clauseText[clause], target_pos)));
 	}
 
 
@@ -2462,14 +2430,12 @@ grouping_rewrite_walker(Node *node, void *context)
 				if (IsA(node, RowExpr))
 					ereport(ERROR,
 							(errcode(ERRCODE_GROUPING_ERROR),
-							 errmsg("row type can not be used inside a grouping function."),
-									   errOmitLocation(true)));
+							 errmsg("row type can not be used inside a grouping function.")));
 
 				if (!IsA(node, Var))
 					ereport(ERROR,
 							(errcode(ERRCODE_GROUPING_ERROR),
-							 errmsg("expression in a grouping fuction does not appear in GROUP BY."),
-									   errOmitLocation(true)));
+							 errmsg("expression in a grouping fuction does not appear in GROUP BY.")));
 
 				Assert(IsA(node, Var));
 				Assert(var->varno > 0);
@@ -2481,8 +2447,7 @@ grouping_rewrite_walker(Node *node, void *context)
 				ereport(ERROR,
 						(errcode(ERRCODE_GROUPING_ERROR),
 						 errmsg("column \"%s\".\"%s\" is not in GROUP BY",
-								rte->eref->aliasname, attname),
-										   errOmitLocation(true)));
+								rte->eref->aliasname, attname)));
 			}
 
 			newargs = lappend(newargs, makeInteger(i));
@@ -2940,8 +2905,7 @@ transformDistinctClause(ParseState *pstate, List *distinctlist,
 			if (tle->resjunk)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
-						 errmsg("for SELECT DISTINCT, ORDER BY expressions must appear in select list"),
-								   errOmitLocation(true)));
+						 errmsg("for SELECT DISTINCT, ORDER BY expressions must appear in select list")));
 			else
 				result = lappend(result, copyObject(scl));
 		}
@@ -2981,8 +2945,7 @@ transformDistinctClause(ParseState *pstate, List *distinctlist,
 				if (tle->ressortgroupref != scl->tleSortGroupRef)
 					ereport(ERROR,
 							(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
-							 errmsg("SELECT DISTINCT ON expressions must match initial ORDER BY expressions"),
-									   errOmitLocation(true)));
+							 errmsg("SELECT DISTINCT ON expressions must match initial ORDER BY expressions")));
 				result = lappend(result, copyObject(scl));
 				nextsortlist = lnext(nextsortlist);
 			}
@@ -3240,8 +3203,7 @@ addTargetToSortList(ParseState *pstate, TargetEntry *tle,
 							(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					   		 errmsg("operator %s is not a valid ordering operator",
 							  		strVal(llast(sortby_opname))),
-						 			errhint("Ordering operators must be \"<\" or \">\" members of btree operator families."),
-						 				   errOmitLocation(true)));
+						 			errhint("Ordering operators must be \"<\" or \">\" members of btree operator families.")));
 
 				break;
 			default:

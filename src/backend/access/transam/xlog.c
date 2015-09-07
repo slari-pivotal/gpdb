@@ -8501,7 +8501,7 @@ ShutdownXLOG(int code __attribute__((unused)) , Datum arg __attribute__((unused)
 
 	ereport(LOG,
 			(errmsg("database system is shut down"),
-					errSendAlert(true),errOmitLocation(true)));
+					errSendAlert(true)));
 }
 
 /*

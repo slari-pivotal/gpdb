@@ -468,8 +468,7 @@ static Node* ParallelizeCorrelatedSubPlanMutator(Node *node, ParallelizeCorrelat
 							errmsg("Cannot parallelize that query yet."),
 							errdetail("In a subquery FROM clause, a "
 									  "function invocation cannot contain "
-									  "a correlated reference."),
-							errOmitLocation(true)
+									  "a correlated reference.")
 					));
 		}
 	}

@@ -96,7 +96,6 @@ LookupTypeName(ParseState *pstate, const TypeName *typname)
 					(errcode(ERRCODE_UNDEFINED_COLUMN),
 					 errmsg("column \"%s\" of relation \"%s\" does not exist",
 							field, rel->relname),
-					 errOmitLocation(true),
 					 parser_errposition(pstate, typname->location)));
 		restype = get_atttype(relid, attnum);
 
@@ -244,7 +243,6 @@ typenameTypeId(ParseState *pstate, const TypeName *typname)
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("type \"%s\" does not exist",
 						TypeNameToString(typname)),
-				 errOmitLocation(true),
 				 parser_errposition(pstate, typname->location)));
 
 	if (!get_typisdefined(typoid))
@@ -252,7 +250,6 @@ typenameTypeId(ParseState *pstate, const TypeName *typname)
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("type \"%s\" is only a shell",
 						TypeNameToString(typname)),
-				 errOmitLocation(true),
 				 parser_errposition(pstate, typname->location)));
 	return typoid;
 }
@@ -274,8 +271,7 @@ typenameType(ParseState *pstate, const TypeName *typname)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("type \"%s\" does not exist",
-						TypeNameToString(typname)),
-				 errOmitLocation(true)));
+						TypeNameToString(typname))));
 	tup = SearchSysCache(TYPEOID,
 						 ObjectIdGetDatum(typoid),
 						 0, 0, 0);
@@ -286,7 +282,6 @@ typenameType(ParseState *pstate, const TypeName *typname)
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("type \"%s\" is only a shell",
 						TypeNameToString(typname)),
-				 errOmitLocation(true),
 				 parser_errposition(pstate, typname->location)));
 	return (Type) tup;
 }

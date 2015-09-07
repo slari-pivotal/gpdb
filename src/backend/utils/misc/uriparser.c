@@ -71,8 +71,7 @@ ParseExternalTableUri(const char *uri_str)
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
-					 errmsg("invalid URI \'%s\' : undefined structure", uri_str),
-					 errOmitLocation(true)));
+					 errmsg("invalid URI \'%s\' : undefined structure", uri_str)));
 		}
 		else
 		{
@@ -89,16 +88,14 @@ ParseExternalTableUri(const char *uri_str)
 		protocol_len = 0; /* shut compiler up */
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("invalid URI \'%s\' : undefined protocol", uri_str),
-				 errOmitLocation(true)));
+				 errmsg("invalid URI \'%s\' : undefined protocol", uri_str)));
 	}
 
 	/* make sure there is more to the uri string */
 	if (strlen(uri_str) <= protocol_len)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-		errmsg("invalid URI \'%s\' : missing host name and path", uri_str),
-		errOmitLocation(true)));
+		errmsg("invalid URI \'%s\' : missing host name and path", uri_str)));
 
 	/*
 	 * parse host name
@@ -126,8 +123,7 @@ ParseExternalTableUri(const char *uri_str)
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
-					 errmsg("invalid URI \'%s\' : missing host name or path", uri_str),
-					 errOmitLocation(true)));
+					 errmsg("invalid URI \'%s\' : missing host name or path", uri_str)));
 		}
 		else
 		{
@@ -203,8 +199,7 @@ ParseExternalTableUri(const char *uri_str)
 	if (len <= 1)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("invalid URI \'%s\' : missing path", uri_str),
-				 errOmitLocation(true)));
+				 errmsg("invalid URI \'%s\' : missing path", uri_str)));
 
 	uri->path = (char *) palloc(len + 1);
 	strcpy(uri->path, start);

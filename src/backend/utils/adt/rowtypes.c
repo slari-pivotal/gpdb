@@ -159,8 +159,7 @@ record_in(PG_FUNCTION_ARGS)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 						 errmsg("malformed record literal: \"%s\"", string),
-						 errdetail("Too few columns."),
-						 errOmitLocation(true)));
+						 errdetail("Too few columns.")));
 			}
 		}
 
@@ -253,8 +252,7 @@ record_in(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 				 errmsg("malformed record literal: \"%s\"", string),
-				 errdetail("Too many columns."),
-				 errOmitLocation(true)));
+				 errdetail("Too many columns.")));
 	}
 	/* Allow trailing whitespace */
 	while (*ptr && isspace((unsigned char) *ptr))
@@ -265,8 +263,7 @@ record_in(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 				 errmsg("malformed record literal: \"%s\"", string),
-				 errdetail("Junk after right parenthesis."),
-				 errOmitLocation(true)));
+				 errdetail("Junk after right parenthesis.")));
 	}
 	tuple = heap_form_tuple(tupdesc, values, nulls);
 

@@ -1260,24 +1260,21 @@ lookupCustomFormatter(char *formatter_name, bool iswritable)
 							errmsg("formatter function %s of type %s was not found.",
 									formatter_name,
 									(iswritable ? "writable" : "readable")),
-							errhint("Create it with CREATE FUNCTION."),
-							errOmitLocation(true)));
+							errhint("Create it with CREATE FUNCTION.")));
 
 		/* check return type matches */
 		if (get_func_rettype(procOid) != returnOid)
 			ereport(ERROR, (errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
 							errmsg("formatter function %s of type %s has an incorrect return type",
 									formatter_name,
-									(iswritable ? "writable" : "readable")),
-							errOmitLocation(true)));
+									(iswritable ? "writable" : "readable"))));
 
 		/* check allowed volatility */
 		if (func_volatile(procOid) != PROVOLATILE_STABLE)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 					 errmsg("formatter function %s is not declared STABLE.",
-							 formatter_name),
-					 errOmitLocation(true)));
+							 formatter_name)));
 
 		return procOid;
 }

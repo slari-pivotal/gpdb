@@ -2522,8 +2522,7 @@ alter_table_partition_cmd:
                     if (pid->idtype != AT_AP_IDName)
 						ereport(ERROR,
 								(errcode(ERRCODE_SYNTAX_ERROR),
-								 errmsg("Can only ADD a partition by name"),
-								 errOmitLocation(true)));
+								 errmsg("Can only ADD a partition by name")));
 
                     pc->partid = (Node *)pid;
 
@@ -4253,8 +4252,7 @@ partition_hash_keyword: 			HASH
                     if (!gp_enable_hash_partitioned_tables)
                         ereport(ERROR,
                             (errcode(ERRCODE_SYNTAX_ERROR),
-                             errmsg("PARTITION BY must specify RANGE or LIST"),
-                             errOmitLocation(true)));
+                             errmsg("PARTITION BY must specify RANGE or LIST")));
 
                     $$ = 1;
                 }
@@ -4356,8 +4354,7 @@ TabSubPartitionTemplate:
 										(errcode(ERRCODE_SYNTAX_ERROR),
 										 errmsg("template cannot contain "
 												"specification for child "
-												"partition"),
-										 errOmitLocation(true)));
+												"partition")));
 						}
 
 					}
@@ -4453,8 +4450,7 @@ CreateAsStmt:
 						ereport(ERROR,
                                 (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 								 errmsg("Cannot create a partitioned table using CREATE TABLE AS SELECT"),
-                                 errhint("Use CREATE TABLE...LIKE (followed by INSERT...SELECT) instead"),
-                                 errOmitLocation(true)));
+                                 errhint("Use CREATE TABLE...LIKE (followed by INSERT...SELECT) instead")));
 					
 					$$ = $6;
 				}
@@ -4563,8 +4559,7 @@ CreateExternalStmt:	CREATE OptWritable EXTERNAL OptWeb OptTemp TABLE qualified_n
 									ereport(ERROR,
 											(errcode(ERRCODE_SYNTAX_ERROR),
 										 	 errmsg("EXECUTE may not be used with a regular external table"),
-										 	 errhint("Use CREATE EXTERNAL WEB TABLE instead"),
-										 	 errOmitLocation(true)));							
+										 	 errhint("Use CREATE EXTERNAL WEB TABLE instead")));							
 								
 								/* if no ON clause specified, default to "ON ALL" */
 								if(extdesc->on_clause == NIL)
@@ -4576,8 +4571,7 @@ CreateExternalStmt:	CREATE OptWritable EXTERNAL OptWeb OptTemp TABLE qualified_n
 								{
 									ereport(ERROR,
 											(errcode(ERRCODE_SYNTAX_ERROR),
-									 		 errmsg("ON clause may not be used with a writable external table"),
-									 		 errOmitLocation(true)));							
+									 		 errmsg("ON clause may not be used with a writable external table")));							
 								}
 							}
 
@@ -7175,7 +7169,6 @@ oper_argtypes:
 						   (errcode(ERRCODE_SYNTAX_ERROR),
 							errmsg("missing argument"),
 							errhint("Use NONE to denote the missing argument of a unary operator."),
-                            errOmitLocation(true),
 							scanner_errposition(@1)));
 				}
 			| Typename ',' Typename

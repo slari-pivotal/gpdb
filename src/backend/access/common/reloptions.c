@@ -933,8 +933,7 @@ parseRelOptions(Datum options, int numkeywords, const char *const * keywords,
 				*p = '\0';
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					 errmsg("unrecognized parameter \"%s\"", s),
-							   errOmitLocation(true)));
+					 errmsg("unrecognized parameter \"%s\"", s)));
 		}
 	}
 	pfree(optiondatums);
@@ -995,8 +994,7 @@ default_reloptions(Datum reloptions, bool validate, char relkind,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("fillfactor=%d is out of range (should "
 							"be between %d and 100)",
-							result->fillfactor, minFillfactor),
-					 errOmitLocation(true)));
+							result->fillfactor, minFillfactor)));
 
 		result->fillfactor = defaultFillfactor;
 	}
@@ -1043,8 +1041,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("invalid parameter value for \"appendonly\": "
-							"\"%s\"", values[1]),
-					 errOmitLocation(true)));
+							"\"%s\"", values[1])));
 		}
 	}
 
@@ -1062,8 +1059,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 			ereport(ERROR,
 					(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 					 errmsg("invalid option 'blocksize' for base relation. "
-							"Only valid for Append Only relations"),
-									   errOmitLocation(true)));
+							"Only valid for Append Only relations")));
 
 		result->blocksize = pg_atoi(values[2], sizeof(int32), 0);
 
@@ -1075,8 +1071,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("block size must be between 8KB and 2MB and be"
-								" an 8KB multiple. Got %d", result->blocksize),
-						 errOmitLocation(true)));
+								" an 8KB multiple. Got %d", result->blocksize)));
 
 			result->blocksize = DEFAULT_APPENDONLY_BLOCK_SIZE;
 		}
@@ -1097,16 +1092,14 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 			ereport(ERROR,
 					(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 					 errmsg("invalid option \"compresstype\" for base relation."
-							" Only valid for Append Only relations"),
-									   errOmitLocation(true)));
+							" Only valid for Append Only relations")));
 
 		result->compresstype = pstrdup(values[3]);
 		if (!compresstype_is_valid(result->compresstype))
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("unknown compresstype \"%s\"",
-							result->compresstype),
-					 errOmitLocation(true)));
+							result->compresstype)));
 		for (j = 0; j < strlen(result->compresstype); j++)
 			result->compresstype[j] = pg_tolower(result->compresstype[j]);
 	}
@@ -1125,8 +1118,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 			ereport(ERROR,
 					(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 					 errmsg("invalid option 'compresslevel' for base "
-							"relation. Only valid for Append Only relations"),
-					 errOmitLocation(true)));
+							"relation. Only valid for Append Only relations")));
 
 		result->compresslevel = pg_atoi(values[4], sizeof(int32), 0);
 
@@ -1135,8 +1127,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 			result->compresslevel == 0 && validate)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					 errmsg("compresstype can\'t be used with compresslevel 0"),
-							   errOmitLocation(true)));
+					 errmsg("compresstype can\'t be used with compresslevel 0")));
 		if (result->compresslevel < 0 || result->compresslevel > 9)
 		{
 			if (validate)
@@ -1144,8 +1135,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("compresslevel=%d is out of range (should be "
 								"between 0 and 9)",
-								result->compresslevel),
-						 errOmitLocation(true)));
+								result->compresslevel)));
 
 			result->compresslevel = setDefaultCompressionLevel(
 					result->compresstype);
@@ -1171,8 +1161,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 							(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 							 errmsg("compresslevel=%d is out of range for "
 									"quicklz (should be 1)",
-									result->compresslevel),
-							 errOmitLocation(true)));
+									result->compresslevel)));
 
 				result->compresslevel = setDefaultCompressionLevel(
 						result->compresstype);
@@ -1188,8 +1177,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("compresslevel=%d is out of range for rle_type"
 								" (should be in the range 1 to 4)",
-								result->compresslevel),
-						 errOmitLocation(true)));
+								result->compresslevel)));
 
 			result->compresslevel = setDefaultCompressionLevel(
 					result->compresstype);
@@ -1210,16 +1198,14 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 			ereport(ERROR,
 					(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 					 errmsg("invalid option \"checksum\" for base relation. "
-							"Only valid for Append Only relations"),
-					 errOmitLocation(true)));
+							"Only valid for Append Only relations")));
 
 		if (!parse_bool(values[5], &result->checksum) && validate)
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("invalid parameter value for \"checksum\": \"%s\"",
-							values[5]),
-					 errOmitLocation(true)));
+							values[5])));
 		}
 	}
 	/* Disable checksum for heap relations. */
@@ -1240,8 +1226,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 			ereport(ERROR,
 					(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 					 errmsg("invalid option \"orientation\" for base relation. "
-							"Only valid for Append Only relations"),
-									   errOmitLocation(true)));
+							"Only valid for Append Only relations")));
 
 		if (!(pg_strcasecmp(values[6], "column") == 0 ||
 			  pg_strcasecmp(values[6], "row") == 0) &&
@@ -1250,8 +1235,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("invalid parameter value for \"orientation\": "
-							"\"%s\"", values[6]),
-					 errOmitLocation(true)));
+							"\"%s\"", values[6])));
 		}
 
 		result->columnstore = (pg_strcasecmp(values[6], "column") == 0 ?
@@ -1265,8 +1249,7 @@ parse_validate_reloptions(StdRdOptions *result, Datum reloptions,
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("%s cannot be used with Append Only relations "
-								"row orientation", result->compresstype),
-						 errOmitLocation(true)));
+								"row orientation", result->compresstype)));
 		}
 	}
 

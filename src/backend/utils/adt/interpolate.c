@@ -294,8 +294,7 @@ linterp_int64(PG_FUNCTION_ARGS)
 		if ( r < LONG_MIN || r > LONG_MAX )
 			ereport(ERROR,
 					(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-					 errmsg("value \"%f\" is out of range for type bigint", r),
-					 errOmitLocation(true)));
+					 errmsg("value \"%f\" is out of range for type bigint", r)));
 	}
 
 	result = (int64)r;
@@ -334,8 +333,7 @@ linterp_int32(PG_FUNCTION_ARGS)
 		if ( r < INT_MIN || r > INT_MAX )
 			ereport(ERROR,
 					(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-					 errmsg("value \"%f\" is out of range for type integer", r),
-					 errOmitLocation(true)));
+					 errmsg("value \"%f\" is out of range for type integer", r)));
 	}
 	
 	result = (int32)r;
@@ -373,8 +371,7 @@ linterp_int16(PG_FUNCTION_ARGS)
 		if ( r < SHRT_MIN || r > SHRT_MAX )
 			ereport(ERROR,
 					(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-					 errmsg("value \"%f\" is out of range for type smallint", r),
-					 errOmitLocation(true)));
+					 errmsg("value \"%f\" is out of range for type smallint", r)));
 	}	
 	result = (int16)r;
 	PG_RETURN_INT16(result);

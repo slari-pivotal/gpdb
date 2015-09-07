@@ -51,12 +51,12 @@ do {															\
 	if (isinf(val) && !(inf_is_valid))							\
 		ereport(ERROR,											\
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),	\
-		  errmsg("value out of range: overflow"),errOmitLocation(true)));				\
+		  errmsg("value out of range: overflow")));				\
 																\
 	if ((val) == 0.0 && !(zero_is_valid))						\
 		ereport(ERROR,											\
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),	\
-		 errmsg("value out of range: underflow"),errOmitLocation(true)));				\
+		 errmsg("value out of range: underflow")));				\
 } while(0)
 
 /* ========== USER I/O ROUTINES ========== */
@@ -204,8 +204,7 @@ float4in(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 				 errmsg("invalid input syntax for type real: \"%s\"",
-						orig_num),
-								 errOmitLocation(true)));
+						orig_num)));
 
 	/* skip leading whitespace */
 	while (*num != '\0' && isspace((unsigned char) *num))
@@ -241,14 +240,12 @@ float4in(PG_FUNCTION_ARGS)
 			ereport(ERROR,
 					(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
 					 errmsg("\"%s\" is out of range for type real",
-							orig_num),
-									 errOmitLocation(true)));
+							orig_num)));
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 					 errmsg("invalid input syntax for type real: \"%s\"",
-							orig_num),
-									 errOmitLocation(true)));
+							orig_num)));
 	}
 #ifdef HAVE_BUGGY_SOLARIS_STRTOD
 	else
@@ -299,8 +296,7 @@ float4in(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 				 errmsg("invalid input syntax for type real: \"%s\"",
-						orig_num),
-								 errOmitLocation(true)));
+						orig_num)));
 
 	/*
 	 * if we get here, we have a legal double, still need to check to see if
@@ -402,8 +398,7 @@ float8in(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 			 errmsg("invalid input syntax for type double precision: \"%s\"",
-					orig_num),
-							 errOmitLocation(true)));
+					orig_num)));
 
 	/* skip leading whitespace */
 	while (*num != '\0' && isspace((unsigned char) *num))
@@ -439,14 +434,12 @@ float8in(PG_FUNCTION_ARGS)
 			ereport(ERROR,
 					(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
 				   errmsg("\"%s\" is out of range for type double precision",
-						  orig_num),
-									 errOmitLocation(true)));
+						  orig_num)));
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 			 errmsg("invalid input syntax for type double precision: \"%s\"",
-					orig_num),
-							 errOmitLocation(true)));
+					orig_num)));
 	}
 #ifdef HAVE_BUGGY_SOLARIS_STRTOD
 	else
@@ -497,8 +490,7 @@ float8in(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 			 errmsg("invalid input syntax for type double precision: \"%s\"",
-					orig_num),
-							 errOmitLocation(true)));
+					orig_num)));
 
 	/*
 	 * strtod does not support values from 1e-323 to 1e-308 for double datatype in rhel6
@@ -793,8 +785,7 @@ float4div(PG_FUNCTION_ARGS)
 	if (arg2 == 0.0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 
 	result = arg1 / arg2;
 
@@ -858,8 +849,7 @@ float8div(PG_FUNCTION_ARGS)
 	if (arg2 == 0.0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 
 	result = arg1 / arg2;
 
@@ -1132,8 +1122,7 @@ dtoi4(PG_FUNCTION_ARGS)
 	if (num < INT_MIN || num > INT_MAX || isnan(num))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("integer out of range"),
-						 errOmitLocation(true)));
+				 errmsg("integer out of range")));
 
 	result = (int32) rint(num);
 	PG_RETURN_INT32(result);
@@ -1151,8 +1140,7 @@ dtoi2(PG_FUNCTION_ARGS)
 	if (num < SHRT_MIN || num > SHRT_MAX || isnan(num))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("smallint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("smallint out of range")));
 
 	PG_RETURN_INT16((int16) rint(num));
 }
@@ -1193,8 +1181,7 @@ ftoi4(PG_FUNCTION_ARGS)
 	if (num < INT_MIN || num > INT_MAX || isnan(num))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("integer out of range"),
-						 errOmitLocation(true)));
+				 errmsg("integer out of range")));
 
 	PG_RETURN_INT32((int32) rint(num));
 }
@@ -1211,8 +1198,7 @@ ftoi2(PG_FUNCTION_ARGS)
 	if (num < SHRT_MIN || num > SHRT_MAX || isnan(num))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("smallint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("smallint out of range")));
 
 	PG_RETURN_INT16((int16) rint(num));
 }
@@ -1439,8 +1425,7 @@ dsqrt(PG_FUNCTION_ARGS)
 	if (arg1 < 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_ARGUMENT_FOR_POWER_FUNCTION),
-				 errmsg("cannot take square root of a negative number"),
-						 errOmitLocation(true)));
+				 errmsg("cannot take square root of a negative number")));
 
 	result = sqrt(arg1);
 
@@ -1482,13 +1467,11 @@ dpow(PG_FUNCTION_ARGS)
 	if (arg1 == 0 && arg2 < 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_ARGUMENT_FOR_POWER_FUNCTION),
-				 errmsg("zero raised to a negative power is undefined"),
-						 errOmitLocation(true)));
+				 errmsg("zero raised to a negative power is undefined")));
 	if (arg1 < 0 && floor(arg2) != arg2)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_ARGUMENT_FOR_POWER_FUNCTION),
-				 errmsg("a negative number raised to a non-integer power yields a complex result"),
-						 errOmitLocation(true)));
+				 errmsg("a negative number raised to a non-integer power yields a complex result")));
 
 	/*
 	 * pow() sets errno only on some platforms, depending on whether it
@@ -1554,13 +1537,11 @@ dlog1(PG_FUNCTION_ARGS)
 	if (arg1 == 0.0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_ARGUMENT_FOR_LOG),
-				 errmsg("cannot take logarithm of zero"),
-						 errOmitLocation(true)));
+				 errmsg("cannot take logarithm of zero")));
 	if (arg1 < 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_ARGUMENT_FOR_LOG),
-				 errmsg("cannot take logarithm of a negative number"),
-						 errOmitLocation(true)));
+				 errmsg("cannot take logarithm of a negative number")));
 
 	result = log(arg1);
 
@@ -1586,13 +1567,11 @@ dlog10(PG_FUNCTION_ARGS)
 	if (arg1 == 0.0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_ARGUMENT_FOR_LOG),
-				 errmsg("cannot take logarithm of zero"),
-						 errOmitLocation(true)));
+				 errmsg("cannot take logarithm of zero")));
 	if (arg1 < 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_ARGUMENT_FOR_LOG),
-				 errmsg("cannot take logarithm of a negative number"),
-						 errOmitLocation(true)));
+				 errmsg("cannot take logarithm of a negative number")));
 
 	result = log10(arg1);
 
@@ -1619,8 +1598,7 @@ dacos(PG_FUNCTION_ARGS)
 	if (errno != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("input is out of range"),
-						 errOmitLocation(true)));
+				 errmsg("input is out of range")));
 
 	CHECKFLOATVAL(result, isinf(arg1), true);
 	PG_RETURN_FLOAT8(result);
@@ -1641,8 +1619,7 @@ dasin(PG_FUNCTION_ARGS)
 	if (errno != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("input is out of range"),
-						 errOmitLocation(true)));
+				 errmsg("input is out of range")));
 
 	CHECKFLOATVAL(result, isinf(arg1), true);
 	PG_RETURN_FLOAT8(result);
@@ -1663,8 +1640,7 @@ datan(PG_FUNCTION_ARGS)
 	if (errno != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("input is out of range"),
-						 errOmitLocation(true)));
+				 errmsg("input is out of range")));
 
 	CHECKFLOATVAL(result, isinf(arg1), true);
 	PG_RETURN_FLOAT8(result);
@@ -1686,8 +1662,7 @@ datan2(PG_FUNCTION_ARGS)
 	if (errno != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("input is out of range"),
-						 errOmitLocation(true)));
+				 errmsg("input is out of range")));
 
 	CHECKFLOATVAL(result, isinf(arg1) || isinf(arg2), true);
 	PG_RETURN_FLOAT8(result);
@@ -1708,8 +1683,7 @@ dcos(PG_FUNCTION_ARGS)
 	if (errno != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("input is out of range"),
-						 errOmitLocation(true)));
+				 errmsg("input is out of range")));
 
 	CHECKFLOATVAL(result, isinf(arg1), true);
 	PG_RETURN_FLOAT8(result);
@@ -1738,8 +1712,7 @@ dcot(PG_FUNCTION_ARGS)
 	if (errno != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("input is out of range"),
-						 errOmitLocation(true)));
+				 errmsg("input is out of range")));
 
 	result = 1.0 / result;
 	CHECKFLOATVAL(result, true /* cotan(pi/2) == inf */ , true);
@@ -1761,8 +1734,7 @@ dsin(PG_FUNCTION_ARGS)
 	if (errno != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("input is out of range"),
-						 errOmitLocation(true)));
+				 errmsg("input is out of range")));
 
 	CHECKFLOATVAL(result, isinf(arg1), true);
 	PG_RETURN_FLOAT8(result);
@@ -1788,8 +1760,7 @@ dtan(PG_FUNCTION_ARGS)
 	if (errno != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("input is out of range"),
-						 errOmitLocation(true)));
+				 errmsg("input is out of range")));
 
 	CHECKFLOATVAL(result, true /* tan(pi/2) == Inf */ , true);
 	PG_RETURN_FLOAT8(result);
@@ -2724,8 +2695,7 @@ float48div(PG_FUNCTION_ARGS)
 	if (arg2 == 0.0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 
 	result = arg1 / arg2;
 	CHECKFLOATVAL(result, isinf(arg1) || isinf(arg2), arg1 == 0);
@@ -2788,8 +2758,7 @@ float84div(PG_FUNCTION_ARGS)
 	if (arg2 == 0.0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 
 	result = arg1 / arg2;
 

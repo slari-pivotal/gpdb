@@ -888,8 +888,7 @@ CreateQueue(CreateQueueStmt *stmt)
 	if ( !dactivelimit && !dcostlimit)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 errmsg("at least one threshold (\"ACTIVE_STATEMENTS\", \"MAX_COST\") must be specified"),
-						   errOmitLocation(true)));
+				 errmsg("at least one threshold (\"ACTIVE_STATEMENTS\", \"MAX_COST\") must be specified")));
 
 	/* Check all thresholds are not invalid. */
 	if (activelimit == INVALID_RES_LIMIT_THRESHOLD &&
@@ -897,8 +896,7 @@ CreateQueue(CreateQueueStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
 				 errmsg("the value for at least one threshold (\"ACTIVE_STATEMENTS\", \"MAX_COST\") must be different from no limit (%d)",
-						 INVALID_RES_LIMIT_THRESHOLD),
-						   errOmitLocation(true)));
+						 INVALID_RES_LIMIT_THRESHOLD)));
 
 	/*
 	 * Check for an illegal name ('none' is used to signify no queue in ALTER
@@ -908,8 +906,7 @@ CreateQueue(CreateQueueStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_RESERVED_NAME),
 				 errmsg("resource queue name \"%s\" is reserved",
-						stmt->queue),
-				 errOmitLocation(true)));
+						stmt->queue)));
 
 	/*
 	 * Check the pg_resqueue relation to be certain the queue doesn't already
@@ -1245,8 +1242,7 @@ AlterQueue(AlterQueueStmt *stmt)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("active threshold cannot be less than %d or equal to 0", 
-							INVALID_RES_LIMIT_THRESHOLD),
-									   errOmitLocation(true)));
+							INVALID_RES_LIMIT_THRESHOLD)));
 	}
 
 	if (dcostlimit)
@@ -1256,8 +1252,7 @@ AlterQueue(AlterQueueStmt *stmt)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("cost threshold must be equal to %d or greater than 0", 
-							INVALID_RES_LIMIT_THRESHOLD),
-									   errOmitLocation(true)));
+							INVALID_RES_LIMIT_THRESHOLD)));
 	}
 
 	if (dovercommit)
@@ -1272,8 +1267,7 @@ AlterQueue(AlterQueueStmt *stmt)
 			  (ignorelimit >= 0)))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					 errmsg("min_cost threshold cannot be negative"), 
-					 errOmitLocation(true)));
+					 errmsg("min_cost threshold cannot be negative")));
 	}
 
 	/*
@@ -1292,8 +1286,7 @@ AlterQueue(AlterQueueStmt *stmt)
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
-					 errmsg("at least one threshold, overcommit or ignore limit must be specified"),
-					 errOmitLocation(true)));
+					 errmsg("at least one threshold, overcommit or ignore limit must be specified")));
 
 	}
 
@@ -1322,8 +1315,7 @@ AlterQueue(AlterQueueStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("resource queue \"%s\" does not exist",
-						stmt->queue),
-								   errOmitLocation(true)));
+						stmt->queue)));
 
 	/*
 	 * Remember the Oid and current thresholds, for updating the in-memory

@@ -440,8 +440,7 @@ transformIndexConstraint(Constraint *constraint, CreateStmtContext *cxt)
 			ereport(ERROR,
 					(errcode(ERRCODE_UNDEFINED_COLUMN),
 					 errmsg("column \"%s\" named in key does not exist",
-							key),
-					 errOmitLocation(true)));
+							key)));
 
 		/* Check for PRIMARY KEY(foo, foo) */
 		foreach(columns, index->indexParams)

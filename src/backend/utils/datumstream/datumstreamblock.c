@@ -291,7 +291,6 @@ DatumStreamBlockRead_GetReadyOrig(
 					 alignedHeaderSize,
 					 dsr->datum_beginp,
 					 dsr->datum_afterp),
-			  errOmitLocation(true),
 			  errdetail_datumstreamblockread(dsr),
 			  errcontext_datumstreamblockread(dsr)));
 		}
@@ -314,7 +313,6 @@ DatumStreamBlockRead_GetReadyOrig(
 						dsr->null_bitmap_beginp,
 						dsr->datum_beginp,
 						dsr->datum_afterp),
-				 errOmitLocation(true),
 				 errdetail_datumstreamblockread(dsr),
 				 errcontext_datumstreamblockread(dsr)));
 		}
@@ -757,7 +755,6 @@ DatumStreamBlockRead_GetReadyDense(
 						alignedHeaderSize,
 						dsr->datum_beginp,
 						dsr->datum_afterp),
-				 errOmitLocation(true),
 				 errdetail_datumstreamblockread(dsr),
 				 errcontext_datumstreamblockread(dsr)));
 			}
@@ -776,7 +773,6 @@ DatumStreamBlockRead_GetReadyDense(
 								dsr->null_bitmap_beginp,
 								dsr->datum_beginp,
 								dsr->datum_afterp),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockread(dsr),
 						 errcontext_datumstreamblockread(dsr)));
 			}
@@ -843,7 +839,6 @@ DatumStreamBlockRead_GetReadyDense(
 								alignedHeaderSize,
 								dsr->datum_beginp,
 								dsr->datum_afterp),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockread(dsr),
 						 errcontext_datumstreamblockread(dsr)));
 			}
@@ -870,7 +865,6 @@ DatumStreamBlockRead_GetReadyDense(
 								dsr->null_bitmap_beginp,
 								dsr->datum_beginp,
 								dsr->datum_afterp),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockread(dsr),
 						 errcontext_datumstreamblockread(dsr)));
 			}
@@ -930,7 +924,6 @@ DatumStreamBlockRead_GetReadyDense(
 							dsr->null_bitmap_beginp,
 							dsr->datum_beginp,
 							dsr->datum_afterp),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockread(dsr),
 					 errcontext_datumstreamblockread(dsr)));
 		}
@@ -1186,7 +1179,6 @@ DatumStreamBlockWrite_PrintInputVarlenaInfo(
 				  VarlenaInfoToString(p),
 				  dsw->nth,
 				  (wasExtended ? "true" : "false")),
-		   errOmitLocation(true),
 		   errdetail_datumstreamblockwrite(dsw),
 		   errcontext_datumstreamblockwrite(dsw)));
 }
@@ -1204,7 +1196,6 @@ DatumStreamBlockWrite_PrintStoredSmallVarlenaInfo(
 			(errmsg("Write stored small varlena: <%s> (nth %d)",
 					VarlenaInfoToString(p),
 					dsw->nth),
-			 errOmitLocation(true),
 			 errdetail_datumstreamblockwrite(dsw),
 			 errcontext_datumstreamblockwrite(dsw)));
 }
@@ -1225,7 +1216,6 @@ DatumStreamBlockWrite_PutFixedLengthTrace(
 						item_beginp,
 						(int64) (item_beginp - dsw->datum_buffer),
 						dsw->datump),
-				 errOmitLocation(true),
 				 errdetail_datumstreamblockwrite(dsw),
 				 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -1269,7 +1259,6 @@ DatumStreamBlockWrite_PutFixedLengthTrace(
 						(int64) (item_beginp - dsw->datum_buffer),
 						dsw->datump,
 						(int64) readDatum),
-				 errOmitLocation(true),
 				 errdetail_datumstreamblockwrite(dsw),
 				 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -1402,7 +1391,6 @@ DatumStreamBlockWrite_MakeNullBitMapSpace(
 						   DatumStreamBitMapWrite_OnCount(&dsw->null_bitmap),
 							  DatumStreamBitMapWrite_Size(&dsw->null_bitmap),
 						  DatumStreamBitMapWrite_MaxSize(&dsw->null_bitmap)),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -1426,7 +1414,6 @@ DatumStreamBlockWrite_MakeNullBitMapSpace(
 					  DatumStreamBitMapWrite_Size(&dsw->rle_compress_bitmap),
 								dsw->rle_repeatcounts_count,
 								dsw->rle_repeatcounts_current_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -1459,7 +1446,6 @@ DatumStreamBlockWrite_MakeNullBitMapSpace(
 							 DatumStreamBitMapWrite_Count(&dsw->null_bitmap),
 						   DatumStreamBitMapWrite_OnCount(&dsw->null_bitmap),
 							 DatumStreamBitMapWrite_Size(&dsw->null_bitmap)),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -1482,7 +1468,6 @@ DatumStreamBlockWrite_MakeNullBitMapSpace(
 					  DatumStreamBitMapWrite_Size(&dsw->rle_compress_bitmap),
 								dsw->rle_repeatcounts_count,
 								dsw->rle_repeatcounts_current_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -1549,7 +1534,6 @@ DatumStreamBlockWrite_OrigHasSpace(
 						newTotalSize,
 						dsw->maxDataBlockSize,
 						(result ? "true" : "false")),
-				 errOmitLocation(true),
 				 errdetail_datumstreamblockwrite(dsw),
 				 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -1593,7 +1577,6 @@ DatumStreamBlockWrite_PutOrig(
 					(errmsg("Datum stream block write Original NULL "
 							"(nth %d)",
 							dsw->nth),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -1722,7 +1705,6 @@ DatumStreamBlockWrite_PutOrig(
 					(int64) (item_beginp - dsw->datum_buffer),
 					dsw->datump,
 					dsw->datum_afterp),
-			 errOmitLocation(true),
 			 errdetail_datumstreamblockwrite(dsw),
 			 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -1839,7 +1821,6 @@ DatumStreamBlockWrite_MakeCompressBitMapSpace(
 				   DatumStreamBitMapWrite_MaxSize(&dsw->rle_compress_bitmap),
 								dsw->rle_repeatcounts_count,
 								dsw->rle_repeatcounts_current_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -1862,7 +1843,6 @@ DatumStreamBlockWrite_MakeCompressBitMapSpace(
 					  DatumStreamBitMapWrite_Size(&dsw->rle_compress_bitmap),
 								dsw->rle_repeatcounts_count,
 								dsw->rle_repeatcounts_current_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -1898,7 +1878,6 @@ DatumStreamBlockWrite_MakeCompressBitMapSpace(
 				   DatumStreamBitMapWrite_MaxSize(&dsw->rle_compress_bitmap),
 								dsw->rle_repeatcounts_count,
 								dsw->rle_repeatcounts_current_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -1921,7 +1900,6 @@ DatumStreamBlockWrite_MakeCompressBitMapSpace(
 				   DatumStreamBitMapWrite_MaxSize(&dsw->rle_compress_bitmap),
 								dsw->rle_repeatcounts_count,
 								dsw->rle_repeatcounts_current_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -2052,7 +2030,6 @@ DatumStreamBlockWrite_DenseHasSpaceNull(
 					newTotalSize,
 					dsw->maxDataBlockSize,
 					(result ? "true" : "false")),
-			 errOmitLocation(true),
 			 errdetail_datumstreamblockwrite(dsw),
 			 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -2195,7 +2172,6 @@ DatumStreamBlockWrite_DenseHasSpaceRepeat(
 				   newTotalSize,
 				   dsw->maxDataBlockSize,
 				   (result ? "true" : "false")),
-			errOmitLocation(true),
 			errdetail_datumstreamblockwrite(dsw),
 			errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -2328,7 +2304,6 @@ DatumStreamBlockWrite_DenseHasSpaceDelta(
 						newTotalSize,
 						dsw->maxDataBlockSize,
 						(result ? "true" : "false")),
-				 errOmitLocation(true),
 				 errdetail_datumstreamblockwrite(dsw),
 				 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -2461,7 +2436,6 @@ DatumStreamBlockWrite_DenseHasSpaceItem(
 				newTotalSize,
 				dsw->maxDataBlockSize,
 				(result ? "true" : "false")),
-		 errOmitLocation(true),
 		 errdetail_datumstreamblockwrite(dsw),
 		 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -2500,7 +2474,6 @@ DatumStreamBlockWrite_RleFinalizeRepeatCountSize(
 				dsw->rle_repeatcounts_count - 1,
 				dsw->rle_repeatcounts[dsw->rle_repeatcounts_count - 1],
 				dsw->rle_repeatcounts_current_size),
-		 errOmitLocation(true),
 		 errdetail_datumstreamblockwrite(dsw),
 		 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -2778,7 +2751,6 @@ DatumStreamBlockWrite_MakeDeltaCompressBitMapSpace(
 						  DatumStreamBitMapWrite_MaxSize(&dsw->delta_bitmap),
 							dsw->deltas_count,
 							dsw->deltas_current_size),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -2809,7 +2781,6 @@ DatumStreamBlockWrite_MakeDeltaCompressBitMapSpace(
 						  DatumStreamBitMapWrite_MaxSize(&dsw->delta_bitmap),
 							dsw->deltas_count,
 							dsw->deltas_current_size),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -2832,7 +2803,6 @@ DatumStreamBlockWrite_MakeDeltaCompressBitMapSpace(
 						  DatumStreamBitMapWrite_MaxSize(&dsw->delta_bitmap),
 							dsw->deltas_count,
 							dsw->deltas_current_size),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -2851,7 +2821,6 @@ DatumStreamBlockWrite_DeltaMaintain(
 	{
 		ereport(LOG,
 			(errmsg("Datum stream insert DELTA Maintain = " INT64_FORMAT, d),
-			 errOmitLocation(true),
 			 errdetail_datumstreamblockwrite(dsw),
 			 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -2899,7 +2868,6 @@ DatumStreamBlockWrite_DeltaAdd(
 		ereport(LOG,
 		(errmsg("Datum stream insert DELTA Add = " INT64_FORMAT " sign = %d",
 				delta, sign),
-		 errOmitLocation(true),
 		 errdetail_datumstreamblockwrite(dsw),
 		 errcontext_datumstreamblockwrite(dsw)));
 	}
@@ -3170,7 +3138,6 @@ DatumStreamBlockWrite_PutDense(
 							"(nth %d, new NULL bit-map count %d)",
 							dsw->nth,
 							dsw->always_null_bitmap_count),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -3268,7 +3235,6 @@ DatumStreamBlockWrite_PutDense(
 								dsw->datum_buffer,
 								dsw->datump,
 								dsw->datum_afterp),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -3290,7 +3256,6 @@ DatumStreamBlockWrite_PutDense(
 								(isEqual ? "EQUAL" : "NOT EQUAL"),
 								dsw,
 								dsw->nth),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -3402,7 +3367,6 @@ DatumStreamBlockWrite_PutDense(
 					   (int64) (item_beginp - dsw->datum_buffer),
 					   dsw->datump,
 					   dsw->datum_afterp),
-				errOmitLocation(true),
 				errdetail_datumstreamblockwrite(dsw),
 				errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -3500,7 +3464,6 @@ DatumStreamBlockWrite_PutDense(
 							item_beginp,
 							dsw->datump,
 							dsw->datum_afterp),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -3782,7 +3745,6 @@ DatumStreamBlockWrite_BlockOrig(
 							(int32) writesz,
 							rowCount,
 							block.sz),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -3796,7 +3758,6 @@ DatumStreamBlockWrite_BlockOrig(
 							DatumStreamBitMapWrite_OnCount(&dsw->null_bitmap),
 							block.nullsz,
 							block.sz),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -4132,7 +4093,6 @@ DatumStreamBlockWrite_BlockDense(
 								nullSize,
 								rleSize,
 								dense.physical_data_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -4157,7 +4117,6 @@ DatumStreamBlockWrite_BlockDense(
 						nullSize,
 						rleSize,
 						dense.physical_data_size),
-				 errOmitLocation(true),
 				 errdetail_datumstreamblockwrite(dsw),
 				 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -4189,7 +4148,6 @@ DatumStreamBlockWrite_BlockDense(
 								dsw->savings - dsw->remember_savings,
 								dsw->savings,
 								dense.physical_data_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -4222,7 +4180,6 @@ DatumStreamBlockWrite_BlockDense(
 								dsw->savings - dsw->remember_savings,
 								dsw->savings,
 								dense.physical_data_size),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -4240,7 +4197,6 @@ DatumStreamBlockWrite_BlockDense(
 							dsw->deltas_count,
 							dsw->deltas_current_size,
 							totalDeltasSize),
-					 errOmitLocation(true),
 					 errdetail_datumstreamblockwrite(dsw),
 					 errcontext_datumstreamblockwrite(dsw)));
 		}
@@ -4370,7 +4326,6 @@ DatumStreamBlockWrite_Init(
 								(uint32) dsw->typeInfo->typid,
 								dsw->typeInfo->align,
 								(dsw->typeInfo->byval ? "true" : "false")),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}
@@ -4482,7 +4437,6 @@ DatumStreamBlockWrite_Init(
 								(uint32) dsw->typeInfo->typid,
 								dsw->typeInfo->align,
 								(dsw->typeInfo->byval ? "true" : "false")),
-						 errOmitLocation(true),
 						 errdetail_datumstreamblockwrite(dsw),
 						 errcontext_datumstreamblockwrite(dsw)));
 			}

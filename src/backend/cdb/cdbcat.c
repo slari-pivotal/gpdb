@@ -445,8 +445,7 @@ checkPolicyForUniqueIndex(Relation rel, AttrNumber *indattr, int nidxatts,
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TABLE_DEFINITION),
 				 errmsg("%s and DISTRIBUTED RANDOMLY are incompatible",
-						isprimary ? "PRIMARY KEY" : "UNIQUE"),
-				 errOmitLocation(true)));
+						isprimary ? "PRIMARY KEY" : "UNIQUE")));
 	}
 
 	/* 
@@ -489,8 +488,7 @@ checkPolicyForUniqueIndex(Relation rel, AttrNumber *indattr, int nidxatts,
 					 errmsg("%s must contain all columns in the "
 							"distribution key of relation \"%s\"",
 							isprimary ? "PRIMARY KEY" : "UNIQUE index",
-						RelationGetRelationName(rel)),
-					 errOmitLocation(true)));
+						RelationGetRelationName(rel))));
 		}
 		else
 		{

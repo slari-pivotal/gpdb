@@ -4037,8 +4037,7 @@ get_delay_edge(WindowFrameEdge * edge,
 		ereport(ERROR,
 				(errcode(ERROR_INVALID_WINDOW_FRAME_PARAMETER),
 				 errmsg("%s parameter cannot be negative",
-						(is_rows ? "ROWS" : "RANGE")),
-				 errOmitLocation(true)));
+						(is_rows ? "ROWS" : "RANGE"))));
 
 	/* Check if the range expression is negative. */
 	if (!is_rows)
@@ -4046,8 +4045,7 @@ get_delay_edge(WindowFrameEdge * edge,
 			ereport(ERROR,
 					(errcode(ERROR_INVALID_WINDOW_FRAME_PARAMETER),
 					 errmsg("%s parameter cannot be negative",
-							(is_rows ? "ROWS" : "RANGE")),
-					 errOmitLocation(true)));
+							(is_rows ? "ROWS" : "RANGE"))));
 
 	if (is_rows && EDGE_IS_BOUND_PRECEDING(edge))
 		edge_param = 0 - edge_param;
@@ -5305,8 +5303,7 @@ init_bound_frame_edge_expr(WindowFrameEdge * edge, TupleDesc desc,
 				ereport(ERROR,
 						(errcode(ERRCODE_DATA_EXCEPTION),
 						 errmsg("can't coerce trailing frame bound to type of leading frame bound"),
-						 errhint("specify the leading and trailing frame bounds as the same type"),
-						 errOmitLocation(true)));
+						 errhint("specify the leading and trailing frame bounds as the same type")));
 		}
 
 		n = ExecInitExpr(expr, (PlanState *) wstate);
@@ -5325,8 +5322,7 @@ init_bound_frame_edge_expr(WindowFrameEdge * edge, TupleDesc desc,
 				ereport(ERROR,
 						(errcode(ERRCODE_DATA_EXCEPTION),
 						 errmsg("can't coerce leading frame bound to type of trailing frame bound"),
-						 errhint("specify the leading and trailing frame bounds as the same type"),
-						 errOmitLocation(true)));
+						 errhint("specify the leading and trailing frame bounds as the same type")));
 		}
 
 		n = ExecInitExpr((Expr *)expr, (PlanState *) wstate);
@@ -5833,8 +5829,7 @@ init_frames(WindowState * wstate)
 				ereport(ERROR,
 						(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 						 errmsg("aggregate functions with no prelimfn or "
-					"invprelimfn are not yet supported as window functions"),
-						 errOmitLocation(true)));
+					"invprelimfn are not yet supported as window functions")));
 			}
 
 			funcno++;
@@ -6319,8 +6314,7 @@ window_dummy(PG_FUNCTION_ARGS)
 			(errcode(ERRCODE_SYNTAX_ERROR),
 			 errmsg("function %s may only be called as a window function",
 					format_procedure(fcinfo->flinfo->fn_oid)),
-	  errhint("To call a function as a window function use an OVER clause."),
-			 errOmitLocation(true))
+	  errhint("To call a function as a window function use an OVER clause."))
 		);
 
 	return (Datum)0;			/* keep compiler quiet */
@@ -6432,8 +6426,7 @@ percent_rank_final(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_DATA_EXCEPTION),
 				 errmsg("arguments invalid or inconsistent"),
-			 errhint("inappropriate call to window function implementation"),
-				 errOmitLocation(true)));
+			 errhint("inappropriate call to window function implementation")));
 		result = 0.0;			/* quieten GCC */
 	}
 	else if (arg1 == 1 && arg2 == 1)
@@ -6448,8 +6441,7 @@ percent_rank_final(PG_FUNCTION_ARGS)
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-					 errmsg("value out of range: overflow"),
-					 errOmitLocation(true)));
+					 errmsg("value out of range: overflow")));
 		}
 	}
 
@@ -6686,8 +6678,7 @@ lead_lag_internal(PG_FUNCTION_ARGS, bool is_lead, bool *isnull)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("%s offset cannot be negative",
-							is_lead ? "LEAD" : "LAG"),
-					 errOmitLocation(true)));
+							is_lead ? "LEAD" : "LAG")));
 
 	}
 

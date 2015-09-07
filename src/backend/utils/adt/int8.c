@@ -98,8 +98,7 @@ scanint8(const char *str, bool errorOK, int64 *result)
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-					 errmsg("invalid input syntax for integer: \"%s\"",str),
-					 errOmitLocation(true)));
+					 errmsg("invalid input syntax for integer: \"%s\"",str)));
 	}
 
 	/* process digits */
@@ -114,8 +113,7 @@ scanint8(const char *str, bool errorOK, int64 *result)
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-					   errmsg("value \"%s\" is out of range for type bigint",str),
-					   errOmitLocation(true)));
+					   errmsg("value \"%s\" is out of range for type bigint",str)));
 		}
 		tmp = newtmp;
 	}
@@ -134,8 +132,7 @@ gotdigits:
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 					 errmsg("invalid input syntax for integer: \"%s\"",
-							str),
-									 errOmitLocation(true)));
+							str)));
 	}
 
 	*result = (sign < 0) ? -tmp : tmp;
@@ -504,8 +501,7 @@ int8um(PG_FUNCTION_ARGS)
 	if (arg != 0 && SAMESIGN(result, arg))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -534,8 +530,7 @@ int8pl(PG_FUNCTION_ARGS)
 	if (SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -556,8 +551,7 @@ int8mi(PG_FUNCTION_ARGS)
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -587,8 +581,7 @@ int8mul(PG_FUNCTION_ARGS)
 		(result / arg2 != arg1 || (arg2 == -1 && arg1 < 0 && result < 0)))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -602,8 +595,7 @@ int8div(PG_FUNCTION_ARGS)
 	if (arg2 == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 
 	result = arg1 / arg2;
 
@@ -616,8 +608,7 @@ int8div(PG_FUNCTION_ARGS)
 	if (arg2 == -1 && arg1 < 0 && result <= 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -635,8 +626,7 @@ int8abs(PG_FUNCTION_ARGS)
 	if (result < 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -652,8 +642,7 @@ int8mod(PG_FUNCTION_ARGS)
 	if (arg2 == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 	/* No overflow is possible */
 
 	PG_RETURN_INT64(arg1 % arg2);
@@ -672,8 +661,7 @@ int8inc(PG_FUNCTION_ARGS)
 	if (result < 0 && arg > 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 
 	PG_RETURN_INT64(result);
 }
@@ -689,8 +677,7 @@ int8dec(PG_FUNCTION_ARGS)
 	if (result > 0 && arg < 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 
 	PG_RETURN_INT64(result);
 }
@@ -758,8 +745,7 @@ int84pl(PG_FUNCTION_ARGS)
 	if (SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -780,8 +766,7 @@ int84mi(PG_FUNCTION_ARGS)
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -808,8 +793,7 @@ int84mul(PG_FUNCTION_ARGS)
 		result / arg1 != arg2)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -823,8 +807,7 @@ int84div(PG_FUNCTION_ARGS)
 	if (arg2 == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 
 	result = arg1 / arg2;
 
@@ -837,8 +820,7 @@ int84div(PG_FUNCTION_ARGS)
 	if (arg2 == -1 && arg1 < 0 && result <= 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -859,8 +841,7 @@ int48pl(PG_FUNCTION_ARGS)
 	if (SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -881,8 +862,7 @@ int48mi(PG_FUNCTION_ARGS)
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -909,8 +889,7 @@ int48mul(PG_FUNCTION_ARGS)
 		result / arg2 != arg1)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -924,8 +903,7 @@ int48div(PG_FUNCTION_ARGS)
 	{
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 		/* ensure compiler realizes we mustn't reach the division (gcc bug) */
 		PG_RETURN_NULL();
 	}
@@ -951,8 +929,7 @@ int82pl(PG_FUNCTION_ARGS)
 	if (SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -973,8 +950,7 @@ int82mi(PG_FUNCTION_ARGS)
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -1001,8 +977,7 @@ int82mul(PG_FUNCTION_ARGS)
 		result / arg1 != arg2)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -1016,8 +991,7 @@ int82div(PG_FUNCTION_ARGS)
 	if (arg2 == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 
 	result = arg1 / arg2;
 
@@ -1030,8 +1004,7 @@ int82div(PG_FUNCTION_ARGS)
 	if (arg2 == -1 && arg1 < 0 && result <= 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -1052,8 +1025,7 @@ int28pl(PG_FUNCTION_ARGS)
 	if (SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -1074,8 +1046,7 @@ int28mi(PG_FUNCTION_ARGS)
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -1102,8 +1073,7 @@ int28mul(PG_FUNCTION_ARGS)
 		result / arg2 != arg1)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 	PG_RETURN_INT64(result);
 }
 
@@ -1117,8 +1087,7 @@ int28div(PG_FUNCTION_ARGS)
 	{
 		ereport(ERROR,
 				(errcode(ERRCODE_DIVISION_BY_ZERO),
-				 errmsg("division by zero"),
-						 errOmitLocation(true)));
+				 errmsg("division by zero")));
 		/* ensure compiler realizes we mustn't reach the division (gcc bug) */
 		PG_RETURN_NULL();
 	}
@@ -1214,8 +1183,7 @@ int84(PG_FUNCTION_ARGS)
 	if ((int64) result != arg)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("integer out of range"),
-						 errOmitLocation(true)));
+				 errmsg("integer out of range")));
 
 	PG_RETURN_INT32(result);
 }
@@ -1240,8 +1208,7 @@ int82(PG_FUNCTION_ARGS)
 	if ((int64) result != arg)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("smallint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("smallint out of range")));
 
 	PG_RETURN_INT16(result);
 }
@@ -1279,8 +1246,7 @@ dtoi8(PG_FUNCTION_ARGS)
 	if ((float8) result != arg)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 
 	PG_RETURN_INT64(result);
 }
@@ -1319,8 +1285,7 @@ ftoi8(PG_FUNCTION_ARGS)
 	if ((float8) result != darg)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("bigint out of range"),
-						 errOmitLocation(true)));
+				 errmsg("bigint out of range")));
 
 	PG_RETURN_INT64(result);
 }
@@ -1337,8 +1302,7 @@ i8tooid(PG_FUNCTION_ARGS)
 	if ((int64) result != arg)
 		ereport(ERROR,
 				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("OID out of range"),
-						 errOmitLocation(true)));
+				 errmsg("OID out of range")));
 
 	PG_RETURN_OID(result);
 }

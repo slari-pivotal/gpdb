@@ -788,8 +788,7 @@ index_create(Oid heapRelationId,
 				ereport(ERROR,
 						(errcode(ERRCODE_DUPLICATE_OBJECT),
 						 errmsg("constraint \"%s\" for relation \"%s\" already exists",
-								constraintName, RelationGetRelationName(heapRelation)),
-								errOmitLocation(true)));
+								constraintName, RelationGetRelationName(heapRelation))));
 
 			if (isprimary)
 				constraintType = CONSTRAINT_PRIMARY;
