@@ -104,8 +104,8 @@ query_planner(PlannerInfo *root, List *tlist, double tuple_fraction,
 	 */
 	if (parse->jointree->fromlist == NIL)
 	{
-		*cheapest_path =
-			(Path *) create_result_path(NULL, NULL, (List *) parse->jointree->quals);
+		*cheapest_path = (Path *)
+			create_result_path(NULL, NULL, (List *) parse->jointree->quals);
 		*sorted_path = NULL;
 
 		return;
@@ -129,7 +129,7 @@ query_planner(PlannerInfo *root, List *tlist, double tuple_fraction,
 	root->full_join_clauses = NIL;
 	root->oj_info_list = NIL;
 	root->initial_rels = NIL;
-	
+
 	/*
 	 * Make a flattened version of the rangetable for faster access (this is
 	 * OK because the rangetable won't change any more).
@@ -140,10 +140,10 @@ query_planner(PlannerInfo *root, List *tlist, double tuple_fraction,
 	foreach(lc, parse->rtable)
 	{
 		RangeTblEntry *rte = (RangeTblEntry *) lfirst(lc);
-		
+
 		root->simple_rte_array[rti++] = rte;
 	}
-	
+
 	/*
 	 * Construct RelOptInfo nodes for all base relations in query, and
 	 * indirectly for all appendrel member relations ("other rels").  This
@@ -233,20 +233,20 @@ query_planner(PlannerInfo *root, List *tlist, double tuple_fraction,
 	 */
 	final_rel = make_one_rel(root, joinlist);
 
-	Insist(final_rel &&
-           final_rel->cheapest_startup_path &&
-           final_rel->cheapest_total_path);
+	if (!final_rel || !final_rel->cheapest_total_path)
+		elog(ERROR, "failed to construct the join relation");
+	Insist(final_rel->cheapest_startup_path);
 
-    /*
-     * CDB: Subquery duplicate suppression should be all finished by now.
-     *
-     * CDB TODO: If query has DISTINCT, GROUP BY with just MIN/MAX aggs, or
-     * LIMIT 1, consider paths in which subquery duplicate suppression has
-     * not been completed.  (Would have to change set_cheapest_dedup() to not
-     * discard them.)
-     */
-    Insist(final_rel->cheapest_startup_path->subq_complete &&
-           final_rel->cheapest_total_path->subq_complete);
+	/*
+	 * CDB: Subquery duplicate suppression should be all finished by now.
+	 *
+	 * CDB TODO: If query has DISTINCT, GROUP BY with just MIN/MAX aggs, or
+	 * LIMIT 1, consider paths in which subquery duplicate suppression has
+	 * not been completed.  (Would have to change set_cheapest_dedup() to not
+	 * discard them.)
+	 */
+	Insist(final_rel->cheapest_startup_path->subq_complete &&
+		   final_rel->cheapest_total_path->subq_complete);
 
 	/*
 	 * If there's grouping going on, estimate the number of result groups. We
