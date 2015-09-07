@@ -258,10 +258,10 @@ pathnode_walk_kids(Path            *path,
                     {
                             NestPath   *nestpath = (NestPath *)path;
 
-                            v = pathnode_walk_node(nestpath->jpath.outerjoinpath, walker, context);
+                            v = pathnode_walk_node(nestpath->outerjoinpath, walker, context);
                             if (v != CdbVisit_Walk)     /* stop */
                                     break;
-                            v = pathnode_walk_node(nestpath->jpath.innerjoinpath, walker, context);
+                            v = pathnode_walk_node(nestpath->innerjoinpath, walker, context);
                             if (v != CdbVisit_Walk)     /* stop */
                                     break;
                     }
@@ -2556,19 +2556,19 @@ create_nestloop_path(PlannerInfo *root,
     }
 
     pathnode = makeNode(NestPath);
-	pathnode->jpath.path.pathtype = T_NestLoop;
-	pathnode->jpath.path.parent = joinrel;
-	pathnode->jpath.jointype = jointype;
-	pathnode->jpath.outerjoinpath = outer_path;
-	pathnode->jpath.innerjoinpath = inner_path;
-	pathnode->jpath.joinrestrictinfo = restrict_clauses;
-	pathnode->jpath.path.pathkeys = pathkeys;
+	pathnode->path.pathtype = T_NestLoop;
+	pathnode->path.parent = joinrel;
+	pathnode->jointype = jointype;
+	pathnode->outerjoinpath = outer_path;
+	pathnode->innerjoinpath = inner_path;
+	pathnode->joinrestrictinfo = restrict_clauses;
+	pathnode->path.pathkeys = pathkeys;
 
-    pathnode->jpath.path.locus = join_locus;
-    pathnode->jpath.path.motionHazard = outer_path->motionHazard || inner_path->motionHazard;
+    pathnode->path.locus = join_locus;
+    pathnode->path.motionHazard = outer_path->motionHazard || inner_path->motionHazard;
 
 	/* we're only as rescannable as our child plans */
-    pathnode->jpath.path.rescannable = outer_path->rescannable && inner_path->rescannable;
+    pathnode->path.rescannable = outer_path->rescannable && inner_path->rescannable;
 
 	cost_nestloop(pathnode, root);
 

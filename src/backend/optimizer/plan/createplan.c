@@ -2641,8 +2641,8 @@ create_nestloop_plan(PlannerInfo *root,
 					 Plan *outer_plan,
 					 Plan *inner_plan)
 {
-	List	   *tlist = build_relation_tlist(best_path->jpath.path.parent);
-	List	   *joinrestrictclauses = best_path->jpath.joinrestrictinfo;
+	List	   *tlist = build_relation_tlist(best_path->path.parent);
+	List	   *joinrestrictclauses = best_path->joinrestrictinfo;
 	List	   *joinclauses;
 	List	   *otherclauses;
 	NestLoop   *join_plan;
@@ -2658,9 +2658,9 @@ create_nestloop_plan(PlannerInfo *root,
 	 *
 	 * NOTE: materialize_finished_plan() does *almost* what we want --
 	 * except we aren't finished. */
-	if (!IsA(best_path->jpath.innerjoinpath, MaterialPath) &&
-		(best_path->jpath.innerjoinpath->motionHazard ||
-		 !best_path->jpath.innerjoinpath->rescannable))
+	if (!IsA(best_path->innerjoinpath, MaterialPath) &&
+		(best_path->innerjoinpath->motionHazard ||
+		 !best_path->innerjoinpath->rescannable))
 	{
 		Material	*mat;
 		Path		matpath; /* dummy for cost fixup */
@@ -2678,7 +2678,7 @@ create_nestloop_plan(PlannerInfo *root,
 		mat->plan.plan_rows = inner_plan->plan_rows;
 		mat->plan.plan_width = inner_plan->plan_width;
 
-		if (best_path->jpath.outerjoinpath->motionHazard)
+		if (best_path->outerjoinpath->motionHazard)
 		{
 			mat->cdb_strict = true;
 			prefetch = true;
@@ -2688,9 +2688,9 @@ create_nestloop_plan(PlannerInfo *root,
 	}
 	/* MPP-1657: if there is already a materialize here, we may need
 	 * to update its strictness. */
-	else if (IsA(best_path->jpath.innerjoinpath, MaterialPath) &&
-			 best_path->jpath.innerjoinpath->motionHazard &&
-			 best_path->jpath.outerjoinpath->motionHazard)
+	else if (IsA(best_path->innerjoinpath, MaterialPath) &&
+			 best_path->innerjoinpath->motionHazard &&
+			 best_path->outerjoinpath->motionHazard)
 	{
 		Material   *mat = (Material *)inner_plan;
 
@@ -2698,7 +2698,7 @@ create_nestloop_plan(PlannerInfo *root,
 		mat->cdb_strict = true;
 	}
 
-	if (IsA(best_path->jpath.innerjoinpath, IndexPath))
+	if (IsA(best_path->innerjoinpath, IndexPath))
 	{
 		/*
 		 * An index is being used to reduce the number of tuples scanned in
@@ -2714,7 +2714,7 @@ create_nestloop_plan(PlannerInfo *root,
 		 * We can skip this if the index path is an ordinary indexpath and not
 		 * a special innerjoin path.
 		 */
-		IndexPath  *innerpath = (IndexPath *) best_path->jpath.innerjoinpath;
+		IndexPath  *innerpath = (IndexPath *) best_path->innerjoinpath;
 
 		if (innerpath->isjoininner)
 		{
@@ -2722,13 +2722,13 @@ create_nestloop_plan(PlannerInfo *root,
 				select_nonredundant_join_clauses(root,
 												 joinrestrictclauses,
 												 innerpath->indexclauses,
-												 best_path->jpath.outerjoinpath->parent->relids,
-												 best_path->jpath.innerjoinpath->parent->relids,
-												 IS_OUTER_JOIN(best_path->jpath.jointype));
+												 best_path->outerjoinpath->parent->relids,
+												 best_path->innerjoinpath->parent->relids,
+												 IS_OUTER_JOIN(best_path->jointype));
 		}
 	}
-	else if (IsA(best_path->jpath.innerjoinpath, BitmapHeapPath) ||
-			 IsA(best_path->jpath.innerjoinpath, BitmapAppendOnlyPath))
+	else if (IsA(best_path->innerjoinpath, BitmapHeapPath) ||
+			 IsA(best_path->innerjoinpath, BitmapAppendOnlyPath))
 	{
 		/*
 		 * Same deal for bitmapped index scans.
@@ -2746,16 +2746,16 @@ create_nestloop_plan(PlannerInfo *root,
 		bool isjoininner = false;
 		Path *bitmapqual = NULL;
 		
-		if (IsA(best_path->jpath.innerjoinpath, BitmapHeapPath))
+		if (IsA(best_path->innerjoinpath, BitmapHeapPath))
 		{
-			BitmapHeapPath *innerpath = (BitmapHeapPath *) best_path->jpath.innerjoinpath;
+			BitmapHeapPath *innerpath = (BitmapHeapPath *) best_path->innerjoinpath;
 			isjoininner = innerpath->isjoininner;
 			bitmapqual = innerpath->bitmapqual;
 		}
 		else
 		{
-			Assert(IsA(best_path->jpath.innerjoinpath, BitmapAppendOnlyPath));
-			BitmapAppendOnlyPath *innerpath = (BitmapAppendOnlyPath *) best_path->jpath.innerjoinpath;
+			Assert(IsA(best_path->innerjoinpath, BitmapAppendOnlyPath));
+			BitmapAppendOnlyPath *innerpath = (BitmapAppendOnlyPath *) best_path->innerjoinpath;
 			isjoininner = innerpath->isjoininner;
 			bitmapqual = innerpath->bitmapqual;
 		}
@@ -2772,15 +2772,15 @@ create_nestloop_plan(PlannerInfo *root,
 				select_nonredundant_join_clauses(root,
 												 joinrestrictclauses,
 												 bitmapclauses,
-												 best_path->jpath.outerjoinpath->parent->relids,
-												 best_path->jpath.innerjoinpath->parent->relids,
-												 IS_OUTER_JOIN(best_path->jpath.jointype));
+												 best_path->outerjoinpath->parent->relids,
+												 best_path->innerjoinpath->parent->relids,
+												 IS_OUTER_JOIN(best_path->jointype));
 		}
 	}
 
 	/* Get the join qual clauses (in plain expression form) */
 	/* Any pseudoconstant clauses are ignored here */
-	if (IS_OUTER_JOIN(best_path->jpath.jointype))
+	if (IS_OUTER_JOIN(best_path->jointype))
 	{
 		extract_actual_join_clauses(joinrestrictclauses,
 									&joinclauses, &otherclauses);
@@ -2792,7 +2792,7 @@ create_nestloop_plan(PlannerInfo *root,
 		otherclauses = NIL;
 	}
 
-	if (best_path->jpath.jointype == JOIN_LASJ_NOTIN)
+	if (best_path->jointype == JOIN_LASJ_NOTIN)
 	{
 		joinclauses = remove_isnotfalse(joinclauses);
 	}
@@ -2806,13 +2806,13 @@ create_nestloop_plan(PlannerInfo *root,
 							  otherclauses,
 							  outer_plan,
 							  inner_plan,
-							  best_path->jpath.jointype);
+							  best_path->jointype);
 
-	copy_path_costsize(root, &join_plan->join.plan, &best_path->jpath.path);
+	copy_path_costsize(root, &join_plan->join.plan, &best_path->path);
 
-	if (IsA(best_path->jpath.innerjoinpath, MaterialPath))
+	if (IsA(best_path->innerjoinpath, MaterialPath))
 	{
-		MaterialPath *mp = (MaterialPath *)best_path->jpath.innerjoinpath;
+		MaterialPath *mp = (MaterialPath *) best_path->innerjoinpath;
 
 		if (mp->cdb_strict)
 			prefetch = true;

@@ -1000,14 +1000,10 @@ typedef struct JoinPath
      IsA((node), MergePath))
 
 /*
- * A nested-loop path has special fields which may be used if it falls back to
- * plan-B during execution.
+ * A nested-loop path needs no special fields.
  */
 
-typedef struct NestPath
-{
-	JoinPath            jpath;
-} NestPath;
+typedef JoinPath NestPath;
 
 /*
  * A mergejoin path has these fields.
