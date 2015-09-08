@@ -60,7 +60,7 @@
 char *
 pqStrerror(int errnum, char *strerrbuf, size_t buflen)
 {
-#if defined(FRONTEND) && defined(ENABLE_THREAD_SAFETY) && defined(HAVE_STRERROR_R)
+#if defined(ENABLE_THREAD_SAFETY) && defined(HAVE_STRERROR_R)
 	/* reentrant strerror_r is available */
 #ifdef STRERROR_R_INT
 	/* SUSv3 version */
@@ -94,7 +94,7 @@ struct passwd *get_gp_passwdptr()
 {
 	static struct passwd *gp_passwd_ptr = NULL;
 
-#if defined(FRONTEND) && defined(ENABLE_THREAD_SAFETY) && defined(HAVE_GETPWUID_R)
+#if defined(ENABLE_THREAD_SAFETY) && defined(HAVE_GETPWUID_R)
 	static char gp_passwd_buf[BUFSIZ];
 	static struct passwd gp_passwd;
 
@@ -136,7 +136,7 @@ int
 pqGetpwuid(uid_t uid, struct passwd * resultbuf, char *buffer,
 		   size_t buflen, struct passwd ** result)
 {
-#if defined(FRONTEND) && defined(ENABLE_THREAD_SAFETY) && defined(HAVE_GETPWUID_R)
+#if defined(ENABLE_THREAD_SAFETY) && defined(HAVE_GETPWUID_R)
 
 #ifdef GETPWUID_R_5ARG
 	/* POSIX version */
@@ -172,7 +172,7 @@ pqGethostbyname(const char *name,
 				struct hostent ** result,
 				int *herrno)
 {
-#if defined(FRONTEND) && defined(ENABLE_THREAD_SAFETY) && defined(HAVE_GETHOSTBYNAME_R)
+#if defined(ENABLE_THREAD_SAFETY) && defined(HAVE_GETHOSTBYNAME_R)
 
 	/*
 	 * broken (well early POSIX draft) gethostbyname_r() which returns 'struct
