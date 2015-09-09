@@ -380,6 +380,12 @@ internal_client_authentication(Port *port)
 			struct passwd *pw;
 
 			pw = getpwuid(geteuid());
+			if (pw == NULL)
+			{
+				elog(LOG, "invalid effective UID %d ", geteuid());
+				return false;
+			}
+
 			local_name = pw->pw_name;
 
 			remote_name[0] = '\0';
