@@ -719,10 +719,12 @@ class Command:
 
     
     def cancel(self):
-        self.exec_context.cancel(self)    
+        if self.exec_context and isinstance(self.exec_context, ExecutionContext):
+            self.exec_context.cancel(self)
     
     def interrupt(self):
-        self.exec_context.interrupt(self)
+        if self.exec_context and isinstance(self.exec_context, ExecutionContext):
+            self.exec_context.interrupt(self)
     
     def was_successful(self):
         if self.results is None:
