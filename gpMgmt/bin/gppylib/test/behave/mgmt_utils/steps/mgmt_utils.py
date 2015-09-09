@@ -199,11 +199,11 @@ def impl(context, tablename, dbname):
     drop_table_if_exists(context, table_name=tablename, dbname=dbname)
     create_mixed_storage_partition(context, tablename, dbname)
 
-@given('there is a partition table "{tablename}" has external partitions in "{dbname}" with data')
-def impl(context, tablename, dbname):
+@given('there is a partition table "{tablename}" has external partitions of gpfdist with file "{filename}" on port "{port}" in "{dbname}" with data')
+def impl(context, tablename, dbname, filename, port):
     create_database_if_not_exists(context, dbname)
     drop_table_if_exists(context, table_name=tablename, dbname=dbname)
-    create_external_partition(context, tablename, dbname)
+    create_external_partition(context, tablename, dbname, port, filename)
  
 @given('there is {table_type} table {table_name} in "{dbname}" with data')
 def impl(context, table_type, table_name, dbname):

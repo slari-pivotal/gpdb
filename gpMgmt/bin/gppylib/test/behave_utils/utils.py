@@ -472,7 +472,7 @@ def create_mixed_storage_partition(context, tablename, dbname):
 
     populate_partition(tablename, '2010-01-01', dbname, 0)
 
-def create_external_partition(context, tablename, dbname):
+def create_external_partition(context, tablename, dbname, port, filename):
     
     table_definition = 'Column1 int, Column2 varchar(20), Column3 date'
     create_table_str = "Create table %s (%s) Distributed randomly \
@@ -486,19 +486,22 @@ def create_external_partition(context, tablename, dbname):
     
     master_hostname = get_master_hostname();
     create_ext_table_str = "Create readable external table %s_ret (%s) \
-                            location ('file://%s/tmp/ret1') \
+                            location ('gpfdist://%s:%s/%s') \
                             format 'csv' encoding 'utf-8' \
                             log errors segment reject limit 1000 \
-                            ;" % (tablename, table_definition, master_hostname[0][0].strip())
+                            ;" % (tablename, table_definition, master_hostname[0][0].strip(), port, filename)
 
     alter_table_str = "Alter table %s exchange partition p_2 \
                        with table %s_ret without validation \
                        ;" % (tablename, tablename)
 
+    drop_table_str = "Drop table %s_ret;" % (tablename)
+
     with dbconn.connect(dbconn.DbURL(dbname=dbname)) as conn:
         dbconn.execSQL(conn, create_table_str)
         dbconn.execSQL(conn, create_ext_table_str)
         dbconn.execSQL(conn, alter_table_str)
+        dbconn.execSQL(conn, drop_table_str)
         conn.commit()
 
     populate_partition(tablename, '2010-01-01', dbname, 0, 100)
