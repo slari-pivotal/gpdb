@@ -465,7 +465,7 @@ Feature: Validate command line arguments
         And all the data from the remote segments in "bkdb" are stored in path "/tmp" for "full"
         And the user runs gpdbrestore with "-R" option in path "/tmp"
         And gpdbrestore should return a return code of 0
-        And verify that the data of "68" tables in "bkdb" is validated after restore 
+        And verify that the data of "74" tables in "bkdb" is validated after restore 
         And verify that the tuple count of all appendonly tables are consistent in "bkdb"
 
     Scenario: gpdbrestore with -R for incremental dump
