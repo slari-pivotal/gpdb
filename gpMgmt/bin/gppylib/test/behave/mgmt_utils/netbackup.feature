@@ -192,6 +192,17 @@ Feature: NetBackup Integration with GPDB
         Then data for partition table "part_mixed_1" with partition level "1" is distributed across all segments on "nbubkdb"
         And verify that storage_types of the partition table "part_mixed_1" are as expected in "nbubkdb"
 
+    @nbusmoke
+    @nbudataset
+    @nbuall
+    @nbupartI
+    Scenario: Partition tables with external partition 
+        Given the user runs "echo > /tmp/backup_gpfdist_dummy"
+        And the user runs "gpfdist -p 8098 -d /tmp &"
+        And there is a partition table "part_external" has external partitions of gpfdist with file "backup_gpfdist_dummy" on port "8098" in "bkdb" with data
+        Then data for partition table "part_external" with partition level "0" is distributed across all segments on "bkdb"
+        And verify that storage_types of the partition table "part_external" are as expected in "bkdb"
+
     @nbuall
     @nbupartI
     Scenario: Full Backup and Restore using NetBackup
@@ -203,7 +214,7 @@ Feature: NetBackup Integration with GPDB
         And all the data from "nbubkdb" is saved for verification
         When the user runs gpdbrestore with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
-        And verify that the data of "68" tables in "nbubkdb" is validated after restore
+        And verify that the data of "74" tables in "nbubkdb" is validated after restore
 
     @nbusmoke
     @nbuall
