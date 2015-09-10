@@ -199,9 +199,9 @@ Feature: NetBackup Integration with GPDB
     Scenario: Partition tables with external partition 
         Given the user runs "echo > /tmp/backup_gpfdist_dummy"
         And the user runs "gpfdist -p 8098 -d /tmp &"
-        And there is a partition table "part_external" has external partitions of gpfdist with file "backup_gpfdist_dummy" on port "8098" in "bkdb" with data
-        Then data for partition table "part_external" with partition level "0" is distributed across all segments on "bkdb"
-        And verify that storage_types of the partition table "part_external" are as expected in "bkdb"
+        And there is a partition table "part_external" has external partitions of gpfdist with file "backup_gpfdist_dummy" on port "8098" in "nbubkdb" with data
+        Then data for partition table "part_external" with partition level "0" is distributed across all segments on "nbubkdb"
+        And verify that storage_types of the partition table "part_external" are as expected in "nbubkdb"
 
     @nbuall
     @nbupartI
