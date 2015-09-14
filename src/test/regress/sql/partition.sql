@@ -1716,6 +1716,41 @@ select * from bar_p;
 drop table foo_p;
 drop table bar_p;
 
+-- exchange default partition is not allowed (single level)
+drop table if exists d;
+drop table if exists exh_abc;
+create table d (i int,  j int) partition by range(j)
+(partition a start (1) end(10), partition b start(11) end(20),
+default partition abc);
+
+create table exh_abc (like d);
+alter table d exchange default partition with table exh_abc;
+
+drop table d;
+drop table exh_abc;
+
+-- exchange default partition is not allowed (multi level)
+Drop table if exists sto_ao_ao;
+drop table if exists exh_ao_ao;
+
+Create table sto_ao_ao
+ (
+ col1 bigint, col2 date, col3 text, col4 int) with(appendonly=true)
+ distributed randomly  partition by range(col2)
+ subpartition by list (col3)
+ subpartition template ( default subpartition subothers, subpartition sub1 values ('one'), subpartition sub2 values ('two'))
+ (default partition others, start(date '2008-01-01') end(date '2008-04-30') every(interval '1 month'));
+
+create table exh_ao_ao (like sto_ao_ao) with (appendonly=true);
+
+-- Exchange default sub-partition, should fail
+alter table sto_ao_ao alter partition for (rank(3)) exchange default partition with table exh_ao_ao;
+
+-- Exchange a non-default sub-partition of a default partition, should fail
+alter table sto_ao_ao alter default partition exchange partition for ('one') with table exh_ao_ao;
+
+drop table sto_ao_ao;
+drop table exh_ao_ao;
 -- XXX: not yet: VALIDATE parameter
 
 

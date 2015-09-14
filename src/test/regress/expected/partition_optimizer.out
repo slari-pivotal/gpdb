@@ -2993,6 +2993,67 @@ select * from bar_p;
 
 drop table foo_p;
 drop table bar_p;
+-- exchange default partition is not allowed (single level)
+drop table if exists d;
+NOTICE:  table "d" does not exist, skipping
+drop table if exists exh_abc;
+NOTICE:  table "exh_abc" does not exist, skipping
+create table d (i int,  j int) partition by range(j)
+(partition a start (1) end(10), partition b start(11) end(20),
+default partition abc);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'i' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+NOTICE:  CREATE TABLE will create partition "d_1_prt_abc" for table "d"
+NOTICE:  CREATE TABLE will create partition "d_1_prt_a" for table "d"
+NOTICE:  CREATE TABLE will create partition "d_1_prt_b" for table "d"
+create table exh_abc (like d);
+NOTICE:  Table doesn't have 'distributed by' clause, defaulting to distribution columns from LIKE table
+alter table d exchange default partition with table exh_abc;
+ERROR:  cannot exchange DEFAULT partition
+drop table d;
+drop table exh_abc;
+-- exchange default partition is not allowed (multi level)
+Drop table if exists sto_ao_ao;
+NOTICE:  table "sto_ao_ao" does not exist, skipping
+drop table if exists exh_ao_ao;
+NOTICE:  table "exh_ao_ao" does not exist, skipping
+Create table sto_ao_ao
+ (
+ col1 bigint, col2 date, col3 text, col4 int) with(appendonly=true)
+ distributed randomly  partition by range(col2)
+ subpartition by list (col3)
+ subpartition template ( default subpartition subothers, subpartition sub1 values ('one'), subpartition sub2 values ('two'))
+ (default partition others, start(date '2008-01-01') end(date '2008-04-30') every(interval '1 month'));
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_others" for table "sto_ao_ao"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_2" for table "sto_ao_ao"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_3" for table "sto_ao_ao"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_4" for table "sto_ao_ao"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_5" for table "sto_ao_ao"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_others_2_prt_subothers" for table "sto_ao_ao_1_prt_others"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_others_2_prt_sub1" for table "sto_ao_ao_1_prt_others"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_others_2_prt_sub2" for table "sto_ao_ao_1_prt_others"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_2_2_prt_subothers" for table "sto_ao_ao_1_prt_2"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_2_2_prt_sub1" for table "sto_ao_ao_1_prt_2"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_2_2_prt_sub2" for table "sto_ao_ao_1_prt_2"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_3_2_prt_subothers" for table "sto_ao_ao_1_prt_3"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_3_2_prt_sub1" for table "sto_ao_ao_1_prt_3"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_3_2_prt_sub2" for table "sto_ao_ao_1_prt_3"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_4_2_prt_subothers" for table "sto_ao_ao_1_prt_4"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_4_2_prt_sub1" for table "sto_ao_ao_1_prt_4"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_4_2_prt_sub2" for table "sto_ao_ao_1_prt_4"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_5_2_prt_subothers" for table "sto_ao_ao_1_prt_5"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_5_2_prt_sub1" for table "sto_ao_ao_1_prt_5"
+NOTICE:  CREATE TABLE will create partition "sto_ao_ao_1_prt_5_2_prt_sub2" for table "sto_ao_ao_1_prt_5"
+create table exh_ao_ao (like sto_ao_ao) with (appendonly=true);
+NOTICE:  Table doesn't have 'distributed by' clause, defaulting to distribution columns from LIKE table
+-- Exchange default sub-partition, should fail
+alter table sto_ao_ao alter partition for (rank(3)) exchange default partition with table exh_ao_ao;
+ERROR:  cannot exchange DEFAULT partition
+-- Exchange a non-default sub-partition of a default partition, should fail
+alter table sto_ao_ao alter default partition exchange partition for ('one') with table exh_ao_ao;
+ERROR:  Cannot specify a name, rank, or value for a DEFAULT partition in this context
+drop table sto_ao_ao;
+drop table exh_ao_ao;
 -- XXX: not yet: VALIDATE parameter
 -- Check for overflow of circular data types like time
 -- Should fail

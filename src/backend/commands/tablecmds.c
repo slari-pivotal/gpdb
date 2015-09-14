@@ -14957,6 +14957,18 @@ ATPExecPartExchange(AlteredTableInfo *tab, Relation rel, AlterPartitionCmd *pc)
 		orig_prule = prule;
 		oldrelid = prule->topRule->parchildrelid;
 
+		/*
+		 * We are here because we are either doing an EXCHANGE PARTITION, or SPLIT PARTITION.
+		 * We do not allow EXCHANGE PARTITION for the default partition, so let's check for that
+		 * and error out.
+		 */
+		if (!is_split && rel_is_default_partition(oldrelid))
+		{
+			ereport(ERROR,
+					(errcode(ERRCODE_SYNTAX_ERROR),
+							errmsg("cannot exchange DEFAULT partition")));
+		}
+
 		pfree(pc->partid);
 
 		oldrel = heap_open(oldrelid, NoLock);
