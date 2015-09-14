@@ -201,6 +201,14 @@ heap_tuple_fetch_attr(struct varlena *attr)
  */
 int varattrib_untoast_len(Datum d)
 {
+	if (DatumGetPointer(d) == NULL)
+	{
+		ereport(ERROR,
+				(errcode(ERRCODE_INTERNAL_ERROR),
+				 errmsg(" Unable to detoast datum "),
+				 errprintstack(true)));
+	}
+
 	struct varlena *va = (struct varlena *) DatumGetPointer(d);
 	varattrib *attr = (varattrib *) va;
 
@@ -244,6 +252,14 @@ int varattrib_untoast_len(Datum d)
  */
 void varattrib_untoast_ptr_len(Datum d, char **datastart, int *len, void **tofree)
 {
+	if (DatumGetPointer(d) == NULL)
+	{
+		ereport(ERROR,
+				(errcode(ERRCODE_INTERNAL_ERROR),
+				 errmsg(" Unable to detoast datum "),
+				 errprintstack(true)));
+	}
+
 	struct varlena *va = (struct varlena *) DatumGetPointer(d);
 	varattrib *attr = (varattrib *) va;
 
