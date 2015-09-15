@@ -1817,6 +1817,271 @@ FormatItemBlock(Page page)
 	}
 }
 
+/*
+ * Fields from a toasted datum.
+ */
+static void
+DumpToastInfo(struct varlena *attrib, char *deparsed)
+{
+	struct varatt_external *toastinfo =
+			(struct varatt_external *) VARDATA(attrib);
+	snprintf(deparsed + strlen(deparsed),
+			 MAX_DEPARSE_LEN - strlen(deparsed),
+			 "toasted: rawsize=%d, ",
+			 toastinfo->va_rawsize);
+	snprintf(deparsed + strlen(deparsed),
+			 MAX_DEPARSE_LEN - strlen(deparsed),
+			 "extsize=%d, ", toastinfo->va_extsize);
+	snprintf(deparsed + strlen(deparsed),
+			 MAX_DEPARSE_LEN - strlen(deparsed),
+			 "value_id=%d, ", toastinfo->va_valueid);
+	snprintf(deparsed + strlen(deparsed),
+			 MAX_DEPARSE_LEN - strlen(deparsed),
+			 "toastrelid=%d", toastinfo->va_toastrelid);
+}
+
+/*
+ * A datum that is not toasted is dumped based on its type.
+ */
+static void
+DumpInlineDatum(Form_pg_attribute att, Datum datum, char *deparsed, unsigned int numBytes)
+{
+	switch (att->atttypid)
+	{
+		case BPCHAROID:
+		case VARCHAROID:
+		case TEXTOID:
+		{
+			struct varlena *attrib =
+					(struct varlena *) DatumGetPointer(datum);
+
+			if (VARATT_IS_EXTENDED(attrib))
+			{
+				if (VARATT_IS_SHORT(attrib))
+				{
+					int len = strlen(deparsed);
+					int tsize = VARSIZE_SHORT(attrib) - VARHDRSZ_SHORT;
+					memcpy(deparsed + len, VARDATA_SHORT(attrib),
+						   tsize);
+					deparsed[len + tsize] = '\0';
+				}
+				else if (VARATT_IS_COMPRESSED(attrib))
+				{
+					snprintf(deparsed + strlen(deparsed),
+							 MAX_DEPARSE_LEN - strlen(deparsed),
+							 "comp len: %d, raw len: %d", (uint32)VARSIZE_ANY(attrib),
+							 ((varattrib_4b *) attrib)->va_compressed.va_rawsize);
+				}
+				else
+				{
+					snprintf(deparsed + strlen(deparsed),
+							 MAX_DEPARSE_LEN - strlen(deparsed),
+							 "unknown varlena header: %x",
+							 ((varattrib_1b *) attrib)->va_header);
+				}
+			}
+			else
+			{
+				int             len = strlen(deparsed);
+				if (VARSIZE(attrib) > numBytes)
+				{
+					snprintf(deparsed + len, MAX_DEPARSE_LEN - len,
+							 "corrupted varlena header: %x",
+							 ((varattrib_4b *) attrib)->va_4byte.va_header);
+				}
+				else
+				{
+					memcpy(deparsed + len, VARDATA(attrib),
+						   VARSIZE(attrib) - VARHDRSZ);
+					deparsed[len + VARSIZE(attrib) - VARHDRSZ] = '\0';
+				}
+			}
+		}
+		break;
+		case NUMERICOID:
+		{
+			struct varlena      *attrib = DatumGetPointer(datum);
+			char           *str;
+
+			if (VARATT_IS_EXTENDED(attrib))
+			{
+				if (VARATT_IS_SHORT(attrib))
+				{
+					unsigned        size = VARSIZE_SHORT(attrib);
+					unsigned        new_size = size - VARHDRSZ_SHORT + VARHDRSZ;
+					struct varlena      *tmp = attrib;
+
+					attrib = (struct varlena *) malloc(new_size);
+					SET_VARSIZE(attrib, new_size);
+					memcpy(VARDATA(attrib), VARDATA_SHORT(tmp),
+						   size - VARHDRSZ_SHORT);
+				}
+				else
+				{
+					snprintf(deparsed + strlen(deparsed),
+							 MAX_DEPARSE_LEN - strlen(deparsed),
+							 "unknown varlena header: %x",
+							 ((varattrib_1b *) attrib)->va_header);
+				}
+			}
+			str = num_out((Numeric) attrib);
+			strcat(deparsed, str);
+		}
+		break;
+		case BOOLOID:
+		{
+			int             len = strlen(deparsed);
+
+			if (DatumGetBool(datum))
+				deparsed[len] = 't';
+			else
+				deparsed[len] = 'f';
+			deparsed[len + 1] = '\0';
+		}
+		break;
+		case CHAROID:
+		{
+			char            buf[2];
+			char            ch = DatumGetChar(datum);
+			buf[0] = ch;
+			buf[1] = '\0';
+			strcat(deparsed, buf);
+		}
+		break;
+		case FLOAT8OID:
+		{
+			char            buf[128 + 1];
+			float4          num = DatumGetFloat8(datum);
+
+			if (isnan(num))
+			{
+				strcat(deparsed, "NaN");
+				break;
+			}
+			switch (isinf(num))
+			{
+				case 1:
+					strcpy(buf, "Infinity");
+					break;
+				default:
+				{
+					int             ndig = DBL_DIG;
+
+					if (ndig < 1)
+						ndig = 1;
+
+					sprintf(buf, "%.*g", ndig, num);
+				}
+			}
+			strcat(deparsed, buf);
+		}
+		break;
+
+		case FLOAT4OID:
+		{
+			char            buf[64 + 1];
+			float4          num = DatumGetFloat4(datum);
+
+			if (isnan(num))
+			{
+				strcat(deparsed, "NaN");
+				break;
+			}
+			switch (isinf(num))
+			{
+				case 1:
+					strcpy(buf, "Infinity");
+					break;
+				default:
+				{
+					int             ndig = FLT_DIG;
+
+					if (ndig < 1)
+						ndig = 1;
+
+					sprintf(buf, "%.*g", ndig, num);
+				}
+			}
+			strcat(deparsed, buf);
+		}
+		break;
+		case NAMEOID:
+		{
+			char           *tmp = NameStr(*DatumGetName(datum));
+			strcat(deparsed, tmp);
+		}
+		break;
+		case INT4OID:
+		{
+			char           *tmp = malloc(12);
+			pg_ltoa(DatumGetInt32(datum), tmp);
+			strcat(deparsed, tmp);
+		}
+		break;
+		case INT8OID:
+		{
+			int64           val = DatumGetInt64(datum);
+			char            buf[26];
+
+			if (snprintf(buf, sizeof(buf), INT64_FORMAT, val) < 0)
+				elog(ERROR, "could not format int8");
+
+			strcat(deparsed, buf);
+
+		}
+		break;
+		case INT2OID:
+		{
+			char            buf[7];
+
+			pg_itoa(DatumGetInt16(datum), buf);
+
+			strcat(deparsed, buf);
+		}
+		break;
+		case OIDOID:
+		case XIDOID:
+		{
+			char            buf[12];
+
+			snprintf(buf, sizeof(buf), "%u",
+					 att->atttypid == OIDOID ? (Oid) datum :
+					 (TransactionId) datum);
+			strcat(deparsed, buf);
+		}
+		break;
+		case 1034:
+			strcat(deparsed, "<cannot deparse _aclitem>");
+			break;
+		default:
+			if (blockDirectoryFile)
+			{
+				struct varlena *value = DatumGetPointer(datum);
+				struct Minipage *mp = (struct Minipage *) value;
+				strcat(deparsed, "\nMinipage Info");
+				char           tmp[64];
+
+				strncat(deparsed, "\n    Version       : ", strlen("\n    Version       : "));
+				pg_ltoa(DatumGetInt32(mp->version), (char *) &tmp);
+				strncat(deparsed, (char *) &tmp, 32);
+				strncat(deparsed, "\n    NumOfEntries  : ", strlen("\n    NumOfEntries  : "));
+				pg_ltoa(DatumGetInt64(mp->nEntry), (char *) &tmp);
+				strncat(deparsed, (char *) &tmp, 64);
+				strncat(deparsed, "\n", strlen("\n"));
+				DeparseMiniPage(mp, mp->nEntry, deparsed);
+			}
+			else
+			{
+				char            buf[256];
+
+				sprintf(buf, "<unknown type %u>", att->atttypid);
+				strcat(deparsed, buf);
+			}
+			break;
+	}
+}
+
+
 /* Interpret the contents of the item based on whether it has a special */
 /* section and/or the user has hinted */
 static void
@@ -1943,7 +2208,8 @@ FormatItem(unsigned int numBytes, unsigned int startIndex,
 			{
 				HeapTuple       tuple = malloc(sizeof(HeapTupleData));
 				AttrNumber      attno;
-				char            deparsed[8192];
+				char            deparsed[MAX_DEPARSE_LEN];
+				bool            toasted;
 
 				tuple->t_data = htup;
 				deparsed[0] = '\0';
@@ -1958,220 +2224,23 @@ FormatItem(unsigned int numBytes, unsigned int startIndex,
 						strcat(deparsed, "<NULL>");
 					else
 					{
-						switch (att->atttypid)
+						/*
+						 * For toasted datums, print toast info recorded
+						 * in the datum.
+						 */
+						toasted = false;
+						if (att->attstorage != 'p')
 						{
-						case TEXTOID:
+							struct varlena *attrib =
+									(struct varlena *) DatumGetPointer(datum);
+							if (VARATT_IS_EXTENDED(attrib) && VARATT_IS_EXTERNAL(attrib))
 							{
-
-								/*
-								 * XXX: can't
-								 * do toast
-								 */
-								struct varlena *va =
-								(struct varlena *) DatumGetPointer(datum);
-								struct varlena      *attrib = (struct varlena *) va;
-
-								if (VARATT_IS_EXTENDED(attrib))
-								{
-									if (VARATT_IS_SHORT(attrib))
-									{
-										int             len = strlen(deparsed);
-										int             tsize = VARSIZE_SHORT(va) - VARHDRSZ_SHORT;
-										memcpy(deparsed + len, VARDATA_SHORT(va),
-										       tsize);
-										deparsed[len + tsize] = '\0';
-									}
-									else
-										strcat(deparsed,
-										       "cannot deparse TOASTed attribute");
-								}
-								else
-								{
-									int             len = strlen(deparsed);
-
-									memcpy(deparsed + len, VARDATA(va),
-									       VARSIZE(va) - VARHDRSZ);
-									deparsed[len + VARSIZE(va) - VARHDRSZ] = '\0';
-								}
+								DumpToastInfo(attrib, deparsed);
+								toasted = true;
 							}
-							break;
-						case NUMERICOID:
-							{
-								struct varlena      *attrib = DatumGetPointer(datum);
-								char           *str;
-
-								if (VARATT_IS_EXTENDED(attrib))
-								{
-									if (VARATT_IS_SHORT(attrib))
-									{
-										unsigned        size = VARSIZE_SHORT(attrib);
-										unsigned        new_size = size - VARHDRSZ_SHORT + VARHDRSZ;
-										struct varlena      *tmp = attrib;
-
-										attrib = (struct varlena *) malloc(new_size);
-										SET_VARSIZE(attrib, new_size);
-										memcpy(VARDATA(attrib), VARDATA_SHORT(tmp), size - VARHDRSZ_SHORT);
-									}
-									else
-										strcat(deparsed,
-										       "cannot deparse TOASTed attribute");
-								}
-								str = num_out((Numeric) attrib);
-								strcat(deparsed, str);
-							}
-							break;
-						case BOOLOID:
-							{
-								int             len = strlen(deparsed);
-
-								if (DatumGetBool(datum))
-									deparsed[len] = 't';
-								else
-									deparsed[len] = 'f';
-								deparsed[len + 1] = '\0';
-							}
-							break;
-						case CHAROID:
-							{
-								char            buf[2];
-								char            ch = DatumGetChar(datum);
-								buf[0] = ch;
-								buf[1] = '\0';
-								strcat(deparsed, buf);
-							}
-							break;
-						case FLOAT8OID:
-							{
-								char            buf[128 + 1];
-								float4          num = DatumGetFloat8(datum);
-
-								if (isnan(num))
-								{
-									strcat(deparsed, "NaN");
-									break;
-								}
-								switch (isinf(num))
-								{
-								case 1:
-									strcpy(buf, "Infinity");
-									break;
-								default:
-									{
-										int             ndig = DBL_DIG;
-
-										if (ndig < 1)
-											ndig = 1;
-
-										sprintf(buf, "%.*g", ndig, num);
-									}
-								}
-								strcat(deparsed, buf);
-							}
-							break;
-
-						case FLOAT4OID:
-							{
-								char            buf[64 + 1];
-								float4          num = DatumGetFloat4(datum);
-
-								if (isnan(num))
-								{
-									strcat(deparsed, "NaN");
-									break;
-								}
-								switch (isinf(num))
-								{
-								case 1:
-									strcpy(buf, "Infinity");
-									break;
-								default:
-									{
-										int             ndig = FLT_DIG;
-
-										if (ndig < 1)
-											ndig = 1;
-
-										sprintf(buf, "%.*g", ndig, num);
-									}
-								}
-								strcat(deparsed, buf);
-							}
-							break;
-						case NAMEOID:
-							{
-								char           *tmp = NameStr(*DatumGetName(datum));
-								strcat(deparsed, tmp);
-							}
-							break;
-						case INT4OID:
-							{
-								char           *tmp = malloc(12);
-								pg_ltoa(DatumGetInt32(datum), tmp);
-								strcat(deparsed, tmp);
-							}
-							break;
-						case INT8OID:
-							{
-								int64           val = DatumGetInt64(datum);
-								char            buf[26];
-
-								if (snprintf(buf, sizeof(buf), INT64_FORMAT, val) < 0)
-									elog(ERROR, "could not format int8");
-
-								strcat(deparsed, buf);
-
-							}
-							break;
-						case INT2OID:
-							{
-								char            buf[7];
-
-								pg_itoa(DatumGetInt16(datum), buf);
-
-								strcat(deparsed, buf);
-							}
-							break;
-						case OIDOID:
-						case XIDOID:
-							{
-
-								char            buf[12];
-
-								snprintf(buf, sizeof(buf), "%u",
-									 att->atttypid == OIDOID ? (Oid) datum :
-									 (TransactionId) datum);
-								strcat(deparsed, buf);
-							}
-							break;
-						case 1034:
-							strcat(deparsed, "<cannot deparse _aclitem>");
-							break;
-						default:
-							if (blockDirectoryFile)
-							{
-								struct varlena *value = DatumGetPointer(datum);
-								struct Minipage *mp = (struct Minipage *) value;
-								strcat(deparsed, "\nMinipage Info");
-								char           tmp[64];
-
-								strncat(deparsed, "\n    Version       : ", strlen("\n    Version       : "));
-								pg_ltoa(DatumGetInt32(mp->version), (char *) &tmp);
-								strncat(deparsed, (char *) &tmp, 32);
-								strncat(deparsed, "\n    NumOfEntries  : ", strlen("\n    NumOfEntries  : "));
-								pg_ltoa(DatumGetInt64(mp->nEntry), (char *) &tmp);
-								strncat(deparsed, (char *) &tmp, 64);
-								strncat(deparsed, "\n", strlen("\n"));
-								DeparseMiniPage(mp, mp->nEntry, deparsed);
-							}
-							else
-							{
-								char            buf[256];
-
-								sprintf(buf, "<unknown type %u>", att->atttypid);
-								strcat(deparsed, buf);
-							}
-							break;
 						}
+						if (!toasted)
+							DumpInlineDatum(att, datum, deparsed, numBytes);
 					}
 					strcat(deparsed, "|");
 				}

@@ -159,6 +159,7 @@ Orientation;
 #define SEQUENCE_MAGIC 0x1717	// PostgreSQL defined magic number
 #define EOF_ENCOUNTERED (-1)	// Indicator for partial read
 #define BYTES_PER_LINE 16	// Format the binary 16 bytes per line
+#define MAX_DEPARSE_LEN 8192
 
 Datum
 toast_flatten_tuple_attribute(Datum value,
