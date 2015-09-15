@@ -5941,8 +5941,6 @@ dumpTableSchema(Archive *fout, TableInfo *tbinfo)
 
 		/* END MPP ADDITION */
 
-		appendPQExpBuffer(q, ";\n");
-
 		/* Exchange external partition */
 		if (g_gp_supportsPartitioning)
 		{
@@ -5983,6 +5981,46 @@ dumpTableSchema(Archive *fout, TableInfo *tbinfo)
 
 				appendPQExpBuffer(q, "DROP TABLE %s; ", fmtId(tmpExtTable));
 				appendPQExpBuffer(q, "DROP EXTERNAL TABLE %s; ", fmtId(tmpExtTable));
+
+				appendPQExpBuffer(q, "\n");
+			}
+
+			PQclear(res);
+		}
+
+		appendPQExpBuffer(q, "\n");
+
+		/*
+		 * MPP-25549: Dump ALTER statements for subpartition tables being 
+		 * set to different schema other than the parent
+		 */
+		if (g_gp_supportsPartitioning)
+		{
+			int ntups = 0;
+			int i = 0;
+			int i_schemaname = 0;
+			int i_relname = 0;
+			char *schemaname = NULL;
+			char *relname = NULL;
+			resetPQExpBuffer(query);
+
+			appendPQExpBuffer(query, "SELECT "
+						"partitionschemaname, partitiontablename FROM pg_partitions "
+						"WHERE partitionschemaname != schemaname AND tablename = '%s';", tbinfo->dobj.name);
+
+			res = PQexec(g_conn, query->data);
+			check_sql_result(res, g_conn, query->data, PGRES_TUPLES_OK);
+
+			ntups = PQntuples(res);
+			i_relname = PQfnumber(res, "partitiontablename");
+			i_schemaname = PQfnumber(res, "partitionschemaname");
+
+			for (i = 0; i < ntups; i++)
+			{
+				schemaname = strdup(PQgetvalue(res, i, i_schemaname));
+				relname = strdup(PQgetvalue(res, i, i_relname));
+				appendPQExpBuffer(q, "ALTER TABLE %s ", relname);
+				appendPQExpBuffer(q, "SET SCHEMA %s;", schemaname);
 
 				appendPQExpBuffer(q, "\n");
 			}
