@@ -2495,7 +2495,7 @@ Feature: NetBackup Integration with GPDB
         And the user runs gpdbrestore with the stored timestamp using netbackup
         And gpdbrestore should return a return code of 0
         Then "plan" file should be created under " "
-        And the plan file is validated against "data/plan2"
+        And the plan file is validated against "data/net_plan2"
 
     @wip
     Scenario: Incremental backup of Non-public schema
