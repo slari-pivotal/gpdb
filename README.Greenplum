@@ -67,6 +67,20 @@ src/backend/fts
 	the segments to maintain the status of each segment.
 
 
+Regression tests
+----------------
+
+make installcheck-good
+
+The PostgreSQL "check" target does not work. Setting up a Greenplum cluster
+is more complicated than a single-node PostgreSQL installation, and no-one's
+done the work to have "make check" create a cluster. Create a cluster
+manually, and run "make installcheck-good" against that. Patches are welcome!
+
+The PostgreSQL "installcheck" target does not work either, because some
+tests are known to fail with Greenplum. The "installcheck-good" schedule
+excludes those tests.
+
 
 Glossary
 --------
