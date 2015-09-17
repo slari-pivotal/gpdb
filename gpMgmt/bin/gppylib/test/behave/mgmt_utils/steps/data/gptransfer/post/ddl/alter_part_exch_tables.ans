@@ -1,8 +1,7 @@
-You are now connected to database "gptest" as user "tangp3".
+You are now connected to database "gptest" as user "gpadmin".
 ALTER TABLE
 ALTER TABLE
-ALTER TABLE
- a1 | a2  |             a3             
+ a1 | a2  |             a3
 ----+-----+----------------------------
   1 | 100 | heap table to be exchanged
   2 | 100 | heap table to be exchanged
@@ -10,13 +9,17 @@ ALTER TABLE
   4 | 100 | heap table to be exchanged
   6 | 100 | ao table
  12 | 100 | co table
- 17 | 100 | ao table
-(7 rows)
+ 15 | 100 | heap table to be exchanged
+ 16 | 100 | heap table to be exchanged
+ 17 | 100 | heap table to be exchanged
+ 18 | 100 | heap table to be exchanged
+ 19 | 100 | heap table to be exchanged
+ 20 | 100 | heap table to be exchanged
+(12 rows)
 
 ALTER TABLE
 ALTER TABLE
-ALTER TABLE
- a1 | a2  |            a3            
+ a1 | a2  |            a3
 ----+-----+--------------------------
   3 | 100 | heap table
   5 | 100 | ao table to be exchanged
@@ -25,13 +28,17 @@ ALTER TABLE
   8 | 100 | ao table to be exchanged
   9 | 100 | ao table to be exchanged
  12 | 100 | co table
- 17 | 100 | co table
-(8 rows)
+ 15 | 100 | ao table to be exchanged
+ 16 | 100 | ao table to be exchanged
+ 17 | 100 | ao table to be exchanged
+ 18 | 100 | ao table to be exchanged
+ 19 | 100 | ao table to be exchanged
+ 20 | 100 | ao table to be exchanged
+(13 rows)
 
 ALTER TABLE
 ALTER TABLE
-ALTER TABLE
- a1 | a2  |            a3            
+ a1 | a2  |            a3
 ----+-----+--------------------------
   3 | 100 | heap table
   5 | 100 | co table to be exchanged
@@ -40,6 +47,10 @@ ALTER TABLE
   8 | 100 | co table to be exchanged
   9 | 100 | co table to be exchanged
  12 | 100 | co table
- 17 | 100 | co table
-(8 rows)
-
+ 15 | 100 | co table to be exchanged
+ 16 | 100 | co table to be exchanged
+ 17 | 100 | co table to be exchanged
+ 18 | 100 | co table to be exchanged
+ 19 | 100 | co table to be exchanged
+ 20 | 100 | co table to be exchanged
+(13 rows)
