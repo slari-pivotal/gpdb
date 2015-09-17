@@ -294,6 +294,9 @@ class GpInjectFaultProgram:
         # these options are used to build the message for the segments
         addTo = OptionGroup(parser, 'Fault Options: ')
         parser.add_option_group(addTo)
+        # NB: This list needs to be kept in sync with:
+        # - FaultInjectorTypeEnumToString
+        # - FaultInjectorType_e
         addTo.add_option('-y','--type', dest="type", type='string', metavar="<type>",
                          help="fault type: sleep (insert sleep), fault (report fault to postmaster and fts prober), " \
 			      "fatal (inject FATAL error), panic (inject PANIC error), error (inject ERROR), " \
@@ -302,7 +305,6 @@ class GpInjectFaultProgram:
 			      "skip (inject skip i.e. skip checkpoint), " \
 			      "memory_full (all memory is consumed when injected), " \
 			      "reset (remove fault injection), status (report fault injection status), " \
-			      "panic_suppress (inject suppressed PANIC in critical section), " \
 			      "segv (inject a SEGV), " \
 			      "interrupt (inject an Interrupt), " \
 			      "checkpoint_and_panic (inject a panic following checkpoint) ")

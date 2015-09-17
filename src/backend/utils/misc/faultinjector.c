@@ -72,6 +72,11 @@ static int FaultInjector_UpdateHashEntry(
 static bool FaultInjector_RemoveHashEntry(
 								FaultInjectorIdentifier_e identifier);
 
+/*
+ * NB: This list needs to be kept in sync with:
+ * - FaultInjectorType_e
+ * - the help message in clsInjectFault.py
+ */
 const char*
 FaultInjectorTypeEnumToString[] = {
 	_(""), /* not specified */
@@ -88,7 +93,6 @@ FaultInjectorTypeEnumToString[] = {
 	_("memory_full"),
 	_("reset"),
 	_("status"),
-	_("panic_suppress"),
 	_("segv"),
 	_("interrupt"),
 	_("checkpoint_and_panic"),

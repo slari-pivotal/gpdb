@@ -212,7 +212,9 @@ typedef enum FaultInjectorIdentifier_e {
 } FaultInjectorIdentifier_e;
 
 /*
- *
+ * NB: This list needs to be kept in sync with:
+ * - FaultInjectorTypeEnumToString
+ * - the help message in clsInjectFault.py
  */
 typedef enum FaultInjectorType_e {
 	FaultInjectorTypeNotSpecified=0,
