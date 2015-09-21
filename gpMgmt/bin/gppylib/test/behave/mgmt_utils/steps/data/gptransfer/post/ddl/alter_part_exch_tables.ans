@@ -1,7 +1,7 @@
 You are now connected to database "gptest" as user "gpadmin".
 ALTER TABLE
 ALTER TABLE
- a1 | a2  |             a3
+ a1 | a2  |             a3             
 ----+-----+----------------------------
   1 | 100 | heap table to be exchanged
   2 | 100 | heap table to be exchanged
@@ -19,7 +19,7 @@ ALTER TABLE
 
 ALTER TABLE
 ALTER TABLE
- a1 | a2  |            a3
+ a1 | a2  |            a3            
 ----+-----+--------------------------
   3 | 100 | heap table
   5 | 100 | ao table to be exchanged
@@ -38,7 +38,7 @@ ALTER TABLE
 
 ALTER TABLE
 ALTER TABLE
- a1 | a2  |            a3
+ a1 | a2  |            a3            
 ----+-----+--------------------------
   3 | 100 | heap table
   5 | 100 | co table to be exchanged
@@ -54,3 +54,4 @@ ALTER TABLE
  19 | 100 | co table to be exchanged
  20 | 100 | co table to be exchanged
 (13 rows)
+
