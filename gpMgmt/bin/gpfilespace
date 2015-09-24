@@ -79,7 +79,7 @@ class GPError(StandardError): pass
 class GPDatabaseError(GPError): pass
 class GPPrivilegeError(GPError): pass
 
-CLUSTERSIZE = 1            # DEBUGGING (to simulate ebay set to 98)
+CLUSTERSIZE = 1            # DEBUGGING (to simulate a large cluster set to 98)
 DEFAULT_NUM_WORKERS = 64   # same as gpstart, used for hostcache
 
 # ============================================================================
