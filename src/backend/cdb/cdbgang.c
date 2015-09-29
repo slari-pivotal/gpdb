@@ -956,8 +956,6 @@ addOneOption(PQExpBufferData *buffer, struct config_generic * guc)
 					if (str[start] == ' ')
 						continue;
 
-					if (str[start] == '"' || str[start] == '\'')
-						temp[j++] = '\\';
 					temp[j++] = str[start];
 
 					if (j >= 1023)
