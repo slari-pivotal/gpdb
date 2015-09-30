@@ -52,7 +52,7 @@ extern char *default_tablespace;
  *	thread_DoConnect is the thread proc used to perform the connection to one of the qExecs.
  */
 static void *thread_DoConnect(void *arg);
-static void build_gpqeid_param(char *buf, int bufsz, bool is_writer);
+static void build_gpqeid_params(PQExpBuffer buf, bool is_writer);
 
 static Gang *createGang(GangType type, int gang_id, int size, int content, char *portal_name);
 
@@ -990,8 +990,10 @@ addOptions(PQExpBufferData *buffer, bool iswriter, int segindex, bool i_am_super
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
 		write_log("addOptions: iswriter %d segindex %d", iswriter, segindex);
 
+	appendPQExpBufferStr(buffer, "options='");
+
 	/* The following gucs are set will function parameter */
-	appendPQExpBuffer(buffer, "-c gp_segment=%d", segindex);
+	appendPQExpBuffer(buffer, " -c gp_segment=%d", segindex);
 
 	/* GUCs need special handling */
 	if (Gp_role == GP_ROLE_DISPATCH)
@@ -1051,6 +1053,8 @@ addOptions(PQExpBufferData *buffer, bool iswriter, int segindex, bool i_am_super
 				return -i;
 		}
 	}
+
+	appendPQExpBuffer(buffer, "' ");
 	return 1;
 }
 
@@ -1083,7 +1087,6 @@ thread_DoConnect(void *arg)
 	for (i = 0; i < db_count; i++)
 	{
 		PQExpBufferData buffer;
-		char		gpqeid[100];
 
 		segdbDesc = segdbDescPtrArray[i];
 
@@ -1102,6 +1105,7 @@ thread_DoConnect(void *arg)
 		 * thread safe.  We cannot call elog or ereport either for the
 		 * same reason.
 		 */
+
 		initPQExpBuffer(&buffer);
 
 		/*
@@ -1109,8 +1113,8 @@ thread_DoConnect(void *arg)
 		 * early enough now some locks are taken before command line options
 		 * are recognized.
 		 */
-		build_gpqeid_param(gpqeid, sizeof(gpqeid),
-						   pParms->type == GANGTYPE_PRIMARY_WRITER);
+		build_gpqeid_params(&buffer, pParms->type == GANGTYPE_PRIMARY_WRITER);
+
 		err = addOptions(&buffer,
 						 (pParms->type == GANGTYPE_PRIMARY_WRITER),
 						 q->segindex, pParms->i_am_superuser);
@@ -1128,7 +1132,7 @@ thread_DoConnect(void *arg)
 		}
 		else
 		{
-			if (cdbconn_doConnect(segdbDesc, gpqeid, buffer.data))
+			if (cdbconn_doConnect(segdbDesc, buffer.data))
 			{
 				if (segdbDesc->motionListener == -1)
 				{
@@ -1157,24 +1161,26 @@ thread_DoConnect(void *arg)
  * thread, so mustn't use palloc/elog/ereport/etc.
  */
 static void
-build_gpqeid_param(char *buf, int bufsz, bool is_writer)
+build_gpqeid_params(PQExpBuffer buf, bool is_writer)
 {
+	appendPQExpBufferStr(buf, "gpqeid=");
+
+	appendPQExpBuffer(buf, "%d;", gp_session_id);
+
 #ifdef HAVE_INT64_TIMESTAMP
-#define TIMESTAMP_FORMAT INT64_FORMAT
+	appendPQExpBuffer(buf, INT64_FORMAT ";", PgStartTime);
 #else
 #ifndef _WIN32
-#define TIMESTAMP_FORMAT "%.14a"
+	appendPQExpBuffer(buf, "%.14a;", PgStartTime);
 #else
-#define TIMESTAMP_FORMAT "%g"
+	appendPQExpBuffer(buf, "%g;", PgStartTime);
 #endif
 #endif
+	appendPQExpBuffer(buf, "%s;", (is_writer ? "true" : "false"));
 
-	snprintf(buf, bufsz,
-			"%d;" TIMESTAMP_FORMAT ";%s",
-			gp_session_id,
-			PgStartTime,
-			(is_writer ? "true" : "false"));
-
+	/* change last semicolon to space */
+	Assert(buf->data[buf->len - 1] == ';');
+	buf->data[buf->len - 1] = ' ';
 }	/* build_gpqeid_params */
 
 /*
