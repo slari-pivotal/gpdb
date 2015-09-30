@@ -1,8 +1,8 @@
 --
--- Nested loop join with index scan on CO table, test for MPP-17658
+-- Nested loop join with index scan on CO table, test for MPP-17658;
 --
 
-
+set optimizer_enable_bitmapscan=on;
 create schema co_nestloop_idxscan;
 create table co_nestloop_idxscan.foo (id bigint, data text) with (appendonly=true, orientation=column)
 distributed by (id);
@@ -34,3 +34,4 @@ select f.id from co_nestloop_idxscan.foo f, co_nestloop_idxscan.bar b where f.id
 select enable_xform('CXformInnerJoin2HashJoin');
 
 drop schema co_nestloop_idxscan cascade;
+reset optimizer_enable_bitmapscan;
