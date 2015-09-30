@@ -1,5 +1,5 @@
 --
--- Nested loop join with index scan on CO table, test for MPP-17658
+-- Nested loop join with index scan on CO table, test for MPP-17658;
 --
 set optimizer_enable_bitmapscan=on;
 create schema co_nestloop_idxscan;
