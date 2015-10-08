@@ -16,7 +16,7 @@ endif
 SRC=$(CURDIR)
 PYLIB_SRC=$(SRC)/pythonSrc
 SBIN_DIR=$(SRC)/../sbin
-SERVER_SRC=$(CURDIR)/../../cdb-pg/gpMgmt/bin
+SERVER_SRC=$(SRC)
 SERVER_SBIN=$(SERVER_SRC)/../sbin
 
 
@@ -241,7 +241,7 @@ check-regress:
 check: $(MOCK_BIN) unittest2
 	@echo "Running unit tests..."
 	@PYTHONPATH=$(SERVER_SRC):$(SERVER_SBIN):$(SRC)/ext:$(PYTHONPATH):$(PYTHONSRC_INSTALL_PYTHON_PATH):$(SBIN_DIR):$(LIB_DIR):$(PYLIB_DIR)/mock-1.0.1 \
-	../../cdb-pg/gpMgmt/bin/gppylib/gpunit discover --verbose -s $(SRC)/../../cdb-pg/gpMgmt/bin/gppylib -p "test_unit*.py" 2> $(SRC)/../gpMgmt_testunit_results.log 1> $(SRC)/../gpMgmt_testunit_output.log
+	gppylib/gpunit discover --verbose -s $(SRC)/gppylib -p "test_unit*.py" 2> $(SRC)/../gpMgmt_testunit_results.log 1> $(SRC)/../gpMgmt_testunit_output.log
 
 solarisTest:
 	@if [ `uname -s` = 'SunOS' ]; then \
