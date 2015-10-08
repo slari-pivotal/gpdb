@@ -16,7 +16,7 @@ BUILD_STAGE=$4
 ##WORKING_DIRECTORY=$(readlink -m ${PWD}/../../..)
 
 if [ "${MODULE}" = "libgpos" ] || [ "${MODULE}" = "optimizer" ] || [ "${MODULE}" = "xerces-c" ]; then
-    WORKING_DIRECTORY=$(cd ${PWD}/../../../..; pwd -P)
+    WORKING_DIRECTORY=$(cd ${PWD}/../../../gpAux; pwd -P)
 else
     WORKING_DIRECTORY=$(cd ${PWD}/../../..; pwd -P)
 fi

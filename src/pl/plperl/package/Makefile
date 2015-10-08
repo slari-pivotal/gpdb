@@ -1,6 +1,6 @@
 all: gppkg
 
-BLD_TOP=../../../../../
+BLD_TOP=../../../../gpAux
 GPMGMT=$(BLD_TOP)/gpMgmt
 include $(BLD_TOP)/releng/tools.mk
 include $(BLD_TOP)/releng/releng.mk

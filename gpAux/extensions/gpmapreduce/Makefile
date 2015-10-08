@@ -1,5 +1,5 @@
 
-top_builddir = ../../cdb-pg
+top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 
 BLD_OS := $(shell uname -s)

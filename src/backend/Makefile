@@ -14,9 +14,9 @@ subdir = src/backend
 top_builddir = ../..
 include $(top_builddir)/src/Makefile.global
 
-BLD_TOP = $(top_builddir)/..
+BLD_TOP = $(top_builddir)/gpAux
 ifeq ($(enable_orca),yes)
-include $(top_builddir)/../releng/releng.mk
+include $(BLD_TOP)/releng/releng.mk
 endif
 
 SUBDIRS = access bootstrap catalog parser commands executor foreign \

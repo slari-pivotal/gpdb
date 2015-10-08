@@ -12,8 +12,8 @@ subdir = src/backend/gpopt
 top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 
-BLD_TOP = $(top_builddir)/..
-include $(top_builddir)/../releng/releng.mk
+BLD_TOP = $(top_builddir)/gpAux
+include $(BLD_TOP)/releng/releng.mk
 
 include $(top_builddir)/src/backend/gpopt/gpopt.mk
 

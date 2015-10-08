@@ -521,7 +521,7 @@ endif
 # so SHGetFolderName isn't picked up from shell32.dll
 ifeq ($(PORTNAME),win32)
 LIBS += -lws2_32 -lshfolder
-override LDFLAGS := -L$(top_builddir)/../ext/win32/kfw-3-2-2/lib $(LDFLAGS)
+override LDFLAGS := -L$(top_builddir)/gpAux/ext/win32/kfw-3-2-2/lib $(LDFLAGS)
 override AR := /usr/bin/i686-pc-mingw32-ar
 endif
 

@@ -30,7 +30,7 @@ include $(BLD_TOP)/releng/tools.mk
 GEOS_DIR=$(RELENG_TOOLS)/geos-3.3.8
 GEOS_CONFIG=$(GEOS_DIR)/bin/geos-config
 PROJ_DIR=$(RELENG_TOOLS)/proj-4.8.0
-PG_CONFIG=`pwd`/$(BLD_TOP)/cdb-pg/src/bin/pg_config/pg_config
+PG_CONFIG=`pwd`/$(BLD_TOP)/../src/bin/pg_config/pg_config
 
 # libxml2 
 EXT_TOP=`pwd`/$(BLD_TOP)/ext/$(BLD_ARCH)

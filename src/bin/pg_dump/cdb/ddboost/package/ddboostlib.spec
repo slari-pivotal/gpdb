@@ -14,7 +14,7 @@ The DDBoostlib package updates the Data Domain services for the Greenplum databa
 
 %install
 mkdir -p %{buildroot}/temp/lib
-cp -rf %{ddboostlib_dir}/../../../../../../ext/%{bld_arch}/lib/libDDBoost.so %{buildroot}/temp/lib/
+cp -rf %{ddboostlib_dir}/../../../../../gpAux/ext/%{bld_arch}/lib/libDDBoost.so %{buildroot}/temp/lib/
 
 %files
 /temp

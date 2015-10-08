@@ -60,7 +60,7 @@ LIBS += $(GPFDIST_LIBS)
 all: gpfdist/gpfdist
 
 gpfdist/GNUmakefile: mkext
-	cd gpfdist && ./configure --enable-transformations --with-apr-config=$(BLD_THIRDPARTY_BIN_DIR)/apr-1-config gpdb_top=$(BLD_TOP)/cdb-pg GP_VERSION="$(GP_VERSION)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" CC="$(CC)" LIBS="$(LIBS)" $(CONFIG_ADDITIONS)
+	cd gpfdist && ./configure --enable-transformations --with-apr-config=$(BLD_THIRDPARTY_BIN_DIR)/apr-1-config gpdb_top=$(BLD_TOP)/.. GP_VERSION="$(GP_VERSION)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" CC="$(CC)" LIBS="$(LIBS)" $(CONFIG_ADDITIONS)
 
 gpfdist/gpfdist: gpfdist/GNUmakefile
 	$(MAKE) -C gpfdist

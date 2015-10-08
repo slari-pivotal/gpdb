@@ -7,7 +7,7 @@
 
 PGFILEDESC = "gpsnmpd - SNMP daemon for GPDB"
 subdir = src/bin/gpsnmpd
-top_builddir = ../../cdb-pg
+top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 override CPPFLAGS := -I$(top_srcdir)/src/bin/gpsnmpd -I$(top_srcdir)/src/bin/gpsnmpd/RDBMS-MIB_src $(CPPFLAGS)
 ifneq ($(PORTNAME), win32)
@@ -21,10 +21,6 @@ LIBS := $(filter-out -lreadline -ledit -ltermcap -lncurses -lcurses -lcurl -lssl
 
 override CFLAGS += -Wno-error
 
-# we pick up the wrong net-snmp-config here  with lots of references to /home/build/hridenour/dev
-#SNMPFLAGS=-I. -I./RDBMS-MIB_src $(shell ../../../../ext/bin/net-snmp-config --cflags) 
-#AGENTLIBS=$(shell net-snmp-config --agent-libs)
-#
 # instead try to "wing it"
 SNMPFLAGS=-I. -I./RDBMS-MIB_src $(CFLAGS)
 AGENTLIBS=-lnetsnmpagent -lnetsnmphelpers -lnetsnmpmibs -lnetsnmp 
