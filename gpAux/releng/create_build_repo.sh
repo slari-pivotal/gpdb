@@ -28,6 +28,12 @@ fi
 
 git clone ${RELENG_BUILD_URL} /tmp/releng-build
 
-cp -r /tmp/releng-build/* ${BLDWRAP_TOP}
+if [ -n "${RELENG_BUILD_BRANCH}" ]; then
+    pushd /tmp/releng-build
+    git checkout ${RELENG_BUILD_BRANCH}
+    popd
+fi
+
+cp -r /tmp/releng-build/* /tmp/releng-build/.git ${BLDWRAP_TOP}
 
 rm -rf /tmp/releng-build
