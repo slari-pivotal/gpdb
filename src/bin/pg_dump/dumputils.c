@@ -28,6 +28,8 @@ static bool parseAclItem(const char *item, const char *type, const char *name,
 			 PQExpBuffer privs, PQExpBuffer privswgo);
 static char *copyAclUserName(PQExpBuffer output, char *input);
 static void AddAcl(PQExpBuffer aclbuf, const char *keyword);
+static const char *quoteString(const char *rawid, const char escaping_quote);
+
 
 #ifdef WIN32
 static bool parallel_init_done = false;
@@ -46,30 +48,84 @@ init_parallel_dump_utils(void)
 #endif
 }
 
+
+
 /*
- *	Quotes input string if it's not a legitimate SQL identifier as-is.
+ *	Quote the input string with escaping_quote (either single or double quotes)
  *
- *	Note that the returned string must be used before calling fmtId again,
+ *	Note that the returned string must be used before calling this method again,
  *	since we re-use the same return buffer each time.  Non-reentrant but
  *	reduces memory leakage. (On Windows the memory leakage will be one buffer
  *	per thread, which is at least better than one per call).
  */
 const char *
-fmtId(const char *rawid)
+quoteString(const char *rawid, const char escaping_quote)
 {
-	static PQExpBuffer id_return = NULL;
-	const char *cp;
-	bool		need_quotes = false;
 
-	if (id_return)				/* first time through? */
+	static PQExpBuffer id_return = NULL;
+	const char *cp = NULL;
+
+	if (id_return)
 		resetPQExpBuffer(id_return);
 	else
 		id_return = createPQExpBuffer();
+
+	appendPQExpBufferChar(id_return, escaping_quote);
+
+	for (cp = rawid; *cp; cp++)
+	{
+		/*
+		 * Did we find the escaping-quote in the string? Then make this a
+		 * double escaping-quote per SQL99. Before, we put in a
+		 * backslash/escaping-quote pair. - thomas 2000-08-05
+		 */
+		if (*cp == escaping_quote)
+			appendPQExpBufferChar(id_return, escaping_quote);
+
+		/* Escape backslashes only if the string is to be single quoted */
+		else if (*cp == '\\' && escaping_quote == '\'')
+			appendPQExpBufferChar(id_return, '\\');
+		appendPQExpBufferChar(id_return, *cp);
+	}
+
+	appendPQExpBufferChar(id_return, escaping_quote);
+
+	return id_return->data;
+}
+
+
+/*
+ *	Single quotes the input string irrespective of its contents.
+ *
+ *	Note that the returned string must be used before calling fmtId_with_single_quote again.
+ *	eg: char *rawid = "Hel'l"\\o"
+ *	returns: "\'Hel''l\"\\\\o\'"
+ */
+const char *
+fmtId_with_single_quote(const char *rawid)
+{
+	return quoteString(rawid , '\'');
+}
+
+
+/*
+ *	Double quotes the input string if it's not a legitimate SQL identifier as-is.
+ *
+ *	Note that the returned string must be used before calling fmtId again.
+ *	eg: char *rawid = "He'l\\l\"o";
+ *	returns "\"He'l\\l\"\"o\""
+ */
+const char *
+fmtId(const char *rawid)
+{
+	const char	*cp;
+	bool		need_quotes = false;
 
 	/*
 	 * These checks need to match the identifier production in scan.l. Don't
 	 * use islower() etc.
 	 */
+
 	/* slightly different rules for first character */
 	if (!((rawid[0] >= 'a' && rawid[0] <= 'z') || (rawid[0] == '_')))
 		need_quotes = true;
@@ -105,28 +161,9 @@ fmtId(const char *rawid)
 	}
 
 	if (!need_quotes)
-	{
-		/* no quoting needed */
-		appendPQExpBufferStr(id_return, rawid);
-	}
+		return rawid;
 	else
-	{
-		appendPQExpBufferChar(id_return, '\"');
-		for (cp = rawid; *cp; cp++)
-		{
-			/*
-			 * Did we find a double-quote in the string? Then make this a
-			 * double double-quote per SQL99. Before, we put in a
-			 * backslash/double-quote pair. - thomas 2000-08-05
-			 */
-			if (*cp == '\"')
-				appendPQExpBufferChar(id_return, '\"');
-			appendPQExpBufferChar(id_return, *cp);
-		}
-		appendPQExpBufferChar(id_return, '\"');
-	}
-
-	return id_return->data;
+		return quoteString(rawid , '\"');
 }
 
 

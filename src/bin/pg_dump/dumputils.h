@@ -21,6 +21,7 @@
 
 extern void init_parallel_dump_utils(void);
 extern const char *fmtId(const char *identifier);
+extern const char *fmtId_with_single_quote(const char *identifier);
 extern void appendStringLiteral(PQExpBuffer buf, const char *str,
 					int encoding, bool std_strings);
 extern void appendStringLiteralConn(PQExpBuffer buf, const char *str,

@@ -11,6 +11,7 @@
 #include "postgres_fe.h"
 #include <assert.h>
 #include "libpq-fe.h"
+#include "pqexpbuffer.h"
 #include "cdb_backup_status.h"
 #include "cdb_dump_util.h"
 #include "cdb_backup_state.h"
