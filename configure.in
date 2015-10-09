@@ -413,8 +413,8 @@ AC_SUBST(BLD_ARCH)
 
 # Get the Greenplum version string from ../VERSION
 # If there is no VERSION file, set the version to devel
-if [[ -f ../VERSION ]] ; then
-    GP_VERSION=`cat ../VERSION`
+if [[ -f VERSION ]] ; then
+    GP_VERSION=`cat VERSION`
 else
     GP_VERSION="devel"
 fi
