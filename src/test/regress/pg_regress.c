@@ -539,6 +539,7 @@ convert_sourcefiles_in(char *source, char *dest, char *suffix)
 			replace_string(line, "@abs_builddir@", abs_builddir);
 			replace_string(line, "@testtablespace@", testtablespace);
 			replace_string(line, "@DLSUFFIX@", DLSUFFIX);
+			replace_string(line, "@bindir@", bindir);
 			fputs(line, outfile);
 
 			/*
