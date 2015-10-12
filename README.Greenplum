@@ -12,16 +12,32 @@ Users always connect to the master server, which divides up the query into
 fragments that are executed in the segments, sends the fragments to the
 segments, and collects the results.
 
+
 Compiling
 ---------
 
-./configure
-make
+STANDARD GREENPLUM (Recommended):
+  cd greenplum/
+  ## For debug build:
+      make DEVPATH=`pwd`/greenplum-db-devel devel
+  ## For dist build:
+      make GPROOT=`pwd` dist
+  ## Append BLD_TARGETS variable to build specific components
+  ## i.e. BLD_TARGETS="gpdb clients connectivity loaders gpperfmon gppkg"
+
+CLASSIC POSTGRESQL (For quick dev testing):
+  ./configure
+  make
+  make install
+  ## Add --prefix=<install-path> to configure if needed
+  ## This classic PostgreSQL compilation will not include critical
+  ## Greenplum Database utilities (i.e. gpinitsystem, gpstart, gpstop)
 
 There are some additional requirements in addition to what's needed by
 PostgreSQL:
 
 * libcurl - needed for e-mail alerts and external tables
+
 
 Code layout
 -----------
@@ -30,16 +46,19 @@ The directory layout of the repository follows the same general layout as
 upstream PostgreSQL. There are changes compared to PostgreSQL throughout the
 codebase, but a few larger additions worth noting:
 
-gpMgmt/
+greenplum/extensions/
+	Contains Greenplum-specific extensions such as gpfdist and gphdfs. Some
+	directories are empty due to GPL license conflicts.
+
+greenplum/gpMgmt/
 	Contains Greenplum-specific command-line tools for managing the
 	cluster. Scripts like gpinit, gpstart, gpstop live here. They are
 	mostly written in Python.
 
 doc/
 	In PostgreSQL, the user manual lives here. In Greenplum, the user
-	manual is distributed separately (see XXX), and only the reference
-	pages used to build man pages are here.
-
+	manual is distributed separately (see http://gpdb.docs.pivotal.io), and
+	only the reference pages used to build man pages are here.
 
 src/backend/cdb/
 	Contains larger Greenplum-specific backend modules. For example,
@@ -70,16 +89,26 @@ src/backend/fts
 Regression tests
 ----------------
 
-make installcheck-good
+make installcheck-good  ## default regression tests
+make installcheck-bugbuster  ## optional extra regression tests
+## You can add TT=<test name> variable to the make command to run a single test
 
 The PostgreSQL "check" target does not work. Setting up a Greenplum cluster
 is more complicated than a single-node PostgreSQL installation, and no-one's
 done the work to have "make check" create a cluster. Create a cluster
-manually, and run "make installcheck-good" against that. Patches are welcome!
+manually or use greenplum/gpdemo/, and run "make installcheck-good" against
+that. Patches are welcome!
 
 The PostgreSQL "installcheck" target does not work either, because some
 tests are known to fail with Greenplum. The "installcheck-good" schedule
 excludes those tests.
+
+Example regression test run:
+source greenplum_path.sh
+cd greenplum/gpdemo/
+make cluster
+## After make cluster, export PGPORT and MASTER_DATA_DIRECTORY
+make installcheck-good
 
 
 Glossary
@@ -90,3 +119,10 @@ QD
 
 QE
 	Query Executor. A synonym for a segment server.
+
+
+Documentation
+-------------
+
+For Greenplum Database documentation, please check online docs:
+http://gpdb.docs.pivotal.io
