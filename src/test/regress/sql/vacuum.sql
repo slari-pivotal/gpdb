@@ -208,3 +208,15 @@ order by i;
 drop table ao_age_test;
 drop table ao_empty;
 drop table aocs_empty;
+
+create table co_t1(a int, b int) with (appendonly=true, orientation=column) distributed by(a);
+insert into co_t1 select i, i from generate_series(1, 10000) i;
+update co_t1 set b = b + 1;
+vacuum full co_t1;
+drop table co_t1;
+
+create table ao_t1(a int, b int) with (appendonly=true) distributed by(a);
+insert into ao_t1 select i, i from generate_series(1, 10000) i;
+update ao_t1 set b = b + 1;
+vacuum full ao_t1;
+drop table ao_t1;

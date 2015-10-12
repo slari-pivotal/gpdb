@@ -1894,7 +1894,7 @@ vacuum_rel(Relation onerel, VacuumStmt *vacstmt, LOCKMODE lmode, List *updated_s
 	}
 
 	if (vacstmt->appendonly_compaction_vacuum_cleanup ||
-		vacstmt->appendonly_relation_empty)
+		(vacstmt->appendonly_relation_empty && vacstmt->appendonly_compaction_vacuum_prepare))
 	{
 		/* do the same for an AO segments table, if any */
 		if (aoseg_relid != InvalidOid)
