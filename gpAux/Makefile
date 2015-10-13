@@ -737,19 +737,8 @@ else
 	cp -f client/scripts/greenplum_$@_path$(SCRIPT) $(CONNECTIVITYINSTLOC)/
 
 	# ---- copy license files ----
-	if [ -d ${BLD_TOP}/../licenses ] ; then \
-	   if [ -a $(CONNECTIVITYINSTLOC)/GPDB-LICENSE.txt ] ; then \
-	        rm -f $(CONNECTIVITYINSTLOC)/GPDB-LICENSE.txt ; \
-	   fi ; \
-	   if [ -a $(CONNECTIVITYINSTLOC)/LICENSE.thirdparty ] ; then \
-	        rm -f $(CONNECTIVITYINSTLOC)/LICENSE.thirdparty ; \
-	   fi ; \
-	   cp ${BLD_TOP}/../licenses/GPDB-LICENSE.txt $(CONNECTIVITYINSTLOC) ; \
-	   cp ${BLD_TOP}/../licenses/LICENSE.thirdparty $(CONNECTIVITYINSTLOC) ; \
-	else \
-	   echo "ERROR:	LICENSE.thirdparty and GPDB-LICENSE.txt; ${BLD_TOP}/../licenses not found" ; \
-	   exit 1; \
-	fi
+	cp ${BLD_TOP}/../LICENSE $(CONNECTIVITYINSTLOC)
+	cp ${BLD_TOP}/../NOTICE $(CONNECTIVITYINSTLOC)
 
 	# ---- create the installer ----
 	$(warn MPP_ARCH=$(MPP_ARCH))
@@ -800,19 +789,8 @@ endif
 	cp -f client/scripts/greenplum_$@_path$(SCRIPT) $(CLIENTINSTLOC)/
 
 	# ---- copy license files ----
-	if [ -d ${BLD_TOP}/../licenses ] ; then \
-	   if [ -a $(CLIENTINSTLOC)/GPDB-LICENSE.txt ] ; then \
-	        rm -f $(CLIENTINSTLOC)/GPDB-LICENSE.txt ; \
-	   fi ; \
-	   if [ -a $(CLIENTINSTLOC)/LICENSE.thirdparty ] ; then \
-	        rm -f $(CLIENTINSTLOC)/LICENSE.thirdparty ; \
-	   fi ; \
-	  cp ${BLD_TOP}/../licenses/GPDB-LICENSE.txt $(CLIENTINSTLOC) ; \
-	  cp ${BLD_TOP}/../licenses/LICENSE.thirdparty $(CLIENTINSTLOC) ; \
-	else \
-	   echo "ERROR: LICENSE.thirdparty and GPDB-LICENSE.txt; ${BLD_TOP}/../licenses not found" ; \
-	   exit 1; \
-	fi
+	cp ${BLD_TOP}/../LICENSE $(CLIENTINSTLOC)
+	cp ${BLD_TOP}/../NOTICE $(CLIENTINSTLOC)
 
 	# ---- create the installer ----
 	$(warn MPP_ARCH=$(MPP_ARCH))
@@ -886,19 +864,8 @@ endif
 	cp -f client/scripts/greenplum_$@_path$(SCRIPT) $(LOADERSINSTLOC)/
 
 	# ---- copy license files ----
-	if [ -d ${BLD_TOP}/../licenses ] ; then \
-	    if [ -a $(LOADERSINSTLOC)/GPDB-LICENSE.txt ] ; then \
-	        rm -f $(LOADERSINSTLOC)/GPDB-LICENSE.txt ; \
-	    fi ; \
-	    if [ -a $(LOADERSINSTLOC)/LICENSE.thirdparty ] ; then \
-	        rm -f $(LOADERSINSTLOC)/LICENSE.thirdparty ; \
-	    fi ; \
-	    cp ${BLD_TOP}/../licenses/GPDB-LICENSE.txt $(LOADERSINSTLOC) ; \
-	    cp ${BLD_TOP}/../licenses/LICENSE.thirdparty $(LOADERSINSTLOC) ; \
-	else \
-	    echo "ERROR	 LICENSE.thirdparty and GPDB-LICENSE.txt; ${BLD_TOP}/../licenses not found" ; \
-	    exit 1; \
-	fi
+	cp ${BLD_TOP}/../LICENSE $(LOADERSINSTLOC)
+	cp ${BLD_TOP}/../NOTICE $(LOADERSINSTLOC)
 
 	# ---- create the installer ----
 
