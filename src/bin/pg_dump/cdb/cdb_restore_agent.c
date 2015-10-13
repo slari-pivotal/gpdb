@@ -70,14 +70,6 @@ int			optreset;
 #include <locale.h>
 #endif
 
-static char *DDP_SU_NAME = NULL;
-static char *DEFAULT_BACKUP_DIRECTORY = NULL;
-
-char *log_message_path = NULL;
-static int dd_boost_enabled = 0;
-static char *dd_boost_buf_size = NULL;
-static char *ddboostPg = NULL;
-
 #ifdef USE_DDBOOST
 #include "ddp_api.h"
 static char *formDDBoostFileName(char *pszBackupKey, bool isPostData, char *ddBoostDir);
@@ -87,6 +79,14 @@ extern ddp_client_info_t dd_client_info;
 
 static ddp_inst_desc_t ddp_inst = DDP_INVALID_DESCRIPTOR;
 static ddp_conn_desc_t ddp_conn = DDP_INVALID_DESCRIPTOR;
+
+static char *DDP_SU_NAME = NULL;
+static char *DEFAULT_BACKUP_DIRECTORY = NULL;
+
+char *log_message_path = NULL;
+static int dd_boost_enabled = 0;
+static char *dd_boost_buf_size = NULL;
+static char *ddboostPg = NULL;
 #endif
 
 #ifndef PATH_NAME_MAX
@@ -157,7 +157,7 @@ main(int argc, char **argv)
 	int			c;
 	int			exit_code = 0;
 	Archive    *AH;
-	char	   *inputFileSpec = NULL;
+	char	   *inputFileSpec;
 	extern int	optind;
 	extern char *optarg;
 	static int	use_setsessauth = 0;
@@ -175,8 +175,11 @@ main(int argc, char **argv)
 	char	   *pszErrorMsg;
 	ArchiveHandle *pAH;
 	int 		postDataSchemaOnly = 0;
+
+#ifdef USE_DDBOOST
 	char    *ddp_file_name = NULL;
 	char 	*dd_boost_dir = NULL;
+#endif
 
 	struct option cmdopts[] = {
 		{"clean", 0, NULL, 'c'},
@@ -259,6 +262,9 @@ main(int argc, char **argv)
 		}
 	}
 
+#ifdef USE_DDBOOST
+	dd_boost_enabled = 0;
+#endif
 	while ((c = getopt_long(argc, argv, "acCd:ef:F:h:iI:lL:Op:P:RsS:t:T:uU:vwWxX:",
 							cmdopts, NULL)) != -1)
 	{
@@ -457,19 +463,19 @@ main(int argc, char **argv)
 	 *       If the agent is invoked from gp_restore_launch, then we are ok.
 	 */
 	if (optind < argc)
-	{
 		inputFileSpec = argv[optind];
+	else
+		inputFileSpec = NULL;
 
-		if (postDataSchemaOnly)
+	if (postDataSchemaOnly && inputFileSpec != NULL)
+	{
+		if (strstr(inputFileSpec,"_post_data") == NULL)
 		{
-			if (strstr(inputFileSpec,"_post_data") == NULL)
-			{
-				fprintf(stderr,"Adding _post_data to the end of the file name?\n");
-				char * newFS = malloc(strlen(inputFileSpec) + strlen("_post_data") + 1);
-				strcpy(newFS, inputFileSpec);
-				strcat(newFS, "_post_data");
-				inputFileSpec = newFS;
-			}
+			fprintf(stderr,"Adding _post_data to the end of the file name?\n");
+			char * newFS = malloc(strlen(inputFileSpec) + strlen("_post_data") + 1);
+			strcpy(newFS, inputFileSpec);
+			strcat(newFS, "_post_data");
+			inputFileSpec = newFS;
 		}
 	}
 
@@ -549,12 +555,16 @@ main(int argc, char **argv)
                 
 		mpp_err_msg(logInfo, progname, "ddboost is initialized\n");
 		
-		ddp_file_name = formDDBoostFileName(g_gpdumpKey, postDataSchemaOnly, dd_boost_dir);
-		if (ddp_file_name == NULL)
-		{
-			mpp_err_msg(logInfo, progname, "Error in opening ddboost file\n");
-			exit(1);
-		}
+     		if (!postDataSchemaOnly)
+		{       
+               		ddp_file_name = formDDBoostFileName(g_gpdumpKey, false, dd_boost_dir);
+               		if (ddp_file_name == NULL)
+               		{
+				mpp_err_msg(logInfo, progname, "Error in opening ddboost file\n");
+				exit(1);
+               		}	       
+
+       		}
 	}
 #endif
 
@@ -774,26 +784,35 @@ main(int argc, char **argv)
 			/* Its too error prone to pre-calc the exact command line length
 			   just allocate a chunk of memory that is not likely to be exceeded. */
 			pszCmdLine = (char *) calloc(MAX_COMMANDLINE_LEN, 1);
-			if (dd_boost_enabled)
+
+			if (!postDataSchemaOnly)
 			{
-				formDDBoostPsqlCommandLine(&pszCmdLine, bCompUsed, ddboostPg, g_compPg,
-						ddp_file_name, dd_boost_buf_size,
-						filterScript, table_filter_file,
-						g_role, psqlPg, postDataSchemaOnly);
+#ifdef USE_DDBOOST
+				if (dd_boost_enabled)
+				{
+					formDDBoostPsqlCommandLine(&pszCmdLine, bCompUsed, ddboostPg, g_compPg, 
+							ddp_file_name, dd_boost_buf_size,
+							filterScript, table_filter_file, 
+							g_role, psqlPg);
+				}
+				else 
+				{
+#endif
+					/* Non ddboost restore */
+					formSegmentPsqlCommandLine(&pszCmdLine, inputFileSpec, bCompUsed, g_compPg,
+							filterScript, table_filter_file, 
+							g_role, psqlPg, catPg,
+							gpNBURestorePg, netbackup_service_host, netbackup_block_size);
+#ifdef USE_DDBOOST
+				}
+#endif
 			}
-			else if(postDataSchemaOnly)
+			else if (postDataSchemaOnly)
 			{
-				formPostDataSchemaOnlyPsqlCommandLine(&pszCmdLine, inputFileSpec, bCompUsed, g_compPg,
-						postDataFilterScript, table_filter_file, psqlPg, catPg,
-						gpNBURestorePg, netbackup_service_host, netbackup_block_size);
-			}
-			else
-			{
-				/* Non ddboost restore */
-				formSegmentPsqlCommandLine(&pszCmdLine, inputFileSpec, bCompUsed, g_compPg,
-						filterScript, table_filter_file,
-						g_role, psqlPg, catPg,
-						gpNBURestorePg, netbackup_service_host, netbackup_block_size);
+                /* Right now the postdata files will be synced to segment directories before restore */
+                formPostDataSchemaOnlyPsqlCommandLine(&pszCmdLine, inputFileSpec, bCompUsed, g_compPg,
+							postDataFilterScript, table_filter_file, psqlPg, catPg,
+							gpNBURestorePg, netbackup_service_host, netbackup_block_size);
 			}
 
 			strcat(pszCmdLine, " -h ");

@@ -1038,7 +1038,6 @@ formSegmentPsqlCommandLine(char** retVal, const char* inputFileSpec, bool compUs
 							const char* gpNBURestorePg, const char* netbackupServiceHost, const char* netbackupBlockSize)
 {
 	char* pszCmdLine = *retVal;
-	char *input_file = inputFileSpec ? inputFileSpec : "";
 	if (compUsed)
 	{
 		if (netbackupServiceHost)
@@ -1047,7 +1046,7 @@ formSegmentPsqlCommandLine(char** retVal, const char* inputFileSpec, bool compUs
 			strncat(pszCmdLine, " --netbackup-service-host ", strlen(" --netbackup-service-host "));
 			strncat(pszCmdLine, netbackupServiceHost, strlen(netbackupServiceHost));
 			strncat(pszCmdLine, " --netbackup-filename ", strlen(" --netbackup-filename "));
-			strncat(pszCmdLine, input_file, strlen(input_file));
+			strncat(pszCmdLine, inputFileSpec, strlen(inputFileSpec));
 			if (netbackupBlockSize)
 			{
 				strncat(pszCmdLine, " --netbackup-block-size ", strlen(" --netbackup-block-size "));
@@ -1060,7 +1059,7 @@ formSegmentPsqlCommandLine(char** retVal, const char* inputFileSpec, bool compUs
 		{
 			strcpy(pszCmdLine, catPg);
 			strcat(pszCmdLine, " ");
-			strcat(pszCmdLine, input_file);
+			strcat(pszCmdLine, inputFileSpec);
 			strcat(pszCmdLine, " | ");
 			strcat(pszCmdLine, compProg);
 		}
@@ -1073,7 +1072,7 @@ formSegmentPsqlCommandLine(char** retVal, const char* inputFileSpec, bool compUs
 			strncat(pszCmdLine, " --netbackup-service-host ", strlen(" --netbackup-service-host "));
 			strncat(pszCmdLine, netbackupServiceHost, strlen(netbackupServiceHost));
 			strncat(pszCmdLine, " --netbackup-filename ", strlen(" --netbackup-filename "));
-			strncat(pszCmdLine, input_file, strlen(input_file));
+			strncat(pszCmdLine, inputFileSpec, strlen(inputFileSpec));
 			if (netbackupBlockSize)
 			{
 				strncat(pszCmdLine, " --netbackup-block-size ", strlen(" --netbackup-block-size "));
@@ -1084,7 +1083,7 @@ formSegmentPsqlCommandLine(char** retVal, const char* inputFileSpec, bool compUs
 		{
 			strcpy(pszCmdLine, catPg);
 			strcat(pszCmdLine, " ");
-			strcat(pszCmdLine, input_file);
+			strcat(pszCmdLine, inputFileSpec);
 		}
 	}
 
@@ -1739,7 +1738,7 @@ void
 formDDBoostPsqlCommandLine(char** retVal, bool compUsed, const char* ddboostPg, const char* compProg, 
 							const char* ddp_file_name, const char* dd_boost_buf_size,
 							const char* filter_script, const char* table_filter_file, 
-							int role, const char* psqlPg, bool postSchemaOnly)
+							int role, const char* psqlPg)
 {
 	char* pszCmdLine = *retVal;
 
@@ -1766,7 +1765,7 @@ formDDBoostPsqlCommandLine(char** retVal, bool compUsed, const char* ddboostPg, 
 	{
 		strcat(pszCmdLine, " | ");
 		strcat(pszCmdLine, filter_script);
-		if (role == ROLE_MASTER && !postSchemaOnly)
+		if (role == ROLE_MASTER)
 		{
 			strcat(pszCmdLine, " -m");
 		}
