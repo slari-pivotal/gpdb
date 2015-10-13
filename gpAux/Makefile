@@ -92,12 +92,12 @@ GPPERFMON=gpperfmon
 PLATFORM=platform
 BUILDDIR=$(GPPGDIR)
 
-RELEASE=$(shell $(CURDIR)/releasetag)
-GPDIR=greenplum-db$(RELEASE)
-PLRDIR=greenplum-plr$(RELEASE)
-CLIENTDIR=greenplum-clients$(RELEASE)
-CONNECTIVITYDIR=greenplum-connectivity$(RELEASE)
-LOADERSDIR=greenplum-loaders$(RELEASE)
+RELEASE=devel
+GPDIR=greenplum-db-$(RELEASE)
+PLRDIR=greenplum-plr-$(RELEASE)
+CLIENTDIR=greenplum-clients-$(RELEASE)
+CONNECTIVITYDIR=greenplum-connectivity-$(RELEASE)
+LOADERSDIR=greenplum-loaders-$(RELEASE)
 GPDOCDIR=$(CURDIR)/docs/release
 
 DISTPATH=$(GPROOT)/$(GPDIR)
