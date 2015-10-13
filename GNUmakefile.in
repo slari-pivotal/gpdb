@@ -42,6 +42,8 @@ install:
 	$(MAKE) -C contrib/gp_cancel_query $@
 	$(MAKE) -C contrib/gp_filedump $@
 	$(MAKE) -C contrib/indexscan $@ 
+	$(MAKE) -C gpMgmt $@
+
 	@echo "Greenplum Database installation complete."
 
 installdirs uninstall:
