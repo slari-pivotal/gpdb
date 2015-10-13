@@ -128,7 +128,7 @@ static char *ident_file;
 static char *conf_file;
 static char *conversion_file;
 static char *info_schema_file;
-static char *cdb_init_file;
+static char *cdb_init_d_dir;
 static char *features_file;
 static char *system_views_file;
 static bool made_new_pgdata = false;
@@ -300,6 +300,20 @@ pg_malloc(size_t size)
 	void	   *result;
 
 	result = malloc(size);
+	if (!result)
+	{
+		fprintf(stderr, _("%s: out of memory\n"), progname);
+		exit(1);
+	}
+	return result;
+}
+
+static void *
+pg_realloc(void *ptr, size_t size)
+{
+	void	   *result;
+
+	result = realloc(ptr, size);
 	if (!result)
 	{
 		fprintf(stderr, _("%s: out of memory\n"), progname);
@@ -2101,48 +2115,128 @@ setup_schema(void)
 	check_ok();
 }
 
+static int
+cmpstringp(const void *p1, const void *p2)
+{
+	return strcmp(* (char * const *) p1, * (char * const *) p2);
+}
+
 /*
- * load info schema and populate from features file
+ * Load GPDB additions to the schema.
+ *
+ * These are contained in directory "cdb_init.d". We load all .sql files
+ * from that directory, in alphabetical order. This modular design allows
+ * extensions to put their install scripts under cdb_init.d, and have them
+ * automatically installed directly in the template databases of every new
+ * cluster.
  */
 static void
 setup_cdb_schema(void)
 {
-	PG_CMD_DECL;
-	char	  **line;
-	char	  **lines;
+	DIR		   *dir;
+	struct dirent *file;
+	int			nscripts;
+	char	  **scriptnames = NULL;
+	int			i;
 
 	fputs(_("creating Greenplum Database schema ... "), stdout);
 	fflush(stdout);
 
-	lines = readfile(cdb_init_file);
+	dir = opendir(cdb_init_d_dir);
 
-	/*
-	 * We use -N here to avoid backslashing stuff in
-	 * information_schema.sql
-	 */
-	snprintf(cmd, sizeof(cmd),
-			 "\"%s\" %s -j template1 >%s",
-			 backend_exec, backend_options,
-			 backend_output);
-
-	PG_CMD_OPEN;
-
-	for (line = lines; *line != NULL; line++)
+	if (!dir)
 	{
-		PG_CMD_PUTS(*line);
-		free(*line);
+		printf(_("could not open cdb_init.d directory: %s\n"),
+			   strerror(errno));
+		fflush(stdout);
+		exit_nicely();
 	}
 
-	free(lines);
+	/* Collect all files with .sql suffix in array. */
+	nscripts = 0;
+	while ((file = readdir(dir)) != NULL)
+	{
+		int			namelen = strlen(file->d_name);
 
-	PG_CMD_CLOSE;
+		if (namelen > 4 &&
+			strcmp(".sql", file->d_name + namelen - 4) == 0)
+		{
+			scriptnames = pg_realloc(scriptnames,
+									 sizeof(char *) * (nscripts + 1));
+			scriptnames[nscripts++] = xstrdup(file->d_name);
+		}
+	}
 
-	snprintf(cmd, sizeof(cmd),
-			 "\"%s\" %s template1 >%s",
-			 backend_exec, backend_options,
-			 backend_output);
+#ifdef WIN32
+	/*
+	 * This fix is in mingw cvs (runtime/mingwex/dirent.c rev 1.4), but not in
+	 * released version
+	 */
+	if (GetLastError() == ERROR_NO_MORE_FILES)
+		errno = 0;
+#endif
 
-	check_ok();
+	closedir(dir);
+
+	if (errno != 0)
+	{
+		/* some kind of I/O error? */
+		printf(_("error while reading cdb_init.d directory: %s\n"),
+			   strerror(errno));
+		fflush(stdout);
+		exit_nicely();
+	}
+
+	/*
+	 * Sort the array. This allows simple dependencies between scripts, by
+	 * naming them like "01_before.sql" and "02_after.sql"
+	 */
+	if (nscripts > 0)
+		qsort(scriptnames, nscripts, sizeof(char *), cmpstringp);
+
+	/*
+	 * Now execute each script.
+	 */
+	for (i = 0; i < nscripts; i++)
+	{
+		PG_CMD_DECL;
+		char	  **line;
+		char	  **lines;
+		char	   *path;
+
+		path = pg_malloc(strlen(share_path) + strlen("cdb_init.d") + strlen(scriptnames[i]) + 3);
+		sprintf(path, "%s/cdb_init.d/%s", share_path, scriptnames[i]);
+
+		lines = readfile(path);
+
+		/*
+		 * We use -j here to avoid backslashing stuff in
+		 * information_schema.sql
+		 */
+		snprintf(cmd, sizeof(cmd),
+				 "\"%s\" %s -j template1 >%s",
+				 backend_exec, backend_options,
+				 backend_output);
+
+		PG_CMD_OPEN;
+
+		for (line = lines; *line != NULL; line++)
+		{
+			PG_CMD_PUTS(*line);
+			free(*line);
+		}
+
+		free(lines);
+
+		PG_CMD_CLOSE;
+
+		snprintf(cmd, sizeof(cmd),
+				 "\"%s\" %s template1 >%s",
+				 backend_exec, backend_options,
+				 backend_output);
+
+		check_ok();
+	}
 }
 
 /*
@@ -3189,9 +3283,10 @@ main(int argc, char *argv[])
 	set_input(&conf_file, "postgresql.conf.sample");
 	set_input(&conversion_file, "conversion_create.sql");
 	set_input(&info_schema_file, "information_schema.sql");
-	set_input(&cdb_init_file, "cdb_init.sql");
 	set_input(&features_file, "sql_features.txt");
 	set_input(&system_views_file, "system_views.sql");
+
+	set_input(&cdb_init_d_dir, "cdb_init.d");
 
 	set_info_version();
 
@@ -3221,7 +3316,6 @@ main(int argc, char *argv[])
 	check_input(conf_file);
 	check_input(conversion_file);
 	check_input(info_schema_file);
-	check_input(cdb_init_file);
 	check_input(features_file);
 	check_input(system_views_file);
 

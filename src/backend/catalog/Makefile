@@ -27,10 +27,7 @@ BKIFILES = postgres.bki postgres.description postgres.shdescription
 
 include $(top_srcdir)/src/backend/common.mk
 
-all: cdb_init.sql gp_toolkit.sql gp_toolkit_test.sql $(BKIFILES)
-
-cdb_init.sql: cdb_schema.sql cdb_external_extensions.sql
-	cat $(call vpathsearch,cdb_schema.sql) $(call vpathsearch,cdb_external_extensions.sql) > cdb_init.sql
+all: gp_toolkit.sql gp_toolkit_test.sql $(BKIFILES)
 
 JETPACK_NAME = toolkit
 JETPACK_SCHEMA = gp_$(JETPACK_NAME)
@@ -128,10 +125,8 @@ install-data: $(BKIFILES) installdirs
 	$(INSTALL_DATA) $(call vpathsearch,postgres.shdescription) '$(DESTDIR)$(datadir)/postgres.shdescription'
 	$(INSTALL_DATA) $(srcdir)/system_views.sql '$(DESTDIR)$(datadir)/system_views.sql'
 	$(INSTALL_DATA) $(srcdir)/information_schema.sql '$(DESTDIR)$(datadir)/information_schema.sql'
-	$(INSTALL_DATA) $(call vpathsearch,cdb_schema.sql) '$(DESTDIR)$(datadir)/cdb_schema.sql'
 	$(INSTALL_DATA) $(call vpathsearch,cdb_util.sql) '$(DESTDIR)$(datadir)/cdb_util.sql'
-	$(INSTALL_DATA) $(call vpathsearch,cdb_init.sql) '$(DESTDIR)$(datadir)/cdb_init.sql'
-	$(INSTALL_DATA) $(call vpathsearch,cdb_external_extensions.sql) '$(DESTDIR)$(datadir)/cdb_external_extensions.sql'
+	$(INSTALL_DATA) $(call vpathsearch,cdb_schema.sql) '$(DESTDIR)$(datadir)/cdb_init.d/cdb_schema.sql'
 	$(INSTALL_DATA) $(srcdir)/sql_features.txt '$(DESTDIR)$(datadir)/sql_features.txt'
 	$(INSTALL_DATA) $(call vpathsearch,gp_toolkit.sql) '$(DESTDIR)$(datadir)/gp_toolkit.sql'
 	$(INSTALL_DATA) $(call vpathsearch,compaction_info.sql) '$(DESTDIR)$(datadir)/compaction_info.sql'
@@ -141,7 +136,7 @@ installdirs:
 
 .PHONY: uninstall-data
 uninstall-data:
-	rm -f $(addprefix '$(DESTDIR)$(datadir)'/, $(BKIFILES) system_views.sql information_schema.sql cdb_schema.sql sql_features.txt)
+	rm -f $(addprefix '$(DESTDIR)$(datadir)'/, $(BKIFILES) system_views.sql information_schema.sql cdb_init.d/cdb_schema.sql sql_features.txt)
 
 clean:
-	rm -f SUBSYS.o $(OBJS) $(BKIFILES) gp_toolkit_test.sql gp_toolkit.sql cdb_init.sql
+	rm -f SUBSYS.o $(OBJS) $(BKIFILES) gp_toolkit_test.sql gp_toolkit.sql
