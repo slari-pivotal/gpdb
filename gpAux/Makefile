@@ -373,7 +373,6 @@ define BUILD_STEPS
 	@$(MAKE) loaders INSTLOC=$(INSTLOC) LOADERSINSTLOC=$(LOADERSINSTLOC)
 	@$(MAKE) set_scripts_version INSTLOC=$(LOADERSINSTLOC)
 	@$(MAKE) gppkg INSTLOC=$(INSTLOC) GPPKGINSTLOC=$(GPPKGINSTLOC)
-	@$(MAKE) embed_GPPKG_CONTENTS INSTLOC=$(INSTLOC)
 endef
 
 ifeq "$(BLD_GPDB_BUILDSET)" "aix_subset"
@@ -437,16 +436,6 @@ define BUILD_STEPS
 	touch installcheck-bugbuster_SKIP
 endef
 endif
-
-define MAKE_ISO
-	@which mkisofs > /dev/null 2>&1 || \
-	 (echo "cannot find mkisofs in your path, unable to build ISO"; exit 1)
-	mv $(INSTLOC)/greenplum_path.sh $(INSTLOC)/../greenplum_path.sh.orig
-	unset LIBPATH; \
-	  releng/generate-greenplum-path.sh $(INSTLOC) ISO > $(INSTLOC)/greenplum_path.sh
-    mkisofs -r -J -v -iso-level 4 -f -o $(INSTLOC)/../greenplum-db-$(MPP_ARCH).iso $(INSTLOC)
-	mv $(INSTLOC)/../greenplum_path.sh.orig $(INSTLOC)/greenplum_path.sh
-endef
 
 #---------------------------------------------------------------------
 # Miscellaneous special purpose targets
@@ -514,11 +503,6 @@ devel : gccVersionCheck version HOMEDEP $(GPPGDIR)/GNUmakefile
 endif
 	$(BUILD_STEPS)
 
-# For Aurora / Chorus
-devel-iso : INSTLOC=$(DEVPATH)
-devel-iso: devel
-	$(MAKE_ISO)
-
 #---------------------------------------------------------------------
 # Release builds
 #---------------------------------------------------------------------
@@ -573,11 +557,6 @@ dist_faultinj : ISCONFIG=../GNUmakefile
 dist_faultinj : gccVersionCheck version GPROOTDEP RECONFIG $(ISCONFIG)
 endif
 	$(BUILD_STEPS)
-
-# ISO build for Chorus / Aurora
-dist-iso : INSTLOC=$(DISTPATH)
-dist-iso: dist
-	$(MAKE_ISO)
 
 #---------------------------------------------------------------------
 # clientTools
@@ -1436,9 +1415,9 @@ installcheck-bugbuster :
 #---------------------------------------------------------------------
 
 version :
-	@if [ ! -f getversion ] ; then echo "getversion is not present, cannot create VERSION file"; exit 1; fi
+	@if [ ! -f ../getversion ] ; then echo "getversion is not present, cannot create VERSION file"; exit 1; fi
 	@echo "Creating VERSION file"
-	@bash getversion > VERSION
+	@bash ../getversion > ../VERSION
 
 gccVersionCheck :
 	@echo "Checking GCC version" ; \
@@ -1585,31 +1564,6 @@ else
 		source $$GPHOME/greenplum_path.sh && $(MAKE) -C $${source} installcheck >> installcheck-gppkg.log; \
 	done
 endif
-endif
-
-embed_GPPKG_CONTENTS:
-ifeq "$(EMBED_GPPKG_CONTENTS)" "true"
-	@echo "======================================================================"
-	@echo "Embedding GPPKG contents (pgcrypto, plr, madlib) is enabled."
-	@echo "Update greenplum_path.sh for PLR package."
-	@echo "----------------------------------------------------------------------"
-	cd $(GPPGDIR)/contrib/pgcrypto && $(MAKE) prefix=$(INSTLOC) install
-	rm -rf plr-staging
-	mkdir plr-staging
-	pushd plr-staging; \
-	tar xvf $(INSTLOC)/../plr-2.1-rhel5-x86_64.gppkg; \
-	rpm2cpio *.rpm | cpio -idm; \
-	rpm2cpio deps/*.rpm | cpio -idm; \
-	rsync -auv temp/* $(INSTLOC); \
-	popd
-	echo '' >> $(INSTLOC)/greenplum_path.sh
-	echo 'export R_HOME=$$GPHOME/ext/R-3.1.0/lib64/R' >> $(INSTLOC)/greenplum_path.sh
-	echo 'export LD_LIBRARY_PATH=$$GPHOME/ext/R-3.1.0/lib64/R/lib:$$LD_LIBRARY_PATH' >> $(INSTLOC)/greenplum_path.sh
-	scp -oStrictHostKeyChecking=no build@build-prod.dh.greenplum.com:/var/www/html/releases/MADlib/v1.4.1/madlib-ossv1.4.1_pv1.8.1_gpdb4.3-rhel5-x86_64.gppkg.tgz .
-	tar zxvf madlib-ossv1.4.1_pv1.8.1_gpdb4.2-rhel5-x86_64.gppkg.tgz -C $(INSTLOC)
-	@echo "======================================================================"
-else
-	@echo "Embedding GPPKG contents is disabled"
 endif
 
 ## ----------------------------------------------------------------------
