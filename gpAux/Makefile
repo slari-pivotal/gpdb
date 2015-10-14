@@ -348,11 +348,11 @@ BLD_GPDB_BUILDSET=$($(BLD_ARCH)_GPDB_BUILDSET)
 define BUILD_STEPS
 	@rm -rf $(INSTLOC)
 	cd $(BUILDDIR) && $(MAKE) $(parallelexec_opts) install
-	@$(MAKE) greenplum_path INSTLOC=$(INSTLOC)
-	@$(MAKE) groupSession INSTLOC=$(INSTLOC)
+	#@$(MAKE) greenplum_path INSTLOC=$(INSTLOC)
+	#@$(MAKE) groupSession INSTLOC=$(INSTLOC)
 	@$(MAKE) mkgpfdist INSTCFLAGS=$(INSTCFLAGS)
 	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
-	@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
+	#@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
 	@$(MAKE) mkpgbouncer INSTLOC=$(INSTLOC) BUILDDIR=$(BUILDDIR)
 	@$(MAKE) mkpgbench INSTLOC=$(INSTLOC) BUILDDIR=$(BUILDDIR)
 	@$(MAKE) mkgpperfmon INSTLOC=$(INSTLOC) BUILDDIR=$(BUILDDIR)
@@ -1063,6 +1063,7 @@ groupSession:
 
 mkgpfdist:
 	@cd extensions && $(MAKE) mkgpfdist OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
+	cp -p extensions/gpfdist/gpfdist$(EXE_EXT) $(INSTLOC)/bin/
 
 mkgphdfs:
 	@cd extensions && $(MAKE) mkgphdfs OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
