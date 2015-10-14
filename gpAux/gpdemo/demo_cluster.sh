@@ -39,9 +39,12 @@ declare -a DEMO_SEG_PORTS=(`expr $DEMO_PORT_BASE`      \
 #******************************************************************************
 
 checkDemoConfig(){
-    echo "Checking for port availability... "
+    echo "----------------------------------------------------------------------"
+    echo "                   Checking for port availability"
+    echo "----------------------------------------------------------------------"
+    echo ""
     # Check if Master_DEMO_Port is free
-    echo "Checking if port ${MASTER_DEMO_PORT} is available"
+    echo "  Master port check ... : ${MASTER_DEMO_PORT}"
     PORT_FILE="/tmp/.s.PGSQL.${MASTER_DEMO_PORT}"
     if [ -f ${PORT_FILE} -o  -S ${PORT_FILE} ] ; then 
         echo ""
@@ -55,7 +58,7 @@ checkDemoConfig(){
     fi
 
     for PORT_NUM in ${DEMO_SEG_PORTS[@]}; do
-        echo "Checking if port ${PORT_NUM} is available"
+        echo "  Segment port check .. : ${PORT_NUM}"
         PORT_FILE="/tmp/.s.PGSQL.${PORT_NUM}"
         if [ -f ${PORT_FILE} -o -S ${PORT_FILE} ] ; then 
             echo ""
@@ -115,6 +118,7 @@ cleanDemo(){
         if [ -d logs ];  then
             rm -rf logs
         fi
+        rm -f optimizer-state.log gpdemo-env.sh
     fi
 }
 
@@ -123,54 +127,61 @@ cleanDemo(){
 #*****************************************************************************
 
 while getopts ":cd'?'" opt
-		do
-		case $opt in 
-				'?' ) USAGE ;;
-                c) checkDemoConfig
-                    RETVAL=$?
-                    if [ $RETVAL -ne 0 ]; then
-                        echo "Checking failed "
-                        exit 1
-                    fi
-                    exit 0
-                ;;
-                d) cleanDemo
-                   exit 0
-                ;;
-                *) USAGE
-                   exit 0
-                   ;;
-		esac
+do
+	case $opt in 
+		'?' ) USAGE ;;
+        c) checkDemoConfig
+           RETVAL=$?
+           if [ $RETVAL -ne 0 ]; then
+               echo "Checking failed "
+               exit 1
+           fi
+           exit 0
+           ;;
+        d) cleanDemo
+           exit 0
+           ;;
+        *) USAGE
+           exit 0
+           ;;
+	esac
 done
 
-if [ x"$GPHOME" = x ]; then
-        echo ""
-        echo "GPHOME is not set.  Point to the location"
-        echo "of the Greenplum installation directory."
-        echo ""
-        exit 1
+if [ -z "${GPHOME}" ]; then
+    echo "FATAL: The GPHOME enviroment variable is not set."
+    echo ""
+    echo "  You can set it by sourcing the greenplum_path.sh"
+    echo "  file in your Greenplum installation directory."
+    echo ""
+    exit 1
 else
     GPSEARCH=$GPHOME
 fi
 
 cat <<-EOF
+	======================================================================
+	            ______  _____  ______  _______ _______  _____
+	           |  ____ |_____] |     \ |______ |  |  | |     |
+	           |_____| |       |_____/ |______ |  |  | |_____|
 
-	**********************************************************************
-	This is a demo of the Greenplum Database module.  We'll perform a
-	local cluster installation with 1 master instance and 6 segment
-	instances (3 primary & 3 mirror) all on this machine.
+	----------------------------------------------------------------------
 
-	  GPHOME=${GPHOME}
-	  MASTER_DATA_DIRECTORY=$QDDIR/${SEG_PREFIX}-1
+	  This is a demo of the Greenplum Database system.  We will create
+	  a cluster installation with master and 6 segment instances
+	  (3 primary & 3 mirror).
 
-	In order to run the Greenplum Database module, you must have the
-	GPHOME environment variable set to the location of the Greenplum
-	install.  You must also have the following port numbers free:
+	    GPHOME ................. : ${GPHOME}
+	    MASTER_DATA_DIRECTORY .. : $QDDIR/${SEG_PREFIX}-1
 
-	  ${MASTER_DEMO_PORT}
-	  ${DEMO_SEG_PORTS[@]}
+	    MASTER PORT (PGPORT) ... : ${MASTER_DEMO_PORT}
+	    SEGMENT PORTS .......... : ${DEMO_SEG_PORTS[@]}
 
-	**********************************************************************
+	  NOTE(s):
+
+	    * The DB ports identified above must be available for use.
+	    * An environment file gpdemo-env.sh has been created for your use.
+
+	======================================================================
 
 EOF
 
@@ -303,9 +314,9 @@ cat >> $CLUSTER_CONFIG <<-EOF
 
 EOF
 
-#*****************************************************************************************
-# Create cluster
-#*****************************************************************************************
+## ======================================================================
+## Create cluster
+## ======================================================================
 
 ##
 ## Provide support to pass dynamic values to ${CLUSTER_CONFIG_POSTGRES_ADDONS}
@@ -334,10 +345,18 @@ if [ "${BLDWRAP_POSTGRES_CONF_ADDONS}" != "__none__" ]  && \
 fi
 
 if [ -f "${CLUSTER_CONFIG_POSTGRES_ADDONS}" ]; then
-    echo "executing: $GPPATH/gpinitsystem -a -c $CLUSTER_CONFIG -p ${CLUSTER_CONFIG_POSTGRES_ADDONS} \"$@\""
+    echo "=========================================================================================="
+    echo "executing:"
+    echo "  $GPPATH/gpinitsystem -a -c $CLUSTER_CONFIG -p ${CLUSTER_CONFIG_POSTGRES_ADDONS} \"$@\""
+    echo "=========================================================================================="
+    echo ""
     $GPPATH/gpinitsystem -a -c $CLUSTER_CONFIG -p ${CLUSTER_CONFIG_POSTGRES_ADDONS} "$@"
 else
-    echo "executing: $GPPATH/gpinitsystem -a -c $CLUSTER_CONFIG \"$@\""
+    echo "=========================================================================================="
+    echo "executing:"
+    echo "  $GPPATH/gpinitsystem -a -c $CLUSTER_CONFIG \"$@\""
+    echo "=========================================================================================="
+    echo ""
     $GPPATH/gpinitsystem -a -c $CLUSTER_CONFIG "$@"
 fi
 RETURN=$?
@@ -347,31 +366,39 @@ echo "gpinitsystem returned: ${RETURN}"
 echo "========================================"
 echo ""
 
-OPTIMIZER=$(psql -t -p ${MASTER_DEMO_PORT} -d template1 -c "show optimizer" 2>&1)
+OPTIMIZER=$(psql -t -p ${MASTER_DEMO_PORT} -d template1 -c "show optimizer"   2>&1)
 
 echo "======================================================================" 2>&1 | tee -a optimizer-state.log
-echo "                           OPTIMIZER STATE" 2>&1 | tee -a optimizer-state.log
-echo "----------------------------------------------------------------------"  2>&1 | tee -a optimizer-state.log
-echo " Pulse Project .......... : ${PULSE_PROJECT}" 2>&1 | tee -a optimizer-state.log
-echo " Pulse Build Number ..... : ${PULSE_BUILD_NUMBER}" 2>&1 | tee -a optimizer-state.log
-echo " Pulse Build Timestamp .. : ${PULSE_BUILD_TIMESTAMP}" 2>&1 | tee -a optimizer-state.log
-echo " Optimmizer state ....... : ${OPTIMIZER}" 2>&1 | tee -a optimizer-state.log
+echo "                           OPTIMIZER STATE"                             2>&1 | tee -a optimizer-state.log
+echo "----------------------------------------------------------------------" 2>&1 | tee -a optimizer-state.log
+echo "  Optimmizer state .. : ${OPTIMIZER}"                                   2>&1 | tee -a optimizer-state.log
 echo "======================================================================" 2>&1 | tee -a optimizer-state.log
-echo "" 2>&1 | tee -a optimizer-state.log
+echo ""                                                                       2>&1 | tee -a optimizer-state.log
 
-psql -p ${MASTER_DEMO_PORT} -d template1 -c "select version();" 2>&1 | tee -a optimizer-state.log
+psql -p ${MASTER_DEMO_PORT} -d template1 -c "select version();"               2>&1 | tee -a optimizer-state.log
 
-psql -p ${MASTER_DEMO_PORT} -d template1 -c "show optimizer;" > /dev/null 2>&1
+psql -p ${MASTER_DEMO_PORT} -d template1 -c "show optimizer;" > /dev/null     2>&1
 if [ $? = 0 ]; then
-    psql -p ${MASTER_DEMO_PORT} -d template1 -c "show optimizer;" 2>&1 | tee -a optimizer-state.log
+    psql -p ${MASTER_DEMO_PORT} -d template1 -c "show optimizer;"             2>&1 | tee -a optimizer-state.log
 fi
 
 psql -p ${MASTER_DEMO_PORT} -d template1 -c "select gp_opt_version();" > /dev/null 2>&1
 if [ $? = 0 ]; then
-    psql -p ${MASTER_DEMO_PORT} -d template1 -c "select gp_opt_version();" 2>&1 | tee -a optimizer-state.log
+    psql -p ${MASTER_DEMO_PORT} -d template1 -c "select gp_opt_version();"    2>&1 | tee -a optimizer-state.log
 fi
 
 echo "======================================================================" 2>&1 | tee -a optimizer-state.log
-echo ""
+echo ""                                                                       2>&1 | tee -a optimizer-state.log
+
+cat > gpdemo-env.sh <<-EOF
+	## ======================================================================
+	##                                gpdemo
+	## ----------------------------------------------------------------------
+	## timestamp: $( date )
+	## ======================================================================
+
+	export PGPORT=${MASTER_DEMO_PORT}
+	export MASTER_DATA_DIRECTORY=$QDDIR/${SEG_PREFIX}-1
+EOF
 
 exit ${RETURN}

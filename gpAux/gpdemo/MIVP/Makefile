@@ -1,5 +1,6 @@
 THIS_PGDATABASE=gptestdb
-THIS_PGPORT=18501
+THIS_PGPORT=15432
+
 DATADIR=$(PWD)/data-generator
 
 .PHONY : create-IVP generate-data load-data drop-IVP query-IVP
@@ -13,13 +14,13 @@ query-IVP :
 	@echo ""
 	@echo "The result from this next query should be 1000000"
 	@echo
-	time psql -p $(THIS_PGPORT) $(THIS_PGDATABASE) -c "select count(*) from bigtable1"
+	psql -p $(THIS_PGPORT) $(THIS_PGDATABASE) -c "select count(*) from bigtable1"
 
 drop-IVP :
 	@echo ""
 	@echo "Executing step \"drop-IVP\""
 	@echo ""
-	@-psql -p $(THIS_PGPORT) -c "DROP DATABASE $(THIS_PGDATABASE)" template1
+	@-psql -p $(THIS_PGPORT) -c "DROP DATABASE IF EXISTS $(THIS_PGDATABASE)" template1
 
 create-IVP :
 	@echo ""
@@ -39,7 +40,7 @@ load-data :
 	@echo "Executing step \"load-data\""
 	@echo ""
 	@echo "COPY bigtable1 (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) FROM '$(DATADIR)/dbdata.txt' WITH DELIMITER '|';" > copy.ctl
-	@time psql -p $(THIS_PGPORT) $(THIS_PGDATABASE) -f "copy.ctl"
+	@psql -p $(THIS_PGPORT) $(THIS_PGDATABASE) -f "copy.ctl"
 
 clean :
 	@rm -f copy.ctl

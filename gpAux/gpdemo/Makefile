@@ -1,13 +1,15 @@
-# Makefile for Demo
-#
-#
+# ----------------------------------------------------------------------
+# Makefile for Greenplum Demo
+# ----------------------------------------------------------------------
+
 SHELL=/bin/bash
 
 #
 # VARIABLES
 #
-MASTER_PORT=18501
-PORT_BASE=18506
+
+MASTER_PORT=15432
+PORT_BASE=25432
 
 all:
 	$(MAKE) clean
@@ -16,35 +18,22 @@ all:
 	$(MAKE) probe
 
 cluster:	
+	@ MASTER_DEMO_PORT=$(MASTER_PORT) DEMO_PORT_BASE=$(PORT_BASE) ./demo_cluster.sh 
 	@ echo ""
-	@echo "Building cluster, this may take a few minutes."
-	@- MASTER_DEMO_PORT=$(MASTER_PORT) DEMO_PORT_BASE=$(PORT_BASE) \
-		./demo_cluster.sh 
-	@echo ""
-
 
 probe:
-	@ echo "Probing the databases "
+	@ MASTER_DEMO_PORT=$(MASTER_PORT) DEMO_PORT_BASE=$(PORT_BASE) ./probe_config.sh
 	@ echo ""
-	@ MASTER_DEMO_PORT=$(MASTER_PORT) DEMO_PORT_BASE=$(PORT_BASE) \
-		./probe_config.sh
-	@ echo "Probe finished"
 
 .PHONY : clean 
 
 check: 
+	@ MASTER_DEMO_PORT=$(MASTER_PORT) DEMO_PORT_BASE=$(PORT_BASE) ./demo_cluster.sh -c
 	@ echo ""
-	@ echo "Checking port availability... "
-	@ echo ""
-	@MASTER_DEMO_PORT=$(MASTER_PORT) DEMO_PORT_BASE=$(PORT_BASE)  \
-		./demo_cluster.sh -c
-	@echo ""
-	@ echo "Checking completed without any errors...."
-	@echo ""
-		
+
 clean:
+	@ echo "======================================================================"
 	@ echo "Deleting cluster.... "
-	@DEMO_PORT_BASE=$(PORT_BASE) ./demo_cluster.sh -d
-	@echo ""
-
-
+	@ echo "======================================================================"
+	@ DEMO_PORT_BASE=$(PORT_BASE) ./demo_cluster.sh -d
+	@ echo ""
