@@ -1,7 +1,5 @@
-top_builddir = ../..
+top_builddir = ..
 include $(top_builddir)/src/Makefile.global
-
-INSTLOC=$(prefix)
 
 #---------------------------------------------------------------------
 # Set Version
@@ -64,56 +62,56 @@ SET_VERSION_SCRIPTS = \
 
 set_scripts_version :
 	@for file in $(SET_VERSION_SCRIPTS); do \
-	    if [ -f $(INSTLOC)/$${file} ]; then \
-	        perl $(top_builddir)/putversion $(INSTLOC)/$${file} ; \
+	    if [ -f $(prefix)/$${file} ]; then \
+	        perl $(top_builddir)/putversion $(prefix)/$${file} ; \
 	    fi ; \
 	done
 
 install:
 #	#Copy the management utilities
-	mkdir -p $(INSTLOC)/bin
-	mkdir -p $(INSTLOC)/lib
-	mkdir -p $(INSTLOC)/lib/python
-	mkdir -p $(INSTLOC)/sbin
+	mkdir -p $(prefix)/bin
+	mkdir -p $(prefix)/lib
+	mkdir -p $(prefix)/lib/python
+	mkdir -p $(prefix)/sbin
 
 	#Setup /lib/python contents
-	cp -rp bin/gppylib $(INSTLOC)/lib/python
-	cp -rp bin/ext/* $(INSTLOC)/lib/python
-	cp -rp bin $(INSTLOC)
+	cp -rp bin/gppylib $(prefix)/lib/python
+	cp -rp bin/ext/* $(prefix)/lib/python
+	cp -rp bin $(prefix)
 
 #ifeq "$(findstring $(BLD_ARCH),$(GPPKG_PLATFORMS))" ""
 #	@echo "Removing gppkg from distribution"
-#	rm -f $(INSTLOC)/bin/gppkg
+#	rm -f $(prefix)/bin/gppkg
 #endif
 
-	cp -rp sbin/* $(INSTLOC)/sbin/.
-	#cp -p extensions/gpfdist/gpfdist$(EXE_EXT) $(INSTLOC)/bin/
-	cp $(top_builddir)/src/test/regress/*.pl $(INSTLOC)/bin
-	if [ ! -d ${INSTLOC}/docs ] ; then mkdir ${INSTLOC}/docs ; fi
-	if [ -d doc ]; then cp -rp doc $(INSTLOC)/docs/cli_help; fi
+	cp -rp sbin/* $(prefix)/sbin/.
+	#cp -p extensions/gpfdist/gpfdist$(EXE_EXT) $(prefix)/bin/
+	cp $(top_builddir)/src/test/regress/*.pl $(prefix)/bin
+	if [ ! -d ${prefix}/docs ] ; then mkdir ${prefix}/docs ; fi
+	if [ -d doc ]; then cp -rp doc $(prefix)/docs/cli_help; fi
 	if [ -d demo/gpmapreduce ]; then \
-	  mkdir -p $(INSTLOC)/demo; \
-	  $(TAR) -C demo -czf $(INSTLOC)/demo/gpmapreduce.tar.gz gpmapreduce; \
+	  mkdir -p $(prefix)/demo; \
+	  $(TAR) -C demo -czf $(prefix)/demo/gpmapreduce.tar.gz gpmapreduce; \
 	fi
 
 #	THIS NEEDS TO MOVE
 #	if [ -d demo/gpfdist_transform ]; then \
-#	  mkdir -p $(INSTLOC)/demo; \
-#	  $(TAR) -C demo -czf $(INSTLOC)/demo/gpfdist_transform.tar.gz gpfdist_transform; \
+#	  mkdir -p $(prefix)/demo; \
+#	  $(TAR) -C demo -czf $(prefix)/demo/gpfdist_transform.tar.gz gpfdist_transform; \
 #	fi
 
-	$(MAKE) set_scripts_version INSTLOC=$(INSTLOC)
+	$(MAKE) set_scripts_version prefix=$(prefix)
 	# Remove unwanted files.
-	rm -rf $(INSTLOC)/bin/CVS
-	rm -rf $(INSTLOC)/doc/CVS
-	rm -rf $(INSTLOC)/bin/ext
-	rm -rf $(INSTLOC)/bin/pythonSrc
-	rm -rf $(INSTLOC)/bin/Makefile
-	rm -rf $(INSTLOC)/bin/lib/CVS
-	rm -rf $(INSTLOC)/bin/lib/.p4ignore
-	rm -rf $(INSTLOC)/bin/src
-	rm -f $(INSTLOC)/bin/gpchecksubnetcfg
-	echo "`date` -- INFO: Removing $(INSTLOC)/bin/gpexpandsystem"
-	rm -f $(INSTLOC)/bin/gpexpandsystem
-	rm -rf $(INSTLOC)/bin/gppylib
-	find $(INSTLOC)/lib/python/gppylib -name test -type d | xargs rm -rf
+	rm -rf $(prefix)/bin/CVS
+	rm -rf $(prefix)/doc/CVS
+	rm -rf $(prefix)/bin/ext
+	rm -rf $(prefix)/bin/pythonSrc
+	rm -rf $(prefix)/bin/Makefile
+	rm -rf $(prefix)/bin/lib/CVS
+	rm -rf $(prefix)/bin/lib/.p4ignore
+	rm -rf $(prefix)/bin/src
+	rm -f $(prefix)/bin/gpchecksubnetcfg
+	echo "`date` -- INFO: Removing $(prefix)/bin/gpexpandsystem"
+	rm -f $(prefix)/bin/gpexpandsystem
+	rm -rf $(prefix)/bin/gppylib
+	find $(prefix)/lib/python/gppylib -name test -type d | xargs rm -rf

@@ -4701,13 +4701,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 BLD_ARCH=`echo $BLD_ARCH`
 
 
-# Get the Greenplum version string from ../VERSION
-# If there is no VERSION file, set the version to devel
-if [ -f VERSION ] ; then
-    GP_VERSION=`cat VERSION`
-else
-    GP_VERSION="devel"
-fi
+# Get the Greenplum version string from VERSION
+bash getversion > VERSION
+GP_VERSION=`cat VERSION`
 
 GP_VERSION_IN="src/include/catalog/gp_version.in"
 GP_VERSION_HEADER="src/include/catalog/gp_version.h"

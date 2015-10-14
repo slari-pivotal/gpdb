@@ -12,10 +12,7 @@ GP_BUILDNUMBER=dev
 if [ -f BUILD_NUMBER ] ; then
     GP_BUILDNUMBER=`cat BUILD_NUMBER`
 fi
-if [ -f BUILD_EDITION ] ; then
-    GP_BUILDEDITION=" `cat BUILD_EDITION`"
-fi
 
-echo "${GP_VERSION} build ${GP_BUILDNUMBER}${GP_BUILDEDITION}"
+echo "${GP_VERSION} build ${GP_BUILDNUMBER}"
 
 exit 0
