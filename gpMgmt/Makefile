@@ -67,7 +67,14 @@ set_scripts_version :
 	    fi ; \
 	done
 
-install:
+generate_greenplum_path_file:
+	unset LIBPATH; \
+	bin/generate-greenplum-path.sh $(prefix) > $(prefix)/greenplum_path.sh
+
+install: generate_greenplum_path_file
+	# Generate some python libraries
+	$(MAKE) -C bin all prefix=$(prefix)
+
 #	#Copy the management utilities
 	mkdir -p $(prefix)/bin
 	mkdir -p $(prefix)/lib

@@ -7,7 +7,7 @@
 # and Makefile.thirdparty
 default: all
 
-BLD_TOP=../..
+BLD_TOP=../../gpAux
 include $(BLD_TOP)/Makefile.global
 include $(BLD_TOP)/Makefile.thirdparty
 
@@ -65,7 +65,7 @@ PYGRESQL_BIN_MAPPINGS_DIR=$($(BLD_ARCH)_PYGRESQL_BIN_MAPPINGS_DIR)
 
 pygresql:
 	@echo "--- PyGreSQL"
-	export PATH=$(PYGRESQL_BIN_MAPPINGS_DIR)$(PATH) && cd $(INSTLOC)/ && . greenplum_path.sh && unset PYTHONHOME &&\
+	export PATH=$(PYGRESQL_BIN_MAPPINGS_DIR)$(PATH) && cd $(prefix)/ && . greenplum_path.sh && unset PYTHONHOME &&\
 	if [ `uname -s` = 'HP-UX' ]; then \
 	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(strip $(BLD_CC) $(BLD_CFLAGS))" LDFLAGS="-L$(BLD_THIRDPARTY_DIR)/python-2.5.6/lib" python setup.py build; \
 	else \
