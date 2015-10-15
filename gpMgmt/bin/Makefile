@@ -38,7 +38,7 @@ NETPERF_DIR=netperf-2.4.3
 netperf:
 	@echo "--- netperf"
 	if [ ! -f $(SRC)/src/$(NETPERF_DIR)/Makefile ]; then \
-		(cd $(SRC)/src && gzip -d -c $(NETPERF_DIR).tar.gz | tar xvf - && cd $(NETPERF_DIR) && CC=$(CC) ./configure) \
+		(cd $(SRC)/src && gzip -d -c $(NETPERF_DIR).tar.gz | tar xvf - && cd $(NETPERF_DIR) && CC="$(CC)" ./configure) \
 	fi
 	cd $(SRC)/src/$(NETPERF_DIR) && $(MAKE)
 	cp $(SRC)/src/$(NETPERF_DIR)/src/netperf $(SRC)/src/$(NETPERF_DIR)/src/netserver $(SERVER_SRC)/lib/
@@ -69,7 +69,7 @@ pygresql:
 	if [ `uname -s` = 'HP-UX' ]; then \
 	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(strip $(CC) $(CFLAGS))" LDFLAGS="-L$(BLD_THIRDPARTY_DIR)/python-2.5.6/lib" python setup.py build; \
 	else \
-	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC=$(CC) python setup.py build; \
+	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" python setup.py build; \
 	fi; \
 	mkdir -p $(PYLIB_DIR)/pygresql
 	cp -r $(PYLIB_SRC)/$(PYGRESQL_DIR)/build/lib.*/* $(PYLIB_DIR)/pygresql
@@ -108,7 +108,7 @@ lockfile:
 subprocess32:
 	@echo "--- subprocess32, Linux only"
 	@if [ `uname -s` = 'Linux' ]; then \
-		  cd $(PYLIB_SRC)/subprocess32 && CC=$(CC) python setup.py build; \
+		  cd $(PYLIB_SRC)/subprocess32 && CC="$(CC)" python setup.py build; \
 		  cp -f $(PYLIB_SRC)/subprocess32/build/lib.*/* $(PYLIB_DIR)/;  \
 	  fi
 
@@ -126,7 +126,7 @@ pycrypto:
 	@echo "--- pycrypto"
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PYCRYPTO_DIR).tar.gz
 	export PATH=$(PYCRYPTO_BIN_MAPPINGS_DIR)$(PATH); \
-	  cd $(PYLIB_SRC)/$(PYCRYPTO_DIR)/ && CC=$(CC) python setup.py build
+	  cd $(PYLIB_SRC)/$(PYCRYPTO_DIR)/ && CC="$(CC)" python setup.py build
 	cp -r $(PYLIB_SRC)/$(PYCRYPTO_DIR)/build/lib.*/Crypto $(PYLIB_DIR)
 
 #
@@ -143,7 +143,7 @@ psi:
 	@echo "--- psi"
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PSI_DIR).tar.gz
 	export PATH=$(PSI_BIN_MAPPINGS_DIR)$(PATH); \
-	  cd $(PYLIB_SRC)/$(PSI_DIR)/ && CC=$(CC) python setup.py build
+	  cd $(PYLIB_SRC)/$(PSI_DIR)/ && CC="$(CC)" python setup.py build
 	cp -r $(PYLIB_SRC)/$(PSI_DIR)/build/lib.*/psi $(PYLIB_DIR)
 
 
