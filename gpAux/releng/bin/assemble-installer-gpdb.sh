@@ -46,22 +46,6 @@ add_platform_check() {
 		EOF_HEADER
 	fi
 	
-	if [ "${MPP_ARCH}" = "RHEL5-i386" ] ; then
-		cat <<-EOF_HEADER
-			platform="RedHat/CentOS"
-			arch=i686
-			if [ -f /etc/redhat-release ]; then
-			    if [ \`uname -m\` != "\${arch}" ] ; then
-			        echo "Installer will only install on \${platform} i686/i386"
-			        exit 1
-			    fi
-			else
-			    echo "Installer will only install on \${platform} i686/i386"
-			    exit 1
-			fi
-		EOF_HEADER
-	fi
-	
 	if [ "${MPP_ARCH}" = "RHEL5-x86_64" ] ; then
 		cat <<-EOF_HEADER
 			platform="RedHat/CentOS"
@@ -74,27 +58,6 @@ add_platform_check() {
 			else
 			    echo "Installer will only install on \${platform} \${arch}"
 			    exit 1
-			fi
-		EOF_HEADER
-	fi
-	
-	if [ "${MPP_ARCH}" = "SOL-x86_64" ] ; then
-		cat <<-EOF_HEADER
-			platform=SunOS
-			arch=x86_64
-			if [ \`uname -s\` != "\${platform}" ] ; then
-			    echo "Installer will only install on \${platform} \${arch}"
-			    exit 1
-			else
-			    if \`isalist | grep amd64 > /dev/null 2>&1\` ; then
-			        guessed_arch=x86_64
-			    else
-			        guessed_arch=null
-			    fi
-			    if [ "\${guessed_arch}" != "\${arch}" ] ; then
-			        echo "Installer will only install on \${platform} \${arch}"
-			        exit 1
-			    fi
 			fi
 		EOF_HEADER
 	fi
@@ -394,7 +357,7 @@ generate-pulse-installer-header(){
 			Greenplum Database is installed in \${installPath}
 	
 			Pivotal Greenplum documentation is available
-			for download at http://docs.gopivotal.com/gpdb
+			for download at http://gpdb.docs.pivotal.io
 			********************************************************************************
 		EOF
 		
@@ -590,7 +553,7 @@ generate-applicance-installer-header(){
 		## Setup segments
 		##
 
-		# MPP-14633 - greenplum_path.sh must be sourced just after symlink modification and
+		# The greenplum_path.sh file must be sourced just after symlink modification and
 		# just prior to gpseginstall invocation. gpseginstall depends on \$GPHOME pointing 
 		# to a symlink to determine whether it too must set up the symlinks on the segments.
 		source \${installPath}/greenplum_path.sh
