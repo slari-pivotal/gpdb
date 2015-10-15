@@ -42,15 +42,13 @@ BLD_TYPE=opt
 
 OBJDIR_DEFAULT = .obj.$(UNAME_ALL)$(ARCH_FLAGS).$(BLD_TYPE)
 
-GREP_SED_VAR_ORCA = $(BLD_TOP)/../src/backend/gpopt/ivy.xml | sed -e 's|\(.*\)rev="\(.*\)"[ \t]*conf\(.*\)|\2|'
-
-XERCES_VER  = $(shell grep "\"xerces-c\""   $(GREP_SED_VAR_ORCA))
-LIBGPOS_VER = $(shell grep "\"libgpos\""    $(GREP_SED_VAR_ORCA))
-OPTIMIZER_VER = $(shell grep "\"optimizer\""  $(GREP_SED_VAR_ORCA))
-
 GREP_SED_VAR = $(BLD_TOP)/releng/make/dependencies/ivy.xml | sed -e 's|\(.*\)rev="\(.*\)"[ \t]*conf\(.*\)|\2|'
 
-LIBSTDC++_VER = $(shell grep "\"libstdc\""  $(GREP_SED_VAR))
+XERCES_VER  = $(shell grep "\"xerces-c\""    $(GREP_SED_VAR))
+LIBGPOS_VER = $(shell grep "\"libgpos\""     $(GREP_SED_VAR))
+OPTIMIZER_VER = $(shell grep "\"optimizer\"" $(GREP_SED_VAR))
+
+LIBSTDC++_VER = $(shell grep "\"libstdc\""   $(GREP_SED_VAR))
 
 XERCES = $(BLD_TOP)/ext/$(BLD_ARCH)
 XERCES_LIBDIR = $(XERCES)/lib
