@@ -13,13 +13,7 @@ BUILD_STAGE=$4
 # ## This will be used in creating ext dir
 # ##
 
-##WORKING_DIRECTORY=$(readlink -m ${PWD}/../../..)
-
-if [ "${MODULE}" = "libgpos" ] || [ "${MODULE}" = "optimizer" ] || [ "${MODULE}" = "xerces-c" ]; then
-    WORKING_DIRECTORY=$(cd ${PWD}/../../../gpAux; pwd -P)
-else
-    WORKING_DIRECTORY=$(cd ${PWD}/../../..; pwd -P)
-fi
+WORKING_DIRECTORY=$(cd ${PWD}/../../..; pwd -P)
 
 EXT_DIRECTORY=${WORKING_DIRECTORY}/ext/${BUILD_STAGE}
 
