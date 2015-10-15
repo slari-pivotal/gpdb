@@ -395,7 +395,7 @@ define BUILD_STEPS
 	    echo "Modifying timezone Makefile for crosscompile."; \
 	    perl -pi -e 's,./zic,zic,' ../src/timezone/Makefile; \
 	fi
-	#$(MAKE) greenplum_path INSTLOC=$(INSTLOC)
+	cd $(BUILDDIR)/gpMgmt/ && $(MAKE) generate_greenplum_path_file
 	cd $(BUILDDIR)/src/backend/ && $(MAKE) ../../src/include/parser/gram.h
 	cd $(BUILDDIR)/src/backend/ && $(MAKE) ../../src/include/utils/fmgroids.h
 	cd $(BUILDDIR)/src/port/ && $(MAKE) install
