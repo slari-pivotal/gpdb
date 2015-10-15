@@ -83,7 +83,7 @@ endif
 #---------------------------------------------------------------------
 
 GPPGDIR=..
-GPMGMT=gpMgmt
+GPMGMT=../gpMgmt
 GPPERFMON=gpperfmon
 PLATFORM=platform
 BUILDDIR=$(GPPGDIR)
