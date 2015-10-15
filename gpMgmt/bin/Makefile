@@ -7,9 +7,9 @@
 # and Makefile.thirdparty
 default: all
 
-BLD_TOP=../../gpAux
-include $(BLD_TOP)/Makefile.global
-include $(BLD_TOP)/Makefile.thirdparty
+top_builddir=../..
+include $(top_builddir)/src/Makefile.global
+#include $(top_builddir)/Makefile.thirdparty
 
 #
 # SOURCE DIRECTORIES
@@ -38,7 +38,7 @@ NETPERF_DIR=netperf-2.4.3
 netperf:
 	@echo "--- netperf"
 	if [ ! -f $(SRC)/src/$(NETPERF_DIR)/Makefile ]; then \
-		(cd $(SRC)/src && gzip -d -c $(NETPERF_DIR).tar.gz | tar xvf - && cd $(NETPERF_DIR) && CC="$(strip $(BLD_CC) $(BLD_CFLAGS))" LDFLAGS="$(BLD_LDFLAGS)" ./configure) \
+		(cd $(SRC)/src && gzip -d -c $(NETPERF_DIR).tar.gz | tar xvf - && cd $(NETPERF_DIR) && CC=$(CC) ./configure) \
 	fi
 	cd $(SRC)/src/$(NETPERF_DIR) && $(MAKE)
 	cp $(SRC)/src/$(NETPERF_DIR)/src/netperf $(SRC)/src/$(NETPERF_DIR)/src/netserver $(SERVER_SRC)/lib/
@@ -50,7 +50,7 @@ STREAM_DIR=$(SRC)/src/stream
 stream:
 	@echo "--- stream"
 	pwd
-	cd $(STREAM_DIR) && NO_M64=TRUE $(strip $(BLD_CC) $(BLD_CFLAGS)) stream.c -o stream
+	cd $(STREAM_DIR) && NO_M64=TRUE $(CC) stream.c -o stream
 	cp $(STREAM_DIR)/stream $(SERVER_SRC)/lib/stream
 
 #
@@ -67,9 +67,9 @@ pygresql:
 	@echo "--- PyGreSQL"
 	export PATH=$(PYGRESQL_BIN_MAPPINGS_DIR)$(PATH) && cd $(prefix)/ && . greenplum_path.sh && unset PYTHONHOME &&\
 	if [ `uname -s` = 'HP-UX' ]; then \
-	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(strip $(BLD_CC) $(BLD_CFLAGS))" LDFLAGS="-L$(BLD_THIRDPARTY_DIR)/python-2.5.6/lib" python setup.py build; \
+	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(strip $(CC) $(CFLAGS))" LDFLAGS="-L$(BLD_THIRDPARTY_DIR)/python-2.5.6/lib" python setup.py build; \
 	else \
-	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(strip $(BLD_CC) $(BLD_CFLAGS))" LDFLAGS="$(BLD_CFLAGS)" python setup.py build; \
+	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC=$(CC) python setup.py build; \
 	fi; \
 	mkdir -p $(PYLIB_DIR)/pygresql
 	cp -r $(PYLIB_SRC)/$(PYGRESQL_DIR)/build/lib.*/* $(PYLIB_DIR)/pygresql
@@ -108,9 +108,10 @@ lockfile:
 subprocess32:
 	@echo "--- subprocess32, Linux only"
 	@if [ `uname -s` = 'Linux' ]; then \
-		  cd $(PYLIB_SRC)/subprocess32 && CC="$(strip $(BLD_CC) $(BLD_CFLAGS))" LDFLAGS="$(BLD_CFLAGS)"  python setup.py build; \
+		  cd $(PYLIB_SRC)/subprocess32 && CC=$(CC) python setup.py build; \
 		  cp -f $(PYLIB_SRC)/subprocess32/build/lib.*/* $(PYLIB_DIR)/;  \
 	  fi
+
 #
 # PYCRYPTO
 #
@@ -125,7 +126,7 @@ pycrypto:
 	@echo "--- pycrypto"
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PYCRYPTO_DIR).tar.gz
 	export PATH=$(PYCRYPTO_BIN_MAPPINGS_DIR)$(PATH); \
-	  cd $(PYLIB_SRC)/$(PYCRYPTO_DIR)/ && CC="$(strip $(BLD_CC) $(BLD_CFLAGS))" LDFLAGS="$(BLD_CFLAGS)" python setup.py build
+	  cd $(PYLIB_SRC)/$(PYCRYPTO_DIR)/ && CC=$(CC) python setup.py build
 	cp -r $(PYLIB_SRC)/$(PYCRYPTO_DIR)/build/lib.*/Crypto $(PYLIB_DIR)
 
 #
@@ -142,7 +143,7 @@ psi:
 	@echo "--- psi"
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PSI_DIR).tar.gz
 	export PATH=$(PSI_BIN_MAPPINGS_DIR)$(PATH); \
-	  cd $(PYLIB_SRC)/$(PSI_DIR)/ && CC="$(strip $(BLD_CC) $(BLD_CFLAGS))" LDFLAGS="$(BLD_CFLAGS)" python setup.py build
+	  cd $(PYLIB_SRC)/$(PSI_DIR)/ && CC=$(CC) python setup.py build
 	cp -r $(PYLIB_SRC)/$(PSI_DIR)/build/lib.*/psi $(PYLIB_DIR)
 
 

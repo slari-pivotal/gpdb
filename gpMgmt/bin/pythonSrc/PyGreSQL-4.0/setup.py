@@ -50,8 +50,8 @@ from distutils.extension import Extension
 
 def pg_config(s):
     """Retrieve information about installed version of PostgreSQL."""
-    if os.path.exists("../../../../cdb-pg/src/bin/pg_config/pg_config"):
-        f = os.popen("../../../../cdb-pg/src/bin/pg_config/pg_config --%s" % s)
+    if os.path.exists("../../../../src/bin/pg_config/pg_config"):
+        f = os.popen("../../../../src/bin/pg_config/pg_config --%s" % s)
     else:
         """If a VPATH build, it might not be there.  Look other places"""
         """It should be the one in the path, because the makefile includes greenplum_path.sh """
