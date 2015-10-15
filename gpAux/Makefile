@@ -84,7 +84,6 @@ endif
 
 GPPGDIR=..
 GPMGMT=gpMgmt
-GPMGMT_EXT=gpMgmt
 GPPERFMON=gpperfmon
 PLATFORM=platform
 BUILDDIR=$(GPPGDIR)
@@ -423,9 +422,9 @@ define BUILD_STEPS
 	$(MAKE) clients INSTLOC=$(INSTLOC) CLIENTINSTLOC=$(CLIENTINSTLOC)
 	$(MAKE) connectivity INSTLOC=$(INSTLOC) CONNECTIVITYINSTLOC=$(CONNECTIVITYINSTLOC)
 	if [ "$(findstring hpux_ia64,$(BLD_ARCH))" = "hpux_ia64" ]; then \
-	  cd $(GPMGMT_EXT)/bin && $(MAKE) pygresql LDFLAGS="" INSTLOC=$(INSTLOC) ; \
+	  cd $(GPMGMT)/bin && $(MAKE) pygresql LDFLAGS="" INSTLOC=$(INSTLOC) ; \
 	elif [ "$(findstring win,$(BLD_ARCH))" != "win" ]; then \
-	  cd $(GPMGMT_EXT)/bin && $(MAKE) pygresql INSTLOC=$(INSTLOC) ; \
+	  cd $(GPMGMT)/bin && $(MAKE) pygresql INSTLOC=$(INSTLOC) ; \
 	fi
 	$(MAKE) loaders INSTLOC=$(INSTLOC) LOADERSINSTLOC=$(LOADERSINSTLOC)
 	touch installcheck-good_SKIP
@@ -698,7 +697,7 @@ else
 	GPOPT_UDF_FLAGS := -m64 -shared
 endif
 
-VERSION:=$(shell [ -f VERSION ] && perl -pe 's, ,-,g' VERSION)
+VERSION:=$(shell [ -f ../VERSION ] && perl -pe 's, ,-,g' ../VERSION)
 
 ifeq "$(findstring win,$(BLD_ARCH))" "win"
 BLD_PACKAGING_PID:=$(shell ssh build@harpy 'echo $$$$')
@@ -819,7 +818,7 @@ endif
 
 ifneq "$(findstring win,$(BLD_ARCH))" "win"
 	cd client/install/src/unix/ && \
-	  $(MAKE) TAR=$(TAR) PRODUCT=Clients PACKAGE=greenplum-clients README=GPClientToolsUnix VERSION=`perl -pe 's, ,-,g' ../../../../VERSION` INSTALL_SRC=$(CLIENTINSTLOC) INSTALL_DIR=../../../..
+	  $(MAKE) TAR=$(TAR) PRODUCT=Clients PACKAGE=greenplum-clients README=GPClientToolsUnix VERSION=`perl -pe 's, ,-,g' ../../../../../VERSION` INSTALL_SRC=$(CLIENTINSTLOC) INSTALL_DIR=../../../..
 else
 	if [ "$(BLD_PACKAGING_PID)" = "" ]; then \
 	    echo "ERROR: BLD_PACKAGING_PID must have a value for Windows packaging operations; check your Makefile"; \
@@ -846,7 +845,7 @@ else
 	mkdir -p $(LOADERSINSTLOC_BIN)
 	(cd $(INSTLOC)/bin/ && $(TAR) cf - $(LOADERS_FILESET_BIN)) | (cd $(LOADERSINSTLOC_BIN)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 	mkdir -p $(LOADERSINSTLOC_BINEXT)
-	(cd $(GPMGMT_EXT)/bin/ext/ && $(TAR) cf - $(LOADERS_FILESET_BINEXT)) | (cd $(LOADERSINSTLOC_BINEXT)/ && $(TAR) xpf -)$(check_pipe_for_errors)
+	(cd $(GPMGMT)/bin/ext/ && $(TAR) cf - $(LOADERS_FILESET_BINEXT)) | (cd $(LOADERSINSTLOC_BINEXT)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 ifeq "$(findstring win,$(BLD_ARCH))" "win"
 	# ---- copy pygresql from ext/win32 ----
 	(cd $(BLD_THIRDPARTY)/win32 && $(TAR) cf - pygresql) | (cd $(LOADERSINSTLOC_BINEXT)/ && $(TAR) xpf -)$(check_pipe_for_errors)
@@ -904,7 +903,7 @@ endif
 
 ifneq "$(findstring win,$(BLD_ARCH))" "win"
 	cd client/install/src/unix/ && \
-	  $(MAKE) TAR=$(TAR) PRODUCT=Loaders PACKAGE=greenplum-loaders README=GPLoadToolsUnix VERSION=`perl -pe 's, ,-,g' ../../../../VERSION` INSTALL_SRC=$(LOADERSINSTLOC) INSTALL_DIR=../../../..
+	  $(MAKE) TAR=$(TAR) PRODUCT=Loaders PACKAGE=greenplum-loaders README=GPLoadToolsUnix VERSION=`perl -pe 's, ,-,g' ../../../../../VERSION` INSTALL_SRC=$(LOADERSINSTLOC) INSTALL_DIR=../../../..
 else
 	if [ "$(BLD_PACKAGING_PID)" = "" ]; then \
 	    echo "ERROR: BLD_PACKAGING_PID must have a value for Windows packaging operations; check your Makefile"; \
@@ -954,7 +953,7 @@ PVK_FILESET = \
 pvk : INSTCFLAGS=$(OPTFLAGS)
 pvk : INSTLOC=$(DISTPATH)
 pvk : gccVersionCheck version GPROOTDEP
-	cd $(GPMGMT_EXT)/bin && $(MAKE) netperf stream
+	cd $(GPMGMT)/bin && $(MAKE) netperf stream
 	mkdir -p $(INSTLOC)/bin/lib
 	@for file in $(PVK_FILESET); do \
 	    echo "cp -p $(GPMGMT)/$${file} $(INSTLOC)/$${file}"; \
@@ -1024,7 +1023,7 @@ SET_VERSION_SCRIPTS = \
 set_scripts_version : 
 	@for file in $(SET_VERSION_SCRIPTS); do \
 	    if [ -f $(INSTLOC)/$${file} ]; then \
-	        perl putversion $(INSTLOC)/$${file} ; \
+	        perl $(BLD_TOP)/../putversion $(INSTLOC)/$${file} ; \
 	    fi ; \
 	done
 
@@ -1033,7 +1032,7 @@ set_scripts_version :
 #---------------------------------------------------------------------
 
 groupSession:
-	@cd $(GPMGMT_EXT)/bin && $(MAKE)
+	@cd $(GPMGMT)/bin && $(MAKE)
 
 mkgpfdist:
 	@cd extensions && $(MAKE) mkgpfdist OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
@@ -1111,7 +1110,7 @@ mgmtcopy :
 	mkdir -p $(INSTLOC)/sbin
 	#Setup /lib/python contents
 	cp -rp $(GPMGMT)/bin/gppylib $(INSTLOC)/lib/python
-	cp -rp $(GPMGMT_EXT)/bin/ext/* $(INSTLOC)/lib/python
+	cp -rp $(GPMGMT)/bin/ext/* $(INSTLOC)/lib/python
 	cp -rp $(GPMGMT)/bin $(INSTLOC)
 ifeq "$(findstring $(BLD_ARCH),$(GPPKG_PLATFORMS))" ""
 	@echo "Removing gppkg from distribution"
@@ -1345,7 +1344,7 @@ clean :
 	@if [ -d Debug -a -f Debug/GNUmakefile ]; then cd Debug; $(MAKE) clean; fi
 	@if [ -d Release -a -f Release/GNUmakefile ]; then cd Release; $(MAKE) clean; fi
 	@if [ -d $(GPPGDIR) -a -f $(GPPGDIR)/GNUmakefile ]; then cd $(GPPGDIR); $(MAKE) clean; fi
-	@if [ -d $(GPMGMT_EXT)/bin ]; then cd $(GPMGMT_EXT)/bin; $(MAKE) clean; fi
+	@if [ -d $(GPMGMT)/bin ]; then cd $(GPMGMT)/bin; $(MAKE) clean; fi
 	@if [ -d extensions/gpfdist ]; then cd extensions/gpfdist; $(MAKE) clean; fi
 	@if [ -d $(GPPERFMON) ]; then cd $(GPPERFMON); $(MAKE) clean; fi
 	@if [ -d client/odbc/src/Makefile ]; then cd client/odbc/src; $(MAKE) clean; fi
@@ -1355,7 +1354,7 @@ distclean :
 	@if [ -d Debug -a -f Debug/GNUmakefile ]; then cd Debug; $(MAKE) distclean; fi
 	@if [ -d Release -a -f Release/GNUmakefile ]; then cd Release; $(MAKE) distclean; fi
 	@if [ -d $(GPPGDIR) -a -f $(GPPGDIR)/GNUmakefile ]; then cd $(GPPGDIR); $(MAKE) distclean; fi
-	@if [ -d $(GPMGMT_EXT)/bin ]; then cd $(GPMGMT_EXT)/bin; $(MAKE) distclean; fi
+	@if [ -d $(GPMGMT)/bin ]; then cd $(GPMGMT)/bin; $(MAKE) distclean; fi
 	@if [ -d extensions/gpfdist ]; then cd extensions/gpfdist; $(MAKE) clean; fi
 	@if [ -d $(GPPERFMON) ]; then cd $(GPPERFMON); $(MAKE) clean; fi
 	@if [ -d client/odbc/src/Makefile ]; then cd client/odbc/src; $(MAKE) clean; fi
