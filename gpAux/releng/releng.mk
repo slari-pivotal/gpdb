@@ -168,16 +168,6 @@ opt_write_test:
 # ----------------------------------------------------------------------
 
 sync_tools: opt_write_test /opt/releng/apache-ant
-
-# If Optmizer and GPOS ivy.xml depencency file exists, retrieve
-# their dependencies.
-
-	@if [ -f $(BLD_TOP)/../src/backend/gpopt/ivy.xml ]; then \
-	     cd $(BLD_TOP)/../src/backend/gpopt; \
-	     (umask 002; ANT_OPTS="-Djavax.net.ssl.trustStore=$(BLD_TOP)/releng/make/dependencies/cacerts" /opt/releng/apache-ant/bin/ant -f ivy-build.xml -DBLD_ARCH=$(BLD_ARCH) -DBLD_TOP=$(BLD_TOP) resolve); \
-	fi
-
-# Retrieve standard dependencies
 	@cd releng/make/dependencies; \
 	 (umask 002; ANT_OPTS="-Djavax.net.ssl.trustStore=$(BLD_TOP)/releng/make/dependencies/cacerts" /opt/releng/apache-ant/bin/ant -DBLD_ARCH=$(BLD_ARCH) resolve);
 	@echo "Resolve finished";
