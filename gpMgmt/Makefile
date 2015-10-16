@@ -68,6 +68,7 @@ set_scripts_version :
 	done
 
 generate_greenplum_path_file:
+	mkdir -p $(prefix)
 	unset LIBPATH; \
 	bin/generate-greenplum-path.sh $(prefix) > $(prefix)/greenplum_path.sh
 
