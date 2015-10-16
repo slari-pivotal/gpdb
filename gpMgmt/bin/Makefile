@@ -61,7 +61,11 @@ PYGRESQL_DIR=PyGreSQL-$(PYGRESQL_VERSION)
 pygresql:
 	@echo "--- PyGreSQL"
 	. $(prefix)/greenplum_path.sh && unset PYTHONHOME && \
-	cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" python setup.py build; \
+	if [ `uname -s` = 'HP-UX' ]; then \
+	    cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" LDFLAGS="-L$(top_builddir)/gpAux/ext/hpux_ia64/python-2.5.6/lib" python setup.py build; \
+	else \
+	    cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" python setup.py build; \
+	fi
 
 	mkdir -p $(PYLIB_DIR)/pygresql
 	cp -r $(PYLIB_SRC)/$(PYGRESQL_DIR)/build/lib.*/* $(PYLIB_DIR)/pygresql

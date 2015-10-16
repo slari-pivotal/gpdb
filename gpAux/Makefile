@@ -20,7 +20,7 @@ all : devel
 # Targets which refresh files via rsync before building
 .PHONY : dbg opt both
 
-# Targets recognized by the PostgreSQL makefile (cdb-pg/GNUmakefile)
+# Targets recognized by the PostgreSQL makefile (GNUmakefile)
 .PHONY : all install installdirs uninstall distprep
 .PHONY : clean distclean maintainer-clean
 .PHONY : check installcheck installcheck-parallel
@@ -282,7 +282,7 @@ Release/GNUmakefile : $(GPPGDIR)/configure  env.sh
 ##
 ##   1) A "configure" must have been run.  This is required so
 ##      GP_MAJORVERSION can be retrieved from the
-##      cdb-pg/src/include/pg_config.h and used to create the
+##      src/include/pg_config.h and used to create the
 ##      json file name (eg. 4.2.json).
 ##   2) (manual) p4 edit gpMgmt/bin/gppylib/data/<version>.json
 ##   3) make gen_json_cat
@@ -304,8 +304,8 @@ gen_json_cat:
 #---------------------------------------------------------------------
 # autoconf
 #---------------------------------------------------------------------
-# Whenever there is a change to the cdb-pg/configure.in file, autoconf and
-# autoheader should be run to regenerate the files cdb-pg/configure and
+# Whenever there is a change to the configure.in file, autoconf and
+# autoheader should be run to regenerate the files configure and
 # src/include/pg_config.h.in.  Note that autoconf and autoheader
 # don't update the timestamps of their output files unless there is an
 # actual change in the contents; thus 'make' rules don't work well for
@@ -1340,7 +1340,7 @@ qautils-tarball:
 #---------------------------------------------------------------------
 
 clean :
-#	@if [ ! -f $(ISCONFIG) ]; then echo "cdb-pg not configured, no need to clean it"; fi
+#	@if [ ! -f $(ISCONFIG) ]; then echo "GPDB root not configured, no need to clean it"; fi
 	@if [ -d Debug -a -f Debug/GNUmakefile ]; then cd Debug; $(MAKE) clean; fi
 	@if [ -d Release -a -f Release/GNUmakefile ]; then cd Release; $(MAKE) clean; fi
 	@if [ -d $(GPPGDIR) -a -f $(GPPGDIR)/GNUmakefile ]; then cd $(GPPGDIR); $(MAKE) clean; fi
@@ -1350,7 +1350,7 @@ clean :
 	@if [ -d client/odbc/src/Makefile ]; then cd client/odbc/src; $(MAKE) clean; fi
 
 distclean :
-#	@if [ ! -f $(ISCONFIG) ]; then echo "cdb-pg not configured, no need to clean it"; fi
+#	@if [ ! -f $(ISCONFIG) ]; then echo "GPDB root not configured, no need to clean it"; fi
 	@if [ -d Debug -a -f Debug/GNUmakefile ]; then cd Debug; $(MAKE) distclean; fi
 	@if [ -d Release -a -f Release/GNUmakefile ]; then cd Release; $(MAKE) distclean; fi
 	@if [ -d $(GPPGDIR) -a -f $(GPPGDIR)/GNUmakefile ]; then cd $(GPPGDIR); $(MAKE) distclean; fi
