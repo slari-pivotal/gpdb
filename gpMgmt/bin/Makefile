@@ -3,13 +3,10 @@
 # Copyright Greenplum 2006-2011
 ################################################################################
 
-# protect the default target for this file from the targets in Makefile.global
-# and Makefile.thirdparty
 default: all
 
 top_builddir=../..
 include $(top_builddir)/src/Makefile.global
-#include $(top_builddir)/Makefile.thirdparty
 
 #
 # SOURCE DIRECTORIES
@@ -59,18 +56,10 @@ stream:
 PYGRESQL_VERSION=4.0
 PYGRESQL_DIR=PyGreSQL-$(PYGRESQL_VERSION)
 
-osx105_x86_PYGRESQL_BIN_MAPPINGS_DIR:=$(BLD_THIRDPARTY_DIR)/bin_mappings:
-osx106_x86_PYGRESQL_BIN_MAPPINGS_DIR:=$(osx105_x86_PYGRESQL_BIN_MAPPINGS_DIR)
-PYGRESQL_BIN_MAPPINGS_DIR=$($(BLD_ARCH)_PYGRESQL_BIN_MAPPINGS_DIR)
-
 pygresql:
 	@echo "--- PyGreSQL"
-	export PATH=$(PYGRESQL_BIN_MAPPINGS_DIR)$(PATH) && cd $(prefix)/ && . greenplum_path.sh && unset PYTHONHOME &&\
-	if [ `uname -s` = 'HP-UX' ]; then \
-	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(strip $(CC) $(CFLAGS))" LDFLAGS="-L$(BLD_THIRDPARTY_DIR)/python-2.5.6/lib" python setup.py build; \
-	else \
-	  cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" python setup.py build; \
-	fi; \
+	cd $(prefix)/ && . greenplum_path.sh && unset PYTHONHOME &&\
+	cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" python setup.py build; \
 	mkdir -p $(PYLIB_DIR)/pygresql
 	cp -r $(PYLIB_SRC)/$(PYGRESQL_DIR)/build/lib.*/* $(PYLIB_DIR)/pygresql
 	touch $(PYLIB_DIR)/__init__.py
@@ -118,15 +107,10 @@ subprocess32:
 PYCRYPTO_VERSION=2.0.1
 PYCRYPTO_DIR=pycrypto-$(PYCRYPTO_VERSION)
 
-osx105_x86_PYCRYPTO_BIN_MAPPINGS_DIR:=$(BLD_THIRDPARTY_DIR)/bin_mappings:
-osx106_x86_PYCRYPTO_BIN_MAPPINGS_DIR:=$(osx105_x86_PYCRYPTO_BIN_MAPPINGS_DIR)
-PYCRYPTO_BIN_MAPPINGS_DIR=$($(BLD_ARCH)_PYCRYPTO_BIN_MAPPINGS_DIR)
-
 pycrypto:
 	@echo "--- pycrypto"
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PYCRYPTO_DIR).tar.gz
-	export PATH=$(PYCRYPTO_BIN_MAPPINGS_DIR)$(PATH); \
-	  cd $(PYLIB_SRC)/$(PYCRYPTO_DIR)/ && CC="$(CC)" python setup.py build
+	cd $(PYLIB_SRC)/$(PYCRYPTO_DIR)/ && CC="$(CC)" python setup.py build
 	cp -r $(PYLIB_SRC)/$(PYCRYPTO_DIR)/build/lib.*/Crypto $(PYLIB_DIR)
 
 #
@@ -135,15 +119,10 @@ pycrypto:
 PSI_VERSION=0.3b2_gp
 PSI_DIR=PSI-$(PSI_VERSION)
 
-osx105_x86_PSI_BIN_MAPPINGS_DIR:=$(BLD_THIRDPARTY_DIR)/bin_mappings:
-osx106_x86_PSI_BIN_MAPPINGS_DIR:=$(osx105_x86_PSI_BIN_MAPPINGS_DIR)
-PSI_BIN_MAPPINGS_DIR=$($(BLD_ARCH)_PSI_BIN_MAPPINGS_DIR)
-
 psi:
 	@echo "--- psi"
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PSI_DIR).tar.gz
-	export PATH=$(PSI_BIN_MAPPINGS_DIR)$(PATH); \
-	  cd $(PYLIB_SRC)/$(PSI_DIR)/ && CC="$(CC)" python setup.py build
+	cd $(PYLIB_SRC)/$(PSI_DIR)/ && CC="$(CC)" python setup.py build
 	cp -r $(PYLIB_SRC)/$(PSI_DIR)/build/lib.*/psi $(PYLIB_DIR)
 
 
