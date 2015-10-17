@@ -1926,6 +1926,8 @@ DumpInlineDatum(Form_pg_attribute att, Datum datum, char *deparsed, unsigned int
 			}
 			str = num_out((Numeric) attrib);
 			strcat(deparsed, str);
+			free(attrib);
+			pfree(str);
 		}
 		break;
 		case BOOLOID:
@@ -1965,12 +1967,7 @@ DumpInlineDatum(Form_pg_attribute att, Datum datum, char *deparsed, unsigned int
 					break;
 				default:
 				{
-					int             ndig = DBL_DIG;
-
-					if (ndig < 1)
-						ndig = 1;
-
-					sprintf(buf, "%.*g", ndig, num);
+					sprintf(buf, "%.*g", DBL_DIG, num);
 				}
 			}
 			strcat(deparsed, buf);
@@ -1994,12 +1991,7 @@ DumpInlineDatum(Form_pg_attribute att, Datum datum, char *deparsed, unsigned int
 					break;
 				default:
 				{
-					int             ndig = FLT_DIG;
-
-					if (ndig < 1)
-						ndig = 1;
-
-					sprintf(buf, "%.*g", ndig, num);
+					sprintf(buf, "%.*g", FLT_DIG, num);
 				}
 			}
 			strcat(deparsed, buf);
@@ -2013,7 +2005,7 @@ DumpInlineDatum(Form_pg_attribute att, Datum datum, char *deparsed, unsigned int
 		break;
 		case INT4OID:
 		{
-			char           *tmp = malloc(12);
+			char           tmp[12];
 			pg_ltoa(DatumGetInt32(datum), tmp);
 			strcat(deparsed, tmp);
 		}
