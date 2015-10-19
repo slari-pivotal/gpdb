@@ -125,13 +125,19 @@ install-jars: $(JAR_FILES)
 	$(INSTALL_PROGRAM) dist/*.jar '$(DESTDIR)$(libdir)/hadoop/'
 	$(INSTALL_PROGRAM) hadoop_env.sh$(X) '$(DESTDIR)$(libdir)/hadoop/hadoop_env.sh$(X)'
 
+.PHONY: install-javadocs
 install-javadocs: $(JAVADOC_TARS)
 	$(INSTALL_DATA) *-javadoc.tar '$(DESTDIR)$(docdir)/javadoc'
 
+.PHONY: install-gphdfs.so
 install-gphdfs.so:
 	$(INSTALL_PROGRAM) gphdfs.so $(DESTDIR)$(pkglibdir)
 
-install: install-jars install-javadocs install-gphdfs.so
+.PHONY: install-data
+install-data:
+	$(INSTALL_DATA) gphdfs.sql '$(DESTDIR)$(datadir)/cdb_init.d/gphdfs.sql'
+
+install: install-jars install-javadocs install-gphdfs.so install-data
 
 installdirs:
 	$(MKDIR_P) '$(DESTDIR)$(libdir)/hadoop'
@@ -140,6 +146,7 @@ installdirs:
 uninstall:
 	rm -f '$(DESTDIR)$(bindir)/*.jar'
 	rm -f '$(DESTDIR)$(bindir)/hadoop_env.sh$(X)'
+	rm -f '$(DESTDIR)$(datadir)/cdb_init.d/gphdfs.sql'
 
 clean: clean-extras
 
