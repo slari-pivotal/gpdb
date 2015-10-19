@@ -40,38 +40,6 @@ if [ -h \${GPHOME}/../greenplum-db ]; then
 fi
 EOF
 
-# Solaris needs amd64 in PATH for java to work
-if [ "${PLAT}" = "SunOS" ] ; then
-cat <<EOF
-PATH=\$GPHOME/bin:\$GPHOME/ext/python/bin:\$PATH
-EOF
-else
-cat <<EOF
-PATH=\$GPHOME/bin:\$GPHOME/ext/python/bin:\$PATH
-EOF
-fi
-
-# OSX does not need JAVA_HOME 
-if [ "${PLAT}" = "Darwin" ] ; then
-cat << EOF
-DYLD_LIBRARY_PATH=\$GPHOME/lib:\$GPHOME/ext/python/lib:\$DYLD_LIBRARY_PATH
-EOF
-fi
-
-# OSX does not have LD_LIBRARY_PATH
-if [ "${PLAT}" != "Darwin" ] ; then
-    #Solaris needs /usr/sfw/lib in order for groupsession to work and /usr/local/lib for readline for Python 
-    if [ "${PLAT}" = "SunOS" ] ; then
-    cat <<EOF
-LD_LIBRARY_PATH=\$GPHOME/lib:\$GPHOME/ext/python/lib:/usr/sfw/lib:/usr/local/python/lib:\$LD_LIBRARY_PATH
-EOF
-    else
-    cat <<EOF
-LD_LIBRARY_PATH=\$GPHOME/lib:\$GPHOME/ext/python/lib:\$LD_LIBRARY_PATH
-EOF
-    fi
-fi
-
 #setup PYTHONHOME
 if [ "x${PYTHONHOME}" == "x" ]; then
     PYTHONHOME="\$GPHOME/ext/python"
@@ -89,6 +57,38 @@ fi
 cat <<EOF
 PYTHONPATH=${PYTHONPATH}
 EOF
+
+# Solaris needs amd64 in PATH for java to work
+if [ "${PLAT}" = "SunOS" ] ; then
+cat <<EOF
+PATH=\$GPHOME/bin:\$PYTHONHOME/bin:\$PATH
+EOF
+else
+cat <<EOF
+PATH=\$GPHOME/bin:\$PYTHONHOME/bin:\$PATH
+EOF
+fi
+
+# OSX does not need JAVA_HOME 
+if [ "${PLAT}" = "Darwin" ] ; then
+cat << EOF
+DYLD_LIBRARY_PATH=\$GPHOME/lib:\$PYTHONHOME/lib:\$DYLD_LIBRARY_PATH
+EOF
+fi
+
+# OSX does not have LD_LIBRARY_PATH
+if [ "${PLAT}" != "Darwin" ] ; then
+    #Solaris needs /usr/sfw/lib in order for groupsession to work and /usr/local/lib for readline for Python 
+    if [ "${PLAT}" = "SunOS" ] ; then
+    cat <<EOF
+LD_LIBRARY_PATH=\$GPHOME/lib:\$PYTHONHOME/lib:/usr/sfw/lib:/usr/local/python/lib:\$LD_LIBRARY_PATH
+EOF
+    else
+    cat <<EOF
+LD_LIBRARY_PATH=\$GPHOME/lib:\$PYTHONHOME/lib:\$LD_LIBRARY_PATH
+EOF
+    fi
+fi
 
 # openssl configuration file path
 cat <<EOF
