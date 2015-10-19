@@ -1,5 +1,6 @@
 # prevent included makefiles from stealing default target
 gpdb_top=@gpdb_top@
+prefix := @prefix@
 enable_transformations=@enable_transformations@
 
 CC=@CC@
@@ -11,6 +12,8 @@ LIBS=@LIBS@
 GP_VERSION=@GP_VERSION@
 
 have_glob=@have_glob@
+
+INSTALL	= $(SHELL) config/install-sh -c
 
 CPPFLAGS += -I$(gpdb_top)/src/include -I.
 LDLIBS += $(LIBS)
@@ -49,3 +52,6 @@ clean:
 distclean: clean
 	rm -f fstream.c gfile.c GNUmakefile config.log config.status
 	rm -rf autom4te.cache
+
+install:
+	$(INSTALL) gpfdist$(EXEEXT) $(prefix)/bin
