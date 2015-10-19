@@ -3219,7 +3219,15 @@ fi
 
 
 if test "$GP_VERSION" = "" ; then
-   GP_VERSION="unknown"
+  if test -f ../../../VERSION; then
+    GP_VERSION=`cat ../../../VERSION`
+  else
+    GP_VERSION="unknown"
+  fi
+fi
+
+if test "$gpdb_top" = "" ; then
+  gpdb_top="../../.."
 fi
 
 

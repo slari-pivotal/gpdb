@@ -40,7 +40,15 @@ AC_ARG_ENABLE(transformations,
 AC_SUBST(enable_transformations)
 
 if test "$GP_VERSION" = "" ; then
-   GP_VERSION="unknown"
+  if test -f ../../../VERSION; then
+    GP_VERSION=`cat ../../../VERSION`
+  else
+    GP_VERSION="unknown"
+  fi
+fi
+
+if test "$gpdb_top" = "" ; then
+  gpdb_top="../../.."
 fi
 
 AC_ARG_VAR(gpdb_top, [path to GPDB source directory])
