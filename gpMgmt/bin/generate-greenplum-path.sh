@@ -40,12 +40,11 @@ if [ -h \${GPHOME}/../greenplum-db ]; then
 fi
 EOF
 
+cat <<EOF
 #setup PYTHONHOME
-if [ "x${PYTHONHOME}" == "x" ]; then
+if [ -x \$GPHOME/ext/python/bin/python ]; then
     PYTHONHOME="\$GPHOME/ext/python"
 fi
-cat <<EOF
-PYTHONHOME=${PYTHONHOME}
 EOF
 
 #setup PYTHONPATH
