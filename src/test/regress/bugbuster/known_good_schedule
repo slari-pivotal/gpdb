@@ -57,6 +57,5 @@ test: functional
 test: memory_quota
 test: TestPSQL
 test: table_statistics
-ignore: queries_wellpoint
 test: opperf
 # end of tests
