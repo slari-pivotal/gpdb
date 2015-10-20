@@ -831,6 +831,16 @@ static void analyzeRelation(Relation relation, List *lAttributeNames, bool rooto
 
 	analyzeEstimateReltuplesRelpages(relationOid, &estimatedRelTuples, &estimatedRelPages, rootonly);
 	
+	/* limit to heap table only, since append-only tables are NOT using sampling, since VACUUM FULL won't help. */
+	if ('h' == relation->rd_rel->relstorage && estimatedRelTuples == 0 && estimatedRelPages > 0)
+	{
+		/*
+		 * WARNING empty pages of bloated table
+		 */
+		ereport(WARNING,
+			(errmsg("ANALYZE detected all empty sample pages for table %s, please run VACUUM FULL for accurate estimation.", RelationGetRelationName(relation))));
+	}
+
 	elog(elevel, "ANALYZE estimated reltuples=%f, relpages=%f for table %s", estimatedRelTuples, estimatedRelPages, RelationGetRelationName(relation));
 	
 	/**
@@ -2878,8 +2888,11 @@ static void gp_statistics_estimate_reltuples_relpages_heap(Relation rel, float4 
 {
 	MIRROREDLOCK_BUFMGR_DECLARE;
 
-	float4		nrowsseen = 0;	/* # rows seen */
-	float4		nrowsdead = 0;	/* # rows seen */
+	float4		nrowsseen = 0;	/* # rows seen (including dead rows) */
+	float4		nrowsdead = 0;	/* # rows dead */
+	float4		totalEmptyPages = 0; /* # of empty pages with only dead rows */
+	float4		totalSamplePages = 0; /* # of pages sampled */
+
 	BlockNumber nblockstotal = 0;	/* nblocks in relation */
 	BlockNumber nblockstarget = (BlockNumber) gp_statistics_blocks_target; 
 	BlockNumber nblocksseen = 0;
@@ -2918,6 +2931,7 @@ static void gp_statistics_estimate_reltuples_relpages_heap(Relation rel, float4 
 		
 		if (threshold >= 1.0 || diceValue <= threshold)
 		{
+			totalSamplePages++;
 			/**
 			 * Block j shall be examined!
 			 */
@@ -2948,15 +2962,22 @@ static void gp_statistics_estimate_reltuples_relpages_heap(Relation rel, float4 
 			targpage = BufferGetPage(targbuffer);
 			maxoffset = PageGetMaxOffsetNumber(targpage);
 
+			/* Figure out overall nrowsdead/nrowsseen ratio */
+			/* Figure out # of empty pages based on page level #rowsseen and #rowsdead.*/
+			float4 pageRowsSeen = 0.0;
+			float4 pageRowsDead = 0.0;
+
 			/* Inner loop over all tuples on the selected block. */
 			for (targoffset = FirstOffsetNumber; targoffset <= maxoffset; targoffset++)
 			{
 				ItemId itemid;
 				itemid = PageGetItemId(targpage, targoffset);
 				nrowsseen++;
+				pageRowsSeen++;
 				if(!ItemIdIsNormal(itemid))
 				{
 					nrowsdead += 1;
+					pageRowsDead++;
 				}
 				else
 				{
@@ -2968,6 +2989,7 @@ static void gp_statistics_estimate_reltuples_relpages_heap(Relation rel, float4 
 					if(!HeapTupleSatisfiesVisibility(rel, &targtuple, SnapshotNow, targbuffer))
 					{
 						nrowsdead += 1;
+						pageRowsDead++;
 					}
 				}
 			}
@@ -2977,6 +2999,12 @@ static void gp_statistics_estimate_reltuples_relpages_heap(Relation rel, float4 
 
 			MIRROREDLOCK_BUFMGR_UNLOCK;
 			// -------- MirroredLock ----------
+
+			/* detect empty pages: pageRowsSeen == pageRowsDead, also log the nrowsseen (total) and nrowsdead (total) */
+			if (pageRowsSeen == pageRowsDead && pageRowsSeen > 0)
+			{
+				totalEmptyPages++;
+			}
 
 			nblocksseen++;
 		}		
@@ -2989,6 +3017,15 @@ static void gp_statistics_estimate_reltuples_relpages_heap(Relation rel, float4 
 	 */
 	*reltuples = ceil((nrowsseen - nrowsdead) * nblockstotal / nblocksseen);
 	*relpages = nblockstotal;
+
+	if (totalSamplePages * 0.5 <= totalEmptyPages && totalSamplePages != 0)
+	{
+		/*
+		 * LOG empty pages of bloated table for each segments.
+		 */
+		elog(elevel, "ANALYZE detected 50%% or more empty pages (%f empty out of %f pages), please run VACUUM FULL for accurate estimation.", totalEmptyPages, totalSamplePages);
+	}
+
 	return;
 }
 
