@@ -2263,7 +2263,8 @@ XLogWrite(XLogwrtRqst WriteRqst, bool flexible, bool xlog_switch)
 		 * have no open file or the wrong one.	However, we do not need to
 		 * fsync more than one file.
 		 */
-		if (sync_method != SYNC_METHOD_OPEN)
+		if (sync_method != SYNC_METHOD_OPEN &&
+			sync_method != SYNC_METHOD_OPEN_DSYNC)
 		{
 			if (MirroredFlatFile_IsActive(&mirroredLogFileOpen) &&
 				!XLByteInPrevSeg(LogwrtResult.Write, openLogId, openLogSeg))
