@@ -20,6 +20,11 @@ Compiling
   make
   make install
 
+NOTE: If you are using your system Python without a $PYTHONHOME set, the
+      $GPHOME/greenplum_path.sh will have an invalid $PYTHONHOME. You can
+      either comment it out or delete it. You can also run `unset PYTHONHOME`
+      for a runtime-only change.
+
 There are some additional requirements in addition to what's needed by
 PostgreSQL:
 
@@ -34,8 +39,8 @@ upstream PostgreSQL. There are changes compared to PostgreSQL throughout the
 codebase, but a few larger additions worth noting:
 
 gpAux/
-	Contains Greenplum-specific extensions such as gpfdist and gpmapreduce. Some
-	extension directories are submodules due to GPL license conflicts.
+	Contains Greenplum-specific extensions such as gpfdist and gpmapreduce.
+	Some extension directories are submodules due to GPL license conflicts.
 
 gpMgmt/
 	Contains Greenplum-specific command-line tools for managing the
