@@ -1496,7 +1496,7 @@ else
 INSTALLCHECK_GPPKG_SOURCES = \
 	../contrib/pgcrypto \
 	../src/pl/plperl \
-	extensions/postgis-2.0.3 \
+	extensions/postgis-2.0.3/source \
 	$(NULL)
 endif
 
