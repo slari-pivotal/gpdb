@@ -6,7 +6,9 @@
 default: all
 
 top_builddir=../..
+ifneq "$(wildcard $(top_builddir)/src/Makefile.global)" ""
 include $(top_builddir)/src/Makefile.global
+endif
 
 #
 # SOURCE DIRECTORIES
