@@ -1509,7 +1509,7 @@ else
 ifeq "$(findstring $(BLD_ARCH),$(GPPKG_PLATFORMS))" ""
 	@echo ""
 	@echo "The gppkg build and packaging processes are not supported"
-	@echo "on this platform: $(BLD_ARCH)"
+@echo "on this platform: $(BLD_ARCH)"
 	@echo ""
 else
 	for source in $(INSTALLCHECK_GPPKG_SOURCES); do \
@@ -1517,7 +1517,15 @@ else
 	done
 	source $$GPHOME/greenplum_path.sh && gpstop -a && gpstart -a
 	for source in $(INSTALLCHECK_GPPKG_SOURCES); do \
+		echo "----------------------------------------------------------------------"
+		echo "running installcheck for $${source}"
+		echo "----------------------------------------------------------------------"
 		source $$GPHOME/greenplum_path.sh && $(MAKE) -C $${source} installcheck >> installcheck-gppkg.log; \
+		RET_VAL=$$? ; \
+                if [ $$RET_VAL -ne 0 ] ; then \
+                        echo "Error running installcheck-gppkg : $${source}" ; \
+                        exit $$RET_VAL; \
+                fi; \
 	done
 endif
 endif
