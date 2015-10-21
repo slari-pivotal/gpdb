@@ -2450,10 +2450,12 @@ sub diff_thrice
 
 	my $diffi3 = `$glob_diff -I GP_IGNORE -b $primtmp $mirrtmp`;
 	{
+		my $diffi4 = "";
 		goto L_diff_fini unless (length($diffi3));
 
 		# do a side-by-side diff (minus heap)
-		my $diffi4 = 
+		print "Performing side-by-side diff (minus heap).\n";
+		$diffi4 = 
 		`$glob_diff  -y --suppress -b $primtmp $mirrtmp | grep -v ':heap:' | grep -v ':btree:'`;
 		
 		# print all non-heap diffs
@@ -2461,6 +2463,7 @@ sub diff_thrice
 
 		# look for heap diffs that aren't trailing blanks (remove
 		# blocks with "zero_adler")
+		print "Performing heap diffs that aren't trailing blanks.\n";
 		$diffi4 = 
 		`$glob_diff -y --suppress -b $primtmp $mirrtmp | grep -v ':2147483649' | grep -v 'SUMMARY:TRAILING' | grep -v 'SUMMARY:NONE'`;
 
@@ -2468,21 +2471,24 @@ sub diff_thrice
 		goto L_diff_fini if (length($diffi4));
 
 		# find TRAILING only
+		print "Find TRAILING only.\n";
 		$diffi4 = 
-		`$glob_diff -y --suppress -b $primtmp $mirrtmp | grep 'SUMMARY:TRAILING\\|SUMMARY:NONE'`;
+		`$glob_diff -y --suppress -b $primtmp $mirrtmp | grep ':2147483649\\|SUMMARY:TRAILING\\|SUMMARY:NONE'`;
 
 		if (length($diffi4))
 		{
-			$diffi3 = "";
-
 			print "raw diff:\n";
 			debug_print($diffi);
 
 			print "\nenhanced diff:\n";
 			debug_print($diffi2);
 
-			print "\nblock by block diff:\n";
+			print "\npreprocessed block by block diff:\n";
+			debug_print($diffi3);
+			print "\npostprocessed block by block diff:\n";
 			debug_print($diffi4);
+
+			$diffi3 = "";
 		}
 
 	  L_diff_fini:
@@ -2494,8 +2500,10 @@ sub diff_thrice
 			print "\nenhanced diff:\n";
 			debug_print($diffi2);
 
-			print "\nblock by block diff:\n";
+			print "\npreprocessed block by block diff:\n";
 			debug_print($diffi3);
+			print "\npostprocessed block by block diff:\n";
+			debug_print($diffi4);
 
 			# found differences
 			push @{$glob_exit}, $row->{ploc}." ".$row->{mloc};
