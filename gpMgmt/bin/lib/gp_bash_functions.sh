@@ -1798,9 +1798,8 @@ CHK_GPDB_ID () {
 		GPDB_ID=`id|$TR '(' ' '|$TR ')' ' '|$AWK '{print $2}'`
 		GPDB_GROUPID=`id|$TR '(' ' '|$TR ')' ' '|$AWK '{print $4}'`
 
-
-		USER_EXECUTE=`$ECHO $PERMISSION | $SED -e 's/...\(.\)....../\1/g'`
-		GROUP_EXECUTE=`$ECHO $PERMISSION | $SED -e 's/......\(.\).../\1/g'`
+		USER_EXECUTE=`$ECHO $PERMISSION | $SED -e 's/...\(.\).*/\1/g'`
+		GROUP_EXECUTE=`$ECHO $PERMISSION | $SED -e 's/......\(.\).*/\1/g'`
 
 		if [ `$ECHO $GPDB_ID|$TR -d '\n'|$WC -c` -gt $INIT_CHAR ];then
 			GPDB_ID_CHK=`$ECHO $GPDB_ID|$CUT -c1-$INIT_CHAR`
