@@ -166,6 +166,12 @@ opt_write_test:
 # ----------------------------------------------------------------------
 
 sync_tools: opt_write_test /opt/releng/apache-ant
+	@LCK_FILES=$$( find /opt/releng/tools -name "*.lck" ); \
+	if [ -n "$${LCK_FILES}" ]; then \
+		echo "Removing existing .lck files!"; \
+		find /opt/releng/tools -name "*.lck" | xargs rm; \
+	fi
+
 	@cd releng/make/dependencies; \
 	 (umask 002; ANT_OPTS="-Djavax.net.ssl.trustStore=$(BLD_TOP)/releng/make/dependencies/cacerts" /opt/releng/apache-ant/bin/ant -DBLD_ARCH=$(BLD_ARCH) resolve);
 	@echo "Resolve finished";
