@@ -175,7 +175,8 @@ class AnalyzeDb(Operation):
         self.parallel_level = options.parallel_level
         self.rootstats = options.rootstats
         self.silent = options.silent
-        self.verbose = options.verbose
+        self.debuginfo = options.debuginfo
+        self.detailed = options.detailed
         self.clean_last = options.clean_last
         self.clean_all = options.clean_all
 
@@ -255,7 +256,7 @@ class AnalyzeDb(Operation):
         if self.single_table is None and self.schema is None and self.config_file is None:
             self.entire_db = True
 
-        if self.verbose:
+        if self.debuginfo:
             logger.setLevel(10)
 
     def execute(self):
@@ -331,16 +332,19 @@ class AnalyzeDb(Operation):
             ordered_candidates = self._get_ordered_candidates(candidates, root_partition_col_dict)
             target_list = []
             logger.info("---------------------------------------------------")
-            logger.info("Tables or partitions to be analyzed")
+            logger.info("Total %d tables or partitions to be analyzed" % (len(ordered_candidates)))
             logger.info("---------------------------------------------------")
             for can in ordered_candidates:
                 if can in candidates:
                     target = self._get_tablename_with_cols(can, input_col_dict)
                 else: # can in root_partition_col_dict
                     target = self._get_tablename_with_cols(can, root_partition_col_dict)
-                logger.info(target)
+                if self.detailed:
+                    logger.info(target)
                 target_list.append(target)
-            logger.info("---------------------------------------------------")
+
+            if self.detailed:
+                logger.info("---------------------------------------------------")
 
             if self.dry_run:
                 return 0
@@ -350,7 +354,9 @@ class AnalyzeDb(Operation):
 
             num_workers = min(self.parallel_level, len(ordered_candidates))
             logger.info("Starting analyze with %d workers..." % num_workers)
-            pool = AnalyzeWorkerPool(numWorkers=num_workers)
+            pool = AnalyzeWorkerPool()
+            pool.detailed = self.detailed
+            pool.start(numWorkers=num_workers)
             for can in ordered_candidates:
                 if can in candidates:
                     target = self._get_tablename_with_cols(can, input_col_dict)
@@ -363,12 +369,18 @@ class AnalyzeDb(Operation):
             wait_count = len(ordered_candidates)
             try:
                 start_time = time.time()
+                report_time = start_time
+                report_wait_count = wait_count;
                 while wait_count > 0:
                     done_cmd = pool.completed_queue.get()
                     if done_cmd.was_successful():
                         subject = self._get_tablename_from_cmd_name(done_cmd.name)
                         self.success_list.append(subject)
-                    if wait_count % 10 == 0:
+
+                    # refresh the progress for given time period (e.g. 10sec).
+                    if int(time.time() - report_time) > 10 and wait_count < report_wait_count:
+                        report_time = time.time()
+                        report_wait_count = wait_count
                         logger.info("progress status: completed %d out of %d tables or partitions" %
                                     (len(self.success_list), len(ordered_candidates)))
                     wait_count -= 1
@@ -980,36 +992,39 @@ def create_parser():
     parser.remove_option('-h')
 
     parser.add_option('-d', dest='dbname', metavar="<database name>",
-                     help="Database name. Required.")
+                      help="Database name. Required.")
     parser.add_option('-s', dest='schema', metavar="<schema name>",
-                     help="Specify a schema to analyze. All tables in the schema will be analyzed.")
+                      help="Specify a schema to analyze. All tables in the schema will be analyzed.")
     parser.add_option('-t', dest='single_table', metavar="<schema name>.<table name>",
-                     help="Analyze a single table. Table name needs to be qualified with schema name.")
+                      help="Analyze a single table. Table name needs to be qualified with schema name.")
     parser.add_option('-i', type='string', dest='include_cols', metavar="<column1>,<column2>,...",
-                     help="Columns to include to be analyzed, separated by comma. All columns will be analyzed if not specified.")
+                      help="Columns to include to be analyzed, separated by comma. All columns will be analyzed if not specified.")
     parser.add_option('-x', type='string', dest='exclude_cols', metavar="<column1>,<column2>,...",
-                     help="Columns to exclude to be analyzed, separated by comma. All columns will be analyzed if not specified.")
+                      help="Columns to exclude to be analyzed, separated by comma. All columns will be analyzed if not specified.")
     parser.add_option('-f', '--file', dest='config_file', metavar="<config_file>",
-                     help="Config file that includes a list of tables to be analyzed. "
-                          "Table names must be qualified with schema name. Optionally a list of columns (separated by "
-                          "comma) can be specified using -i or -x.")
+                      help="Config file that includes a list of tables to be analyzed. "
+                           "Table names must be qualified with schema name. Optionally a list of columns (separated by "
+                           "comma) can be specified using -i or -x.")
     parser.add_option('-l', '--list', action='store_true', dest='dry_run', default=False,
-                     help="List the tables to be analyzed without actually running analyze (dry run).")
+                      help="List the tables to be analyzed without actually running analyze (dry run).")
     parser.add_option('-p', type='int', dest='parallel_level', default=5, metavar="<parallel level>",
-                     help="Parallel level, i.e. the number of tables to be analyzed in parallel. Valid numbers are between 1 and 10. Default value is 5.")
+                      help="Parallel level, i.e. the number of tables to be analyzed in parallel. Valid numbers are between 1 and 10. Default value is 5.")
     parser.add_option('--skip_root_stats', action='store_false', dest='rootstats', default=True,
-                     help="Skip refreshing root partition stats if any of the leaf partitions is analyzed.")
+                      help="Skip refreshing root partition stats if any of the leaf partitions is analyzed.")
     parser.add_option('--full', action='store_true', dest='full_analyze', default=False,
-                     help="Analyze without using incremental. All tables requested by the user will be analyzed.")
+                      help="Analyze without using incremental. All tables requested by the user will be analyzed.")
     parser.add_option('--clean_last', action='store_true', dest='clean_last', default=False,
-                     help="Clean the state files generated by last analyzedb run. All other options except -d will be ignored.")
+                      help="Clean the state files generated by last analyzedb run. All other options except -d will be ignored.")
     parser.add_option('--clean_all', action='store_true', dest='clean_all', default=False,
-                     help="Clean all the state files generated by analyzedb. All other options except -d will be ignored.")
+                      help="Clean all the state files generated by analyzedb. All other options except -d will be ignored.")
     parser.add_option('-h', '-?', '--help', action='help',
                       help='Show this help message and exit.')
-    parser.add_option('-v', '--verbose', action='store_true', dest='verbose', help='Print debug messages.')
+    parser.add_option('-v', '--verbose', action='store_true', dest='detailed', default=False,
+                      help='Print detailed messages.')
+    parser.add_option('--debug', action='store_true', dest='debuginfo', default=False,
+                      help='Print debug messages.')
     parser.add_option('-a', action='store_true', dest='silent', default=False,
-                     help="Quiet mode. Do not prompt for user confirmation.")
+                      help="Quiet mode. Do not prompt for user confirmation.")
 
     return parser
 
@@ -1020,19 +1035,23 @@ class AnalyzeWorkerPool(WorkerPool):
     """
     a custom worker pool for analyze workers
     """
-    def __init__(self, numWorkers=5, items=None):
-        self.workers=[]
-        self.work_queue=Queue()
-        self.completed_queue=Queue()
-        self.num_assigned=0
+
+    def __init__(self, items=None):
+        self.workers = []
+        self.work_queue = Queue()
+        self.completed_queue = Queue()
+        self.num_assigned = 0
+        self.detailed = False
         if items is not None:
             for item in items:
                 self.work_queue.put(item)
                 self.num_assigned += 1
 
-        for i in range(0,numWorkers):
+    def start(self, numWorkers=5):
+        for i in range(0, numWorkers):
             # use AnalyzeWorker instead of Worker
-            w = AnalyzeWorker("worker%d" % i,self)
+            w = AnalyzeWorker("worker%d" % i, self)
+            w.detailed = self.detailed
             self.workers.append(w)
             w.start()
         self.numWorkers = numWorkers
@@ -1043,16 +1062,17 @@ class AnalyzeWorker(Thread):
     """
     a custom worker thread for Analyze
     """
-    pool=None
-    cmd=None
-    name=None
-    logger=None
+    pool = None
+    cmd = None
+    name = None
+    logger = None
 
-    def __init__(self,name,pool,timeout=0.05):
-        self.name=name
-        self.pool=pool
-        self.timeout=timeout
-        self.logger=logger
+    def __init__(self, name, pool, timeout=0.05):
+        self.name = name
+        self.pool = pool
+        self.timeout = timeout
+        self.logger = logger
+        self.detailed = False
         self.stoprequest = threading.Event()
         Thread.__init__(self)
 
@@ -1062,19 +1082,20 @@ class AnalyzeWorker(Thread):
                 self.cmd = self.pool.getNextWorkItem(timeout=self.timeout)
 
                 if self.cmd is not None:
-                    # tablename = self.cmd.cmdStr.split()[-1][:-1]
-                    self.logger.info("[%s] started  %s" % (self.name, self.cmd.name))
+                    tablename = self.cmd.cmdStr.split()[-1][:-1]
+                    if self.detailed:
+                        self.logger.info("[%s] started  %s" % (self.name, self.cmd.name))
                     start_time = time.time()
                     self.cmd.run()
                     end_time = time.time()
                     stderr = self.cmd.get_stderr_lines()
-                    if len(stderr) > 0: # emit stderr if there is any
+                    if len(stderr) > 0:  # emit stderr if there is any
                         self.logger.warning('\n'.join(stderr))
-                    if self.cmd.was_successful():
+                    if self.cmd.was_successful() and self.detailed:
                         self.logger.info("[%s] finished %s. Elapsed time: %d seconds." % (self.name, self.cmd.name,
-                                                                                          int(end_time-start_time)))
+                                                                                          int(end_time - start_time)))
                     self.pool.addFinishedWorkItem(self.cmd)
-                    self.cmd=None
+                    self.cmd = None
 
             except Empty:
                 return
@@ -1083,7 +1104,7 @@ class AnalyzeWorker(Thread):
                 if self.cmd:
                     self.logger.debug("[%s] finished cmd with exception: %s" % (self.name, self.cmd))
                     self.pool.addFinishedWorkItem(self.cmd)
-                    self.cmd=None
+                    self.cmd = None
                 raise
 
     def haltWork(self):
