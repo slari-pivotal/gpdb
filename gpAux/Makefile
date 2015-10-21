@@ -186,7 +186,7 @@ sol_x86_64_CONFIGFLAGS=--without-libcurl
 suse10_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost ${ORCA_CONFIG} --with-libxml
 suse11_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost ${ORCA_CONFIG} --with-libxml
 linux_x86_64_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
-xosx106_x86_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
+osx106_x86_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
 
 BLD_CONFIGFLAGS=$($(BLD_ARCH)_CONFIGFLAGS)
 
