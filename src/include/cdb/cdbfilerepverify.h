@@ -60,7 +60,7 @@ typedef enum FileRepVerifyDirectory_e
 	FileRepVerifyDirectory_DefaultDirectory,
 #endif
 
-	/* Milena says go ahead and exclude pg_xlog */
+	/* exclude pg_xlog */
 #define FILEREPVERIFY_DOXLOGDIRECTORY 0
 #if FILEREPVERIFY_DOXLOGDIRECTORY
 	FileRepVerifyDirectory_Xlog,  

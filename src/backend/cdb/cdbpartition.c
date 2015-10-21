@@ -5627,8 +5627,6 @@ atpxPartAddList(Relation rel,
 				if (!bstat)
 				{
 					/*
-					 * MPP-13806 fix by Gavin Sherry
-					 *
 					 * As we support explicit inclusive and exclusive ranges
 					 * we need to be even more careful.
 					 *

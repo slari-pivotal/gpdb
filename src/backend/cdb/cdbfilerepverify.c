@@ -7394,7 +7394,7 @@ FileRepVerify_ProcessHeapPage(
 			htup = (HeapTupleHeader)(PageGetItem((Page)page, itemId));
 			/* Jeff says he believes completely clearing both infomask
 			 *  and infomask2  is overkill
-			 *  Talk to Matt and look into clearing just
+			 *  look into clearing just
 			 *  HEAP_XMIN_COMMITED, HEAP_XMIN_?, HEAP_XMAX_?
 			 */
 			if (htup->t_infomask != 0)
@@ -9082,7 +9082,7 @@ isExcludedFile(
 	 * EXCLUDED DIRECTORY pg_stat_tmp
 	 * pg_log			 HANDLED EXCLUDED DIRECTORY pg_log
 	 * pg_xlog			 HANDLED EXCLUDED DIRECTORY pg_xlog - Jeff does
-	 * not exclude this - Milena says go ahead and exclude
+	 * not exclude this - go ahead and exclude
 	 * pg_internal		 HANDLED EXCLUDED FILE pg_internal.init
 	 * pg_fsm.cache		 HANDLED EXCLUDED FILE pg_fsm.cache
 	 * pgstat			 HANDLED EXCLUDED FILE pgstat.stat
@@ -9113,7 +9113,7 @@ isExcludedFile(
 	 *
 	 * PG_VERSION - Jeff includes and I will too
 	 *
-	 * Milena mentioned pg_control ( make sure does't get changed during
+	 * pg_control ( make sure does't get changed during
 	 * verification?)
 	 * global/pg_control - should we do something special with this?
 	 *
@@ -9125,7 +9125,7 @@ isExcludedFile(
 	 * INCLUDED DIRECTORY pg_distributedxidmap - Jeff includes and I will too
 	 *
 	 *
-	 * recovery.done - files Matt creates, should be ignored
+	 * recovery.done - should be ignored
 	 *
 	 */
 

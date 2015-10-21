@@ -325,7 +325,6 @@ cost_index(IndexPath *path, PlannerInfo *root,
 	/*
 	 * clamp index correlation to 99% or less, so that we always account for at least a little bit
 	 * of random_page_cost in our calculation.  Otherwise, perfectly correlated indexes look too fast.
-	 * Chuck
 	 */
 	if (indexCorrelation >= 0.99)
 		indexCorrelation = 0.99;

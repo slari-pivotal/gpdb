@@ -132,8 +132,7 @@
 
         If you are modifying a table that does not appear in the file
         then you will also need to add tests to make sure it upgrades
-        properly.  This is more involved and you should ask either
-        Caleb or Gavin for help.
+        properly.
 
 	 b) Edit (regress/input/loadcat34.source) or the corresponding
         file for the target release.
@@ -150,7 +149,7 @@
 	    you need to update the output for any changes you did in step
 	    (a) above.  This should be fairly straight forward.
 
-     d) Have either Caleb or Gavin review the change.  
+     d) Review the change.  
 
         Altering upg2 to account for catalog schema changes is
         difficult and we want to make sure that nothing is being

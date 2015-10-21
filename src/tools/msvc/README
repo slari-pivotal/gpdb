@@ -99,7 +99,7 @@ Bison and Flex
 Bison and Flex are required to build from CVS, but not required when building from a release file. 
 Note that only Bison 1.875 or versions 2.2 and later will work. 
 Bison and Flex can be downloaded from http://gnuwin32.sourceforge.net. 
-(Chuck's note:  You can use cygwin's bison and flex, if cygwin is the LAST thing in the PATH, after all Visual Studio and SDK items)
+(You can use cygwin's bison and flex, if cygwin is the LAST thing in the PATH, after all Visual Studio and SDK items)
 
 Diff
 

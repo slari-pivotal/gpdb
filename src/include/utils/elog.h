@@ -117,7 +117,7 @@ extern pthread_t main_tid;
  *  for that weird case that should never happen.
  */
 /*
- * TODO  Chuck asks:  Why aren't we passing the text of the assertion to elog_internalerror?
+ * TODO  Why aren't we passing the text of the assertion to elog_internalerror?
  * How is anybody supposed to know what was wrong?
  */
 #define Insist(assertion) \

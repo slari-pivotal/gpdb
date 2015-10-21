@@ -27,7 +27,7 @@ extern sigset_t UnBlockSig,
 
 /* 
  * Use pthread_sigmask() instead of sigprocmask() as the latter has undefined
- * behaviour in multithreaded processes. -gavin
+ * behaviour in multithreaded processes.
  */
 #define PG_SETMASK(mask)	pthread_sigmask(SIG_SETMASK, mask, NULL)
 #else							/* not HAVE_SIGPROCMASK */

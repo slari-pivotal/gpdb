@@ -272,7 +272,7 @@ void
 elog_internalerror(const char *filename, int lineno, const char *funcname)
 {
 	/*
-	 * TODO  Chuck asks:  Why isn't this a FATAL error?
+	 * TODO  Why isn't this a FATAL error?
 	 *
 	 * Also, why aren't we allowing for a specific err message to be passed in?
 	 */
@@ -1485,7 +1485,7 @@ EmitErrorReport(void)
 
 	/* CDB: Tidy up the message */
 	/*
-	 * TODO Chuck asks:  Why do we want to do this?  it seems pointless
+	 * TODO Why do we want to do this?  it seems pointless
 	 * and makes the error messages harder to read.
 	 */
 	if (edata->output_to_server ||

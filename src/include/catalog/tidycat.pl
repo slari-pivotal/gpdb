@@ -3442,7 +3442,7 @@ if (1)
 												canonical => 1});
 
 				# remove date strings from relid_comment_tags to
-				# prevent diffs and assuage Caleb's discomfiture
+				# prevent diffs
 				#
 				# s|20yymmdd */| */| 
 				#

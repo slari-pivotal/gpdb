@@ -5285,7 +5285,7 @@ static void do_reaper()
 
 	/*
 	 * TODO: All of the code in this if block should be in PostmasterStateMachine, and
-	 * this code should be removed.  Chuck
+	 * this code should be removed.
 	 *
 	 * TODO: CHAD_PM should this also proceed through normal child exit state logic and simply
 	 *   do something at the right time (when, for example, all post-bgwriters are done) (When that state is
