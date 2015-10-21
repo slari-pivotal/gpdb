@@ -357,6 +357,7 @@ bool		Debug_datumstream_write_use_small_initial_buffers = false;
 bool		gp_temporary_files_filespace_repair = false;
 bool		gp_create_table_random_default_distribution = true;
 bool		gp_allow_non_uniform_partitioning_ddl = true;
+bool		gp_enable_exchange_default_partition = false;
 
 int			explain_memory_verbosity = 0;
 char* 		memory_profiler_run_id = "none";
@@ -3739,6 +3740,15 @@ static struct config_bool ConfigureNamesBool[] =
 		},
 		&gp_allow_non_uniform_partitioning_ddl,
 		true, NULL, NULL
+	},
+
+	{
+		{"gp_enable_exchange_default_partition", PGC_USERSET, COMPAT_OPTIONS,
+			gettext_noop("Allow DDL that will exchange default partitions."),
+			NULL
+		},
+		&gp_enable_exchange_default_partition,
+		false, NULL, NULL
 	},
 
 	{
