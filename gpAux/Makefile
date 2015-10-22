@@ -1489,14 +1489,14 @@ endif
 endif
 
 ifneq "$(findstring $(BLD_ARCH),suse11_x86_64)" ""
-INSTALLCHECK_GPPKG_SOURCES = \
+GPPKG_ROOT_DIR = \
 	../src/pl/plperl \
 	$(NULL)
 else
-INSTALLCHECK_GPPKG_SOURCES = \
+GPPKG_ROOT_DIR = \
 	../contrib/pgcrypto \
 	../src/pl/plperl \
-	extensions/postgis-2.0.3/source \
+	extensions/postgis-2.0.3 \
 	$(NULL)
 endif
 
@@ -1512,20 +1512,34 @@ ifeq "$(findstring $(BLD_ARCH),$(GPPKG_PLATFORMS))" ""
 	@echo "on this platform: $(BLD_ARCH)"
 	@echo ""
 else
-	for source in $(INSTALLCHECK_GPPKG_SOURCES); do \
-		$(MAKE) -C $${source}/package install; \
-	done
-	source $$GPHOME/greenplum_path.sh && gpstop -a && gpstart -a
-	for source in $(INSTALLCHECK_GPPKG_SOURCES); do \
-		echo "----------------------------------------------------------------------"
-		echo "running installcheck for $${source}"
-		echo "----------------------------------------------------------------------"
-		source $$GPHOME/greenplum_path.sh && $(MAKE) -C $${source} installcheck >> installcheck-gppkg.log; \
+	@for root_gppkg in $(GPPKG_ROOT_DIR); do \
+		echo "----------------------------------------------------------------------"; \
+		echo "installing gppkg for $${root_gppkg}"; \
+		echo "----------------------------------------------------------------------"; \
+		$(MAKE) -C $${root_gppkg}/package install; \
 		RET_VAL=$$? ; \
-                if [ $$RET_VAL -ne 0 ] ; then \
-                        echo "Error running installcheck-gppkg : $${source}" ; \
-                        exit $$RET_VAL; \
-                fi; \
+		if [ $$RET_VAL -ne 0 ] ; then \
+			echo "Error running install: $${root_gppkg}" ; \
+			exit $$RET_VAL; \
+		fi; \
+	done
+
+	source $$GPHOME/greenplum_path.sh && gpstop -ar
+
+	@for root_gppkg in $(GPPKG_ROOT_DIR); do \
+		echo "----------------------------------------------------------------------"; \
+		echo "running installcheck for $${root_gppkg}"; \
+		echo "----------------------------------------------------------------------"; \
+		installcheck_dir=""; \
+		if [ -d "$${root_gppkg}/source" ]; then \
+			installcheck_dir="source"; \
+		fi; \
+		source $$GPHOME/greenplum_path.sh && $(MAKE) -C $${root_gppkg}/$${installcheck_dir} installcheck >> installcheck-gppkg.log; \
+		RET_VAL=$$? ; \
+		if [ $$RET_VAL -ne 0 ] ; then \
+			echo "Error running installcheck-gppkg : $${root_gppkg}/$${installcheck_dir}" ; \
+			exit $$RET_VAL; \
+		fi; \
 	done
 endif
 endif
