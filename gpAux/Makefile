@@ -1496,7 +1496,6 @@ else
 GPPKG_ROOT_DIR = \
 	../contrib/pgcrypto \
 	../src/pl/plperl \
-	extensions/postgis-2.0.3 \
 	$(NULL)
 endif
 
