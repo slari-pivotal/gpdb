@@ -17,7 +17,7 @@ from pygresql import pg              # Database interaction
 from gppylib.gplog import *          # Greenplum logging facility
 from gppylib.commands import base    # Greenplum layer for worker pools
 from gppylib.commands import unix    # Greenplum layer for unix interaction
-from gppylib.commands.gp import GpCreateDBIdFile
+from gppylib.commands.gp import GpCreateDBIdFile, is_pid_postmaster
 from gppylib.db import dbconn
 from gppylib.gpversion import GpVersion
 from gppylib.gparray import GpArray, GpDB
@@ -434,22 +434,14 @@ class GPUpgradeBase(object):
                 if not os.path.isdir(dir):
                     continue
 
-                pid = os.path.join(dir, 'postmaster.pid')
-                if os.path.exists(pid):
-                    raise UpgradeError("Greenplum process running: " + pid)
-
-                shutdown = self.RunCmd('pg_controldata ' + dir, env=env)
-                for line in shutdown.split('\n'):
-                    m = shutdown_re.match(line)
-                    if m:
-                        if m.group(1) == 'shut down': 
-                            break
-                        msg  = 'pg_controldata: "Database cluster state: %s"\n' % m.group(1)
-                        msg += 'Greenplum segment %s did not shutdown cleanly' % dir
-                        if warn:
-                            logger.warn(msg)
-                        else:
-                            raise UpgradeError(msg)
+                segup = self.check_segment_up(dir) 
+                if not segup:
+                    break
+                msg = 'Greenplum segment %s did not shutdown cleanly' % dir
+                if warn:
+                    logger.warn(msg)
+                else:
+                    raise UpgradeError(msg)
             
         if self.cmd == 'MASTER' and self.datadirs:
             self.CallSlaves('CHKDOWN')
@@ -848,3 +840,27 @@ class GPUpgradeBase(object):
                 logger.fatal(str(e))
         raise UpgradeError('Unable to determine version of %s' % home)
 
+    #------------------------------------------------------------
+    def check_segment_up(self, datadir):
+        """
+        Checks if the segment specified by the datadir is up and running by
+        reading the postmaster.pid file and sending a KILL -0 to the pid.
+        If at anypoint we are not able to determine the state of the
+        segment, we can safely assume that it is stopped since we've added
+        the force kill functionality to gpstop
+        """
+
+        postmaster_pid_file = os.path.join(datadir, 'postmaster.pid')
+        try:
+            if os.path.exists(postmaster_pid_file):
+                with open(postmaster_pid_file, 'r') as fp:
+                    pid = int(fp.readline().strip())
+                logger.info('Checking if postmaster with pid %s is running' % pid)
+                if unix.check_pid(pid):
+                    logger.info('Process with pid %s is running' % pid)
+                    if is_pid_postmaster(datadir, pid):
+                        logger.info('Process with pid %s is a postmaster' % pid)
+                        return True
+            return False
+        except Exception as e:
+            return False

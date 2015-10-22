@@ -710,32 +710,6 @@ class GPUpgrade(GPUpgradeBase):
         logger.info("To %s"%to)
         self.CheckDown()
 
-        def get_control_data(datadir):
-             '''
-             Parse the output of pg_controldata run on data directory, returning
-             catalog version and state
-             '''
-             cmd = ' '.join(['pg_controldata', datadir])
-             p = subprocess.Popen(cmd, shell=True, close_fds=True,
-                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                  env=curenv)
-             result = p.communicate()
-        
-             if p.returncode != 0:
-                 raise CmdError(cmd, result[0], result[1])
-        
-             out = result[0].strip()
-             ver = ""
-             state = ""
-             for line in out.split('\n'):
-                  s = line.split(':')
-                  if s[0] == 'Catalog version number':
-                        ver = s[1].strip()
-                  elif s[0] == 'Database cluster state':
-                        state = s[1].strip()
-        
-             return [ver, state]
-        
         def setcatversion(datadir, to):
             '''
             Set catalog version to 'to'
@@ -748,11 +722,8 @@ class GPUpgrade(GPUpgradeBase):
             take care of downgrade too since older version does not have
             knowledge of the newer structure.
             '''
-            # It is an error if the current state is not "shut down", that
-            # means that there may be pending xlog records which will cause 
-            # problems for the upgrade.
-            (ver, state) = get_control_data(datadir)
-            if state != "shut down":
+            segup = self.check_segment_up(datadir)
+            if segup:
                 raise UpgradeError("Cannot upgrade: Database did not shutdown cleanly")
 
             cmd = ['%s/bin/lib/gpmodcontrol' % self.newhome]
@@ -887,21 +858,25 @@ class GPUpgrade(GPUpgradeBase):
         '''
         Copy a directory tree
         '''
-        if os.path.isdir(os.path.join(src, f)):
-            if os.path.exists(os.path.join(dst,f)):
-                logger.debug('rmtree(%s)' % os.path.join(dst,f))
-                shutil.rmtree(os.path.join(dst,f))
-            logger.debug('cptree(%s)' % os.path.join(dst,f))
-            shutil.copytree(os.path.join(src, f), os.path.join(dst, f))
+        srcfpath = os.path.join(src, f)
+        dstfpath = os.path.join(dst, f)
+        if os.path.isdir(srcfpath):
+            if os.path.exists(dstfpath):
+                logger.debug('rmtree(%s)' % dstfpath)
+                if os.path.islink(dstfpath):
+                    dstfpath = os.path.abspath(os.readlink(dstfpath))
+                shutil.rmtree(dstfpath)
+            logger.debug('cptree(%s)' % dstfpath)
+            shutil.copytree(srcfpath, dstfpath)
         else:
-            if os.path.exists(os.path.join(dst,f)):
-                logger.debug('rm(%s)' % os.path.join(dst,f))
-                os.remove(os.path.join(dst,f))
-            logger.debug('cp(%s)' % os.path.join(dst,f))
-            shutil.copy2(os.path.join(src, f), os.path.join(dst, f))
+            if os.path.exists(dstfpath):
+                logger.debug('rm(%s)' % dstfpath)
+                os.remove(dstfpath)
+            logger.debug('cp(%s)' % dstfpath)
+            shutil.copy2(srcfpath, dstfpath)
         
             # for this is a file, copy all segments
-            if os.path.isfile(os.path.join(src, f)):
+            if os.path.isfile(srcfpath):
                 for i in range(1, 66000):
                     i = '.' + str(i)
                     fseg = f + i
