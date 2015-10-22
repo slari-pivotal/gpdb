@@ -835,9 +835,9 @@ static void analyzeRelation(Relation relation, List *lAttributeNames, bool rooto
 	if ('h' == relation->rd_rel->relstorage && estimatedRelTuples == 0 && estimatedRelPages > 0)
 	{
 		/*
-		 * WARNING empty pages of bloated table
+		 * NOTICE user when all sampled pages are empty
 		 */
-		ereport(WARNING,
+		ereport(NOTICE,
 			(errmsg("ANALYZE detected all empty sample pages for table %s, please run VACUUM FULL for accurate estimation.", RelationGetRelationName(relation))));
 	}
 
