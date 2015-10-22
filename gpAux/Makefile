@@ -1488,7 +1488,7 @@ else
 endif
 endif
 
-ifneq "$(findstring $(BLD_ARCH),suse11_x86_64)" ""
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 suse11_x86_64))
 GPPKG_ROOT_DIR = \
 	../src/pl/plperl \
 	$(NULL)
