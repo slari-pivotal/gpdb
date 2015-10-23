@@ -1515,7 +1515,7 @@ else
 		echo "----------------------------------------------------------------------"; \
 		echo "installing gppkg for $${root_gppkg}"; \
 		echo "----------------------------------------------------------------------"; \
-		$(MAKE) -C $${root_gppkg}/package install; \
+		source $$GPHOME/greenplum_path.sh && $(MAKE) -C $${root_gppkg}/package install BLD_ARCH=`$(BLD_TOP)/releng/set_bld_arch.sh` INSTLOC=$$GPHOME; \
 		RET_VAL=$$? ; \
 		if [ $$RET_VAL -ne 0 ] ; then \
 			echo "Error running install: $${root_gppkg}" ; \

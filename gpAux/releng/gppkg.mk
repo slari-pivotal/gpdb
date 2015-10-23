@@ -52,7 +52,7 @@ PWD=$(shell pwd)
 
 gppkg_spec.yml: gppkg_spec.yml.in
 	cat $< | sed "s/#arch/$(ARCH)/g" | sed "s/#os/$(OS)/g" | sed 's/#gpver/$(GP_VERSION_NUM)/g' > $@
-	
+
 %.gppkg: gppkg_spec.yml $(MAIN_RPM) $(DEPENDENT_RPMS)
 	mkdir -p gppkg/deps 
 	cp gppkg_spec.yml gppkg/
@@ -72,8 +72,8 @@ clean:
 ifdef EXTRA_CLEAN
 	rm -f $(EXTRA_CLEAN)
 endif
-	
+
 install: $(TARGET_GPPKG)
-	gppkg -i $(TARGET_GPPKG)
+	source $(INSTLOC)/greenplum_path.sh && gppkg -i $(TARGET_GPPKG)
 
 .PHONY: install clean
