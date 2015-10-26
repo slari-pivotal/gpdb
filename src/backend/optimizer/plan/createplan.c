@@ -2464,11 +2464,11 @@ create_ctescan_plan(PlannerInfo *root, Path *best_path,
 	Assert(scan_relid > 0);
 
 	/* Find the referenced CTE based on the given relid */
-	rte = planner_rt_fetch(scan_relid, ctx->root);
+	rte = planner_rt_fetch(scan_relid, root);
 	Assert(rte->rtekind == RTE_CTE);
 
 	levelsup = rte->ctelevelsup;
-	cteroot = ctx->root;
+	cteroot = root;
 	while (levelsup-- > 0)
 	{
 		cteroot = cteroot->parent_root;
