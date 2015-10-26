@@ -2453,19 +2453,38 @@ static SubqueryScan *
 create_ctescan_plan(PlannerInfo *root, Path *best_path,
 					List *tlist, List *scan_clauses)
 {
+	PlannerInfo *cteroot;
+	Index levelsup;
+	RangeTblEntry *rte;
+
 	Assert(best_path->parent->rtekind == RTE_CTE);
 
 	Index scan_relid = best_path->parent->relid;
 
 	Assert(scan_relid > 0);
-	
+
+	/* Find the referenced CTE based on the given relid */
+	rte = planner_rt_fetch(scan_relid, ctx->root);
+	Assert(rte->rtekind == RTE_CTE);
+
+	levelsup = rte->ctelevelsup;
+	cteroot = ctx->root;
+	while (levelsup-- > 0)
+	{
+		cteroot = cteroot->parent_root;
+		if (!cteroot)	/* shouldn't happen */
+		{
+			elog(ERROR, "bad levels up for CTE \"%s\"", rte->ctename);
+		}
+	}
+
 	/* Reduce RestrictInfo list to bare expressions; ignore pseudoconstants */
 	scan_clauses = extract_actual_clauses(scan_clauses, false);
 
 	/* Sort clauses into best execution order */
 	scan_clauses = order_qual_clauses(root, scan_clauses);
 
-	SubqueryScan *scan_plan = make_subqueryscan(root, tlist,
+	SubqueryScan *scan_plan = make_subqueryscan(cteroot, tlist,
 												scan_clauses,
 												scan_relid,
 												best_path->parent->subplan,

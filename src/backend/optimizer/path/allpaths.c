@@ -43,6 +43,7 @@
 #include "cdb/cdbmutate.h"                  /* cdbmutate_warn_ctid_without_segid */
 #include "cdb/cdbpath.h"                    /* cdbpath_rows() */
 #include "cdb/cdbsetop.h"					/* make_motion... routines */
+#include "cdb/cdbsubplan.h"					/* expr_contains_param() */
 
 // TODO: these planner/executor gucs need to be refactored into PlannerConfig.
 bool		gp_enable_sort_limit = FALSE;
@@ -782,7 +783,10 @@ void set_cte_pathlist(PlannerInfo *root, RelOptInfo *rel, RangeTblEntry *rte)
 		/**
 		 * Push down quals
 		 */
-		subquery = push_down_restrict(root, rel, rte, rel->relid, subquery);
+		if (!expr_contains_param((Node *) rel->baserestrictinfo))
+		{
+			subquery = push_down_restrict(root, rel, rte, rel->relid, subquery);
+		}
 
 		subplan = subquery_planner(cteroot->glob, subquery, cteroot,
 								   tuple_fraction, &subroot, config);
@@ -819,7 +823,8 @@ void set_cte_pathlist(PlannerInfo *root, RelOptInfo *rel, RangeTblEntry *rte)
 
 		Query		  *subquery = (Query *) copyObject(cte->ctequery);
 
-		if ((cte->cterefcount - cteplaninfo->numNonSharedPlans) == 1)
+		if ((cte->cterefcount - cteplaninfo->numNonSharedPlans) == 1
+			&& !expr_contains_param((Node *) rel->baserestrictinfo))
 		{
 			/*
 			 * If this CTE is referenced only once,

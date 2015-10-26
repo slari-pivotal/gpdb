@@ -30,6 +30,7 @@ typedef struct ParamWalkerContext
 static bool param_walker(Node *node, ParamWalkerContext * context);
 static Oid	findParamType(List *params, int paramid);
 static bool isParamExecutableNow(SubPlanState *spstate, ParamExecData *prmList);
+static bool expr_contains_param_walker(Node *node, void *context);
 
 /*
  * Function preprocess_initplans() is called from ExecutorRun running a
@@ -352,6 +353,37 @@ param_walker(Node *node, ParamWalkerContext * context)
 		}
 	}
 	return plan_tree_walker(node, param_walker, context);
+}
+
+bool
+expr_contains_param(Node *expr)
+{
+	return expr_contains_param_walker(expr, NULL);
+}
+
+static bool
+expr_contains_param_walker(Node *node, void *context)
+{
+	if (node == NULL)
+		return false;
+
+	if (IsA(node, Param))
+	{
+		Param *param = (Param *) node;
+
+		if (param->paramkind == PARAM_EXEC)
+		{
+			return true;
+		}
+	}
+
+	else if (IsA(node, RestrictInfo))
+	{
+		RestrictInfo *ri = (RestrictInfo *) node;
+		return expr_contains_param_walker((Node *) ri->clause, context);
+	}
+
+	return expression_tree_walker(node, expr_contains_param_walker, context);
 }
 
 /*
