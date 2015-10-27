@@ -93,6 +93,7 @@ CreateBackupStateMachine(const char *pszKey, int instid, int segid)
 	pStateMachine->pszNotifyRelNameGotLocks = MakeString("%s_%s", pStateMachine->pszNotifyRelName, SUFFIX_GOTLOCKS);
 	pStateMachine->pszNotifyRelNameSucceed = MakeString("%s_%s", pStateMachine->pszNotifyRelName, SUFFIX_SUCCEED);
 	pStateMachine->pszNotifyRelNameFail = MakeString("%s_%s", pStateMachine->pszNotifyRelName, SUFFIX_FAIL);
+	pStateMachine->pszNotifyRelNameProbe = MakeString("%s_%s", pStateMachine->pszNotifyRelName, SUFFIX_PROBE);
 
 	pStateMachine->nArCount = 0;
 	pStateMachine->nArSize = 10;

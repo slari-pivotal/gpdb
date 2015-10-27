@@ -63,6 +63,7 @@ typedef struct status_op_list
 #define SUFFIX_GOTLOCKS "GotLocks"
 #define SUFFIX_SUCCEED "Succeed"
 #define SUFFIX_FAIL "Fail"
+#define SUFFIX_PROBE "Probe"
 
 /* Adds a StatusOp* to the list */
 extern void AddToStatusOpList(StatusOpList * pList, StatusOp * pOp);

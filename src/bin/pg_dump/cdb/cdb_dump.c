@@ -72,6 +72,8 @@ extern int	optind,
 			opterr;
 static int dump_inserts;		/* dump data using proper insert strings */
 static int column_inserts;			/* put attr names into insert strings */
+static int max_probe_retries = 5;
+static int probe_interval = 1;		/* 1 second interval */
 static char *dumpencoding = NULL;
 static bool schemaOnly;
 static bool incremental_backup;
@@ -1997,8 +1999,10 @@ threadProc(void *arg)
 	bool		bSentCancelMessage;
 	BackupStateMachine *pState;
 	PGnotify   *pNotify;
-	int			pollResult = 0;
-	int			pollTimeout;
+	int         retryCnt = 0;
+	bool        notifyReceived = false;
+	int         pollResult = 0;
+	int         pollTimeout;
 	struct pollfd *pollInput;
 
 	/*
@@ -2227,6 +2231,9 @@ threadProc(void *arg)
 					return NULL;
 				}
 			}
+			/* As long as the segment agent is responding with notifications, don't try cancelling */
+			notifyReceived = true;
+			retryCnt = 0;
 		}
 
 		ProcessInput(pState);
@@ -2242,6 +2249,44 @@ threadProc(void *arg)
 			decrementedLockCount = true;
 		}
 
+		/* wait and retry probing segment */
+		if (!notifyReceived)
+		{
+			retryCnt += 1;
+			sleep(probe_interval);
+		}
+		else
+		{
+			/* reset and start next probing cycle */
+			notifyReceived = false;
+		}
+
+		/* mark cancellation for dump agent if not receiving response for probe notifications */
+		if (retryCnt >= max_probe_retries)
+		{
+			g_b_SendCancelMessage = true;
+			pParm->pszErrorMsg = MakeString("Lost response from dump agent with dbid %d on host %s\n",
+							pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"));
+			mpp_err_msg(logError, progname, pParm->pszErrorMsg);
+			PQfinish(pConn);
+			DestroyBackupStateMachine(pState);
+			if (!decrementedLunchCount)
+			{
+				decrementFinishedLaunchCount();
+				decrementedLunchCount = true;
+			}
+
+			if (!decrementedLockCount)
+			{
+				decrementFinishedLockingCount();
+				decrementedLockCount = true;
+			}
+
+			return NULL;
+		}
+
+		/* constantly sending probe notification to the segment */
+		DoCancelNotifyListen(pConn, false, pszKey, pSegDB->role, pSegDB->dbid, -1, SUFFIX_PROBE);
 	}
 
 	/*

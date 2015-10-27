@@ -77,6 +77,7 @@ int			optreset;
 #include "dumputils.h"
 #include "cdb_dump_include.h"
 #include "cdb_backup_status.h"
+#include "cdb_backup_state.h"
 #include "cdb_dump_util.h"
 #include "cdb_table.h"
 #include <assert.h>
@@ -7235,6 +7236,7 @@ monitorThreadProc(void *arg __attribute__((unused)))
 	int			PID;
 	PGnotify   *notify;
 	StatusOp   *pOp;
+	BackupStateMachine *pState;
 	char	   *pszMsg;
 	struct pollfd *pollInput;
 	int 		pollResult = 0;
@@ -7249,6 +7251,13 @@ monitorThreadProc(void *arg __attribute__((unused)))
 	pthread_sigmask(SIG_SETMASK, &newset, NULL);
 
 	mpp_err_msg(logInfo, progname, "Starting monitor thread\n");
+
+	pState = CreateBackupStateMachine(g_CDBDumpKey, g_role, g_dbID);
+	if (pState == NULL)
+	{
+		mpp_err_msg(logError, progname, "Failed to allocate memory, canceling seg with dbid %d\n", g_dbID);
+		pthread_kill(g_main_tid, SIGINT);
+	}
 
 	/* Issue Listen command  */
 	DoCancelNotifyListen(g_conn_status, true, g_CDBDumpKey, g_role, g_dbID, -1, NULL);
@@ -7298,11 +7307,21 @@ monitorThreadProc(void *arg __attribute__((unused)))
 			 * since this processes also issues notifies that aren't cancel
 			 * requests.
 			 */
+
 			if (notify->be_pid != PID)
 			{
-				mpp_err_msg(logInfo, progname, "Notification received that we need to cancel for backup key %s\n",
+				if (strncasecmp(pState->pszNotifyRelNameProbe, notify->relname,
+							strlen(pState->pszNotifyRelNameProbe)) == 0)
+				{
+					/* Notify status alive */
+					DoCancelNotifyListen(g_conn_status, false, g_CDBDumpKey, g_role, g_dbID, -1, SUFFIX_PROBE);
+				}
+				else
+				{
+					mpp_err_msg(logInfo, progname, "Notification received that we need to cancel for backup key %s\n",
 							g_CDBDumpKey /* , g_dbID */ );
-				bGotCancelRequest = true;
+					bGotCancelRequest = true;
+				}
 			}
 
 			PQfreemem(notify);
@@ -7311,6 +7330,7 @@ monitorThreadProc(void *arg __attribute__((unused)))
 		if (bGotCancelRequest)
 		{
 			mpp_err_msg(logInfo, progname, "Canceling seg with dbid %d\n", /* g_CDBDumpKey, */ g_dbID);
+			DestroyBackupStateMachine(pState);
 			pthread_kill(g_main_tid, SIGINT);
 		}
 
@@ -7354,6 +7374,7 @@ monitorThreadProc(void *arg __attribute__((unused)))
 
 	/* Close the g_conn_status connection. */
 	PQfinish(g_conn_status);
+	DestroyBackupStateMachine(pState);
 
 	return NULL;
 }
