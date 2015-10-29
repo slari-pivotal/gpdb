@@ -1009,7 +1009,7 @@ begin:;
 	 */
 	doPageWrites = fullPageWrites || Insert->forcePageWrites;
 
-	rdata_crc = crc32cInit();
+	INIT_CRC32C(rdata_crc);
 	len = 0;
 	for (rdt = rdata;;)
 	{
@@ -1017,7 +1017,7 @@ begin:;
 		{
 			/* Simple data, just include it */
 			len += rdt->len;
-			rdata_crc = crc32c(rdata_crc, rdt->data, rdt->len);
+			COMP_CRC32C(rdata_crc, rdt->data, rdt->len);
 		}
 		else
 		{
@@ -1032,7 +1032,7 @@ begin:;
 					else if (rdt->data)
 					{
 						len += rdt->len;
-						rdata_crc = crc32c(rdata_crc, rdt->data, rdt->len);
+						COMP_CRC32C(rdata_crc, rdt->data, rdt->len);
 					}
 					break;
 				}
@@ -1049,7 +1049,7 @@ begin:;
 					else if (rdt->data)
 					{
 						len += rdt->len;
-						rdata_crc = crc32c(rdata_crc, rdt->data, rdt->len);
+						COMP_CRC32C(rdata_crc, rdt->data, rdt->len);
 					}
 					break;
 				}
@@ -1074,23 +1074,19 @@ begin:;
 			BkpBlock   *bkpb = &(dtbuf_xlg[i]);
 			char	   *page;
 
-			rdata_crc = crc32c(rdata_crc,
+			COMP_CRC32C(rdata_crc,
 					   (char *) bkpb,
 					   sizeof(BkpBlock));
 			page = (char *) BufferGetBlock(dtbuf[i]);
 			if (bkpb->hole_length == 0)
 			{
-				rdata_crc = crc32c(rdata_crc,
-						   page,
-						   BLCKSZ);
+				COMP_CRC32C(rdata_crc, page, BLCKSZ);
 			}
 			else
 			{
 				/* must skip the hole */
-				rdata_crc = crc32c(rdata_crc,
-						   page,
-						   bkpb->hole_offset);
-				rdata_crc = crc32c(rdata_crc,
+				COMP_CRC32C(rdata_crc, page, bkpb->hole_offset);
+				COMP_CRC32C(rdata_crc,
 						   page + (bkpb->hole_offset + bkpb->hole_length),
 						   BLCKSZ - (bkpb->hole_offset + bkpb->hole_length));
 			}
@@ -1322,9 +1318,9 @@ begin:;
 	record->xl_rmid = rmid;
 
 	/* Now we can finish computing the record's CRC */
-	rdata_crc = crc32c(rdata_crc, (char *) record + sizeof(pg_crc32),
+	COMP_CRC32C(rdata_crc, (char *) record + sizeof(pg_crc32),
 			   SizeOfXLogRecord - sizeof(pg_crc32));
-	crc32cFinish(rdata_crc);
+	FIN_CRC32C(rdata_crc);
 	record->xl_crc = rdata_crc;
 
 	/* Record begin of record in appropriate places */
@@ -3341,7 +3337,8 @@ RecordIsValid(XLogRecord *record, XLogRecPtr recptr, int emode)
 	 */
 
 	/* First the rmgr data */
-	crc = crc32c(crc32cInit(), XLogRecGetData(record), len);
+	INIT_CRC32C(crc);
+	COMP_CRC32C(crc, XLogRecGetData(record), len);
 
 	/* Add in the backup blocks, if any */
 	blk = (char *) XLogRecGetData(record) + len;
@@ -3361,7 +3358,7 @@ RecordIsValid(XLogRecord *record, XLogRecPtr recptr, int emode)
 			return false;
 		}
 		blen = sizeof(BkpBlock) + BLCKSZ - bkpb.hole_length;
-		crc = crc32c(crc, blk, blen);
+		COMP_CRC32C(crc, blk, blen);
 		blk += blen;
 	}
 
@@ -3375,11 +3372,11 @@ RecordIsValid(XLogRecord *record, XLogRecPtr recptr, int emode)
 	}
 
 	/* Finally include the record header */
-	crc = crc32c(crc, (char *) record + sizeof(pg_crc32),
+	COMP_CRC32C(crc, (char *) record + sizeof(pg_crc32),
 			   SizeOfXLogRecord - sizeof(pg_crc32));
-	crc32cFinish(crc);
+	FIN_CRC32C(crc);
 
-	if (!EQ_CRC32(record->xl_crc, crc))
+	if (!EQ_CRC32C(record->xl_crc, crc))
 	{
 		/*
 		 * Ok, the crc failed, but it may be that we have a record using the old crc algorithm.
@@ -4980,10 +4977,11 @@ WriteControlFile(void)
 	StrNCpy(ControlFile->lc_ctype, localeptr, LOCALE_NAME_BUFLEN);
 
 	/* Contents are protected with a CRC */
-	ControlFile->crc = crc32c(crc32cInit(),
+	INIT_CRC32C(ControlFile->crc);
+	COMP_CRC32C(ControlFile->crc,
 			   (char *) ControlFile,
 			   offsetof(ControlFileData, crc));
-	crc32cFinish(ControlFile->crc);
+	FIN_CRC32C(ControlFile->crc);
 
 	/*
 	 * We write out PG_CONTROL_SIZE bytes into pg_control, zero-padding the
@@ -5064,10 +5062,11 @@ ReadControlFile(void)
 				 errhint("It looks like you need to initdb.")));
 
 	/* Now check the CRC. */
-	crc = crc32c(crc32cInit(),
+	INIT_CRC32C(crc);
+	COMP_CRC32C(crc,
 			   (char *) ControlFile,
 			   offsetof(ControlFileData, crc));
-	crc32cFinish(crc);
+	FIN_CRC32C(crc);
 
 	if (!EQ_CRC32(crc, ControlFile->crc))
 	{
@@ -5307,10 +5306,11 @@ UpdateControlFile(void)
 {
 	MirroredFlatFileOpen	mirroredOpen;
 
-	ControlFile->crc = crc32c(crc32cInit(),
+	INIT_CRC32C(ControlFile->crc);
+	COMP_CRC32C(ControlFile->crc,
 				   (char *) ControlFile,
 				   offsetof(ControlFileData, crc));
-	crc32cFinish(ControlFile->crc);
+	FIN_CRC32C(ControlFile->crc);
 
 	MirroredFlatFile_Open(
 					&mirroredOpen,
@@ -5554,10 +5554,11 @@ BootStrapXLOG(void)
 	record->xl_rmid = RM_XLOG_ID;
 	memcpy(XLogRecGetData(record), &checkPoint, sizeof(checkPoint));
 
-	crc = crc32c(crc32cInit(), &checkPoint, sizeof(checkPoint));
-	crc = crc32c(crc, (char *) record + sizeof(pg_crc32),
+	INIT_CRC32C(crc);
+	COMP_CRC32C(crc, &checkPoint, sizeof(checkPoint));
+	COMP_CRC32C(crc, (char *) record + sizeof(pg_crc32),
 			   SizeOfXLogRecord - sizeof(pg_crc32));
-	crc32cFinish(crc);
+	FIN_CRC32C(crc);
 
 	record->xl_crc = crc;
 
