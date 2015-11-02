@@ -24,6 +24,7 @@ if sys.version_info < (2, 5, 0) or sys.version_info >= (3, 0, 0):
 
 try:
     from gppylib.operations.gpMigratorUtil import *
+    from gppylib.userinput import ask_yesno
 except ImportError, e:
     sys.exit('Error: unable to import module: ' + str(e))
 
@@ -221,6 +222,8 @@ class GPUpgrade(GPUpgradeBase):
                               help=optparse.SUPPRESS_HELP)
             parser.add_option('--fault-injection', dest='faultinjection',
                               type='int', help=optparse.SUPPRESS_HELP)
+            parser.add_option('-a', dest="interactive" , action='store_false', default=True,
+                              help="quiet mode, do not require user input for confirmations")
             (options, args) = parser.parse_args()
             
             if options.version:
@@ -274,6 +277,7 @@ class GPUpgrade(GPUpgradeBase):
         
         self.skipcheckcat = options.skipcheckcat
         self.faultinjection = options.faultinjection
+        self.interactive = options.interactive
 
         if self.cmd == 'MASTER':
 
@@ -1110,6 +1114,7 @@ class GPUpgrade(GPUpgradeBase):
         self.mirror_upgrade_state = "CreateMirrorWorkDir"
         statefile                 = os.path.join(self.masterdir, 'mirror_upgrade_state')
         hasconfigfile             = False
+        continue_previous_upgrade = False
         if os.path.exists(statefile):
             logger.info("Found previous upgrade")
             self.mirror_upgrade_state_file = open(statefile, 'r')
@@ -1121,6 +1126,26 @@ class GPUpgrade(GPUpgradeBase):
                     hasconfigfile = False
                 self.mirror_upgrade_state = line
             self.mirror_upgrade_state_file.close()
+            if self.mirror_upgrade_state != 'CreateMirrorWorkDir' and self.interactive:
+                logger.info('************************************************************************************************')
+                logger.info('The system is in an incomplete upgrade state. The current state was probably caused')
+                logger.info('by a failed upgrade rollback')
+                logger.info('You can continue the upgrade process from this point or start the upgrade process again.')
+                logger.info('NOTE: If you choose "Yes", the upgrade process continues. If the upgrade process failed')
+                logger.info('NOTE: during a rollback, the rollback that was in progress will continue.')
+                logger.info('NOTE: If you choose "No", the upgrade process starts again from the beginning.')
+                logger.info('NOTE: Before choosing "No", ensure that your system is in a state that can be upgraded. For example,')
+                logger.info('NOTE: the system has been rolled back correctly from any previously failed upgrade.')
+                logger.info('************************************************************************************************')
+                continue_previous_upgrade = ask_yesno('', 'The system is in an incomplete upgrade state. Do you want to continue the incomplete upgrade process ?', 'Y')
+                if not continue_previous_upgrade:
+                    logger.info('Restarting upgrade process')
+                    with open(statefile, 'w') as fp:
+                        fp.truncate()
+                    self.mirror_upgrade_state = 'CreateMirrorWorkDir'
+                    hasconfigfile = False
+                else:
+                    logger.info('Continuing with previous upgrade')
         self.mirror_upgrade_state_file = open(statefile, 'a')
         
         if (hasconfigfile):
