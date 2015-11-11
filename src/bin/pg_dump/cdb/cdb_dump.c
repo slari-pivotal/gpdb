@@ -41,6 +41,7 @@ int			optreset;
  */
 static char *addPassThroughParm(char Parm, const char *pszValue, char *pszPassThroughParmString);
 static char *addPassThroughLongParm(const char *Parm, const char *pszValue, char *pszPassThroughParmString);
+static char *shellEscape(const char *shellArg, PQExpBuffer escapeBuf);
 static bool createThreadParmArray(int nCount, ThreadParmArray * pParmAr);
 static void decrementFinishedLaunchCount(void);
 static void decrementFinishedLockingCount(void);
@@ -72,8 +73,6 @@ extern int	optind,
 			opterr;
 static int dump_inserts;		/* dump data using proper insert strings */
 static int column_inserts;			/* put attr names into insert strings */
-static int max_probe_retries = 5;
-static int probe_interval = 1;		/* 1 second interval */
 static char *dumpencoding = NULL;
 static bool schemaOnly;
 static bool incremental_backup;
@@ -502,6 +501,48 @@ copyFilesToSegments(InputOptions *pInputOpts, SegmentDatabaseArray *segDBAr)
 	}
 
 	return true;
+}
+
+/*
+ * shellEscape: Returns a string in which the shell-significant quoted-string characters are
+ * escaped.  The resulting string, if used as a SQL statement component, should be quoted
+ * using the PG $$ delimiter (or as an E-string with the '\' characters escaped again).
+ *
+ * This function escapes the following characters: '"', '$', '`', '\', '!'.
+ *
+ * The PQExpBuffer escapeBuf is used for assembling the escaped string and is reset at the
+ * start of this function.
+ *
+ * The return value of this function is the data area from excapeBuf.
+ */
+static char *
+shellEscape(const char *shellArg, PQExpBuffer escapeBuf)
+{
+	const char *s = shellArg;
+	const char	escape = '\\';
+
+	resetPQExpBuffer(escapeBuf);
+
+	/*
+	 * Copy the shellArg into the escapeBuf prepending any characters
+	 * requiring an escape with the escape character.
+	 */
+	while (*s != '\0')
+	{
+		switch (*s)
+		{
+			case '"':
+			case '$':
+			case '\\':
+			case '`':
+			case '!':
+				appendPQExpBufferChar(escapeBuf, escape);
+		}
+		appendPQExpBufferChar(escapeBuf, *s);
+		s++;
+	}
+
+	return escapeBuf->data;
 }
 
 
@@ -1999,10 +2040,8 @@ threadProc(void *arg)
 	bool		bSentCancelMessage;
 	BackupStateMachine *pState;
 	PGnotify   *pNotify;
-	int         retryCnt = 0;
-	bool        notifyReceived = false;
-	int         pollResult = 0;
-	int         pollTimeout;
+	int			pollResult = 0;
+	int			pollTimeout;
 	struct pollfd *pollInput;
 
 	/*
@@ -2231,9 +2270,6 @@ threadProc(void *arg)
 					return NULL;
 				}
 			}
-			/* As long as the segment agent is responding with notifications, don't try cancelling */
-			notifyReceived = true;
-			retryCnt = 0;
 		}
 
 		ProcessInput(pState);
@@ -2249,44 +2285,6 @@ threadProc(void *arg)
 			decrementedLockCount = true;
 		}
 
-		/* wait and retry probing segment */
-		if (!notifyReceived)
-		{
-			retryCnt += 1;
-			sleep(probe_interval);
-		}
-		else
-		{
-			/* reset and start next probing cycle */
-			notifyReceived = false;
-		}
-
-		/* mark cancellation for dump agent if not receiving response for probe notifications */
-		if (retryCnt >= max_probe_retries)
-		{
-			g_b_SendCancelMessage = true;
-			pParm->pszErrorMsg = MakeString("Lost response from dump agent with dbid %d on host %s\n",
-							pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"));
-			mpp_err_msg(logError, progname, pParm->pszErrorMsg);
-			PQfinish(pConn);
-			DestroyBackupStateMachine(pState);
-			if (!decrementedLunchCount)
-			{
-				decrementFinishedLaunchCount();
-				decrementedLunchCount = true;
-			}
-
-			if (!decrementedLockCount)
-			{
-				decrementFinishedLockingCount();
-				decrementedLockCount = true;
-			}
-
-			return NULL;
-		}
-
-		/* constantly sending probe notification to the segment */
-		DoCancelNotifyListen(pConn, false, pszKey, pSegDB->role, pSegDB->dbid, -1, SUFFIX_PROBE);
 	}
 
 	/*

@@ -531,12 +531,11 @@ void test__formDDBoostPsqlCommandLine1(void **state)
 	const char* ddboostPg = "ddboostPg";
 	const char* ddp_file_name = "ddb_filename";
 	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly = false;
 
 	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg, 
 							   ddp_file_name, dd_boost_buf_size, 
 							   filter_script, table_filter_file,
-							   role, psqlPg, postSchemaOnly);
+							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename.gz --dd_boost_buf_size=512MB | gzip -c | filter.py -t filter.conf | psql";
 	assert_string_equal(cmdLine, e);
@@ -554,12 +553,11 @@ void test__formDDBoostPsqlCommandLine2(void **state)
 	const char* ddboostPg = "ddboostPg";
 	const char* ddp_file_name = "ddb_filename";
 	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly = false;
 
 	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg, 
 							   ddp_file_name, dd_boost_buf_size, 
 							   NULL, NULL,
-							   role, psqlPg, postSchemaOnly);
+							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename.gz --dd_boost_buf_size=512MB | gzip -c | psql";
 	printf("cmdLine is %s", cmdLine);
@@ -581,12 +579,11 @@ void test__formDDBoostPsqlCommandLine3(void **state)
 	const char* ddboostPg = "ddboostPg";
 	const char* ddp_file_name = "ddb_filename";
 	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly = false;
 
 	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg, 
 							   ddp_file_name, dd_boost_buf_size, 
 							   filter_script, table_filter_file,
-							   role, psqlPg, postSchemaOnly);
+							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename --dd_boost_buf_size=512MB | filter.py -t filter.conf | psql";
 
@@ -605,12 +602,11 @@ void test__formDDBoostPsqlCommandLine4(void **state)
 	const char* ddboostPg = "ddboostPg";
 	const char* ddp_file_name = "ddb_filename";
 	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly = false;
 
 	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg, 
 							   ddp_file_name, dd_boost_buf_size, 
 							   NULL, NULL,
-							   role, psqlPg, postSchemaOnly);
+							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename --dd_boost_buf_size=512MB | psql";
 	assert_string_equal(cmdLine, e);
@@ -630,12 +626,11 @@ void test__formDDBoostPsqlCommandLine5(void **state)
 	const char* ddboostPg = "ddboostPg";
 	const char* ddp_file_name = "ddb_filename";
 	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly = false;
 
 	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg, 
 							   ddp_file_name, dd_boost_buf_size, 
 							   filter_script, table_filter_file,
-							   role, psqlPg, postSchemaOnly);
+							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename.gz --dd_boost_buf_size=512MB | gzip -c | filter.py -m -t filter.conf | psql";
 	assert_string_equal(cmdLine, e);
@@ -653,12 +648,11 @@ void test__formDDBoostPsqlCommandLine6(void **state)
 	const char* ddboostPg = "ddboostPg";
 	const char* ddp_file_name = "ddb_filename";
 	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly = false;
 
 	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg, 
 							   ddp_file_name, dd_boost_buf_size, 
 							   NULL, NULL,
-							   role, psqlPg, postSchemaOnly);
+							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename.gz --dd_boost_buf_size=512MB | gzip -c | psql";
 	assert_string_equal(cmdLine, e);
@@ -678,12 +672,11 @@ void test__formDDBoostPsqlCommandLine7(void **state)
 	const char* ddboostPg = "ddboostPg";
 	const char* ddp_file_name = "ddb_filename";
 	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly =false;
 
 	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg, 
 							   ddp_file_name, dd_boost_buf_size, 
 							   filter_script, table_filter_file,
-							   role, psqlPg, postSchemaOnly);
+							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename --dd_boost_buf_size=512MB | filter.py -m -t filter.conf | psql";
 	assert_string_equal(cmdLine, e);
@@ -701,43 +694,16 @@ void test__formDDBoostPsqlCommandLine8(void **state)
 	const char* ddboostPg = "ddboostPg";
 	const char* ddp_file_name = "ddb_filename";
 	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly = false;
 
 	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg, 
 							   ddp_file_name, dd_boost_buf_size, 
 							   NULL, NULL,
-							   role, psqlPg, postSchemaOnly);
+							   role, psqlPg);
 
     char *e = "ddboostPg --readFile --from-file=ddb_filename --dd_boost_buf_size=512MB | psql";
 	assert_string_equal(cmdLine, e);
 	free(cmdLine);
 }
-
-void test__formDDBoostPsqlCommandLine_with_postSchemaOnly_and_master_role(void **state)
-{
-	char *cmdLine = calloc(1000000, 1);
-	char *inputFileSpec = "fileSpec";
-	bool compUsed = false;
-	const char* compProg = "gzip -c";
-	int role = ROLE_MASTER;
-	const char* psqlPg = "psql";
-	const char* ddboostPg = "ddboostPg";
-	const char* ddp_file_name = "ddb_filename";
-	const char* postDataFilterScript = "gprestore_post_data_filter.py";
-	const char* tableFilterFile = "tablefilter";
-	const char* dd_boost_buf_size = "512MB";
-	bool postSchemaOnly = true;
-
-	formDDBoostPsqlCommandLine(&cmdLine, compUsed, ddboostPg, compProg,
-							   ddp_file_name, dd_boost_buf_size,
-							   postDataFilterScript, tableFilterFile,
-							   role, psqlPg, postSchemaOnly);
-
-    char *e = "ddboostPg --readFile --from-file=ddb_filename --dd_boost_buf_size=512MB | gprestore_post_data_filter.py -t tablefilter | psql";
-	assert_string_equal(cmdLine, e);
-	free(cmdLine);
-}
-
 #endif
 
 void test__shouldExpandChildren1(void **state)
@@ -842,58 +808,6 @@ void test__formPostDataSchemaOnlyPsqlCommandLine3(void **state)
 	char *expected_output = "gp_bsa_restore_agent --netbackup-service-host mdw --netbackup-filename fileSpec --netbackup-block-size 1024 | psql";
 	assert_string_equal(cmdLine, expected_output);
 	free(cmdLine);
-}
-
-void test__trimNull(void **state)
-{
-	char *input = NULL;
-	char output = trim(input);
-	assert(!output);
-}
-
-void test__trimBlank(void **state)
-{
-	char *input = "    ";
-	char *expected = "";
-	char *output = trim(input);
-	assert_string_equal(output, expected);
-	free(output);
-}
-
-void test__trimEmpty(void **state)
-{
-	char *input = "";
-	char *expected = "";
-	char *output = trim(input);
-	assert_string_equal(output, expected);
-	free(output);
-}
-
-void test__trimNormal(void **state)
-{
-	char *input = "  dump file name  ";
-	char *expected = "dump file name";
-	char *output = trim(input);
-	assert_string_equal(output, expected);
-	free(output);
-}
-
-void test__trimLeading(void **state)
-{
-	char *input = "  dump file name";
-	char *expected = "dump file name";
-	char *output = trimLeading(input);
-	assert_string_equal(output, expected);
-	free(output);
-}
-
-void test__trimTrailing(void **state)
-{
-	char *input = "dump file name  ";
-	char *expected = "dump file name";
-	char *output = trimTrailing(input);
-	assert_string_equal(output, expected);
-	free(output);
 }
 
 void test__shouldDumpSchemaOnly1(void **state)
@@ -1139,7 +1053,6 @@ main(int argc, char* argv[])
 			unit_test(test__formDDBoostPsqlCommandLine6),
 			unit_test(test__formDDBoostPsqlCommandLine7),
 			unit_test(test__formDDBoostPsqlCommandLine8),
-			unit_test(test__formDDBoostPsqlCommandLine_with_postSchemaOnly_and_master_role),
             #endif
 			unit_test(test__shouldExpandChildren1),
 			unit_test(test__shouldExpandChildren2),
@@ -1163,13 +1076,7 @@ main(int argc, char* argv[])
             unit_test(test__remove_node),       
             unit_test(test__remove_node_not_present),       
             unit_test(test__remove_node_not_present_in_list),       
-            unit_test(test__clean_up_table),
-            unit_test(test__trimNull),
-            unit_test(test__trimBlank),
-            unit_test(test__trimNormal),
-            unit_test(test__trimEmpty),
-            unit_test(test__trimLeading),
-            unit_test(test__trimTrailing),
+            unit_test(test__clean_up_table),       
 	};
 	return run_tests(tests);
 }
