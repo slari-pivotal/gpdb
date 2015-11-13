@@ -541,7 +541,7 @@ CTranslatorRelcacheToDXL::Pmdrel
 	DrgPmdid *pdrgpmdidIndexes = NULL;
 	DrgPmdid *pdrgpmdidTriggers = NULL;
 	DrgPul *pdrgpulPartKeys = NULL;
-	BOOL fChildDistributionMismatch = false;
+	BOOL fConvertHashToRandom = false;
 	DrgPdrgPul *pdrgpdrgpulKeys = NULL;
 	DrgPmdid *pdrgpmdidCheckConstraints = NULL;
 	BOOL fTemporary = false;
@@ -565,13 +565,14 @@ CTranslatorRelcacheToDXL::Pmdrel
 		// get distribution policy
 		GpPolicy *pgppolicy = gpdb::Pdistrpolicy(rel);
 		ereldistribution = Ereldistribution(pgppolicy);
-		fChildDistributionMismatch = gpdb::FChildPartDistributionMismatch(rel);
 
 		// get distribution columns
 		if (IMDRelation::EreldistrHash == ereldistribution)
 		{
 			pdrpulDistrCols = PdrpulDistrCols(pmp, pgppolicy, pdrgpmdcol, ulMaxCols);
 		}
+
+		fConvertHashToRandom = gpdb::FChildPartDistributionMismatch(rel);
 
 		// collect relation indexes
 		pdrgpmdidIndexes = PdrgpmdidRelIndexes(pmp, rel);
@@ -638,6 +639,7 @@ CTranslatorRelcacheToDXL::Pmdrel
 							ereldistribution,
 							pdrgpmdcol,
 							pdrpulDistrCols,
+							fConvertHashToRandom,
 							pdrgpdrgpulKeys,
 							pdrgpmdidIndexes,
 							pdrgpmdidTriggers,
@@ -663,7 +665,7 @@ CTranslatorRelcacheToDXL::Pmdrel
 							pdrgpmdcol,
 							pdrpulDistrCols,
 							pdrgpulPartKeys,
-							fChildDistributionMismatch,
+							fConvertHashToRandom,
 							pdrgpdrgpulKeys,
 							pdrgpmdidIndexes,
 							pdrgpmdidTriggers,
