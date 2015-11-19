@@ -55,7 +55,8 @@ InitFakeSessionState(int activeProcessCount, int cleanupCountdown, RunawayStatus
 	MySessionState->spinLock = 0;
 }
 
-
+#undef PG_RE_THROW
+#define PG_RE_THROW() siglongjmp(*PG_exception_stack, 1)
 
 /*
  * This method will emulate the real ExceptionalCondition

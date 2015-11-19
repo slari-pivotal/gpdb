@@ -8,6 +8,8 @@
 #define MEMORY_LIMIT 8 /* 8 bytes memory limit */
 
 #ifdef USE_ASSERT_CHECKING
+#undef PG_RE_THROW
+#define PG_RE_THROW() siglongjmp(PG_exception_stack, -1)
 void
 _ExceptionalCondition( )
 {
