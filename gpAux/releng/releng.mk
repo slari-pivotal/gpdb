@@ -42,7 +42,7 @@ BLD_TYPE=opt
 
 OBJDIR_DEFAULT = .obj.$(UNAME_ALL)$(ARCH_FLAGS).$(BLD_TYPE)
 
-GREP_SED_VAR_ORCA = $(BLD_TOP)/cdb-pg/src/backend/gpopt/ivy.xml | sed -e 's|\(.*\)rev="\(.*\)"[ \t]*conf\(.*\)|\2|'
+GREP_SED_VAR_ORCA = $(BLD_TOP)/../src/backend/gpopt/ivy.xml | sed -e 's|\(.*\)rev="\(.*\)"[ \t]*conf\(.*\)|\2|'
 
 XERCES_VER  = $(shell grep "\"xerces-c\""   $(GREP_SED_VAR_ORCA))
 LIBGPOS_VER = $(shell grep "\"libgpos\""    $(GREP_SED_VAR_ORCA))
@@ -172,8 +172,8 @@ sync_tools: opt_write_test /opt/releng/apache-ant
 # If Optmizer and GPOS ivy.xml depencency file exists, retrieve
 # their dependencies.
 
-	@if [ -f cdb-pg/src/backend/gpopt/ivy.xml ]; then \
-	     cd cdb-pg/src/backend/gpopt; \
+	@if [ -f $(BLD_TOP)/../src/backend/gpopt/ivy.xml ]; then \
+	     cd $(BLD_TOP)/../src/backend/gpopt; \
 	     (umask 002; ANT_OPTS="-Djavax.net.ssl.trustStore=$(BLD_TOP)/releng/make/dependencies/cacerts" /opt/releng/apache-ant/bin/ant -f ivy-build.xml -DBLD_ARCH=$(BLD_ARCH) -DBLD_TOP=$(BLD_TOP) resolve); \
 	fi
 
