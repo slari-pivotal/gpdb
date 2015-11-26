@@ -1,0 +1,6 @@
+GNUmakefile
+config.status
+fstream.c
+gfile.c
+gpfdist
+*.o

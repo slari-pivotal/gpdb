@@ -1,0 +1,7 @@
+result
+gnet-1.0-javadoc.tar
+gnet-1.1-javadoc.tar
+gphdfs.so
+*.o
+build
+dist

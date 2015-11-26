@@ -1,0 +1,12 @@
+[submodule "client"]
+	path = client
+	url = ssh://git@stash.eng.pivotal.io:2222/gpdb/clients.git
+	branch = 4.3_STABLE
+[submodule "server"]
+	path = cdb-pg
+	url = ssh://git@stash.eng.pivotal.io:2222/gpdb/server.git
+	branch = 4.3_STABLE
+[submodule "extensions/pgbouncer/source"]
+	path = extensions/pgbouncer/source
+	url = ssh://git@stash.eng.pivotal.io:2222/gpdb/pgbouncer.git
+	branch = 4.3_STABLE
