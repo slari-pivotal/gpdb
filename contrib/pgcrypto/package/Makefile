@@ -1,6 +1,6 @@
 all: gppkg
 
-BLD_TOP=../../../../
+BLD_TOP=../../../gpAux
 GPMGMT=$(BLD_TOP)/gpMgmt
 include $(BLD_TOP)/Makefile.global
 
