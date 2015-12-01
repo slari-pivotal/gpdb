@@ -36,7 +36,7 @@ all : devel
 .PHONY : autoconf
 
 # Internal functions which are invoked by other rules within this makefile
-.PHONY : groupSession mkgpfdist mkgpperfmon copydocs mgmtcopy copylibs
+.PHONY : groupSession mkgpfdist mkgpperfmon copydocs mgmtcopy copylibs copyoptimizerlibs
 .PHONY : greenplum_path RECONFIG HOMEDEP GPROOTDEP GPROOTDEP GPROOTFAIL
 .PHONY : gccVersionCheck clients loaders connectivity gppkg
 
@@ -358,12 +358,16 @@ define BUILD_STEPS
 	@$(MAKE) copydocs INSTLOC=$(INSTLOC)
 	@$(MAKE) copylibs INSTLOC=$(INSTLOC)
 	@$(MAKE) clients INSTLOC=$(INSTLOC) CLIENTINSTLOC=$(CLIENTINSTLOC)
-	$(MAKE) set_scripts_version INSTLOC=$(CLIENTINSTLOC)
+	@$(MAKE) set_scripts_version INSTLOC=$(CLIENTINSTLOC)
 	@$(MAKE) connectivity INSTLOC=$(INSTLOC) CONNECTIVITYINSTLOC=$(CONNECTIVITYINSTLOC)
-	$(MAKE) set_scripts_version INSTLOC=$(CONNECTIVITYINSTLOC)
+	@$(MAKE) set_scripts_version INSTLOC=$(CONNECTIVITYINSTLOC)
 	@$(MAKE) loaders INSTLOC=$(INSTLOC) LOADERSINSTLOC=$(LOADERSINSTLOC)
 	@$(MAKE) set_scripts_version INSTLOC=$(LOADERSINSTLOC)
 	@$(MAKE) set_scripts_version INSTLOC=$(CLIENTINSTLOC)
+	## NOTE: The copyoptimizerlibs taret must be called after the
+	## clients and connectivity targets (above) so as to keep the
+	## optimizer libs out of their respective distributions.
+	@$(MAKE) copyoptimizerlibs INSTLOC=$(INSTLOC)
 	@$(MAKE) copylicense INSTLOC=$(INSTLOC) \
                          CLIENTINSTLOC=$(CLIENTINSTLOC) \
                          CONNECTIVITYINSTLOC=$(CONNECTIVITYINSTLOC) \
@@ -1257,9 +1261,25 @@ else
 	cp -rp /System/Library/OpenSSL/openssl.cnf $(INSTLOC)/etc/
 endif
 endif
+#
 	# Copy glider stack trace capture tool
 	-cp -rp $(BLD_THIRDPARTY_BIN_DIR)/glider $(INSTLOC)/sbin/
 
+ifeq "$(BLD_ARCH)" "win32"
+	# Copy kfw dlls
+	cp -rp $(BLD_TOP)/ext/win32/kfw-3-2-2/lib/*dll $(INSTLOC)/lib/
+endif
+
+## ----------------------------------------------------------------------
+## Copy Optimizer (orca) specific libraries to INSTLOC.  It must be
+## called after the clients and connectivity targets have been
+## executed to populate their respective installation directories.
+## The clients and connectivity targets copy the entire contents of
+## the db libs directory.  There is no need to copy the optimizer
+## files and thus it has been broken out into it's own target.
+## ----------------------------------------------------------------------
+
+copyoptimizerlibs :
 ifneq "$(BLD_GPDB_BUILDSET)" "partial"
 ifeq "$(ORCA_CONFIG)" "--enable-orca"
 	# Copy GP Optimizer libraries 
@@ -1285,10 +1305,6 @@ ifeq "$(ORCA_CONFIG)" "--enable-orca"
 	rm -f $(INSTLOC)/lib/libgpoptudf.$(LDSFX);
 	g++ $(GPOPT_UDF_FLAGS) -L$(INSTLOC)/lib -lgpos -lnaucrates -lgpdbcost -lgpopt -o $(INSTLOC)/lib/libgpoptudf.$(LDSFX)  ./../src/backend/gpopt/utils/funcs.o ;
 endif
-endif
-ifeq "$(BLD_ARCH)" "win32"
-	# Copy kfw dlls
-	cp -rp $(BLD_TOP)/ext/win32/kfw-3-2-2/lib/*dll $(INSTLOC)/lib/
 endif
 
 greenplum_path:
