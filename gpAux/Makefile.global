@@ -15,8 +15,6 @@ endif
 BLD_WHERE_THE_LIBRARY_THINGS_ARE=LD_LIBRARY_PATH
 aix5_ppc_64_WHERE_THE_LIBRARY_THINGS_ARE=LIBPATH
 aix5_ppc_32_WHERE_THE_LIBRARY_THINGS_ARE=LIBPATH
-osx104_x86_WHERE_THE_LIBRARY_THINGS_ARE=DYLD_LIBRARY_PATH
-osx105_x86_WHERE_THE_LIBRARY_THINGS_ARE=DYLD_LIBRARY_PATH
 osx106_x86_WHERE_THE_LIBRARY_THINGS_ARE=DYLD_LIBRARY_PATH
 ifneq "$($(BLD_ARCH)_WHERE_THE_LIBRARY_THINGS_ARE)" ""
 BLD_WHERE_THE_LIBRARY_THINGS_ARE=$($(BLD_ARCH)_WHERE_THE_LIBRARY_THINGS_ARE)
@@ -39,7 +37,6 @@ endif
 BLD_CC=gcc
 hpux_ia64_CC=gcc
 osx106_x86_CC=gcc
-osx105_x86_CC=gcc
 
 ifneq "$($(BLD_ARCH)_CC)" ""
 BLD_CC=$($(BLD_ARCH)_CC)
@@ -57,9 +54,7 @@ endif
 ifneq "$(BLD_PATH_FIXED)" "true"
 aix5_ppc_64_PATH_PREPEND=/opt/freeware/bin
 aix5_ppc_32_PATH_PREPEND=/opt/freeware/bin
-osx105_x86_PATH_PREPEND=$(BLD_THIRDPARTY_BIN_DIR)
 osx106_x86_PATH_PREPEND=$(BLD_THIRDPARTY_BIN_DIR)
-rhel4_x86_32_PATH_PREPEND=/opt/python-2.5.1/bin
 sol10_x86_32_PATH_PREPEND=/opt/python32-2.5.1/bin
 sol10_sparc_64_PATH_PREPEND=/opt/gcc-4.1.1/bin
 sol10_sparc_32_PATH_PREPEND=/opt/python32-2.5.1/bin:/opt/gcc-4.1.1/bin
@@ -74,7 +69,6 @@ endif
 aix5_ppc_64_LD_LIBRARY_PATH_PREPEND=/opt/freeware/lib
 aix5_ppc_32_LD_LIBRARY_PATH_PREPEND=/opt/freeware/lib
 ifneq "$(BLD_LD_LIBRARY_PATH_FIXED)" "true"
-rhel4_x86_32_LD_LIBRARY_PATH_PREPEND=/opt/python-2.5.1/lib:/opt/gcc-4.1.1/lib
 sol10_x86_32_LD_LIBRARY_PATH_PREPEND=/opt/python32-2.5.1/lib
 sol10_sparc_32_LD_LIBRARY_PATH_PREPEND=/opt/python32-2.5.1/lib
 endif
@@ -88,11 +82,7 @@ export BLD_LD_LIBRARY_PATH_FIXED=true
 aix5_ppc_32_PYTHON=/opt/pware
 aix5_ppc_64_PYTHON=/opt/pware64
 hpux_ia64_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.5.6
-osx104_x86_PYTHON=/opt/python-2.5.1
-osx105_x86_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 osx106_x86_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
-rhel4_x86_32_PYTHON=/opt/python-2.5.1
-rhel4_x86_64_PYTHON=/opt/python-2.5.1
 rhel5_x86_32_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 rhel5_x86_64_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 rhel6_x86_64_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
@@ -108,11 +98,7 @@ BLD_PYTHON=$($(BLD_ARCH)_PYTHON)
 # it may diverge from the GPDB version
 aix5_ppc_32_PYTHON_PERFMON=/opt/pware
 aix5_ppc_64_PYTHON_PERFMON=/opt/pware64
-osx104_x86_PYTHON_PERFMON=/opt/python-2.5.1
-osx105_x86_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 osx106_x86_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
-rhel4_x86_32_PYTHON_PERFMON=/opt/python-2.5.1
-rhel4_x86_64_PYTHON_PERFMON=/opt/python-2.5.1
 rhel5_x86_32_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 rhel5_x86_64_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 rhel6_x86_64_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
@@ -146,9 +132,7 @@ endif
 
 # set MACOSX_DEPLOYMENT_TARGET to deal with new OSX versions ahead of our supported version(s)
 osx106_x86_MACOSX_DEPLOYMENT_TARGET=10.6
-osx105_x86_MACOSX_DEPLOYMENT_TARGET=10.5
 osx106_x86_DEPLOYMENT_SETTING=MACOSX_DEPLOYMENT_TARGET=$(osx106_x86_MACOSX_DEPLOYMENT_SETTING)
-osx105_x86_DEPLOYMENT_SETTING=MACOSX_DEPLOYMENT_TARGET=$(osx105_x86_MACOSX_DEPLOYMENT_SETTING)
 BLD_DEPLOYMENT_SETTING=$($(BLD_ARCH)_DEPLOYMENT_SETTING)
 ifneq "$(BLD_DEPLOYMENT_SETTING)" ""
 export MACOSX_DEPLOYMENT_TARGET=$($(BLD_ARCH)_MACOSX_DEPLOYMENT_TARGET)
@@ -161,8 +145,6 @@ export NO_M64=1
 
 # 32-bit/64-bit compiler/linker flag settings
 hpux_ia64_BLD_CFLAGS=-mlp64 -D_XOPEN_SOURCE_EXTENDED
-rhel4_x86_64_BLD_CFLAGS=-m64
-rhel4_x86_32_BLD_CFLAGS=-m32
 rhel6_x86_64_BLD_CFLAGS=-m64
 rhel5_x86_64_BLD_CFLAGS=-m64
 rhel5_x86_32_BLD_CFLAGS=-m32
@@ -196,13 +178,11 @@ endif
 BLD_BITS:=$(strip $(findstring 32,$(BLD_ARCH)) $(findstring 64,$(BLD_ARCH)))
 ifeq "$(BLD_BITS)" ""
 sol10_sparc_BLD_BITS=64
-osx105_x86_BLD_BITS=32
 osx106_x86_BLD_BITS=32
 aix5_ppc_64_BLD_BITS=64
 aix5_ppc_32_BLD_BITS=32
 BLD_BITS=$($(BLD_ARCH)_BLD_BITS)
 endif
-
 
 ifeq "$(BLD_ARCH)" ""
 $(error Unable to determine value for BLD_ARCH!  You may set this on the command line.)
@@ -227,29 +207,22 @@ endif
 
 # ldd by platform
 LDD=ldd
-osx105_x86_LDD=otool -L
-osx106_x86_LDD=$(osx105_x86_LDD)
+osx106_x86_LDD=otool -L
 ifneq "$($(BLD_ARCH)_LDD)" ""
 LDD=$($(BLD_ARCH)_LDD)
 endif
 
 LDD_FILTER_NULL=cat
 LDD_FILTER=$(GREP) '\=>' | awk '{print $$3}' | perl -p -i -e 's,\.so.*$$,\.so,'
-#aix5_ppc_32_LDD_FILTER=$(GREP) -v 'needs:' | $(AWK) -F\( '{print $$1}' | $(AWK) '{print $$1}' | $(GREP) -E -v '^/unix$$' | perl -p -i -e 's,\.[0-9\.]*\.$(LDD_LIB_SUFFIX)$$,\.,'
-#aix5_ppc_64_LDD_FILTER=$(GREP) -v 'needs:' | $(AWK) -F\( '{print $$1}' | $(AWK) '{print $$1}' | $(GREP) -E -v '^/unix$$' | perl -p -i -e 's,\.[0-9\.]*\.$(LDD_LIB_SUFFIX)$$,\.,'
 aix5_ppc_32_LDD_FILTER=$(GREP) -v 'needs:' | $(AWK) -F\( '{print $$1}' | $(AWK) '{print $$1}' | $(GREP) -E -v '^/unix$$'
 aix5_ppc_64_LDD_FILTER=$(GREP) -v 'needs:' | $(AWK) -F\( '{print $$1}' | $(AWK) '{print $$1}' | $(GREP) -E -v '^/unix$$'
-osx105_x86_LDD_FILTER=awk '{print $$1}' | perl -p -i -e 's,\.[0-9\.]*\.$(LDD_LIB_SUFFIX)$$,\.,'
-osx106_x86_LDD_FILTER=$(osx105_x86_LDD_FILTER)
+osx106_x86_LDD_FILTER=awk '{print $$1}' | perl -p -i -e 's,\.[0-9\.]*\.$(LDD_LIB_SUFFIX)$$,\.,'
 ifneq "$($(BLD_ARCH)_LDD_FILTER)" ""
 LDD_FILTER=$($(BLD_ARCH)_LDD_FILTER)
 endif
 
 LDD_LIB_SUFFIX=
-#aix5_ppc_32_LDD_LIB_SUFFIX=a
-#aix5_ppc_64_LDD_LIB_SUFFIX=a
-osx105_x86_LDD_LIB_SUFFIX=dylib
-osx106_x86_LDD_LIB_SUFFIX=$(osx105_x86_LDD_LIB_SUFFIX)
+osx106_x86_LDD_LIB_SUFFIX=dylib
 ifneq "$($(BLD_ARCH)_LDD_LIB_SUFFIX)" ""
 LDD_LIB_SUFFIX=$($(BLD_ARCH)_LDD_LIB_SUFFIX)
 endif

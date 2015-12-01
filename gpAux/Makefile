@@ -35,13 +35,10 @@ all : devel
 # Targets for running autoconf and autoheader
 .PHONY : autoconf
 
-# Miscellaneous special purpose targets
-.PHONY : test2 test3
-
 # Internal functions which are invoked by other rules within this makefile
 .PHONY : groupSession mkgpfdist mkgpperfmon copydocs mgmtcopy copylibs
 .PHONY : greenplum_path RECONFIG HOMEDEP GPROOTDEP GPROOTDEP GPROOTFAIL
-.PHONY : version gccVersionCheck pygres authlibs clients loaders connectivity gppkg
+.PHONY : gccVersionCheck clients loaders connectivity gppkg
 
 #---------------------------------------------------------------------
 # Make 3rd-party libraries and tools
@@ -133,7 +130,7 @@ ISCONFIG=../GNUmakefile
 ## On these platforms, we do the full build including the server. On other
 ## platforms, we do a client-only build.
 ##
-SERVER_PLATFORMS=rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 suse10_x86_64 suse11_x86_64 linux_x86_64 osx105_x86 osx106_x86
+SERVER_PLATFORMS=rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 suse10_x86_64 suse11_x86_64 linux_x86_64 osx106_x86
 
 #---------------------------------------------------------------------
 # GPPKG
@@ -179,19 +176,18 @@ DEBUGFLAGS="$(strip $(CFLAGS_INLINE) $(CFLAGS_OPT) $(DEBUG_CFLAGS_OPT) $(TRACE_G
 #---------------------------------------------------------------------
 
 DEFPORT=5432
+
+ORCA_CONFIG=--disable-orca
 win32_CONFIGFLAGS=--with-gssapi --without-libcurl
-rhel4_x86_64_CONFIGFLAGS=--with-gssapi --without-libcurl
-rhel5_x86_32_CONFIGFLAGS=--host=i686-pc-linux-gnu --enable-snmp --enable-ddboost --with-gssapi --enable-netbackup --enable-orca --with-libxml
-rhel5_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-orca --with-libxml
-rhel6_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-orca --with-libxml
-sol10_x86_64_CONFIGFLAGS=--enable-snmp --enable-orca --with-libxml
+rhel5_x86_32_CONFIGFLAGS=--host=i686-pc-linux-gnu --enable-snmp --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml
+rhel5_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml
+rhel6_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml
+sol10_x86_64_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
 sol_x86_64_CONFIGFLAGS=--without-libcurl
-suse10_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost --enable-orca --with-libxml
-suse11_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost --enable-orca --with-libxml
-linux_x86_64_CONFIGFLAGS=--enable-snmp --enable-orca --with-libxml
-osx104_x86_CONFIGFLAGS=--without-libcurl
-osx105_x86_CONFIGFLAGS=--enable-snmp --enable-orca --with-libxml
-osx106_x86_CONFIGFLAGS=--enable-snmp --enable-orca --with-libxml
+suse10_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost ${ORCA_CONFIG} --with-libxml
+suse11_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost ${ORCA_CONFIG} --with-libxml
+linux_x86_64_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
+xosx106_x86_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
 
 BLD_CONFIGFLAGS=$($(BLD_ARCH)_CONFIGFLAGS)
 
@@ -228,7 +224,7 @@ CONFIGFLAGS+= --with-includes="$(CONFIG_INCLUDES)" --with-libraries="$(CONFIG_LI
 
 # Configure in "authlibs"...
 # ...without an ext/ dir copy of curl-config on Tiger or AIX
-ifeq "$(findstring $(BLD_ARCH),aix5_ppc_64 aix5_ppc_32 osx104_x86)" ""
+ifeq "$(findstring $(BLD_ARCH),aix5_ppc_64 aix5_ppc_32)" ""
 BLD_CURL_CONFIG=CURL_CONFIG=$(BLD_THIRDPARTY_BIN_DIR)/curl-config
 endif
 # ...and do not include the authlibs on Windows or AIX
@@ -328,12 +324,8 @@ rhel5_x86_32_LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):/usr/lib
 BLD_LD_LIBRARY_PATH:=$($(BLD_ARCH)_LD_LIBRARY_PATH):$($(BLD_WHERE_THE_LIBRARY_THINGS_ARE))
 export $(BLD_WHERE_THE_LIBRARY_THINGS_ARE)=$(BLD_LD_LIBRARY_PATH)
 
-#$(warning $(BLD_WHERE_THE_LIBRARY_THINGS_ARE)=$($(BLD_WHERE_THE_LIBRARY_THINGS_ARE)))
-
 # how much of GPDB to build by platform (default is "full")
 hpux_ia64_GPDB_BUILDSET=partial
-rhel4_x86_64_GPDB_BUILDSET=partial
-rhel4_x86_32_GPDB_BUILDSET=partial
 rhel5_x86_32_GPDB_BUILDSET=partial
 aix5_ppc_64_GPDB_BUILDSET=partial
 aix5_ppc_32_GPDB_BUILDSET=partial
@@ -372,6 +364,11 @@ define BUILD_STEPS
 	$(MAKE) set_scripts_version INSTLOC=$(CONNECTIVITYINSTLOC)
 	@$(MAKE) loaders INSTLOC=$(INSTLOC) LOADERSINSTLOC=$(LOADERSINSTLOC)
 	@$(MAKE) set_scripts_version INSTLOC=$(LOADERSINSTLOC)
+	@$(MAKE) set_scripts_version INSTLOC=$(CLIENTINSTLOC)
+	@$(MAKE) copylicense INSTLOC=$(INSTLOC) \
+                         CLIENTINSTLOC=$(CLIENTINSTLOC) \
+                         CONNECTIVITYINSTLOC=$(CONNECTIVITYINSTLOC) \
+                         LOADERSINSTLOC=$(LOADERSINSTLOC)
 	@$(MAKE) gppkg INSTLOC=$(INSTLOC) GPPKGINSTLOC=$(GPPKGINSTLOC)
 endef
 
@@ -379,15 +376,14 @@ ifeq "$(BLD_GPDB_BUILDSET)" "aix_subset"
 define BUILD_STEPS
 	rm -rf $(INSTLOC)
 	cd $(BUILDDIR)/src/include/ && $(MAKE) install
-	$(MAKE) mkgpfdist INSTLOC=$(INSTLOC)
-	$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
-	$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
-	$(MAKE) copylibs INSTLOC=$(INSTLOC)
-	$(MAKE) loaders INSTLOC=$(INSTLOC) LOADERSINSTLOC=$(LOADERSINSTLOC)
+	@$(MAKE) mkgpfdist INSTLOC=$(INSTLOC)
+	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
+	@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
+	@$(MAKE) copylibs INSTLOC=$(INSTLOC)
+	@$(MAKE) loaders INSTLOC=$(INSTLOC) LOADERSINSTLOC=$(LOADERSINSTLOC)
 	@$(MAKE) set_scripts_version INSTLOC=$(LOADERSINSTLOC)
-	$(MAKE) connectivity INSTLOC=$(INSTLOC) CONNECTIVITYINSTLOC=$(CONNECTIVITYINSTLOC)
+	@$(MAKE) connectivity INSTLOC=$(INSTLOC) CONNECTIVITYINSTLOC=$(CONNECTIVITYINSTLOC)
 	@$(MAKE) set_scripts_version INSTLOC=$(CONNECTIVITYINSTLOC)
-
 endef
 endif
 
@@ -438,18 +434,6 @@ endef
 endif
 
 #---------------------------------------------------------------------
-# Miscellaneous special purpose targets
-#---------------------------------------------------------------------
-test2 :
-	echo "CWD ="$(CURDIR)
-	echo "RELEASE="$(RELEASE)
-
-test3: INSTLOC=$(DEVPATH)
-test3: HOMEDEP
-	@rm -rf $(INSTLOC)/lib/*
-	@$(MAKE) copylibs INSTLOC=$(INSTLOC)
-
-#---------------------------------------------------------------------
 # environment for later builds inside the source tree
 #
 # run this to create an environment-loading script, source it,
@@ -496,10 +480,10 @@ devel : CONFIGFLAGS+= --enable-cassert --enable-debug --enable-testutils --enabl
 ifdef ENABLE_VPATH_BUILD
 devel : BUILDDIR=Debug
 devel : ISCONFIG=$(BUILDDIR)/GNUmakefile
-devel : gccVersionCheck version HOMEDEP Debug/GNUmakefile
+devel : gccVersionCheck HOMEDEP Debug/GNUmakefile
 else
 devel : ISCONFIG=../GNUmakefile
-devel : gccVersionCheck version HOMEDEP $(GPPGDIR)/GNUmakefile
+devel : gccVersionCheck HOMEDEP $(GPPGDIR)/GNUmakefile
 endif
 	$(BUILD_STEPS)
 
@@ -537,10 +521,10 @@ dist_prof : CONFIGFLAGS+= --enable-testutils
 ifdef ENABLE_VPATH_BUILD
 dist_prof : BUILDDIR=Release
 dist_prof : ISCONFIG=$(BUILDDIR)/GNUmakefile
-dist_prof : gccVersionCheck version GPROOTDEP RECONFIG $(ISCONFIG)
+dist_prof : gccVersionCheck GPROOTDEP RECONFIG $(ISCONFIG)
 else
 dist_prof : ISCONFIG=../GNUmakefile
-dist_prof : gccVersionCheck version GPROOTDEP RECONFIG $(ISCONFIG)
+dist_prof : gccVersionCheck GPROOTDEP RECONFIG $(ISCONFIG)
 endif
 	$(BUILD_STEPS)
 
@@ -551,10 +535,10 @@ dist_faultinj : CONFIGFLAGS+= --enable-testutils --enable-debugbreak
 ifdef ENABLE_VPATH_BUILD
 dist_faultinj : BUILDDIR=Release
 dist_faultinj : ISCONFIG=$(BUILDDIR)/GNUmakefile
-dist_faultinj : gccVersionCheck version GPROOTDEP RECONFIG Release/GNUmakefile
+dist_faultinj : gccVersionCheck GPROOTDEP RECONFIG Release/GNUmakefile
 else
 dist_faultinj : ISCONFIG=../GNUmakefile
-dist_faultinj : gccVersionCheck version GPROOTDEP RECONFIG $(ISCONFIG)
+dist_faultinj : gccVersionCheck GPROOTDEP RECONFIG $(ISCONFIG)
 endif
 	$(BUILD_STEPS)
 
@@ -601,7 +585,6 @@ CONNECTIVITYINSTLOC_INCLUDE=$(CONNECTIVITYINSTLOC)/include
 CONNECTIVITYINSTLOC_DOCS=$(CONNECTIVITYINSTLOC)/docs
 CONNECTIVITYINSTLOC_OPENSOURCE=$(CONNECTIVITYINSTLOC)/thirdparty
 
-
 ifneq "$(findstring win,$(BLD_ARCH))" "win"
 DOC_TYPE=Unix
 SCRIPT=.sh
@@ -609,7 +592,6 @@ else
 DOC_TYPE=Win
 SCRIPT=.bat
 endif
-
 
 define tmpCLIENT_SCRIPTS
 endef
@@ -695,12 +677,8 @@ sol10_x86_32_MPP_ARCH=SOL-i386
 sol10_sparc_MPP_ARCH=SOL10-sparc
 sol10_sparc_64_MPP_ARCH=SOL10-sparc_64
 sol10_sparc_32_MPP_ARCH=SOL10-sparc_32
-rhel4_x86_32_MPP_ARCH=RHEL4-i386
-rhel4_x86_64_MPP_ARCH=RHEL4-x86_64
 rhel5_x86_64_MPP_ARCH=RHEL5-x86_64
 rhel6_x86_64_MPP_ARCH=RHEL6-x86_64
-osx10_x86_MPP_ARCH=OSX-i386
-osx105_x86_MPP_ARCH=OSX-i386
 osx106_x86_MPP_ARCH=OSX-i386
 ifneq "$($(BLD_ARCH)_MPP_ARCH)" ""
 export MPP_ARCH=$($(BLD_ARCH)_MPP_ARCH)
@@ -803,13 +781,13 @@ ifeq "$(findstring clients,$(BLD_TARGETS))" ""
 else
 	# ---- copy GPDB fileset ----
 	mkdir -p $(CLIENTINSTLOC_BIN)
-	(cd $(INSTLOC)/bin && $(TAR) cf - $(CLIENT_FILESET)) | (cd $(CLIENTINSTLOC_BIN)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(INSTLOC)/bin && $(TAR) cf - $(CLIENT_FILESET)) | (cd $(CLIENTINSTLOC_BIN)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 	mkdir -p $(CLIENTINSTLOC_INCLUDE)
-	(cd $(INSTLOC)/include && $(TAR) cf - *) | (cd $(CLIENTINSTLOC_INCLUDE)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(INSTLOC)/include && $(TAR) cf - *) | (cd $(CLIENTINSTLOC_INCLUDE)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 	mkdir -p $(CLIENTINSTLOC_LIB)
-	(cd $(INSTLOC)/lib && $(TAR) cf - *) | (cd $(CLIENTINSTLOC_LIB)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(INSTLOC)/lib && $(TAR) cf - *) | (cd $(CLIENTINSTLOC_LIB)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 ifneq "$(FILESET_LIB_GCC)" ""
-	(cd $(CLIENTINSTLOC_LIB)/ && $(TAR) cf - -C $(FILESET_LIB_GCC_LOC) $(FILESET_LIB_GCC) | $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(CLIENTINSTLOC_LIB)/ && $(TAR) cf - -C $(FILESET_LIB_GCC_LOC) $(FILESET_LIB_GCC) | $(TAR) xpf -)$(check_pipe_for_errors)
 endif
 	# ---- copy docs fileset ----
 	mkdir -p $(CLIENTINSTLOC_DOCS)
@@ -866,12 +844,12 @@ ifeq "$(findstring loaders,$(BLD_TARGETS))" ""
 else
 	# ---- copy GPDB fileset ----
 	mkdir -p $(LOADERSINSTLOC_BIN)
-	(cd $(INSTLOC)/bin/ && $(TAR) cf - $(LOADERS_FILESET_BIN)) | (cd $(LOADERSINSTLOC_BIN)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(INSTLOC)/bin/ && $(TAR) cf - $(LOADERS_FILESET_BIN)) | (cd $(LOADERSINSTLOC_BIN)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 	mkdir -p $(LOADERSINSTLOC_BINEXT)
-	(cd $(GPMGMT_EXT)/bin/ext/ && $(TAR) cf - $(LOADERS_FILESET_BINEXT)) | (cd $(LOADERSINSTLOC_BINEXT)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(GPMGMT_EXT)/bin/ext/ && $(TAR) cf - $(LOADERS_FILESET_BINEXT)) | (cd $(LOADERSINSTLOC_BINEXT)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 ifeq "$(findstring win,$(BLD_ARCH))" "win"
 	# ---- copy pygresql from ext/win32 ----
-	(cd $(BLD_THIRDPARTY)/win32 && $(TAR) cf - pygresql) | (cd $(LOADERSINSTLOC_BINEXT)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(BLD_THIRDPARTY)/win32 && $(TAR) cf - pygresql) | (cd $(LOADERSINSTLOC_BINEXT)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 endif
 ifneq "$($(BLD_ARCH)_PYTHON)" ""
 	mkdir -p $(LOADERSINSTLOC_EXT)/python
@@ -879,26 +857,26 @@ ifneq "$($(BLD_ARCH)_PYTHON)" ""
 endif
 	mkdir -p $(LOADERSINSTLOC_LIB)
 ifneq "$(LOADERS_FILESET_LIB)" ""
-	(cd $(INSTLOC)/lib/ && $(TAR) cf - $(LOADERS_FILESET_LIB)) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(INSTLOC)/lib/ && $(TAR) cf - $(LOADERS_FILESET_LIB)) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 endif
 ifneq "$(FILESET_LIB_GCC)" ""
-	(cd $(LOADERSINSTLOC_LIB)/ && $(TAR) cf - -C $(FILESET_LIB_GCC_LOC) $(FILESET_LIB_GCC) | $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd $(LOADERSINSTLOC_LIB)/ && $(TAR) cf - -C $(FILESET_LIB_GCC_LOC) $(FILESET_LIB_GCC) | $(TAR) xpf -)$(check_pipe_for_errors)
 endif
 ifneq "$(LOADERS_FILESET_LIB_PERZL)" ""
 	# include libraries from www.perzl.org needed by the pware Python-2.6.1 build
 	mkdir -p $(LOADERSINSTLOC_LIB_PWARE)
-	($(TAR) cf - -C $(LOADERS_FILESET_LIB_PERZL_LOC) $(LOADERS_FILESET_LIB_PERZL)) | ($(TAR) xvpf - -C $(LOADERSINSTLOC_LIB_PWARE))$(check_pipe_for_errors)
+	($(TAR) cf - -C $(LOADERS_FILESET_LIB_PERZL_LOC) $(LOADERS_FILESET_LIB_PERZL)) | ($(TAR) xpf - -C $(LOADERSINSTLOC_LIB_PWARE))$(check_pipe_for_errors)
 endif
 ifneq "$(LOADERS_FILESET_LIB_PWARE)" ""
 	# include libraries from pware needed by the pware Python-2.6.1 build
 	mkdir -p $(LOADERSINSTLOC_LIB_PWARE)
-	($(TAR) cf - -C $($(BLD_ARCH)_PYTHON)/lib $(LOADERS_FILESET_LIB_PWARE)) | ($(TAR) xvpf - -C $(LOADERSINSTLOC_LIB_PWARE))$(check_pipe_for_errors)
+	($(TAR) cf - -C $($(BLD_ARCH)_PYTHON)/lib $(LOADERS_FILESET_LIB_PWARE)) | ($(TAR) xpf - -C $(LOADERSINSTLOC_LIB_PWARE))$(check_pipe_for_errors)
 endif
 #ifneq "$(findstring $(BLD_ARCH),aix5_ppc_32 aix5_ppc_64)" ""
 #	(cd /opt/freeware/lib/ && $(TAR) cf - libbz2.a libz.a) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
 #endif
 ifneq "$(findstring $(BLD_ARCH),sol10_sparc_32)" ""
-	(cd /usr/local/lib/ && $(TAR) cf - libiconv.so* libexpat.so*) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+	(cd /usr/local/lib/ && $(TAR) cf - libiconv.so* libexpat.so*) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xpf -)$(check_pipe_for_errors)
 endif
 	# ---- copy scripts fileset ----
 	mkdir -p $(LOADERSINSTLOC)
@@ -942,10 +920,6 @@ else
 	ssh build@harpy 'rm -rf $(BLD_PACKAGING_PID)'
 endif
 endif
-
-pwx :
-	# ---- build and packaging of the PWX package has been moved to //drivers/pwx/<branch>
-
 
 #---------------------------------------------------------------------
 # Platform Verification Kit (PVK)
@@ -1110,7 +1084,6 @@ mkplatform:
 	mkdir -p $(INSTLOC)/etc
 	cp -p platform/gpcheck/gpcheck.cnf $(INSTLOC)/etc/
 
-
 copydocs :
 	@if [ ! -d $($INSTLOC)/docs ] ; then mkdir -p $(INSTLOC)/docs; fi
 	@if [ ! -d $(GPDOCDIR) ] ; then \
@@ -1174,13 +1147,11 @@ endif
 	find $(INSTLOC)/lib/python/gppylib -name test -type d | xargs rm -rf
 
 BLD_LDD=ldd
-osx104_x86_LDD=otool -L
 ifneq "$($(BLD_ARCH)_LDD)" ""
 BLD_LDD=$($(BLD_ARCH)_LDD)
 endif
 
 BLD_LDD_FILTER=|awk '{print $$3}' | sort -u | perl -p -i -e 's,^(.*\.so.*),\1\*,'
-osx104_x86_LDD_FILTER=|awk '{print $$1}' | perl -p -i -e 's,^(.*)\.dylib,\1\*\.dylib,'
 ifneq "$($(BLD_ARCH)_LDD_FILTER)" ""
 BLD_LDD_FILTER=$($(BLD_ARCH)_LDD_FILTER)
 endif
@@ -1291,6 +1262,7 @@ endif
 	-cp -rp $(BLD_THIRDPARTY_BIN_DIR)/glider $(INSTLOC)/sbin/
 
 ifneq "$(BLD_GPDB_BUILDSET)" "partial"
+ifeq "$(ORCA_CONFIG)" "--enable-orca"
 	# Copy GP Optimizer libraries 
 	echo "Copying Orca libraries";
 	for b in libnaucrates libgpdbcost libgpopt; do \
@@ -1314,23 +1286,31 @@ ifneq "$(BLD_GPDB_BUILDSET)" "partial"
 	rm -f $(INSTLOC)/lib/libgpoptudf.$(LDSFX);
 	g++ $(GPOPT_UDF_FLAGS) -L$(INSTLOC)/lib -lgpos -lnaucrates -lgpdbcost -lgpopt -o $(INSTLOC)/lib/libgpoptudf.$(LDSFX)  ./../src/backend/gpopt/utils/funcs.o ;
 endif
+endif
 ifeq "$(BLD_ARCH)" "win32"
 	# Copy kfw dlls
 	cp -rp $(BLD_TOP)/ext/win32/kfw-3-2-2/lib/*dll $(INSTLOC)/lib/
 endif
-
 
 greenplum_path:
 	mkdir -p $(INSTLOC)
 	unset LIBPATH; \
 	  releng/generate-greenplum-path.sh $(INSTLOC) > $(INSTLOC)/greenplum_path.sh
 
+copylicense:
+	for proddir in $(INSTLOC) $(CLIENTINSTLOC) $(CONNECTIVITYINSTLOC) $(LOADERSINSTLOC); do \
+	   if [ -d $${proddir} ]; then \
+	      echo cp -v ${BLD_TOP}/LICENSE $${proddir}; \
+	      echo cp -v ${BLD_TOP}/NOTICE  $${proddir}; \
+	   fi; \
+	done
+
 HOMEDEP :
-	@#If the HOME variable isn't set, then execute the usage() path
+	@ #If the HOME variable isn't set, then execute the usage() path
 	@if [ x"$(HOME)" = x ]; then $(MAKE) HOMEFAIL; fi
 
 GPROOTDEP :
-	@#If the GPROOT variable isn't set, then execute the usage() path
+	@ #If the GPROOT variable isn't set, then execute the usage() path
 	@if [ x"$(GPROOT)" = x ]; then $(MAKE) GPROOTFAIL; fi
 
 GPROOTFAIL :
@@ -1415,11 +1395,6 @@ installcheck-bugbuster :
 # More internal functions
 #---------------------------------------------------------------------
 
-version :
-	@if [ ! -f ../getversion ] ; then echo "getversion is not present, cannot create VERSION file"; exit 1; fi
-	@echo "Creating VERSION file"
-	@bash ../getversion > ../VERSION
-
 gccVersionCheck :
 	@echo "Checking GCC version" ; \
 	$(BLD_CC) --version > /dev/null 2>&1 ; \
@@ -1435,41 +1410,6 @@ gccVersionCheck :
 	    $(BLD_CC) --version ; \
 	    exit 1 ; \
 	fi
-
-pygres: GPROOTDEP
-	#
-	# PyGreSQL-3.8.1 is no longer being built.  It was replaced by PyGreSQL-4.0 in the gpMgmt/bin directory but
-	# not removed from the build and both have been being delivered.  This finally brought down the OSX builds
-	# and, so, this 'pygres' target in the top-level Makefile has now been disabled.  It has not been removed
-	# because the current build script will still try to build it.  This is part of the logic that needs to be 
-	# moved into here, the Makefiles, so that developers have complete control over and visibility into the
-	# contents of our product packages.
-	#
-	#rm -rf PyGreSQL-3.8.1
-	#cvs co ThirdPartyTools/src/PyGreSQL-3.8.1 > pygres-3.8.1-co.log 2>&1
-	#(cd ThirdPartyTools/src/PyGreSQL-3.8.1 && \
-	#python setup.py build --build-lib=libs && \
-	#if test -d $(DISTPATH)/lib ; then \
-	#    cp -p libs/* $(DISTPATH)/lib ; \
-	#else \
-	#    cp -p libs/* $(DEVPATH)/lib ; \
-	#fi)
-
-# comment this out, for now, until we know if it affects more than just the authlibs target
-#BLD_LD_LIBRARY_PATH:=$($(BLD_ARCH)_LD_LIBRARY_PATH):$(LD_LIBRARY_PATH)
-#export LD_LIBRARY_PATH=$(BLD_LD_LIBRARY_PATH)
-
-# comment this out, for now, until we know if it affects more than just the authlibs target
-## put the default gcc in front of the /releng/bin/gcc to get 32-bit support
-## DO NOT do this for 3.2.0.x releases (and maybe not for 3.2.x.x releases)
-## where BLD_ARCH equals rhel5_x86_64
-#ifeq "$(BLD_ARCH)" "rhel5_x86_32"
-#tmpPATH=$(subst /releng/bin:,/usr/bin:/releng/bin:,$(PATH))
-#export PATH:=$(tmpPATH)
-#endif
-
-authlibs:
-	@echo "# authlibs are now provided in the ext/ directory on this platform" > authlib_libpath_setup.sh
 
 ## ----------------------------------------------------------------------
 
@@ -1566,32 +1506,6 @@ else
 	done
 endif
 endif
-
-## ----------------------------------------------------------------------
-## Target to install GPDB udfs. Currently, this only works on Mac OSX 
-## and Linux
-## ----------------------------------------------------------------------
-
-create_orca_installer:
-	rm -rf $(BLD_TOP)/orca_tmp
-	mkdir -p $(BLD_TOP)/orca_tmp
-	for b in libnaucrates libgpdbcost libgpopt; do \
-		cp $(OPTIMIZER)/$$b/$(OBJDIR_DEFAULT)/$$b.$(LDSFX) $(BLD_TOP)/orca_tmp; \
-	done
-	cp $(LIBGPOS_LIBDIR)/libgpos.$(LDSFX)  $(BLD_TOP)/orca_tmp
-	cp $(XERCES_LIBDIR)/libxerces-c-3.1.$(LDSFX) $(BLD_TOP)/orca_tmp
-	tar zcvf $(BLD_TOP)/orca.tgz -C $(BLD_TOP)/orca_tmp .
-	sed \
-	  -e "s|%%BUILD_NUMBER%%|$${BUILD_NUMBER:=99999}|g" \
-	  -e "s|%%PULSE_BUILD_TIMESTAMP%%|$${PULSE_BUILD_TIMESTAMP:=n/a}|g" \
-	  -e "s|%%GPDB_VER%%|$(VERSION)|g" \
-	  -e "s|%%OPTIMIZER_VER%%|$(OPTIMIZER_VER)|g" \
-	  -e "s|%%LIBGPOS_VER%%|$(LIBGPOS_VER)|g" \
-	  -e "s|%%XERCES_VER%%|$(XERCES_VER)|g" \
-	  $(BLD_TOP)/releng/bin/orca_installer_hdr.sh > $(BLD_TOP)/releng/bin/orca_installer_hdr.sh.out
-	cat $(BLD_TOP)/releng/bin/orca_installer_hdr.sh.out $(BLD_TOP)/orca.tgz > $(BLD_TOP)/gpdb-orca-$(MPP_ARCH).sh
-	chmod a+x $(BLD_TOP)/gpdb-orca-$(MPP_ARCH).sh
-	rm -rf $(BLD_TOP)/orca_tmp
 
 ## ----------------------------------------------------------------------
 
