@@ -507,7 +507,7 @@ dist : ISCONFIG=$(BUILDDIR)/GNUmakefile
 dist : gccVersionCheck version GPROOTDEP RECONFIG Release/GNUmakefile
 else
 dist : ISCONFIG=../GNUmakefile
-dist : gccVersionCheck version GPROOTDEP RECONFIG $(ISCONFIG)
+dist : gccVersionCheck GPROOTDEP RECONFIG $(ISCONFIG)
 endif
 	$(BUILD_STEPS)
 ifneq "$(BLD_GPDB_BUILDSET)" "partial"
