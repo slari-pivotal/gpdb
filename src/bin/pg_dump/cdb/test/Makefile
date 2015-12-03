@@ -61,7 +61,7 @@ cdb_bsa_util_REAL_OBJS=\
 	$(top_srcdir)/src/timezone/pgtz.o \
 	$(top_srcdir)/src/bin/pg_dump/cdb/cdb_dump_util.o 
 
-override CPPFLAGS+= -I$(top_srcdir)/src/interfaces/libpq -I$(top_srcdir)/../ext/$(BLD_ARCH)/include -I$(top_srcdir)/../ext/$(BLD_ARCH)/include/rsa_csp/lb
+override CPPFLAGS+= -I$(top_srcdir)/src/interfaces/libpq -I$(top_srcdir)/gpAux/ext/$(BLD_ARCH)/include -I$(top_srcdir)/gpAux/ext/$(BLD_ARCH)/include/rsa_csp/lb
 
 include $(top_builddir)/src/Makefile.mock
 
@@ -70,6 +70,6 @@ override MOCK_LIBS += -lDDBoost
 endif
 
 ifeq ($(enable_netbackup), yes)
-override MOCK_LIBS += -L../../../../../../ext/rhel5_x86_64/Netbackup/nbu75/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
-override CPPFLAGS += -I$(top_builddir)/../ext/$(BLD_ARCH)/Netbackup/nbu75/include
+override MOCK_LIBS += -L../../../../../gpAux/ext/rhel5_x86_64/Netbackup/nbu75/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
+override CPPFLAGS += -I$(top_builddir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu75/include
 endif

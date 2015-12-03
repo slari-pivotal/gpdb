@@ -25,21 +25,21 @@ LIBS := $(filter-out -lreadline -ledit -ltermcap -lncurses -lcurses -lcurl -lssl
 
 ifeq ($(enable_ddboost), yes)
 DDBOOSTLIB += -lDDBoost
-override CFLAGS += -I$(top_builddir)/../ext/$(BLD_ARCH)/include/rsa_csp -I$(top_builddir)/../ext/$(BLD_ARCH)/include/rsa_csp/lb
+override CFLAGS += -I$(top_builddir)/gpAux/ext/$(BLD_ARCH)/include/rsa_csp -I$(top_builddir)/gpAux/ext/$(BLD_ARCH)/include/rsa_csp/lb
 endif
 
 ifeq ($(enable_netbackup), yes)
-NETBACKUPLIB75 += -L../../../../../ext/rhel5_x86_64/Netbackup/nbu75/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
-NETBACKUPLIB71 += -L../../../../../ext/rhel5_x86_64/Netbackup/nbu71/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
-GPBSALIB += -L$(top_builddir)/src/bin/pg_dump/cdb -lgpbsa -Wl,-rpath-link,'../../../../../ext/rhel5_x86_64/Netbackup/nbu75/lib'
-override CFLAGS += -I$(top_builddir)/../ext/$(BLD_ARCH)/Netbackup/nbu75/include
+NETBACKUPLIB75 += -L../../../../gpAux/ext/rhel5_x86_64/Netbackup/nbu75/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
+NETBACKUPLIB71 += -L../../../../gpAux/ext/rhel5_x86_64/Netbackup/nbu71/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
+GPBSALIB += -L$(top_builddir)/src/bin/pg_dump/cdb -lgpbsa -Wl,-rpath-link,'../../../../gpAux/ext/rhel5_x86_64/Netbackup/nbu75/lib'
+override CFLAGS += -I$(top_builddir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu75/include
 endif
 
 PGDUMP_SRCDIR= $(top_srcdir)/src/bin/pg_dump
 PGDUMP_DIR= $(top_builddir)/src/bin/pg_dump
 
 override CPPFLAGS := -I$(PGDUMP_SRCDIR) -I$(libpq_srcdir) $(CPPFLAGS) -DBINDIR=\"$(bindir)\"
-override CFLAGS += -I$(top_builddir)/src/include -I$(top_builddir)/src/interfaces/libpq -I$(top_builddir)/../ext/$(BLD_ARCH)/include
+override CFLAGS += -I$(top_builddir)/src/include -I$(top_builddir)/src/interfaces/libpq -I$(top_builddir)/gpAux/ext/$(BLD_ARCH)/include
 
 
 OBJS= $(PGDUMP_DIR)/pg_backup_db.o $(PGDUMP_DIR)/pg_backup_custom.o \
