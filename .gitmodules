@@ -1,6 +1,7 @@
 [submodule "gpAux/client"]
 	path = gpAux/client
 	url = ssh://git@stash.eng.pivotal.io:2222/gpdb/clients.git
+	branch = 4.3_STABLE
 [submodule "gpAux/extensions/pgbouncer/source"]
 	path = gpAux/extensions/pgbouncer/source
 	url = ssh://git@stash.eng.pivotal.io:2222/gpdb/pgbouncer.git
