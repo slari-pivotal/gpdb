@@ -1107,6 +1107,29 @@ ExecAgg(AggState *node)
 #endif
 }
 
+
+/*
+ * clear_agg_object
+ * 		Clear necessary memory (pergroup & perpassthrough) when agg context memory get reset & deleted.
+ * 		aggstate - pointer to aggstate
+ */
+static void
+clear_agg_object(AggState *aggstate)
+{
+	int aggno = 0;
+	for(aggno = 0; aggno < aggstate->numaggs; aggno++)
+	{
+		AggStatePerGroup pergroupstate = &aggstate->pergroup[aggno];
+		pergroupstate->transValue = 0;
+		pergroupstate->transValueIsNull = true;
+		if (NULL != aggstate->perpassthru) {
+			pergroupstate = &aggstate->perpassthru[aggno];
+			pergroupstate->transValue = 0;
+			pergroupstate->transValueIsNull = true;
+		}
+	}
+}
+
 /*
  * ExecAgg for non-hashed case
  */
@@ -1230,13 +1253,8 @@ agg_retrieve_direct(AggState *aggstate)
 
 			MemoryContextResetAndDeleteChildren(aggstate->aggcontext);
 
-			int aggno = 0;
-			for(aggno = 0; aggno < aggstate->numaggs; aggno++)
-			{
-				AggStatePerGroup pergroupstate = &pergroup[aggno];
-				pergroupstate->transValue = 0;
-				pergroupstate->transValueIsNull = true;
-			}
+			/* Clear necessary memory (pergroup & perpassthrough) when aggcontext get reset & deleted */
+			clear_agg_object(aggstate);
 
 			/*
 			 * Initialize working state for a new input tuple group
