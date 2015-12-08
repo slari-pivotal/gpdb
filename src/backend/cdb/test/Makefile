@@ -4,68 +4,19 @@ include $(top_builddir)/src/Makefile.global
 
 TARGETS=cdbbufferedread cdbbackup cdbdisp cdbfilerep cdbgang cdbsrlz
 
-# Objects from backend, which don't need to be mocked but need to be linked.
-common_REAL_OBJS=\
-	$(top_srcdir)/src/backend/access/hash/hashfunc.o \
-	$(top_srcdir)/src/backend/bootstrap/bootparse.o \
-	$(top_srcdir)/src/backend/lib/stringinfo.o \
-	$(top_srcdir)/src/backend/nodes/list.o \
-	$(top_srcdir)/src/backend/parser/gram.o \
-	$(top_srcdir)/src/backend/regex/regcomp.o \
-	$(top_srcdir)/src/backend/regex/regerror.o \
-	$(top_srcdir)/src/backend/regex/regexec.o \
-	$(top_srcdir)/src/backend/regex/regfree.o \
-	$(top_srcdir)/src/backend/utils/adt/datum.o \
-	$(top_srcdir)/src/backend/utils/adt/like.o \
-	$(top_srcdir)/src/backend/utils/error/elog.o \
-	$(top_srcdir)/src/backend/utils/hash/hashfn.o \
-	$(top_srcdir)/src/backend/utils/mb/mbutils.o \
-	$(top_srcdir)/src/backend/utils/mb/wchar.o \
-	$(top_srcdir)/src/backend/utils/misc/guc.o \
-	$(top_srcdir)/src/port/pgsleep.o \
-	$(top_srcdir)/src/port/path.o \
-	$(top_srcdir)/src/port/pgstrcasecmp.o \
-	$(top_srcdir)/src/port/qsort.o \
-	$(top_srcdir)/src/port/thread.o \
-	$(top_srcdir)/src/timezone/localtime.o \
-	$(top_srcdir)/src/timezone/strftime.o \
-	$(top_srcdir)/src/timezone/pgtz.o
+include $(top_builddir)/src/backend/mock.mk
 
+cdbgang.t: \
+	$(MOCK_DIR)/backend/catalog/namespace_mock.o \
+	$(MOCK_DIR)/backend/storage/lmgr/proc_mock.o \
+	$(MOCK_DIR)/backend/utils/mmgr/redzone_handler_mock.o
 
-cdbbufferedread_REAL_OBJS=$(common_REAL_OBJS) 
+cdbdisp.t: \
+	$(MOCK_DIR)/backend/cdb/cdbrelsize_mock.o \
+	$(MOCK_DIR)/backend/cdb/cdbsrlz_mock.o \
+	$(MOCK_DIR)/backend/utils/error/assert_mock.o \
+	$(MOCK_DIR)/backend/executor/execUtils_mock.o
 
-
-cdbbackup_REAL_OBJS=$(common_REAL_OBJS) \
-	$(top_srcdir)/src/backend/access/transam/filerepdefs.o \
-	$(top_srcdir)/src/backend/nodes/bitmapset.o \
-	$(top_srcdir)/src/backend/nodes/equalfuncs.o \
-	$(top_srcdir)/src/backend/storage/page/itemptr.o \
-	$(top_srcdir)/src/backend/utils/init/globals.o \
-
-cdbdisp_REAL_OBJS=$(common_REAL_OBJS)\
-	$(top_srcdir)/src/backend/access/transam/filerepdefs.o \
-	$(top_srcdir)/src/backend/nodes/bitmapset.o \
-	$(top_srcdir)/src/backend/nodes/equalfuncs.o \
-	$(top_srcdir)/src/backend/storage/page/itemptr.o \
-	$(top_srcdir)/src/backend/utils/init/globals.o \
-
-
-cdbgang_REAL_OBJS=$(common_REAL_OBJS)\
-	$(top_srcdir)/src/backend/utils/mmgr/vmem_tracker.o \
-
-
-cdbfilerep_REAL_OBJS=$(common_REAL_OBJS)\
-	$(top_srcdir)/src/backend/utils/hash/dynahash.o \
-
-
-cdbsrlz_REAL_OBJS=$(common_REAL_OBJS)\
-	$(top_srcdir)/src/backend/utils/misc/zlib_wrapper.o \
-	$(top_srcdir)/src/backend/utils/mmgr/aset.o \
-	$(top_srcdir)/src/backend/utils/mmgr/mcxt.o \
-	$(top_srcdir)/src/backend/utils/mmgr/memaccounting.o \
-	$(top_srcdir)/src/backend/utils/mmgr/memprot.o \
-	$(top_srcdir)/src/backend/utils/mmgr/mpool.o \
-	$(top_srcdir)/src/backend/utils/mmgr/portalmem.o \
-	$(top_srcdir)/src/backend/utils/mmgr/vmem_tracker.o
-
-include $(top_builddir)/src/Makefile.mock
+cdbfilerep.t: \
+	$(MOCK_DIR)/backend/postmaster/fork_process_mock.o \
+	$(MOCK_DIR)/backend/utils/mmgr/redzone_handler_mock.o
