@@ -860,7 +860,7 @@ Query *
 gpdb::PqueryFlattenJoinAliasVar
 	(
 	Query *pquery,
-	ULONG ulQueryLevel
+	gpos::ULONG ulQueryLevel
 	)
 {
 	GP_WRAP_START;
@@ -2351,7 +2351,7 @@ gpdb::Pdistrpolicy
     return NULL;
 }
 
-BOOL
+gpos::BOOL
 gpdb::FChildPartDistributionMismatch
 	(
 	Relation rel
@@ -2365,7 +2365,7 @@ gpdb::FChildPartDistributionMismatch
     return false;
 }
 
-BOOL
+gpos::BOOL
 gpdb::FChildTriggers
 	(
 	Oid oid,
@@ -2937,7 +2937,7 @@ gpdb::OptTasksFaultInjector
 	return FaultInjectorTypeNotSpecified;
 }
 
-ULONG
+gpos::ULONG
 gpdb::UlLeafPartitions
        (
        Oid oidRelation

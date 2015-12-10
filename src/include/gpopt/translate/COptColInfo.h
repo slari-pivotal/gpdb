@@ -61,7 +61,7 @@ namespace gpdxl
 			virtual
 			~COptColInfo()
 			{
-				delete m_pstr;
+				GPOS_DELETE(m_pstr);
 			}
 
 			// accessors

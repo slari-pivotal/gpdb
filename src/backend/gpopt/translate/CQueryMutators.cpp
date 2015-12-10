@@ -866,7 +866,7 @@ CQueryMutators::PteAggregateOrPercentileExpr
 	{
 		Aggref *paggref = (Aggref*) pnode;
 
-		CMDIdGPDB *pmdidAgg = New(pmp) CMDIdGPDB(paggref->aggfnoid);
+		CMDIdGPDB *pmdidAgg = GPOS_NEW(pmp) CMDIdGPDB(paggref->aggfnoid);
 		const IMDAggregate *pmdagg = pmda->Pmdagg(pmdidAgg);
 		pmdidAgg->Release();
 
@@ -1804,7 +1804,7 @@ CQueryMutators::PnodeWindowPrLMutator
 		WindowRef *pwindowref = (WindowRef*) gpdb::PvCopyObject(pnode);
 
 		// get the function name and add it to the target list
-		CMDIdGPDB *pmdidFunc = New(pctxWindowPrLMutator->m_pmp) CMDIdGPDB(pwindowref->winfnoid);
+		CMDIdGPDB *pmdidFunc = GPOS_NEW(pctxWindowPrLMutator->m_pmp) CMDIdGPDB(pwindowref->winfnoid);
 		const CWStringConst *pstr = CMDAccessorUtils::PstrWindowFuncName(pctxWindowPrLMutator->m_pmda, pmdidFunc);
 		pmdidFunc->Release();
 

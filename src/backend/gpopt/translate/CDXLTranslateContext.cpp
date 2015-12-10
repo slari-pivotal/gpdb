@@ -39,8 +39,8 @@ CDXLTranslateContext::CDXLTranslateContext
 	m_fChildAggNode(fChildAggNode)
 {
 	// initialize hash table
-	m_phmulte = New(m_pmp) HMUlTe(m_pmp);
-	m_phmcolparam = New(m_pmp) HMColParam(m_pmp);
+	m_phmulte = GPOS_NEW(m_pmp) HMUlTe(m_pmp);
+	m_phmcolparam = GPOS_NEW(m_pmp) HMColParam(m_pmp);
 }
 
 //---------------------------------------------------------------------------
@@ -61,8 +61,8 @@ CDXLTranslateContext::CDXLTranslateContext
 	m_pmp(pmp),
 	m_fChildAggNode(fChildAggNode)
 {
-	m_phmulte = New(m_pmp) HMUlTe(m_pmp);
-	m_phmcolparam = New(m_pmp) HMColParam(m_pmp);
+	m_phmulte = GPOS_NEW(m_pmp) HMUlTe(m_pmp);
+	m_phmcolparam = GPOS_NEW(m_pmp) HMColParam(m_pmp);
 	CopyParamHashmap(phmOriginal);
 }
 
@@ -115,7 +115,7 @@ CDXLTranslateContext::CopyParamHashmap
 		CMappingElementColIdParamId *pmecolidparamid = const_cast<CMappingElementColIdParamId *>(hashmapiter.Pt());
 
 		const ULONG ulColId = pmecolidparamid->UlColId();
-		ULONG *pulKey = New(m_pmp) ULONG(ulColId);
+		ULONG *pulKey = GPOS_NEW(m_pmp) ULONG(ulColId);
 		pmecolidparamid->AddRef();
 		m_phmcolparam->FInsert(pulKey, pmecolidparamid);
 	}
@@ -173,14 +173,14 @@ CDXLTranslateContext::InsertMapping
 	)
 {
 	// copy key
-	ULONG *pulKey = New(m_pmp) ULONG(ulColId);
+	ULONG *pulKey = GPOS_NEW(m_pmp) ULONG(ulColId);
 
 	// insert colid->target entry mapping in the hash map
 	BOOL fResult = m_phmulte->FInsert(pulKey, pte);
 
 	if (!fResult)
 	{
-		delete pulKey;
+		GPOS_DELETE(pulKey);
 	}
 }
 
@@ -200,7 +200,7 @@ CDXLTranslateContext::FInsertParamMapping
 	)
 {
 	// copy key
-	ULONG *pulKey = New(m_pmp) ULONG(ulColId);
+	ULONG *pulKey = GPOS_NEW(m_pmp) ULONG(ulColId);
 
 	// insert colid->target entry mapping in the hash map
 	return m_phmcolparam->FInsert(pulKey, pmecolidparamid);
