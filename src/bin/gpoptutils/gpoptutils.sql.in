@@ -1,0 +1,15 @@
+-- Adjust this setting to control where the objects get created.
+
+SET search_path = gp_toolkit;
+
+BEGIN;
+
+-- Register the functions.
+
+CREATE OR REPLACE FUNCTION gp_toolkit.gp_dump_query(text)
+RETURNS text
+AS '$libdir/gpoptutils', 'gp_dump_query' LANGUAGE C IMMUTABLE;
+
+GRANT EXECUTE ON FUNCTION gp_toolkit.gp_dump_query(text) TO public;
+
+COMMIT;
