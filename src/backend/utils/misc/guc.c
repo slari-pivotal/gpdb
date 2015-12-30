@@ -7804,7 +7804,7 @@ static struct config_string ConfigureNamesString[] =
 		{"pljava_classpath", PGC_SUSET, CUSTOM_OPTIONS,
 			gettext_noop("classpath used by the the JVM"),
 			NULL,
-		 GUC_GPDB_ADDOPT | GUC_NOT_IN_SAMPLE | GUC_SUPERUSER_ONLY
+		 GUC_GPDB_ADDOPT | GUC_NOT_IN_SAMPLE
 		},
 		&pljava_classpath,
 		"", NULL, NULL
