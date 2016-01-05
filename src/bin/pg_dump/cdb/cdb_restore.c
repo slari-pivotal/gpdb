@@ -70,7 +70,7 @@ static const char *logFatal = "FATAL";
 const char *progname;
 static char * addPassThroughLongParm(const char *Parm, const char *pszValue, char *pszPassThroughParmString);
 static char *dump_prefix = NULL;
-static char *status_file = NULL;
+PQExpBuffer dir_buf = NULL;
 
 /* NetBackup related variable */
 static char *netbackup_service_host = NULL;
@@ -92,6 +92,10 @@ main(int argc, char **argv)
 	SegmentDatabase *sourceSegDB = NULL;
 	SegmentDatabase *targetSegDB = NULL;
 
+	dir_buf = createPQExpBuffer();
+
+	progname = get_progname(argv[0]);
+
 	/* This struct holds the values of the command line parameters */
 	InputOptions inputOpts;
 
@@ -109,8 +113,6 @@ main(int argc, char **argv)
 	memset(&restorePairAr, 0, sizeof(restorePairAr));
 	memset(&parmAr, 0, sizeof(parmAr));
 	memset(&masterParm, 0, sizeof(masterParm));
-
-	progname = get_progname(argv[0]);
 
 #ifdef USE_DDBOOST
 	dd_boost_enabled = 0;
@@ -239,10 +241,12 @@ main(int argc, char **argv)
 	failCount = reportRestoreResults(inputOpts.pszReportDirectory, &masterParm, &parmAr);
 
 cleanup:
+	FreeRestorePairArray(&restorePairAr);
 	FreeInputOptions(&inputOpts);
+
 	if (opts != NULL)
 		free(opts);
-	FreeRestorePairArray(&restorePairAr);
+
 	freeThreadParmArray(&parmAr);
 
 	if (masterParm.pszErrorMsg)
@@ -251,10 +255,10 @@ cleanup:
 	if (masterParm.pszRemoteBackupPath)
 		free(masterParm.pszRemoteBackupPath);
 
+	destroyPQExpBuffer(dir_buf);
 	if (pConn != NULL)
 		PQfinish(pConn);
-
-	return (failCount == 0 ? 0 : 1);
+	return failCount;
 }
 
 static void
@@ -736,26 +740,31 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 			case 13:
 				dump_prefix = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("prefix", DUMP_PREFIX, pInputOpts->pszPassThroughParms);
+				if (dump_prefix != NULL)
+					free(dump_prefix);
 				break;
 			case 14:
-				status_file = Safe_strdup(optarg);
-				pInputOpts->pszPassThroughParms = addPassThroughLongParm("status", status_file, pInputOpts->pszPassThroughParms);
+				appendPQExpBuffer(dir_buf, "%s", optarg);
+				pInputOpts->pszPassThroughParms = addPassThroughLongParm("status", dir_buf->data, pInputOpts->pszPassThroughParms);
 				break;
 			case 15:
 				netbackup_service_host = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("netbackup-service-host", netbackup_service_host, pInputOpts->pszPassThroughParms);
+				if (netbackup_service_host != NULL)
+					free(netbackup_service_host);
 				break;
 			case 16:
 				netbackup_block_size = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("netbackup-block-size", netbackup_block_size, pInputOpts->pszPassThroughParms);
+				if (netbackup_block_size != NULL)
+					free(netbackup_block_size);
 				break;
 			case 17:
 				change_schema = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("change-schema", change_schema, pInputOpts->pszPassThroughParms);
-				if (change_schema!= NULL)
+				if (change_schema != NULL)
 					free(change_schema);
 				break;
-
 			default:
 				mpp_err_msg_cache(logError, progname, "Try \"%s --help\" for more information.\n", progname);
 				return false;
@@ -984,6 +993,7 @@ threadProc(void *arg)
 	char	   *pszPassThroughCredentials;
 	char	   *pszPassThroughTargetInfo;
 	PQExpBuffer Qry;
+	PQExpBuffer pqBuffer;
 	PGresult   *pRes;
 	int			sock;
 	bool		bSentCancelMessage;
@@ -1020,7 +1030,7 @@ threadProc(void *arg)
 		sSegDB->pszDBName = Safe_strdup(pInputOpts->pszDBName);
 	}
 
-	/* connect to the source segDB to start gp_dump_agent there */
+	/* connect to the source segDB to start gp_restore_agent there */
 	pConn = MakeDBConnection(sSegDB, false);
 	if (PQstatus(pConn) == CONNECTION_BAD)
 	{
@@ -1138,6 +1148,11 @@ threadProc(void *arg)
 										 pszKey, sSegDB->dbid, tSegDB->dbid);
 			mpp_err_msg(logError, progname, pParm->pszErrorMsg);
 			PQfinish(pConn);
+			free(pszNotifyRelName);
+			free(pszNotifyRelNameStart);
+			free(pszNotifyRelNameSucceed);
+			free(pszNotifyRelNameFail);
+			free(pollInput);
 			return NULL;
 		}
 
@@ -1148,6 +1163,11 @@ threadProc(void *arg)
 			pParm->pszErrorMsg = MakeString("connection went down for backup key %s, source dbid %d, target dbid %d\n",
 										 pszKey, sSegDB->dbid, tSegDB->dbid);
 			mpp_err_msg(logFatal, progname, pParm->pszErrorMsg);
+			free(pszNotifyRelName);
+			free(pszNotifyRelNameStart);
+			free(pszNotifyRelNameSucceed);
+			free(pszNotifyRelNameFail);
+			free(pollInput);
 			PQfinish(pConn);
 			return NULL;
 		}
@@ -1178,8 +1198,11 @@ threadProc(void *arg)
 					g_b_SendCancelMessage = true;
 					bIsFinished = true;
 					pParm->bSuccess = false;
+					pqBuffer = createPQExpBuffer();
 					/* Make call to get error message from file on server */
-					pParm->pszErrorMsg = ReadBackendBackupFile(pConn, pInputOpts->pszBackupDirectory, pszKey, BFT_RESTORE_STATUS, progname);
+					ReadBackendBackupFileError(pConn, dir_buf->data, pszKey, BFT_RESTORE_STATUS, progname, pqBuffer);
+					pParm->pszErrorMsg = MakeString("%s", pqBuffer->data);
+					destroyPQExpBuffer(pqBuffer);
 
 					mpp_err_msg(logError, progname, "restore failed for source dbid %d, target dbid %d on host %s\n",
 								sSegDB->dbid, tSegDB->dbid, StringNotNull(sSegDB->pszHost, "localhost"));
@@ -1206,6 +1229,21 @@ threadProc(void *arg)
 				}
 			}
 		}
+	}
+
+	/*
+	 * If segment reports success or no errors so far, scan of the restore status file
+	 * for ERRORS and report them if found
+	 */
+	if(pParm->bSuccess || pParm->pszErrorMsg == NULL)
+	{
+		pqBuffer = createPQExpBuffer();
+		int status = ReadBackendBackupFileError(pConn, dir_buf->data, pszKey, BFT_RESTORE_STATUS, progname, pqBuffer);
+		if (status != 0)
+		{
+			pParm->pszErrorMsg = MakeString("%s", pqBuffer->data);
+		}
+		destroyPQExpBuffer(pqBuffer);
 	}
 
 	if (pszNotifyRelName != NULL)
@@ -1299,7 +1337,7 @@ restoreMaster(InputOptions * pInputOpts,
 	pParm->pTargetSegDBData = tSegDB;
 	pParm->pSourceSegDBData = sSegDB;
 	pParm->pOptionsData = pInputOpts;
-	pParm->bSuccess = false;
+	pParm->bSuccess = true;
 	pParm->pszErrorMsg = NULL;
 	pParm->pszRemoteBackupPath = NULL;
 
@@ -1477,7 +1515,7 @@ spinOffThreads(PGconn *pConn, InputOptions * pInputOpts, const RestorePairArray 
 		pParm->pSourceSegDBData = &restorePairAr->pData[i].segdb_source;
 		pParm->pTargetSegDBData = &restorePairAr->pData[i].segdb_target;
 		pParm->pOptionsData = pInputOpts;
-		pParm->bSuccess = false;
+		pParm->bSuccess = true;
 
 		/* exclude master node */
 		if (pParm->pTargetSegDBData->role == ROLE_MASTER)
@@ -1582,6 +1620,7 @@ reportRestoreResults(const char *pszReportDirectory, const ThreadParm * pMasterP
 	char	   *pszFormat;
 	int			i;
 	int			failCount;
+	int			errorCount;
 	const ThreadParm *pParm;
 	char	   *pszStatus;
 	char	   *pszMsg;
@@ -1610,7 +1649,7 @@ reportRestoreResults(const char *pszReportDirectory, const ThreadParm * pMasterP
 			 * report directory not set by user - default to
 			 * $MASTER_DATA_DIRECTORY
 			 */
-			pszReportDirectory = Safe_strdup(getenv("MASTER_DATA_DIRECTORY"));
+			pszReportDirectory = getenv("MASTER_DATA_DIRECTORY");
 		}
 		else
 		{
@@ -1626,6 +1665,11 @@ reportRestoreResults(const char *pszReportDirectory, const ThreadParm * pMasterP
 		pszFormat = "%s%sgp_restore_%s.rpt";
 
 	pszReportPathName = MakeString(pszFormat, pszReportDirectory, DUMP_PREFIX, pOptions->pszKey);
+	if (pszReportPathName == NULL)
+	{
+		mpp_err_msg(logError, progname, "Cannot allocate memory for report file path\n");
+		exit(-1);
+	}
 
 	fRptFile = fopen(pszReportPathName, "w");
 	if (fRptFile == NULL)
@@ -1656,6 +1700,7 @@ reportRestoreResults(const char *pszReportDirectory, const ThreadParm * pMasterP
 	appendPQExpBuffer(reportBuf, "Individual Results\n");
 
 	failCount = 0;
+	errorCount = 0;
 	for (i = 0; i < pParmAr->count + 1; i++)
 	{
 		if (i == 0)
@@ -1672,10 +1717,19 @@ reportRestoreResults(const char *pszReportDirectory, const ThreadParm * pMasterP
 				continue;
 		}
 
-		if (!pParm->bSuccess)
-			failCount++;
-		pszStatus = pParm->bSuccess ? "Succeeded" : "Failed with error: \n{\n";
 		pszMsg = pParm->pszErrorMsg;
+		if (!pParm->bSuccess)
+		{
+			pszStatus = "Failed with error: \n{\n";
+			failCount++;
+		}
+		else if (pParm->bSuccess && pszMsg != NULL)
+		{
+			pszStatus = "Completed but errors were found: \n{\n";
+			errorCount++;
+		}
+		else
+			pszStatus = "Succeeded";
 		if (pszMsg == NULL)
 			pszMsg = "";
 
@@ -1691,10 +1745,12 @@ reportRestoreResults(const char *pszReportDirectory, const ThreadParm * pMasterP
 			);
 	}
 
-	if (failCount == 0)
+	if (failCount == 0 && errorCount == 0)
 		appendPQExpBuffer(reportBuf, "\n%s  utility finished successfully.\n", progname);
-	else
+	else if (failCount > 0)
 		appendPQExpBuffer(reportBuf, "\n%s  utility finished unsuccessfully with  %d  failures.\n", progname, failCount);
+	else
+		appendPQExpBuffer(reportBuf, "\n%s  utility finished but errors were found.\n", progname);
 
 	/* write report to report file */
 	if (fRptFile != NULL)
@@ -1712,7 +1768,11 @@ reportRestoreResults(const char *pszReportDirectory, const ThreadParm * pMasterP
 
 	destroyPQExpBuffer(reportBuf);
 
-	return failCount;
+	if (failCount > 0)
+		return 1;
+	else if (errorCount > 0)
+		return 2;
+	return 0;
 }
 
 /*
@@ -1762,7 +1822,7 @@ reportMasterError(InputOptions inputopts, const ThreadParm * pMasterParm, const 
 			 * report directory not set by user - default to
 			 * $MASTER_DATA_DIRECTORY
 			 */
-			pszReportDirectory = Safe_strdup(getenv("MASTER_DATA_DIRECTORY"));
+			pszReportDirectory = getenv("MASTER_DATA_DIRECTORY");
 		}
 		else
 		{
@@ -1778,6 +1838,11 @@ reportMasterError(InputOptions inputopts, const ThreadParm * pMasterParm, const 
 		pszFormat = "%sgp_restore_%s.rpt";
 
 	pszReportPathName = MakeString(pszFormat, pszReportDirectory, pOptions->pszKey);
+	if (pszReportPathName == NULL)
+	{
+		mpp_err_msg(logError, progname, "Cannot allocate memory for report file path\n");
+		exit(-1);
+	}
 
 	fRptFile = fopen(pszReportPathName, "w");
 	if (fRptFile == NULL)
