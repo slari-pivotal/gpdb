@@ -2218,23 +2218,23 @@ REVOKE ALL ON FUNCTION %%JETPACK_PREFIX%%workfile_cache_clear() FROM public;
 
 --------------------------------------------------------------------------------
 -- @function:
---		%%JETPACK_PREFIX%%dump_query(text)
+--		%%JETPACK_PREFIX%%dump_query_oids(text)
 --
 -- @in:
 --		text - SQL text
 -- @out:
---		text - serialized string of query object
+--		text - serialized json string of oids
 --
 -- @doc:
---		Dump query object for a given SQL text
+--		Dump query oids for a given SQL text
 --
 --------------------------------------------------------------------------------
 
-CREATE FUNCTION %%JETPACK_PREFIX%%dump_query(text)
+CREATE FUNCTION %%JETPACK_PREFIX%%dump_query_oids(text)
 RETURNS text
-AS '%%OPTUTILS_MODULE%%', 'gp_dump_query' LANGUAGE C STRICT;
+AS '%%OPTUTILS_MODULE%%', 'gp_dump_query_oids' LANGUAGE C STRICT;
 
-GRANT EXECUTE ON FUNCTION %%JETPACK_PREFIX%%dump_query(text) TO public;
+GRANT EXECUTE ON FUNCTION %%JETPACK_PREFIX%%dump_query_oids(text) TO public;
 
 --------------------------------------------------------------------------------
 

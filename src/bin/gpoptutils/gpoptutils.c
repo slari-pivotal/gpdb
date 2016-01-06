@@ -6,22 +6,18 @@
  * The dynamically linked library created from this source can be reference by
  * creating a function in psql that references it. For example,
  *
- * CREATE FUNCTION gp_dump_query(text)
+ * CREATE FUNCTION gp_dump_query_oids(text)
  *	RETURNS text
- *	AS '$libdir/gpoptutils', 'gp_dump_query'
+ *	AS '$libdir/gpoptutils', 'gp_dump_query_oids'
  *	LANGUAGE C STRICT;
  */
 
 #include "postgres.h"
 #include "funcapi.h"
 #include "utils/builtins.h"
-#include "nodes/print.h"
 #include "gpopt/utils/nodeutils.h"
 #include "rewrite/rewriteHandler.h"
 #include "c.h"
-
-extern
-Query *preprocess_query_optimizer(Query *pquery, ParamListInfo boundParams);
 
 extern
 List *pg_parse_and_rewrite(const char *query_string, Oid *paramTypes, int iNumParams);
@@ -32,13 +28,16 @@ List *QueryRewrite(Query *parsetree);
 static
 Query *parseSQL(char *szSqlText);
 
-Datum gp_dump_query(PG_FUNCTION_ARGS);
+static
+void traverseQueryRTEs(Query *pquery, HTAB *phtab, StringInfoData *buf);
+
+Datum gp_dump_query_oids(PG_FUNCTION_ARGS);
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
 #endif
 
-PG_FUNCTION_INFO_V1(gp_dump_query);
+PG_FUNCTION_INFO_V1(gp_dump_query_oids);
 
 /*
  * Parse a query given as SQL text.
@@ -60,29 +59,82 @@ static Query *parseSQL(char *sqlText)
 	return query;
 }
 
+static void traverseQueryRTEs
+	(
+	Query *pquery,
+	HTAB *phtab,
+	StringInfoData *buf
+	)
+{
+	ListCell *plc;
+	bool found;
+	foreach (plc, pquery->rtable)
+	{
+		RangeTblEntry *rte = (RangeTblEntry *) lfirst(plc);
+
+		switch (rte->rtekind)
+		{
+			case RTE_RELATION:
+			{
+				hash_search(phtab, (void *)&rte->relid, HASH_ENTER, &found);
+				if (!found)
+				{
+					if (0 != buf->len)
+						appendStringInfo(buf, "%s", ", ");
+					appendStringInfo(buf, "%u", rte->relid);
+				}
+			}
+				break;
+			case RTE_SUBQUERY:
+				traverseQueryRTEs(rte->subquery, phtab, buf);
+				break;
+			default:
+				break;
+		}
+	}
+}
+
 /*
- * Function dumping query object for a given SQL text
+ * Function dumping dependent relation oids for a given SQL text
  */
 Datum
-gp_dump_query(PG_FUNCTION_ARGS)
+gp_dump_query_oids(PG_FUNCTION_ARGS)
 {
-	char *sql = text_to_cstring(PG_GETARG_TEXT_P(0));
-	Query *query = parseSQL(sql);
-	if (CMD_UTILITY == query->commandType && T_ExplainStmt == query->utilityStmt->type)
+	char *szSqlText = text_to_cstring(PG_GETARG_TEXT_P(0));
+
+	Query *pquery = parseSQL(szSqlText);
+	if (CMD_UTILITY == pquery->commandType && T_ExplainStmt == pquery->utilityStmt->type)
 	{
-		Query *queryExplained = ((ExplainStmt *)query->utilityStmt)->query;
-		List *queryTree = QueryRewrite(queryExplained);
-		Assert(1 == list_length(queryTree));
-		query = (Query *) lfirst(list_head(queryTree));
+		Query *pqueryExplain = ((ExplainStmt *)pquery->utilityStmt)->query;
+		List *plQueryTree = QueryRewrite(pqueryExplain);
+		Assert(1 == list_length(plQueryTree));
+		pquery = (Query *) lfirst(list_head(plQueryTree));
 	}
-	Query *queryNormalized = preprocess_query_optimizer(query, NULL);
+
+	typedef struct OidHashEntry
+	{
+		Oid key;
+		bool value;
+	} OidHashEntry;
+	HASHCTL ctl;
+	ctl.keysize = sizeof(Oid);
+	ctl.entrysize = sizeof(OidHashEntry);
+	ctl.hash = oid_hash;
+
+	StringInfoData buf;
+	initStringInfo(&buf);
+
+	HTAB *phtab = hash_create("relid hash table", 100, &ctl, HASH_ELEM | HASH_FUNCTION);
+	traverseQueryRTEs(pquery, phtab, &buf);
+	hash_destroy(phtab);
 
 	StringInfoData str;
 	initStringInfo(&str);
-	appendStringInfo(&str,
-			"(gp_dump_query - Original) \n%s(gp_dump_query - Normalized) \n%s",
-			pretty_format_node_dump((const char *)nodeToString(query)),
-			pretty_format_node_dump((const char *)nodeToString(queryNormalized)));
+	appendStringInfo(&str, "{\"relids\": [%s]}", buf.data);
 
-	PG_RETURN_TEXT_P(cstring_to_text(str.data));
+	text *result = cstring_to_text(str.data);
+	pfree(buf.data);
+	pfree(str.data);
+
+	PG_RETURN_TEXT_P(result);
 }

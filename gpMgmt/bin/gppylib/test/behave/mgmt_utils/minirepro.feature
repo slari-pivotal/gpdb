@@ -42,13 +42,13 @@ Feature: Dump minimum database objects that is related to the query
     Scenario: Query parse error with multiple queries
       Given the file "/tmp/in.sql" exists and contains "select * from t1; delete from t2;"
       When the user runs "minirepro minireprodb -q /tmp/in.sql -f /tmp/out.sql"
-      Then minirepro error should contain Error while running gp_dump_query
+      Then minirepro error should contain Error while running gp_toolkit.gp_dump_query_oids
 
     @minirepro_core
     Scenario: Query parse error with wrong syntax query
       Given the file "/tmp/in.sql" exists and contains "delete * from t1"
       When the user runs "minirepro minireprodb -q /tmp/in.sql -f /tmp/out.sql"
-      Then minirepro error should contain Error while running gp_dump_query
+      Then minirepro error should contain Error while running gp_toolkit.gp_dump_query_oids
 
     @minirepro_core
     Scenario: Dump database objects related with select query

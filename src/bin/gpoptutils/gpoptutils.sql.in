@@ -6,9 +6,9 @@ BEGIN;
 
 -- Register the functions.
 
-CREATE OR REPLACE FUNCTION gp_toolkit.gp_dump_query(text)
+CREATE OR REPLACE FUNCTION gp_toolkit.gp_dump_query_oids(text)
 RETURNS text
-AS '$libdir/gpoptutils', 'gp_dump_query' LANGUAGE C IMMUTABLE;
+AS '$libdir/gpoptutils', 'gp_dump_query_oids' LANGUAGE C IMMUTABLE;
 
 GRANT EXECUTE ON FUNCTION gp_toolkit.gp_dump_query(text) TO public;
 
