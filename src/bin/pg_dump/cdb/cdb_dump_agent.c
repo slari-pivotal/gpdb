@@ -594,7 +594,7 @@ main(int argc, char **argv)
 				break;
 
 			case 'S':			/* Username for superuser in plain text output */
-				outputSuperuser = pg_strdup(optarg);
+				outputSuperuser = strdup(optarg);
 				break;
 
 			case 't':			/* include table(s) */
@@ -659,13 +659,13 @@ main(int argc, char **argv)
 
 
 			case 1:				/* MPP Dump Info Format is Key_role_dbid */
-				g_CDBDumpInfo = pg_strdup(optarg);
+				g_CDBDumpInfo = strdup(optarg);
 				if (!ParseCDBDumpInfo((char *) progname, g_CDBDumpInfo, &g_CDBDumpKey, &g_role, &g_dbID, &g_CDBPassThroughCredentials))
 					exit(1);
 				break;
 
 			case 2:				/* --gp-d CDB Output Directory */
-				g_pszCDBOutputDirectory = pg_strdup(optarg);
+				g_pszCDBOutputDirectory = strdup(optarg);
 				break;
 
 			case 3: 			/*	--table-file */
@@ -689,25 +689,25 @@ main(int argc, char **argv)
 				}
 				break;
 			case 5:
-				dump_prefix = pg_strdup(optarg);
+				dump_prefix = strdup(optarg);
 				break;
 
 #ifdef USE_DDBOOST
 			case 6:
-				g_pszDDBoostFile = pg_strdup(optarg);
+				g_pszDDBoostFile = strdup(optarg);
 				break;
 			case 7:
 				dd_boost_enabled = 1;
 				break;
 			case 8:
-				g_pszDDBoostDir = pg_strdup(optarg);
+				g_pszDDBoostDir = strdup(optarg);
 				break;
 			case 9:
 				sscanf(optarg, "%d", &dd_boost_buf_size);
 				break;
 #endif
 			case 10:
-				incrementalFilter = pg_strdup(optarg);
+				incrementalFilter = strdup(optarg);
 				break;
 			/* Hack to pass NetBackup params to gp_dump_agent */
 			case 11:
@@ -866,9 +866,9 @@ main(int argc, char **argv)
 	g_SegDB.dbid = g_dbID;
 	g_SegDB.role = g_role;
 	g_SegDB.port = pgport ? atoi(pgport) : 5432;
-	g_SegDB.pszHost = pghost ? pg_strdup(pghost) : NULL;
-	g_SegDB.pszDBName = dbname ? pg_strdup(dbname) : NULL;
-	g_SegDB.pszDBUser = username ? pg_strdup(username) : NULL;
+	g_SegDB.pszHost = pghost ? strdup(pghost) : NULL;
+	g_SegDB.pszDBName = dbname ? strdup(dbname) : NULL;
+	g_SegDB.pszDBUser = username ? strdup(username) : NULL;
 	g_SegDB.pszDBPswd = NULL;
 
 	/*
@@ -1200,13 +1200,13 @@ dumpMain(bool oids, const char *dumpencoding, int outputBlobs, int plainText, Re
 		blobobj->objType = DO_BLOBS;
 		blobobj->catId = nilCatalogId;
 		AssignDumpId(blobobj);
-		blobobj->name = pg_strdup("BLOBS");
+		blobobj->name = strdup("BLOBS");
 
 		blobobj = (DumpableObject *) malloc(sizeof(DumpableObject));
 		blobobj->objType = DO_BLOB_COMMENTS;
 		blobobj->catId = nilCatalogId;
 		AssignDumpId(blobobj);
-		blobobj->name = pg_strdup("BLOB COMMENTS");
+		blobobj->name = strdup("BLOB COMMENTS");
 	}
 
 	/*
@@ -2599,7 +2599,7 @@ dumpNamespace(Archive *fout, NamespaceInfo *nspinfo)
 	q = createPQExpBuffer();
 	delq = createPQExpBuffer();
 
-	qnspname = pg_strdup(fmtId(nspinfo->dobj.name));
+	qnspname = strdup(fmtId(nspinfo->dobj.name));
 
 	appendPQExpBuffer(delq, "DROP SCHEMA %s;\n", qnspname);
 
@@ -3206,7 +3206,7 @@ dumpProcLang(Archive *fout, ProcLangInfo *plang)
 	defqry = createPQExpBuffer();
 	delqry = createPQExpBuffer();
 
-	qlanname = pg_strdup(fmtId(plang->dobj.name));
+	qlanname = strdup(fmtId(plang->dobj.name));
 
 	/*
 	 * If dumping a HANDLER clause, treat the language as being in the handler
@@ -3359,7 +3359,7 @@ getFuncOwner(Oid funcOid, const char *templateField)
 	if (ntups != 0)
 	{
 		i_funcowner = PQfnumber(res, "funcowner");
-		functionOwner = pg_strdup(PQgetvalue(res, 0, i_funcowner));
+		functionOwner = strdup(PQgetvalue(res, 0, i_funcowner));
 	}
 
 	PQclear(res);
@@ -3407,8 +3407,8 @@ dumpPlTemplateFunc(Oid funcOid, const char *templateField, PQExpBuffer buffer)
 	{
 		i_signature = PQfnumber(res, "signature");
 		i_owner = PQfnumber(res, "owner");
-		functionSignature = pg_strdup(PQgetvalue(res, 0, i_signature));
-		ownerName = pg_strdup(PQgetvalue(res, 0, i_owner));
+		functionSignature = strdup(PQgetvalue(res, 0, i_signature));
+		ownerName = strdup(PQgetvalue(res, 0, i_owner));
 
 		if (functionSignature != NULL && ownerName != NULL)
 		{
@@ -4233,7 +4233,7 @@ convertRegProcReference(const char *proc)
 	if (strcmp(proc, "-") == 0)
 		return NULL;
 
-	name = pg_strdup(proc);
+	name = strdup(proc);
 	/* find non-double-quoted left paren */
 	inquote = false;
 	for (paren = name; *paren; paren++)
@@ -4272,7 +4272,7 @@ convertOperatorReference(const char *opr)
 	if (strcmp(opr, "0") == 0)
 		return NULL;
 
-	name = pg_strdup(opr);
+	name = strdup(opr);
 	/* find non-double-quoted left paren, and check for non-quoted dot */
 	inquote = false;
 	sawdot = false;
@@ -4371,7 +4371,7 @@ dumpOpclass(Archive *fout, OpclassInfo *opcinfo)
 	opckeytype = PQgetvalue(res, 0, i_opckeytype);
 	opcdefault = PQgetvalue(res, 0, i_opcdefault);
 	/* amname will still be needed after we PQclear res */
-	amname = pg_strdup(PQgetvalue(res, 0, i_amname));
+	amname = strdup(PQgetvalue(res, 0, i_amname));
 
 	/*
 	 * DROP must be fully qualified in case same name appears in pg_catalog
@@ -4866,7 +4866,7 @@ getFunctionName(Oid oid)
 	}
 
 	/* already quoted */
-	result = pg_strdup(PQgetvalue(res, 0, 0));
+	result = strdup(PQgetvalue(res, 0, 0));
 
 	PQclear(res);
 	destroyPQExpBuffer(query);
@@ -4925,7 +4925,7 @@ dumpExtProtocol(Archive *fout, ExtProtInfo *ptcinfo)
 			if(protoFuncs[i].pfuncinfo != NULL)
 			{
 				protoFuncs[i].dumpable = true;
-				protoFuncs[i].name = pg_strdup(protoFuncs[i].pfuncinfo->dobj.name);
+				protoFuncs[i].name = strdup(protoFuncs[i].pfuncinfo->dobj.name);
 				protoFuncs[i].internal = false;
 			}
 			else
@@ -4990,7 +4990,7 @@ dumpExtProtocol(Archive *fout, ExtProtInfo *ptcinfo)
 				 NULL, NULL);
 
 	/* Handle the ACL */
-	namecopy = pg_strdup(fmtId(ptcinfo->dobj.name));
+	namecopy = strdup(fmtId(ptcinfo->dobj.name));
 	dumpACL(fout, ptcinfo->dobj.catId, ptcinfo->dobj.dumpId,
 			"PROTOCOL",
 			namecopy, ptcinfo->dobj.name,
@@ -5306,7 +5306,7 @@ dumpTable(Archive *fout, TableInfo *tbinfo)
 			dumpTableSchema(fout, tbinfo);
 
 		/* Handle the ACL here */
-		namecopy = pg_strdup(fmtId(tbinfo->dobj.name));
+		namecopy = strdup(fmtId(tbinfo->dobj.name));
 		dumpACL(fout, tbinfo->dobj.catId, tbinfo->dobj.dumpId,
 				(tbinfo->relkind == RELKIND_SEQUENCE) ? "SEQUENCE" : "TABLE",
 				namecopy, tbinfo->dobj.name,
@@ -5566,8 +5566,8 @@ dumpExternal(TableInfo *tbinfo, PQExpBuffer query, PQExpBuffer q, PQExpBuffer de
 				{
 					appendPQExpBuffer(q, "LOG ERRORS ");
 
-					char *errtablename = pg_strdup(fmtId(errtblname));
-					char *tablename = pg_strdup(fmtId(tbinfo->dobj.name));
+					char *errtablename = Safe_strdup(fmtId(errtblname));
+					char *tablename = Safe_strdup(fmtId(tbinfo->dobj.name));
 
 					/* Check error table was not generated by LOG ERRORS statement.
 					 * To do: deprecate the use of LOG ERRORS INTO
@@ -5990,8 +5990,8 @@ dumpTableSchema(Archive *fout, TableInfo *tbinfo)
 			for (i = 0; i < ntups; i++)
 			{
 				char tmpExtTable[500] = {0};
-				relname = pg_strdup(PQgetvalue(res, i, i_relname));
-				parname = pg_strdup(PQgetvalue(res, i, i_parname));
+				relname = strdup(PQgetvalue(res, i, i_relname));
+				parname = strdup(PQgetvalue(res, i, i_parname));
 				snprintf(tmpExtTable, sizeof(tmpExtTable), "%s%s", relname, EXT_PARTITION_NAME_POSTFIX);
 				appendPQExpBuffer(q, "ALTER TABLE %s ", fmtId(tbinfo->dobj.name));
 				appendPQExpBuffer(q, "EXCHANGE PARTITION %s ", fmtId(parname));
@@ -6038,8 +6038,8 @@ dumpTableSchema(Archive *fout, TableInfo *tbinfo)
 
 			for (i = 0; i < ntups; i++)
 			{
-				schemaname = pg_strdup(PQgetvalue(res, i, i_schemaname));
-				relname = pg_strdup(PQgetvalue(res, i, i_relname));
+				schemaname = strdup(PQgetvalue(res, i, i_schemaname));
+				relname = strdup(PQgetvalue(res, i, i_relname));
 				appendPQExpBuffer(q, "ALTER TABLE %s ", fmtId(relname));
 				appendPQExpBuffer(q, "SET SCHEMA %s;", fmtId(schemaname));
 
@@ -7142,13 +7142,13 @@ getFormattedTypeName(Oid oid, OidOptions opts)
 	if (oid == 0)
 	{
 		if ((opts & zeroAsOpaque) != 0)
-			return pg_strdup(g_opaque_type);
+			return strdup(g_opaque_type);
 		else if ((opts & zeroAsAny) != 0)
-			return pg_strdup("'any'");
+			return strdup("'any'");
 		else if ((opts & zeroAsStar) != 0)
-			return pg_strdup("*");
+			return strdup("*");
 		else if ((opts & zeroAsNone) != 0)
-			return pg_strdup("NONE");
+			return strdup("NONE");
 	}
 
 	query = createPQExpBuffer();
@@ -7168,7 +7168,7 @@ getFormattedTypeName(Oid oid, OidOptions opts)
 	}
 
 	/* already quoted */
-	result = pg_strdup(PQgetvalue(res, 0, 0));
+	result = strdup(PQgetvalue(res, 0, 0));
 
 	PQclear(res);
 	destroyPQExpBuffer(query);
@@ -7853,7 +7853,7 @@ _check_database_version(ArchiveHandle *AH)
 
 	remoteversion = _parse_version(AH, remoteversion_str);
 
-	AH->public.remoteVersionStr = pg_strdup(remoteversion_str);
+	AH->public.remoteVersionStr = strdup(remoteversion_str);
 	AH->public.remoteVersion = remoteversion;
 
 	if (myversion != remoteversion
@@ -7964,7 +7964,7 @@ updateArchiveWithDDFile(ArchiveHandle *AH, char *g_pszDDBoostFile, const char *g
 	path1.su_name = DDP_SU_NAME;
 
 	if (g_pszDDBoostDir)
-		path1.path_name  = pg_strdup(g_pszDDBoostDir);
+		path1.path_name  = strdup(g_pszDDBoostDir);
 	else
 		path1.path_name = dir_name;
 

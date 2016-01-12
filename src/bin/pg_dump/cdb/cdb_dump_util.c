@@ -490,17 +490,15 @@ ParseCDBDumpInfo(const char *progName, char *pszCDBDumpInfo, char **ppCDBDumpKey
 /*
  * ReadBackendBackupFile: This function calls the backend function gp_read_backup_file
  * which reads the contents out of the appropriate file on the database server.
- * If the call succeeds/fails, it returns status code 0/-1, an appropriate error string
- * is inserted into the buffer of pszRtn.
+ * If the call fails, it returns NULL.	The returned pointer must be freed by the caller.
  */
-int
-ReadBackendBackupFileError(PGconn *pConn, const char *pszBackupDirectory, const char *pszKey,
-		BackupFileType fileType, const char *progName, PQExpBuffer pszRtn)
+char *
+ReadBackendBackupFile(PGconn *pConn, const char *pszBackupDirectory, const char *pszKey, BackupFileType fileType, const char *progName)
 {
-	char       *pszFileType;
+	char	   *pszRtn = NULL;
+	char	   *pszFileType;
 	PQExpBuffer Qry;
 	PGresult   *pRes;
-	int status = 0;
 
 	switch (fileType)
 	{
@@ -514,41 +512,33 @@ ReadBackendBackupFileError(PGconn *pConn, const char *pszBackupDirectory, const 
 			pszFileType = "2";
 			break;
 		default:
-			appendPQExpBuffer(pszRtn, "Unknown file type passed to ReadBackendBackupFile");
-			mpp_err_msg("ERROR", progName, " %s: %d\n", pszRtn->data, fileType);
-			return -1;
+			mpp_err_msg("ERROR", progName, "Unknown file type passed to ReadBackendBackupFile : %d\n", fileType);
+			return NULL;
 	}
 
 	Qry = createPQExpBuffer();
-
 	appendPQExpBuffer(Qry, "SELECT * FROM gp_read_backup_file('%s', '%s', %s)",
-			StringNotNull(pszBackupDirectory, ""),
-			StringNotNull(pszKey, ""),
-			pszFileType);
+					  StringNotNull(pszBackupDirectory, ""),
+					  StringNotNull(pszKey, ""),
+					  pszFileType);
 
 	pRes = PQexec(pConn, Qry->data);
 	if (!pRes || PQresultStatus(pRes) != PGRES_TUPLES_OK || PQntuples(pRes) == 0)
 	{
-		appendPQExpBuffer(pszRtn, "Error executing query %s : %s\n", Qry->data, PQerrorMessage(pConn));
-		mpp_err_msg_cache("ERROR", progName, pszRtn->data);
-		status = -1;
+		mpp_err_msg_cache("ERROR", progName, "Error executing query %s : %s\n",
+						  Qry->data,
+						  PQerrorMessage(pConn));
 	}
 	else
 	{
-		char *res = PQgetvalue(pRes, 0, 0);
-		appendPQExpBuffer(pszRtn, res);
-		if (strstr(res, "ERROR:") || strstr(res, "[ERROR]"))
-		{
-			status = -1;
-		}
+		pszRtn = strdup(PQgetvalue(pRes, 0, 0));
 	}
 
 	PQclear(pRes);
 	destroyPQExpBuffer(Qry);
 
-	return status;
+	return pszRtn;
 }
-
 
 /*
  * Safe_strdup:  returns strdup if not NULL, NULL otherwise

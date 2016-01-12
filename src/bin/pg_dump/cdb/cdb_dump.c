@@ -141,6 +141,7 @@ static int dd_boost_enabled = 0;
 int
 main(int argc, char **argv)
 {
+	int			failCount = -1;
 	int			rc = 0;			/* return code */
 	int			remote_version;
 
@@ -225,7 +226,7 @@ main(int argc, char **argv)
 cleanup:
 
 	/* Produce results report */
-	rc = reportBackupResults(inputOpts, &parmAr);
+	failCount = reportBackupResults(inputOpts, &parmAr);
 
 	freeThreadParmArray(&parmAr);
 	FreeSegmentDatabaseArray(&segDBAr);
@@ -239,6 +240,8 @@ cleanup:
 
 	if (master_db_conn != NULL)
 		PQfinish(master_db_conn);
+
+	rc = (failCount == 0 ? 0 : 1);
 
 	exit(rc);
 }
@@ -738,7 +741,7 @@ void addFileNameParam(const char* flag, char* file_name, InputOptions* pInputOpt
 	tmp_name = MakeString("%s%s", directory_name, short_file_name);
 	pInputOpts->pszPassThroughParms =
 			addPassThroughLongParm(flag, tmp_name, pInputOpts->pszPassThroughParms);
-	tableFileName = pg_strdup(file_name);
+	tableFileName = Safe_strdup(file_name);
 	free(tmp_name);
 }
 
@@ -963,7 +966,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				break;
 
 			case 'E':			/* Dump encoding */
-				dumpencoding = pg_strdup(optarg);
+				dumpencoding = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughParm(c, optarg, pInputOpts->pszPassThroughParms);
 				break;
 
@@ -978,7 +981,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				break;
 */
 			case 'h':			/* server host */
-				pInputOpts->pszPGHost = pg_strdup(optarg);
+				pInputOpts->pszPGHost = Safe_strdup(optarg);
 				break;
 
 			case 'i':			/* ignore database version mismatch */
@@ -987,7 +990,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				break;
 
 			case 'n':			/* Dump data for this schema only */
-				selectSchemaName = pg_strdup(optarg);
+				selectSchemaName = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughParm(c, optarg, pInputOpts->pszPassThroughParms);
 				simple_string_list_append(&schema_include_patterns, optarg);
 				include_everything = false;
@@ -1010,7 +1013,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				break;
 
 			case 'p':			/* server port */
-				pInputOpts->pszPGPort = pg_strdup(optarg);
+				pInputOpts->pszPGPort = Safe_strdup(optarg);
 				break;
 
 			case 'R':
@@ -1028,7 +1031,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				break;
 
 			case 't':			/* Dump data for this table only */
-				selectTableName = pg_strdup(optarg);
+				selectTableName = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughParm(c, optarg, pInputOpts->pszPassThroughParms);
 				simple_string_list_append(&table_include_patterns, optarg);
 				include_everything = false;
@@ -1045,7 +1048,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				break;
 
 			case 'U':
-				pInputOpts->pszUserName = pg_strdup(optarg);
+				pInputOpts->pszUserName = Safe_strdup(optarg);
 				break;
 
 			case 'v':			/* verbose */
@@ -1098,7 +1101,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 
 			case 1:
 				/* gp-c remote compression program */
-				pInputOpts->pszCompressionProgram = "gzip";		/* pg_strdup(optarg); */
+				pInputOpts->pszCompressionProgram = "gzip";		/* Safe_strdup(optarg); */
 				break;
 
 			case 2:
@@ -1125,12 +1128,12 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 
 			case 3:
 				/* gp-d backup remote directory */
-				pInputOpts->pszBackupDirectory = pg_strdup(optarg);
+				pInputOpts->pszBackupDirectory = Safe_strdup(optarg);
 				break;
 
 			case 4:
 				/* gp-r report directory */
-				pInputOpts->pszReportDirectory = pg_strdup(optarg);
+				pInputOpts->pszReportDirectory = Safe_strdup(optarg);
 				break;
 
 			case 5:
@@ -1143,7 +1146,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				else if (strncasecmp(optarg, "i", 1) == 0)
 				{
 					pInputOpts->actors = SET_INDIVIDUAL;
-					pInputOpts->pszRawDumpSet = pg_strdup(optarg);
+					pInputOpts->pszRawDumpSet = Safe_strdup(optarg);
 				}
 				else
 				{
@@ -1202,7 +1205,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				break;
 
 			case 10:
-				pInputOpts->pszTimestampKey = pg_strdup(optarg);
+				pInputOpts->pszTimestampKey = Safe_strdup(optarg);
 				if (!ValidateTimestampKey(pInputOpts->pszTimestampKey)) {
 					mpp_err_msg_cache(logError, progname, "Invalid timestamp key provided\n");
 					goto cleanup;
@@ -1213,34 +1216,34 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
                 no_expand_children = true;
                 break;
             case 12:
-                dump_prefix = pg_strdup(optarg);
+                dump_prefix = Safe_strdup(optarg);
                 pInputOpts->pszPassThroughParms = addPassThroughLongParm("prefix", DUMP_PREFIX, pInputOpts->pszPassThroughParms);
                 break; 
 			case 13:
-				incremental_filter = pg_strdup(optarg);
+				incremental_filter = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("incremental-filter", incremental_filter, pInputOpts->pszPassThroughParms);
 				break;
 			case 14:
 				no_lock = true;
 				break;
 			case 15:
-				netbackup_service_host = pg_strdup(optarg);
+				netbackup_service_host = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("netbackup-service-host", netbackup_service_host, pInputOpts->pszPassThroughParms);
 				break;
 			case 16:
-				netbackup_policy = pg_strdup(optarg);
+				netbackup_policy = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("netbackup-policy", netbackup_policy, pInputOpts->pszPassThroughParms);
 				break;
 			case 17:
-				netbackup_schedule = pg_strdup(optarg);
+				netbackup_schedule = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("netbackup-schedule", netbackup_schedule, pInputOpts->pszPassThroughParms);
 				break;
 			case 18:
-				netbackup_block_size = pg_strdup(optarg);
+				netbackup_block_size = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("netbackup-block-size", netbackup_block_size, pInputOpts->pszPassThroughParms);
 				break;
 			case 19:
-				netbackup_keyword = pg_strdup(optarg);
+				netbackup_keyword = Safe_strdup(optarg);
 				pInputOpts->pszPassThroughParms = addPassThroughLongParm("netbackup-keyword", netbackup_keyword, pInputOpts->pszPassThroughParms);
 				break;
 			case 20:
@@ -1262,6 +1265,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				addFileNameParam("schema-file", optarg, pInputOpts);
 				include_everything = false;
 				break;
+
 			default:
 				mpp_err_msg_cache(logError, progname, "Try \"%s --help\" for more information.\n", progname);
 				goto cleanup;
@@ -1293,9 +1297,9 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 
 		/* If no directory is specified, for example when we gp_dump, then dump to default directory db_dumps */		
 		if (pInputOpts->pszBackupDirectory)
-			ddboost_directory = pg_strdup(pInputOpts->pszBackupDirectory);
+			ddboost_directory = Safe_strdup(pInputOpts->pszBackupDirectory);
 		else
-			ddboost_directory = pg_strdup("db_dumps/");
+			ddboost_directory = Safe_strdup("db_dumps/");
 	
 		pInputOpts->pszPassThroughParms = addPassThroughLongParm("dd_boost_dir", ddboost_directory, pInputOpts->pszPassThroughParms);
 	}
@@ -1303,7 +1307,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 
 	 /* Get database name from command line */
 	if (optind < argc)
-		pInputOpts->pszDBName = pg_strdup(argv[optind]);
+		pInputOpts->pszDBName = Safe_strdup(argv[optind]);
 
 	 /*
 	  * get PG env variables, override only of no cmd-line value specified
@@ -1311,19 +1315,19 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 	if (pInputOpts->pszDBName == NULL)
 	{
 		if (getenv("PGDATABASE") != NULL)
-			pInputOpts->pszDBName = pg_strdup(getenv("PGDATABASE"));
+			pInputOpts->pszDBName = Safe_strdup(getenv("PGDATABASE"));
 	}
 
 	if (pInputOpts->pszPGPort == NULL)
 	{
 		if (getenv("PGPORT") != NULL)
-			pInputOpts->pszPGPort = pg_strdup(getenv("PGPORT"));
+			pInputOpts->pszPGPort = Safe_strdup(getenv("PGPORT"));
 	}
 
 	if (pInputOpts->pszPGHost == NULL)
 	{
 		if (getenv("PGHOST") != NULL)
-			pInputOpts->pszPGHost = pg_strdup(getenv("PGHOST"));
+			pInputOpts->pszPGHost = Safe_strdup(getenv("PGHOST"));
 	}
 
 	 /*
@@ -1625,7 +1629,6 @@ reportBackupResults(InputOptions inputopts, ThreadParmArray *pParmAr)
 	ThreadParm *pParm0;
 	int			i;
 	int			failCount;
-	int			errorCount;
 	char	   *pszStatus;
 	char	   *pszMsg;
 	char	   *pszReportDirectory = inputopts.pszReportDirectory;
@@ -1677,7 +1680,7 @@ reportBackupResults(InputOptions inputopts, ThreadParmArray *pParmAr)
 			 * report directory not set by user - default to
 			 * $MASTER_DATA_DIRECTORY
 			 */
-			pszReportDirectory = pg_strdup(getenv("MASTER_DATA_DIRECTORY"));
+			pszReportDirectory = Safe_strdup(getenv("MASTER_DATA_DIRECTORY"));
 		}
 		else
 		{
@@ -1729,23 +1732,14 @@ reportBackupResults(InputOptions inputopts, ThreadParmArray *pParmAr)
 	appendPQExpBuffer(reportBuf, "Individual Results\n");
 
 	failCount = 0;
-	errorCount = 0;
 	for (i = 0; i < pParmAr->count; i++)
 	{
 		ThreadParm *pParm = &pParmAr->pData[i];
-		pszMsg = pParm->pszErrorMsg;
+
 		if (!pParm->bSuccess)
-		{
-			pszStatus = "Failed with error: \n{";
 			failCount++;
-		}
-		else if (pParm->bSuccess && pszMsg != NULL)
-		{
-			pszStatus = "Finished but errors were found: \n{";
-			errorCount++;
-		}
-		else
-			pszStatus = "Succeeded";
+		pszStatus = pParm->bSuccess ? "Succeeded" : "Failed with error: \n{";
+		pszMsg = pParm->pszErrorMsg;
 		if (pszMsg == NULL)
 		{
 			/* if we failed pre maturely try to get the predump error */
@@ -1793,12 +1787,10 @@ reportBackupResults(InputOptions inputopts, ThreadParmArray *pParmAr)
 		}
 	}
 
-	if (failCount == 0 && errorCount == 0)
+	if (failCount == 0)
 		appendPQExpBuffer(reportBuf, "\n%s utility finished successfully.\n", progname);
-	else if(failCount > 0)
-		appendPQExpBuffer(reportBuf, "\n%s utility finished unsuccessfully with  %d  failures.\n", progname, failCount);
 	else
-		appendPQExpBuffer(reportBuf, "\n%s utility finished but errors were found.\n", progname);
+		appendPQExpBuffer(reportBuf, "\n%s utility finished unsuccessfully with  %d  failures.\n", progname, failCount);
 
 	/* write report to report file */
 	if (fRptFile != NULL)
@@ -1816,11 +1808,7 @@ reportBackupResults(InputOptions inputopts, ThreadParmArray *pParmAr)
 
 	destroyPQExpBuffer(reportBuf);
 
-	if (failCount > 0)
-		return 1;
-	else if (errorCount > 0)
-		return 2;
-	return 0;
+	return failCount;
 }
 
 /*
@@ -1876,7 +1864,7 @@ spinOffThreads(PGconn *pConn,
 
 		pParm->pTargetSegDBData = &psegDBAr->pData[i];
 		pParm->pOptionsData = pInputOpts;
-		pParm->bSuccess = true;
+		pParm->bSuccess = false;
 
 		mpp_msg(logInfo, progname, "Creating thread to backup dbid %d: host %s port %d database %s\n",
 				pParm->pTargetSegDBData->dbid,
@@ -1947,10 +1935,10 @@ spinOffThreads(PGconn *pConn,
 	if (pParm->pTargetSegDBData->role == ROLE_MASTER && no_lock)
 	{	
 		char *dumpkey = pParmAr->pData[0].pOptionsData->pszKey;
-		char *filedir = pg_strdup(pInputOpts->pszReportDirectory);
+		char *filedir = Safe_strdup(pInputOpts->pszReportDirectory);
 		if (filedir == NULL)
 		{
-			filedir = pg_strdup(getenv("MASTER_DATA_DIRECTORY"));
+			filedir = Safe_strdup(getenv("MASTER_DATA_DIRECTORY"));
 		}
 		char *signalFileName = MakeString("%s/gp_lockfile_%s", filedir, &dumpkey[8]);
 		mpp_msg(logInfo, progname, "Signal filename is %s.\n", signalFileName);
@@ -2018,7 +2006,6 @@ threadProc(void *arg)
 
 	char	   *pszPassThroughCredentials;
 	PQExpBuffer Qry;
-	PQExpBuffer pqBuffer;
 	PGresult   *pRes;
 	int			sock;
 	bool		bSentCancelMessage;
@@ -2108,7 +2095,7 @@ threadProc(void *arg)
 
 	mpp_msg(logInfo, progname, "Successfully launched Greenplum Database backup on dbid %d server\n", pSegDB->dbid);
 
-	pParm->pszRemoteBackupPath = pg_strdup(PQgetvalue(pRes, 0, 0));
+	pParm->pszRemoteBackupPath = strdup(PQgetvalue(pRes, 0, 0));
 
 	PQclear(pRes);
 	destroyPQExpBuffer(Qry);
@@ -2263,7 +2250,6 @@ threadProc(void *arg)
 		if (retryCnt >= max_probe_retries)
 		{
 			g_b_SendCancelMessage = true;
-			pParm->bSuccess = false;
 			pParm->pszErrorMsg = MakeString("Lost response from dump agent with dbid %d on host %s after 10 minutes.\n",
 							pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"));
 			mpp_err_msg(logError, progname, pParm->pszErrorMsg);
@@ -2273,27 +2259,15 @@ threadProc(void *arg)
 
 	/*
 	 * We don't get here unless the BackupStateMachine reached a final state.
-	 * Segment may not catch all errors, scan the dump status file for ERRORS.
-	 */
-	if(pParm->bSuccess || pParm->pszErrorMsg == NULL)
-	{
-		pqBuffer = createPQExpBuffer();
-		int status = ReadBackendBackupFileError(pConn, pInputOpts->pszBackupDirectory, pszKey,
-							BFT_BACKUP_STATUS, progname, pqBuffer);
-		if(status != 0)
-		{
-			pParm->pszErrorMsg = pqBuffer->data;
-		}
-	}
-
-	/*
-	 * If the status already indicated a specific error, we process this error in the switch
+	 * If the status indicates an error, we process this error in the switch
 	 * statement below.
 	 */
 	if (!pState->bStatus)
 	{
 		g_b_SendCancelMessage = true;
 		pParm->bSuccess = false;
+		mpp_err_msg(logError, progname, "backup failed for dbid %d on host %s\n",
+				  pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"));
 
 		switch (pState->currentState)
 		{
@@ -2309,7 +2283,14 @@ threadProc(void *arg)
 												"there are various reasons that may cause this to happen. Please "
 							"inspect the server log of dbid %d on host %s\n "
 									  "Detail from remote status file: %s\n",
-				   pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"), StringNotNull(pParm->pszErrorMsg, ""));
+				   pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"),
+				 ReadBackendBackupFile(pConn, pInputOpts->pszBackupDirectory,
+									pszKey, BFT_BACKUP_STATUS, progname));
+
+				break;
+			case STATE_BACKUP_ERROR:
+				/* Make call to get error message from file on server */
+				pParm->pszErrorMsg = ReadBackendBackupFile(pConn, pInputOpts->pszBackupDirectory, pszKey, BFT_BACKUP_STATUS, progname);
 
 				break;
 
@@ -2321,24 +2302,18 @@ threadProc(void *arg)
 				  pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"));
 				break;
 
-			case STATE_BACKUP_ERROR:
 			default:
 				break;
 		}
 
-	}
-
-	if (pParm->bSuccess)
-	{
-		mpp_msg(logInfo, progname, "backup succeeded for dbid %d on host %s\n",
-				pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"));
+		mpp_err_msg(logError, progname, pParm->pszErrorMsg);
 	}
 	else
 	{
-		mpp_err_msg(logError, progname, "backup failed for dbid %d on host %s\n%s\n",
-				pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"), StringNotNull(pParm->pszErrorMsg, ""));
+		pParm->bSuccess = true;
+		mpp_msg(logInfo, progname, "backup succeeded for dbid %d on host %s\n",
+				pSegDB->dbid, StringNotNull(pSegDB->pszHost, "localhost"));
 	}
-
 
 cleanup:
 	/*
