@@ -77,7 +77,6 @@ InsertFastSequenceEntry(Oid objid, int64 objmod, int64 lastSequence)
 		frozen_heap_insert(gp_fastsequence_rel, tuple);
 		CatalogUpdateIndexes(gp_fastsequence_rel, tuple);
 
-		heap_freetuple(tuple);
 		pfree(values);
 		pfree(nulls);
 	}
@@ -90,6 +89,7 @@ InsertFastSequenceEntry(Oid objid, int64 objmod, int64 lastSequence)
 							objmod,
 							lastSequence);
 	}
+	heap_freetuple(tuple);
 
 	/*
 	 * gp_fastsequence table locking for AO inserts uses bottom up approach
@@ -235,6 +235,11 @@ int64 GetFastSequences(Oid objid, int64 objmod,
 	update_fastsequence(gp_fastsequence_rel, tuple, tupleDesc,
 						objid, objmod, newLastSequence);
 		
+	if (HeapTupleIsValid(tuple))
+	{
+		heap_freetuple(tuple);
+	}
+
 	/* Refer to the comment at the end of InsertFastSequenceEntry. */
 	heap_close(gp_fastsequence_rel, RowExclusiveLock);
 
