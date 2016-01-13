@@ -69,8 +69,8 @@ static const char *logError = "ERROR";
 static const char *logFatal = "FATAL";
 const char *progname;
 static char * addPassThroughLongParm(const char *Parm, const char *pszValue, char *pszPassThroughParmString);
-static char *dump_prefix = NULL;
 PQExpBuffer dir_buf = NULL;
+PQExpBuffer dump_prefix_buf = NULL;
 
 /* NetBackup related variable */
 static char *netbackup_service_host = NULL;
@@ -93,6 +93,7 @@ main(int argc, char **argv)
 	SegmentDatabase *targetSegDB = NULL;
 
 	dir_buf = createPQExpBuffer();
+	dump_prefix_buf = createPQExpBuffer();
 
 	progname = get_progname(argv[0]);
 
@@ -255,9 +256,12 @@ cleanup:
 	if (masterParm.pszRemoteBackupPath)
 		free(masterParm.pszRemoteBackupPath);
 
-	destroyPQExpBuffer(dir_buf);
 	if (pConn != NULL)
 		PQfinish(pConn);
+
+	destroyPQExpBuffer(dir_buf);
+	destroyPQExpBuffer(dump_prefix_buf);
+
 	return failCount;
 }
 
@@ -738,10 +742,8 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				bAoStats = false;
 				break;
 			case 13:
-				dump_prefix = Safe_strdup(optarg);
-				pInputOpts->pszPassThroughParms = addPassThroughLongParm("prefix", DUMP_PREFIX, pInputOpts->pszPassThroughParms);
-				if (dump_prefix != NULL)
-					free(dump_prefix);
+				appendPQExpBuffer(dump_prefix_buf, "%s", optarg);
+				pInputOpts->pszPassThroughParms = addPassThroughLongParm("prefix", dump_prefix_buf->data, pInputOpts->pszPassThroughParms);
 				break;
 			case 14:
 				appendPQExpBuffer(dir_buf, "%s", optarg);
@@ -1238,7 +1240,7 @@ threadProc(void *arg)
 	if(pParm->bSuccess || pParm->pszErrorMsg == NULL)
 	{
 		pqBuffer = createPQExpBuffer();
-		int status = ReadBackendBackupFileError(pConn, dir_buf->data, pszKey, BFT_RESTORE_STATUS, progname, pqBuffer);
+		int status = ReadBackendBackupFileError(pConn, dir_buf == NULL ? "" : dir_buf->data, pszKey, BFT_RESTORE_STATUS, progname, pqBuffer);
 		if (status != 0)
 		{
 			pParm->pszErrorMsg = MakeString("%s", pqBuffer->data);
@@ -1664,7 +1666,8 @@ reportRestoreResults(const char *pszReportDirectory, const ThreadParm * pMasterP
 	else
 		pszFormat = "%s%sgp_restore_%s.rpt";
 
-	pszReportPathName = MakeString(pszFormat, pszReportDirectory, DUMP_PREFIX, pOptions->pszKey);
+	pszReportPathName = MakeString(pszFormat, pszReportDirectory, dump_prefix_buf == NULL ? "" : dump_prefix_buf->data, pOptions->pszKey);
+
 	if (pszReportPathName == NULL)
 	{
 		mpp_err_msg(logError, progname, "Cannot allocate memory for report file path\n");
@@ -1838,6 +1841,7 @@ reportMasterError(InputOptions inputopts, const ThreadParm * pMasterParm, const 
 		pszFormat = "%sgp_restore_%s.rpt";
 
 	pszReportPathName = MakeString(pszFormat, pszReportDirectory, pOptions->pszKey);
+
 	if (pszReportPathName == NULL)
 	{
 		mpp_err_msg(logError, progname, "Cannot allocate memory for report file path\n");
