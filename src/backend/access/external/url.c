@@ -1407,16 +1407,6 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
 			}
 		}
 
-		if (CURLE_OK != (e = curl_multi_add_handle(multi_handle, file->u.curl.handle)))
-		{
-			if (CURLM_CALL_MULTI_PERFORM != e)
-			{
-				url_fclose(file, false, pstate->cur_relname);
-				elog(ERROR, "internal error: curl_multi_add_handle failed (%d - %s)",
-					 e, curl_easy_strerror(e));
-			}
-		}
-						
 		/*
 		 * SSL configuration
 		 */
@@ -1566,6 +1556,16 @@ url_fopen(char *url, bool forwrite, extvar_t *ev, CopyState pstate, int *respons
          */
         if (!forwrite)
         {
+			if (CURLE_OK != (e = curl_multi_add_handle(multi_handle, file->u.curl.handle)))
+			{
+				if (CURLM_CALL_MULTI_PERFORM != e)
+				{
+					url_fclose(file, false, pstate->cur_relname);
+					elog(ERROR, "internal error: curl_multi_add_handle failed (%d - %s)",
+							e, curl_easy_strerror(e));
+				}
+			}
+
     		while (CURLM_CALL_MULTI_PERFORM ==
     			   (e = curl_multi_perform(multi_handle, &file->u.curl.still_running)));
 
@@ -1772,9 +1772,13 @@ url_fclose(URL_FILE *file, bool failOnError, const char *relname)
 				/* make sure the easy handle is not in the multi handle anymore */
 				if (file->u.curl.handle)
 				{
+					/* Currently assuming that we will not have any writing curl handlers in the multi handle */
+					if (!file->u.curl.for_write)
+					{
 					CURLMcode e = curl_multi_remove_handle(multi_handle, file->u.curl.handle);
 					if (CURLM_OK != e)
 						elog(WARNING, "internal error curl_multi_remove_handle (%d - %s)", e, curl_easy_strerror(e));
+					}
 
 					/* cleanup */
 					elog(LOG, "curl_easy_cleanup: %s", file->url);
