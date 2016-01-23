@@ -48,8 +48,6 @@ void set_plan_share_id(Plan *p, int share_id)
 
 ShareType get_plan_share_type(Plan *p)
 {
-	Assert(p);
-
 	if(IsA(p, Material))
 		return ((Material *) p)->share_type;
 	

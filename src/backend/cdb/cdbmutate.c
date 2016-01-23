@@ -2171,6 +2171,8 @@ shareinput_mutator_xslice_3(Node *node, ApplyShareInputContext *ctxt, bool fPop)
 		ShareType stype = SHARE_NOTSHARED;
 
 		shareinput_find_sharenode(ctxt, sisc->share_id, &plan_slicemark);
+		Assert(plan_slicemark && plan_slicemark.plan);
+
 		stype = get_plan_share_type(plan_slicemark.plan);
 
 		switch(stype)
