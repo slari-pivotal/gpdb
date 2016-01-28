@@ -815,6 +815,16 @@ FaultInjector_InjectFaultIfSet(
 			break;
 		}
 
+		case FaultInjectorTypeFinishPending:
+		{
+			ereport(LOG,
+					(errmsg("fault triggered, fault name:'%s' fault type:'%s' ",
+							FaultInjectorIdentifierEnumToString[entryLocal->faultInjectorIdentifier],
+							FaultInjectorTypeEnumToString[entryLocal->faultInjectorType])));
+			QueryFinishPending = true;
+			break;
+		}
+
 		default:
 			
 			ereport(LOG, 
@@ -1049,7 +1059,6 @@ FaultInjector_NewHashEntry(
 		case FinishPreparedTransactionAbortPass2AbortingCreateNeeded:
 		case TwoPhaseTransactionCommitPrepared:
 		case TwoPhaseTransactionAbortPrepared:
-		case ExecSortMKSortMergeRuns:
 		
 //		case SubtransactionFlushToFile:
 //		case SubtransactionReadFromFile:
@@ -1142,6 +1151,7 @@ FaultInjector_NewHashEntry(
 		case FaultDuringExecDynamicTableScan:
 		case FaultExecHashJoinNewBatch:
 		case RunawayCleanup:
+		case ExecSortMKSortMergeRuns:
 			
 			if (fileRepRole != FileRepNoRoleConfigured && fileRepRole != FileRepPrimaryRole)
 			{
