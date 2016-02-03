@@ -721,7 +721,7 @@ int             optimizer_cost_model;
 bool		optimizer_print_query;
 bool		optimizer_print_plan;
 bool		optimizer_print_xform;
-bool		optimizer_release_mdcache;
+bool		optimizer_metadata_caching;
 bool		optimizer_disable_xform_result_printing;
 bool		optimizer_print_memo_after_exploration;
 bool		optimizer_print_memo_after_implementation;
@@ -3814,13 +3814,13 @@ static struct config_bool ConfigureNamesBool[] =
 	},
 
 	{
-		{"optimizer_release_mdcache", PGC_USERSET, DEVELOPER_OPTIONS,
-			gettext_noop("Release MDCache after each query."),
+		{"optimizer_metadata_caching", PGC_USERSET, DEVELOPER_OPTIONS,
+			gettext_noop("Cache metadata in MDCache."),
 			NULL,
 			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
 		},
-		&optimizer_release_mdcache,
-		true, NULL, NULL
+		&optimizer_metadata_caching,
+		false, NULL, NULL
 	},
 
 	{
