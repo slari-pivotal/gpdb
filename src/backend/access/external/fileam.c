@@ -804,7 +804,7 @@ else \
 	}\
 	else\
 	{\
-		pstate->cdbsreh->errmsg = pstrdup(edata->message); \
+		pstate->cdbsreh->errmsg = edata->message; \
 	}\
 \
 	HandleSingleRowError(pstate->cdbsreh); \
