@@ -804,11 +804,11 @@ else \
 	}\
 	else\
 	{\
-		pstate->cdbsreh->errmsg = edata->message; \
+		pstate->cdbsreh->errmsg = pstrdup(edata->message); \
 	}\
 \
 	HandleSingleRowError(pstate->cdbsreh); \
-\
+	FreeErrorData(edata);\
 	if (errmsg_is_a_copy && !IsRejectLimitReached(pstate->cdbsreh)) \
 		pfree(pstate->cdbsreh->errmsg); \
 }

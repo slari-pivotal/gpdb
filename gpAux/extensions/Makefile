@@ -6,7 +6,7 @@ BLD_TOP=..
 include $(BLD_TOP)/Makefile.global
 include $(BLD_TOP)/Makefile.thirdparty
 
-all: mkgpfdist mkdbgen mkgphdfs
+all: mkgpfdist mkdbgen mkgphdfs mks3ext
 
 .PHONY:
 mkgpfdist:
@@ -21,6 +21,9 @@ mkgphdfs:
 	PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -C gphdfs USE_PGXS=1 docdir=$(INSTLOC)/docs install \
 		ANT=/opt/releng/apache-ant/bin/ant \
 		JAVA_HOME=${JAVA_HOME}
+
+mks3ext:
+	PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -C gps3ext USE_PGXS=1 install
 
 # Use $JAVA_HOME if specified, otherwise look for java in the likely places.
 # Note that Darwin's JVM layout is pretty weird.  JDK 1.6 apears to be the

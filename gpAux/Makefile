@@ -342,6 +342,7 @@ define BUILD_STEPS
 	#@$(MAKE) greenplum_path INSTLOC=$(INSTLOC)
 	#@$(MAKE) groupSession INSTLOC=$(INSTLOC)
 	@$(MAKE) mkgpfdist INSTCFLAGS=$(INSTCFLAGS)
+	@$(MAKE) mkgps3ext INSTLOC=$(INSTLOC)
 	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
 	#@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
 	@$(MAKE) mkpgbouncer INSTLOC=$(INSTLOC) BUILDDIR=$(BUILDDIR)
@@ -1008,6 +1009,9 @@ groupSession:
 mkgpfdist:
 	@cd extensions && $(MAKE) mkgpfdist OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
 	cp -p extensions/gpfdist/gpfdist$(EXE_EXT) $(INSTLOC)/bin/
+
+mkgps3ext:
+	@cd extensions && $(MAKE) mks3ext OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
 
 mkgphdfs:
 	@cd extensions && $(MAKE) mkgphdfs OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)

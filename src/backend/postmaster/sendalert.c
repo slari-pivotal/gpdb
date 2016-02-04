@@ -668,6 +668,7 @@ send_alert_via_email(const GpErrorData *errorData,
 
 				curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlerror);
 				curl_easy_setopt(curl, CURLOPT_URL, smtp_url);
+				curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
 				curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT,
 								 (long) gp_email_connect_timeout);
 				if (gp_email_smtp_userid && *gp_email_smtp_userid)
