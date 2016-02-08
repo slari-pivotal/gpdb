@@ -163,7 +163,7 @@ def impl(context):
   seg_log_filenames = os.path.join(seg_log_dir, "*.csv")
   latest_seg_log_file = max(glob.iglob(seg_log_filenames))
 
-  for _ in range(6):
+  for _ in range(7):
     entry = get_log_entry(latest_seg_log_file, context.timestamp,
                       "SoftLimit of 1% crossed for directory")
     if entry:

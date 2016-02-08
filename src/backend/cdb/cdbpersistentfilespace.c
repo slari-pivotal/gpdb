@@ -825,8 +825,8 @@ static void PersistentFilespace_CheckDirUsage(
 	if ((rc = statvfs(dir, &buf)))
 	{
 		ereport(WARNING, (errmsg("statvfs() failed for %s. Error is %s.",
-														 dir, strerror(rc)),
-											errSendAlert(true)));
+								 dir, strerror(rc)),
+						  errSendAlert(true)));
 	}
 
 	percentageFull = 100.0 - (((double)buf.f_bavail/(double)buf.f_blocks)*100.0);
@@ -835,7 +835,7 @@ static void PersistentFilespace_CheckDirUsage(
 	{
 		elog(LOG, "%s is %.2f%% full. Total Disk size=%d, free blocks=%d,"
 			" f_bsize=%lu, f_frsize=%lu, f_bavail=%d",
-				 dir, percentageFull, buf.f_blocks, buf.f_bfree,
+			 dir, percentageFull, buf.f_blocks, buf.f_bfree,
 			buf.f_bsize, buf.f_frsize, buf.f_bavail);
 	}
 
@@ -844,8 +844,8 @@ static void PersistentFilespace_CheckDirUsage(
 		ereport(WARNING, (errmsg(
 			"SoftLimit of %d%% crossed for directory %s. Current utilization is %.2f%%."
 			" Please free up space before the disk becomes full.",
-		  gp_diskusage_soft_limit, dir, percentageFull),
-											errSendAlert(true)));
+			gp_diskusage_soft_limit, dir, percentageFull),
+						  errSendAlert(true)));
 	}
 }
 
@@ -938,8 +938,7 @@ void PersistentFilespace_CheckDiskUsage(void)
 
 	PersistentFilespace_VerifyInitScan();
 
-	PersistentFileSysObj_Scan(
-							  PersistentFsObjType_FilespaceDir,
+	PersistentFileSysObj_Scan(PersistentFsObjType_FilespaceDir,
 							  PersistentFilespace_CheckDiskUsageScanTupleCallback);
 
 	return;
