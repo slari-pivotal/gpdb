@@ -95,6 +95,7 @@ FaultInjectorTypeEnumToString[] = {
 	_("status"),
 	_("segv"),
 	_("interrupt"),
+	_("finish_pending"),
 	_("checkpoint_and_panic"),
 	_("not recognized"),
 };
