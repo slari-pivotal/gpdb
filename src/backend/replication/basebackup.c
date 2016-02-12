@@ -1040,7 +1040,7 @@ _tarWriteHeader(const char *filename, const char *linktarget,
 static List *
 get_filespaces_to_send(basebackup_options *opt)
 {
-	List		   *filespaces;
+	List		   *filespaces = NIL;
 	Oid				txnFilespaceOID;
 	Relation		rel;
 	ScanKeyData		scankey;
@@ -1054,6 +1054,23 @@ get_filespaces_to_send(basebackup_options *opt)
 	 */
 	if (GpIdentity.dbid == -1)
 		elog(ERROR, "basebackup is not supported with dbid -1");
+
+	/* There is no pg_filespace_entry table on the segment, so we need to send
+	 * the entire data directory for segments. */
+
+	if (IS_NOT_MASTER)
+	{
+		filespaceinfo *fi = palloc0(sizeof(filespaceinfo));
+
+		fi->primary_path = NULL;
+		fi->standby_path = NULL;
+		fi->size = -1;
+		fi->xlogdir = true;
+
+		filespaces = lappend(filespaces, fi);
+
+		return filespaces;
+	}
 
 	txnFilespaceOID = primaryMirrorGetTxnFilespaceOID();
 	/*
