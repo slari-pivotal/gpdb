@@ -129,7 +129,7 @@ ISCONFIG=../GNUmakefile
 ## On these platforms, we do the full build including the server. On other
 ## platforms, we do a client-only build.
 ##
-SERVER_PLATFORMS=rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 suse10_x86_64 suse11_x86_64 linux_x86_64 osx106_x86
+SERVER_PLATFORMS=rhel5_x86_32 rhel5_x86_64 suse10_x86_64 linux_x86_64 osx106_x86
 
 #---------------------------------------------------------------------
 # GPPKG
@@ -341,7 +341,7 @@ define BUILD_STEPS
 	cd $(BUILDDIR) && $(MAKE) $(parallelexec_opts) install
 	#@$(MAKE) greenplum_path INSTLOC=$(INSTLOC)
 	#@$(MAKE) groupSession INSTLOC=$(INSTLOC)
-	@$(MAKE) mkgpfdist INSTCFLAGS=$(INSTCFLAGS)
+	@$(MAKE) mkgpfdist INSTCFLAGS=$(INSTCFLAGS) INSTLOC=$(INSTLOC)
 	@$(MAKE) mkgps3ext INSTLOC=$(INSTLOC)
 	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
 	#@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
@@ -419,8 +419,7 @@ define BUILD_STEPS
 	if [ "$(findstring win,$(BLD_ARCH))" != "win" ]; then \
 	  cd extensions/gpmapreduce/ && $(MAKE) install ; \
 	fi
-	cd extensions && $(MAKE) mkgpfdist
-	cp -p extensions/gpfdist/gpfdist$(EXE_EXT) $(INSTLOC)/bin/
+	@$(MAKE) mkgpfdist INSTCFLAGS=$(INSTCFLAGS) INSTLOC=$(INSTLOC)
 	cp -p $(GPMGMT)/bin/gpload $(INSTLOC)/bin/gpload
 	cp -p $(GPMGMT)/bin/gpload.py $(INSTLOC)/bin/gpload.py
 	$(MAKE) copylibs INSTLOC=$(INSTLOC)
