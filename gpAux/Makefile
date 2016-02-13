@@ -88,7 +88,7 @@ GPPERFMON=gpperfmon
 PLATFORM=platform
 BUILDDIR=$(GPPGDIR)
 
-RELEASE=devel
+RELEASE=$(shell $(CURDIR)/releasetag)
 GPDIR=greenplum-db-$(RELEASE)
 PLRDIR=greenplum-plr-$(RELEASE)
 CLIENTDIR=greenplum-clients-$(RELEASE)
