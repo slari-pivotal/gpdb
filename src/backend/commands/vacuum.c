@@ -2086,7 +2086,8 @@ vacuum_appendonly_indexes(Relation aoRelation,
 			totalSegfiles,
 			aoRelation,
 			1,
-			RelationIsAoCols(aoRelation));
+			RelationIsAoCols(aoRelation),
+			NULL);
 
 	/* Clean/scan index relation(s) */
 	if (Irel != NULL)

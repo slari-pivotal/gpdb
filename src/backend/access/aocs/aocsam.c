@@ -1235,7 +1235,8 @@ aocs_fetch_init(Relation relation,
 		aocsFetchDesc->totalSegfiles,
 		aocsFetchDesc->relation,
 		relation->rd_att->natts,
-		true);
+		true,
+			proj);
 
 	Assert(relation->rd_att != NULL);
 
