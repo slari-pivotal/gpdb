@@ -73,3 +73,12 @@ ifeq ($(enable_netbackup), yes)
 override MOCK_LIBS += -L../../../../../gpAux/ext/rhel5_x86_64/Netbackup/nbu75/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
 override CPPFLAGS += -I$(top_builddir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu75/include
 endif
+
+
+# The command line here should resemble the one used to build cdb_dump_agent
+cdb_dump_util.t: cdb_dump_util_test.o ../../dumputils.o ../../keywords.o ../../kwlookup.o $(CMOCKERY_OBJS)
+	$(CC) $^ $(libpq) $(LDFLAGS) $(LIBS) $(DDBOOSTLIB) -o $@
+
+# The command line here should resemble the one used to build libgpbsa
+cdb_bsa_util.t: cdb_bsa_util_test.o ../cdb_dump_util.o ../../dumputils.o ../../keywords.o ../../kwlookup.o $(CMOCKERY_OBJS)
+	$(CC) $^ $(libpq) $(LDFLAGS) $(LIBS) $(DDBOOSTLIB) $(NETBACKUPLIB75) -o $@
