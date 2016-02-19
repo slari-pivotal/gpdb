@@ -11,9 +11,10 @@ from pg_attribute
 where attnum > 0 and attrelid = 'r'::regclass;
                           QUERY PLAN                          
 --------------------------------------------------------------
- Seq Scan on pg_attribute  (cost=0.00..48.81 rows=11 width=2)
-   Filter: attnum > 0 AND attrelid = 825279::oid
-(2 rows)
+ Seq Scan on pg_attribute  (cost=0.00..108.82 rows=5 width=2)
+   Filter: attnum > 0 AND attrelid = 22196::oid
+ Optimizer status: legacy query optimizer
+(3 rows)
 
 SELECT attnum::information_schema.cardinal_number 
 from pg_attribute 
@@ -35,11 +36,12 @@ from (SELECT attnum::information_schema.cardinal_number
       from pg_attribute 
       where attnum > 0 and attrelid = 'r'::regclass) q
 where attnum=2;
-                                                 QUERY PLAN                                                  
--------------------------------------------------------------------------------------------------------------
- Seq Scan on pg_attribute  (cost=0.00..61.39 rows=2 width=2)
-   Filter: attnum > 0 AND attrelid = 825279::oid AND attnum::information_schema.cardinal_number::integer = 2
-(2 rows)
+                                                 QUERY PLAN                                                 
+------------------------------------------------------------------------------------------------------------
+ Seq Scan on pg_attribute  (cost=0.00..137.08 rows=1 width=2)
+   Filter: attnum > 0 AND attrelid = 22196::oid AND attnum::information_schema.cardinal_number::integer = 2
+ Optimizer status: legacy query optimizer
+(3 rows)
 
 SELECT *
 from (SELECT attnum::information_schema.cardinal_number 
@@ -72,21 +74,25 @@ and ordinal_position =1;
 select table_schema, table_name,column_name,ordinal_position
 from information_schema.columns
 where ordinal_position = 20;
-    table_schema    |  table_name   |    column_name     | ordinal_position 
---------------------+---------------+--------------------+------------------
- information_schema | element_types | interval_precision |               20
- pg_catalog         | pg_partitions | parenttablespace   |               20
- pg_catalog         | pg_statistic  | stavalues3         |               20
- information_schema | attributes    | datetime_precision |               20
- information_schema | columns       | collation_catalog  |               20
- information_schema | domains       | udt_catalog        |               20
- information_schema | parameters    | numeric_scale      |               20
- information_schema | routines      | collation_catalog  |               20
- pg_catalog         | pg_type       | typtypmod          |               20
- pg_catalog         | pg_class      | reltriggers        |               20
- pg_catalog         | pg_am         | ambuild            |               20
- pg_catalog         | pg_proc       | prodataaccess      |               20
-(12 rows)
+    table_schema    |      table_name      |    column_name     | ordinal_position 
+--------------------+----------------------+--------------------+------------------
+ information_schema | element_types        | interval_precision |               20
+ pg_catalog         | pg_statistic         | stavalues3         |               20
+ pg_catalog         | pg_partitions        | parenttablespace   |               20
+ information_schema | attributes           | datetime_precision |               20
+ information_schema | columns              | collation_catalog  |               20
+ information_schema | domains              | udt_catalog        |               20
+ information_schema | parameters           | numeric_scale      |               20
+ information_schema | routines             | collation_catalog  |               20
+ pg_catalog         | pg_type              | typtypmod          |               20
+ pg_catalog         | pg_proc              | prodataaccess      |               20
+ pg_catalog         | pg_class             | reltriggers        |               20
+ pg_catalog         | pg_am                | ambuild            |               20
+ gp_toolkit         | __gp_log_segment_ext | logdetail          |               20
+ gp_toolkit         | __gp_log_master_ext  | logdetail          |               20
+ gp_toolkit         | gp_log_system        | logdetail          |               20
+ gp_toolkit         | gp_log_database      | logdetail          |               20
+(16 rows)
 
 -- MPP-25724
 create table mpp_25724(mpp_25724_col int) distributed by (mpp_25724_col);
@@ -96,7 +102,7 @@ where a.table_name
 in
 (select b.table_name from information_schema.tables b where
 	a.column_name like 'mpp_25724_col');
-  column_name
+  column_name  
 ---------------
  mpp_25724_col
 (1 row)
@@ -107,7 +113,7 @@ where c.relname
 in
 (select b.table_name from information_schema.tables b where
 	c.relname like 'mpp_25724');
-  relname
+  relname  
 -----------
  mpp_25724
 (1 row)
@@ -118,7 +124,7 @@ where a.table_name
 in
 (select b.relname from pg_class b where
 	a.table_name like 'mpp_25724');
- table_name
+ table_name 
 ------------
  mpp_25724
 (1 row)

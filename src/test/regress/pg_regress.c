@@ -1873,15 +1873,11 @@ create_database(const char *dbname)
 {
 	_stringlist *sl;
 
-	/*
-	 * We use template0 so that any installation-local cruft in template1 will
-	 * not mess up the tests.
-	 */
 	header(_("creating database \"%s\""), dbname);
 	if (encoding && strlen(encoding) > 0)
-		psql_command("postgres", "CREATE DATABASE \"%s\" TEMPLATE=template0 ENCODING='%s'", dbname, encoding);
+		psql_command("postgres", "CREATE DATABASE \"%s\" TEMPLATE=template1 ENCODING='%s'", dbname, encoding);
 	else
-		psql_command("postgres", "CREATE DATABASE \"%s\" TEMPLATE=template0", dbname);
+		psql_command("postgres", "CREATE DATABASE \"%s\" TEMPLATE=template1", dbname);
 	psql_command(dbname,
 				 "ALTER DATABASE \"%s\" SET lc_messages TO 'C';"
 				 "ALTER DATABASE \"%s\" SET lc_monetary TO 'C';"
