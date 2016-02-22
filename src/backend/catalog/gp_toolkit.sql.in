@@ -159,7 +159,7 @@ CREATE VIEW %%JETPACK_PREFIX_AUX%%user_data_tables_readable
 AS
 	SELECT *
 	FROM %%JETPACK_PREFIX_AUX%%user_tables aut
-	WHERE has_table_privilege(quote_ident(autnspname)||'.'||quote_ident(autrelname), 'select');
+	WHERE has_table_privilege(aut.autoid, 'select');
 
 GRANT SELECT ON TABLE %%JETPACK_PREFIX_AUX%%user_data_tables_readable TO public;
 
