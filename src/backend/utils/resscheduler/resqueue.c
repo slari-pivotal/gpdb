@@ -500,12 +500,8 @@ ResLockRelease(LOCKTAG *locktag, uint32 resPortalId)
         !locallock->lock ||
         !locallock->proclock)
 	{
-		/* Change the log level from LOG to DEBUG1, since after overhauling the
-		 * locking code of resource queue, this path would be hit much more
-		 * frequently, and also the info should be catagorized as DEBUG
-		 */
-		elog(DEBUG1, "Resource queue %d: no lock to release", locktag->locktag_field1);
-		if (locallock)
+        elog(LOG, "Resource queue %d: no lock to release", locktag->locktag_field1);
+        if (locallock)
 		{
             RemoveLocalLock(locallock);
 		}
