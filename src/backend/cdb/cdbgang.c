@@ -52,7 +52,7 @@ extern char *default_tablespace;
  *	thread_DoConnect is the thread proc used to perform the connection to one of the qExecs.
  */
 static void *thread_DoConnect(void *arg);
-static void build_gpqeid_params(PQExpBuffer buf, bool is_writer);
+static bool build_gpqeid_params(PQExpBuffer buf, bool is_writer);
 
 static Gang *createGang(GangType type, int gang_id, int size, int content, char *portal_name);
 
@@ -1071,6 +1071,7 @@ thread_DoConnect(void *arg)
 	int			db_count;
 	int			i;
 	int			err;
+	bool		gpqeid_res;
 
 	SegmentDatabaseDescriptor *segdbDesc;
 	CdbComponentDatabaseInfo *q;
@@ -1114,35 +1115,44 @@ thread_DoConnect(void *arg)
 		 * early enough now some locks are taken before command line options
 		 * are recognized.
 		 */
-		build_gpqeid_params(&buffer, pParms->type == GANGTYPE_PRIMARY_WRITER);
+		gpqeid_res = build_gpqeid_params(&buffer, pParms->type == GANGTYPE_PRIMARY_WRITER);
 
-		err = addOptions(&buffer,
-						 (pParms->type == GANGTYPE_PRIMARY_WRITER),
-						 q->segindex, pParms->i_am_superuser);
-
-		if (err <= 0)
+		if (!gpqeid_res)
 		{
-			struct config_generic **gucs = get_guc_variables();
-			struct config_generic *errguc = gucs[-err];
-
 			segdbDesc->errcode = ERRCODE_GP_INTERNAL_ERROR;
 			appendPQExpBuffer(&segdbDesc->error_message,
-					  "Internal error: AddOption %s failed\n", errguc->name);
-			PQfinish(segdbDesc->conn);
-			segdbDesc->conn = NULL;
+							  "Internal error: build_gpqeid_params failed, out of memory\n");
 		}
 		else
 		{
-			if (cdbconn_doConnect(segdbDesc, buffer.data))
+			err = addOptions(&buffer,
+							 (pParms->type == GANGTYPE_PRIMARY_WRITER),
+							 q->segindex, pParms->i_am_superuser);
+
+			if (err <= 0)
 			{
-				if (segdbDesc->motionListener == -1)
+				struct config_generic **gucs = get_guc_variables();
+				struct config_generic *errguc = gucs[-err];
+
+				segdbDesc->errcode = ERRCODE_GP_INTERNAL_ERROR;
+				appendPQExpBuffer(&segdbDesc->error_message,
+						  "Internal error: AddOption %s failed\n", errguc->name);
+				PQfinish(segdbDesc->conn);
+				segdbDesc->conn = NULL;
+			}
+			else
+			{
+				if (cdbconn_doConnect(segdbDesc, buffer.data))
 				{
-					segdbDesc->errcode = ERRCODE_GP_INTERNAL_ERROR;
-					appendPQExpBuffer(&segdbDesc->error_message,
-						  "Internal error: No motion listener port for %s\n",
-									  segdbDesc->whoami);
-					PQfinish(segdbDesc->conn);
-					segdbDesc->conn = NULL;
+					if (segdbDesc->motionListener == -1)
+					{
+						segdbDesc->errcode = ERRCODE_GP_INTERNAL_ERROR;
+						appendPQExpBuffer(&segdbDesc->error_message,
+							  "Internal error: No motion listener port for %s\n",
+										  segdbDesc->whoami);
+						PQfinish(segdbDesc->conn);
+						segdbDesc->conn = NULL;
+					}
 				}
 			}
 		}
@@ -1161,7 +1171,7 @@ thread_DoConnect(void *arg)
  * to be passed to a qExec that is being started.  NB: Can be called in a
  * thread, so mustn't use palloc/elog/ereport/etc.
  */
-static void
+static bool
 build_gpqeid_params(PQExpBuffer buf, bool is_writer)
 {
 	appendPQExpBufferStr(buf, "gpqeid=");
@@ -1179,9 +1189,15 @@ build_gpqeid_params(PQExpBuffer buf, bool is_writer)
 #endif
 	appendPQExpBuffer(buf, "%s;", (is_writer ? "true" : "false"));
 
+	if (PQExpBufferBroken(buf))
+	{
+		return false;
+	}
+
 	/* change last semicolon to space */
 	Assert(buf->data[buf->len - 1] == ';');
 	buf->data[buf->len - 1] = ' ';
+	return true;
 }	/* build_gpqeid_params */
 
 /*
