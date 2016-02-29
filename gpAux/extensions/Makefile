@@ -6,7 +6,7 @@ BLD_TOP=..
 include $(BLD_TOP)/Makefile.global
 include $(BLD_TOP)/Makefile.thirdparty
 
-all: mkgpfdist mkdbgen mkgphdfs
+all: mkgpfdist mkdbgen mkgphdfs mks3ext
 
 .PHONY:
 mkgpfdist:
