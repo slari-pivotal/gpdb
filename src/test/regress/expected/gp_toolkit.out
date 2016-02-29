@@ -268,6 +268,16 @@ from gp_toolkit.gp_bloat_expected_pages where btdrelid = 'toolkit_skew'::regclas
  t                  | t                    | t                  | t
 (1 row)
 
+-- start_ignore
+-- just for debugging, print the actual values, to know in case of failures
+select btdrelpages, btdexppages
+from gp_toolkit.gp_bloat_expected_pages where btdrelid = 'toolkit_skew'::regclass;
+ btdrelpages | btdexppages 
+-------------+-------------
+           1 |           2
+(1 row)
+
+-- end_ignore
 select * from gp_toolkit.gp_bloat_diag where bdirelid = 'toolkit_skew'::regclass;
  bdirelid | bdinspname | bdirelname | bdirelpages | bdiexppages | bdidiag 
 ----------+------------+------------+-------------+-------------+---------

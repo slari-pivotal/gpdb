@@ -137,6 +137,11 @@ select btdrelpages > 0 as btdrelpages_over_0,
        btdexppages > 0 as btdexppages_over_0,
        btdexppages < 10 as btdexppages_below_10
 from gp_toolkit.gp_bloat_expected_pages where btdrelid = 'toolkit_skew'::regclass;
+-- start_ignore
+-- just for debugging, print the actual values, to know in case of failures
+select btdrelpages, btdexppages
+from gp_toolkit.gp_bloat_expected_pages where btdrelid = 'toolkit_skew'::regclass;
+-- end_ignore
 select * from gp_toolkit.gp_bloat_diag where bdirelid = 'toolkit_skew'::regclass;
 
 -- MPP-5871 : ERROR: GetSnapshotData timed out waiting for Writer to set the shared snapshot.
