@@ -118,7 +118,13 @@ void S3Reader::getNextDownloader() {
         S3DEBUG("No more files to download");
         return;
     }
-    this->filedownloader = new Downloader(this->concurrent_num);
+
+    if (this->concurrent_num > 0) {
+        this->filedownloader = new Downloader(this->concurrent_num);
+    } else {
+        S3ERROR("Failed to create filedownloader due to threadnum");
+        return;
+    }
 
     if (!this->filedownloader) {
         S3ERROR("Failed to create filedownloader");

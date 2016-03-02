@@ -117,6 +117,10 @@ bool InitConfig(string conf_path, string section /*not used currently*/) {
             S3INFO("The given thread number is too big, use max value 8");
             s3ext_threadnum = 8;
         }
+        if (s3ext_threadnum < 1) {
+            S3INFO("The given thread number is too small, use min value 1");
+            s3ext_threadnum = 1;
+        }
 
         ret = cfg->Scan("default", "chunksize", "%d", &s3ext_chunksize);
         if (!ret) {
@@ -128,7 +132,7 @@ bool InitConfig(string conf_path, string section /*not used currently*/) {
             s3ext_chunksize = 128 * 1024 * 1024;
         }
         if (s3ext_chunksize < 2 * 1024 * 1024) {
-            S3INFO("The given chunksize is too large, use max value 2MB");
+            S3INFO("The given chunksize is too small, use min value 2MB");
             s3ext_chunksize = 2 * 1024 * 1024;
         }
 
