@@ -26,6 +26,7 @@ test: hashagg
 test: tpch_query
 test: gpsort
 test: resource_queue
+test: tpch_aopart
 test: bkup_gp
 test: mpp-11333
 test: view
