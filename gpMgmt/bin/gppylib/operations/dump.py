@@ -182,7 +182,7 @@ def validate_modcount(schema, tablename, cnt):
     if len(cnt) > 15:
         raise Exception("Exceeded backup max tuple count of 1 quadrillion rows per table for: '%s.%s' '%s'" % (schema, tablename, cnt))
 
-def get_partition_state(master_port, dbname, catalog_schema, partition_info):
+def get_partition_state_tuples(master_port, dbname, catalog_schema, partition_info):
     """
         Reads the partition state for an AO or AOCS relation, which is the sum of
         the modication counters over all ao segment files.
@@ -200,6 +200,9 @@ def get_partition_state(master_port, dbname, catalog_schema, partition_info):
         modcount by 1. Therefore it is save to assume that to relations with
         modcount 0 with the same last special operation do not have a logical
         change in them.
+
+        The result is a list of tuples, of the format:
+        (schema_schema, partition_name, modcount)
     """
     partition_list = list()
 
@@ -217,7 +220,7 @@ def get_partition_state(master_port, dbname, catalog_schema, partition_info):
             if modcount:
                 modcount = modcount.strip()
             validate_modcount(schemaname, partition_name, modcount)
-            partition_list.append('%s, %s, %s' %(schemaname, partition_name, modcount))
+            partition_list.append((schemaname, partition_name, modcount))
 
     return partition_list
 
