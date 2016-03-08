@@ -11375,7 +11375,9 @@ ATExecSetTableSpace_BufferPool(
 	int64 newPersistentSerialNum;
 	SMgrRelation dstrel;
 	bool useWal;
-	
+	ItemPointerData oldPersistentTid;
+	int64 oldPersistentSerialNum;
+
 	PersistentFileSysRelStorageMgr localRelStorageMgr;
 	PersistentFileSysRelBufpoolKind relBufpoolKind;
 	
@@ -11403,10 +11405,12 @@ ATExecSetTableSpace_BufferPool(
 			 (!useWal ? "true" : "false"));
 	
 	/* Fetch relation's gp_relation_node row */
-	nodeTuple = ScanGpRelationNodeTuple(
-							gp_relation_node,
-							rel->rd_rel->relfilenode,
-							/* segmentFileNum */ 0);
+	nodeTuple = FetchGpRelationNodeTuple(
+					gp_relation_node,
+					rel->rd_rel->relfilenode,
+					/* segmentFileNum */ 0,
+					&oldPersistentTid,
+					&oldPersistentSerialNum);
 	if (!HeapTupleIsValid(nodeTuple))
 		elog(ERROR, "cache lookup failed for relation %u, tablespace %u, relation file node %u", 
 		     tableOid,
