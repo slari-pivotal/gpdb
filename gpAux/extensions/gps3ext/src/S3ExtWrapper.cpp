@@ -215,6 +215,12 @@ bool S3Reader::Destroy() {
 
 bool S3ExtBase::ValidateURL() {
     // TODO http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+    // As the documentation above says, some regions use domains in forms other
+    // than the "standard" ones, need to cover them here.
+    //
+    // Still have two to take care of, do it later since they only support
+    // signature v4, s3ext doesn't support v4 yet.
+    //
     // s3.eu-central-1.amazonaws.com -> s3-eu-central-1.amazonaws.com
     // s3.ap-northeast-2.amazonaws.com -> s3-ap-northeast-2.amazonaws.com
 
