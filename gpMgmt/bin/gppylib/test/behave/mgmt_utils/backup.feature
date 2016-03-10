@@ -1123,7 +1123,7 @@ Feature: Validate command line arguments
     @backupfire
     Scenario: Test gpcrondump dump deletion (-c option)
         Given the test is initialized
-        And there is a "heap" table "public.heap_table" with compression "None" in "bkdb" with data 
+        And there is a "heap" table "public.heap_table" with compression "None" in "bkdb" with data
         And the user runs "gpcrondump -a -x bkdb"
         And the full backup timestamp from gpcrondump is stored
         And gpcrondump should return a return code of 0
@@ -2987,6 +2987,8 @@ Feature: Validate command line arguments
         And verify that the table "public.heap_index_table" in database "bkdb" is not analyzed
         And verify that the restored table "public.heap_table" in database "bkdb" is analyzed
 
+    @spl_char
+    @spl_char_1
     Scenario: Simple full backup and restore with special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3004,6 +3006,8 @@ Feature: Validate command line arguments
         And the directory "/tmp/special_table_data.out" is removed or does not exist
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
 
+    @spl_char
+    @spl_char_2
     Scenario: Funny characters in the table name or schema name for gpcrondump
         Given the test is initialized
         And the database "testdb" does not exist
@@ -3037,6 +3041,8 @@ Feature: Validate command line arguments
         Then gpcrondump should return a return code of 2
         And gpcrondump should print Name has an invalid character "\\t" "\\n" "!" "," "." to stdout
 
+    @spl_char
+    @spl_char_3
     Scenario: Funny characters in the table name or schema name for gpdbrestore
         Given the test is initialized
         And database "testdb" exists
@@ -3061,6 +3067,8 @@ Feature: Validate command line arguments
         Then gpdbrestore should return a return code of 2
         And gpdbrestore should print Name has an invalid character to stdout
 
+    @spl_char
+    @spl_char_4
     Scenario: gpcrondump with -T option where table name, schema name and database name contains special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3080,6 +3088,8 @@ Feature: Validate command line arguments
         And verify that there is no table " co_T`~@#$%^&*()-+[{]}|\;: \'"/?><1 " in " DB`~@#$%^&*()_-+[{]}|\;: \'/?><;1 "
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
 
+    @spl_char
+    @spl_char_5
     Scenario: gpcrondump with --exclude-table-file option where table name, schema name and database name contains special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3097,6 +3107,8 @@ Feature: Validate command line arguments
         And verify that there is no table " co_T`~@#$%^&*()-+[{]}|\;: \'"/?><1 " in " DB`~@#$%^&*()_-+[{]}|\;: \'/?><;1 "
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
 
+    @spl_char
+    @spl_char_6
     Scenario: gpcrondump with --table-file option where table name, schema name and database name contains special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3116,6 +3128,8 @@ Feature: Validate command line arguments
         And verify that there is no table " co_T`~@#$%^&*()-+[{]}|\;: \'"/?><1 " in " DB`~@#$%^&*()_-+[{]}|\;: \'/?><;1 "
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
 
+    @spl_char
+    @spl_char_7
     Scenario: gpcrondump with -t option where table name, schema name and database name contains special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3135,6 +3149,8 @@ Feature: Validate command line arguments
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
 
 
+    @spl_char
+    @spl_char_8
     Scenario: gpcrondump with --schema-file, --exclude-schema-file, -s and -S option when schema name and database name contains special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3184,6 +3200,8 @@ Feature: Validate command line arguments
         And the directory "/tmp/specail_schema_data.out" is removed or does not exist
         And the directory "/tmp/specail_schema_data.ans" is removed or does not exist
 
+    @spl_char
+    @spl_char_9
     Scenario: Gpcrondump, --table-file, --exclude-table-file, --schema-file and --exclude-schema-file if file contains double quoted table and schema name then gpcrondump should error out finding table does not exists
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3207,6 +3225,8 @@ Feature: Validate command line arguments
         Then gpcrondump should return a return code of 0
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/drop_special_database.sql template1"
 
+    @spl_char
+    @spl_char_10
     Scenario: Gpdbrestore, --change-schema option does not work with -S schema level restore option
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3220,6 +3240,8 @@ Feature: Validate command line arguments
         And gpcrondump should print -S schema level restore does not work with --change-schema option to stdout
 
 
+    @spl_char
+    @spl_char_11
     Scenario: Gpdbrestore with --table-file, -T, --truncate and --change-schema options when table name, schema name and database name contains special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3259,6 +3281,8 @@ Feature: Validate command line arguments
         And the directory "/tmp/table_data.out" is removed or does not exist
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
 
+    @spl_char
+    @spl_char_12
     Scenario: gpcrondump with --incremental option when table name, schema name and database name contains special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3284,6 +3308,8 @@ Feature: Validate command line arguments
         And the directory "/tmp/special_table_data.ans" is removed or does not exist
 
 
+    @spl_char
+    @spl_char_13
     Scenario: gpdbrestore, --redirect option with special db name, and all table name, schema name and database name contain special character
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3305,11 +3331,15 @@ Feature: Validate command line arguments
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;2 ""
 
+    @spl_char
+    @spl_char_14
     Scenario: gpdbrestore, -s option with special chars
         Given the test is initialized
         When the user runs command "gpdbrestore -s " DB\`~@#\$%^&*()_-+[{]}|\\;:.;\n\t \\'/?><;2 ""
         Then gpdbrestore should print Name has an invalid character to stdout
 
+    @spl_char
+    @spl_char_15
     Scenario: gpdbrestore, -S option, schema level restore with special chars in schema name
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
@@ -3330,6 +3360,8 @@ Feature: Validate command line arguments
         And the directory "/tmp/special_table_data.ans" is removed or does not exist
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
 
+    @spl_char
+    @spl_char_16
     Scenario: gpdbrestore, --noplan option with special chars in database name, schema name, and table name
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
