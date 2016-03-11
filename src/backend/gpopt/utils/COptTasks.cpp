@@ -63,6 +63,7 @@
 #include "gpopt/engine/CEnumeratorConfig.h"
 #include "gpopt/engine/CStatisticsConfig.h"
 #include "gpopt/engine/CCTEConfig.h"
+#include "gpopt/engine/CHint.h"
 #include "gpopt/mdcache/CAutoMDAccessor.h"
 #include "gpopt/mdcache/CMDCache.h"
 #include "gpopt/minidump/CMiniDumperDXL.h"
@@ -758,7 +759,8 @@ COptTasks::PoconfCreate
 						GPOS_NEW(pmp) CEnumeratorConfig(pmp, ullPlanId, ullSamples, dCostThreshold),
 						GPOS_NEW(pmp) CStatisticsConfig(pmp, dDampingFactorFilter, dDampingFactorJoin, dDampingFactorGroupBy),
 						GPOS_NEW(pmp) CCTEConfig(ulCTEInliningCutoff),
-						pcm
+						pcm,
+						CHint::PhintDefault(pmp)
 						);
 }
 
