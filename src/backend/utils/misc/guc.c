@@ -10471,7 +10471,7 @@ SetPGVariable(const char *name, List *args, bool is_local, bool gp_dispatch)
 						 */
 
 					if (val[0] != '\'')
-						appendStringInfo(&buffer, "'%s'",val);
+						appendStringInfo(&buffer, "%s", quote_literal_internal(val));
 					else
 						appendStringInfo(&buffer, "%s",val);
 
