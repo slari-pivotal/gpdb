@@ -3193,7 +3193,7 @@ recoverInDoubtTransactions(void)
 
 	saved_currentGxact = currentGxact;
 
-	for (i = 0; i < *shmNumGxacts; i++)
+	for (i = 0; i < *shmNumGxacts; )
 	{
 		TMGXACT *gxact = shmGxactArray[i];
 
@@ -3202,11 +3202,13 @@ recoverInDoubtTransactions(void)
 		 */
 		if (saved_currentGxact != NULL && gxact == saved_currentGxact)
 		{
+			i++;
 			continue;
 		}
 		else if (gxact->state == DTX_STATE_ACTIVE_NOT_DISTRIBUTED)
 		{
 			/* should take care of other sessions. */
+			i++;
 			continue;
 		}
 
@@ -3245,6 +3247,9 @@ recoverInDoubtTransactions(void)
 
 		getTmLock();
 
+		/* This routine would call releaseGxact_UnderLocks, which
+		 * would decrease *shmNumGxacts and do a swap, so no need
+		 * to increase i */
 		doInsertForgetCommitted();
 
 		releaseTmLock();
