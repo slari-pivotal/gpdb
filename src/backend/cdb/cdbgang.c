@@ -639,6 +639,7 @@ buildGangDefinition(GangType type, int gang_id, int size, int content, char *por
 	newGangDefinition->gang_id = gang_id;
 	newGangDefinition->allocated = false;
 	newGangDefinition->active = false;
+	newGangDefinition->noReuse = false;
 	newGangDefinition->portal_name = (portal_name ? pstrdup(portal_name) : (char *) NULL);
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_VERBOSE)
@@ -1321,15 +1322,17 @@ static Gang *primaryWriterGang = NULL;
 List *
 getAllReaderGangs()
 {
+	return list_concat(getAllIdleReaderGangs(), getAllBusyReaderGangs());
+}
+
+List *
+getAllIdleReaderGangs()
+{
 	List	   *res = NIL;
 	ListCell   *le;
 
 	/*
-	 * using list_concat() here will destructively modify the lists!
-	 *
-	 * res = list_concat(availableReaderGangsN,
-	 * list_concat(availableReaderGangs1, list_concat(allocatedReaderGangsN,
-	 * allocatedReaderGangs1)));
+	 * Do not use list_concat() here, it would destructively modify the lists!
 	 */
 	foreach(le, availableReaderGangsN)
 	{
@@ -1339,6 +1342,19 @@ getAllReaderGangs()
 	{
 		res = lappend(res, lfirst(le));
 	}
+
+	return res;
+}
+
+List *
+getAllBusyReaderGangs()
+{
+	List	   *res = NIL;
+	ListCell   *le;
+
+	/*
+	 * Do not use list_concat() here, it would destructively modify the lists!
+	 */
 	foreach(le, allocatedReaderGangsN)
 	{
 		res = lappend(res, lfirst(le));
@@ -2066,6 +2082,14 @@ cleanupGang(Gang *gp)
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
 		elog(LOG, "cleanupGang done");
+
+	if (gp->noReuse)
+	{
+		disconnectAndDestroyGang(gp);
+		gp = NULL;
+		return false;
+	}
+
 	return true;
 }
 
