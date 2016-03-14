@@ -26,7 +26,6 @@ test: tpch_query
 test: gpsort
 test: resource_queue
 test: tpch_aopart
-test: bkup_gp
 test: mpp-11333
 test: view
 test: DMLstmnt
@@ -44,10 +43,8 @@ test: gp_persistent_table
 ignore: gpcheckmirrorseg
 test: AOCO_Compression2
 test: schema_topology
-test: gpmgmt1
 test: limit
 test: case
-test: bkup_pg
 test: bkup_gpcrondump
 test: cursor
 test: aggfunc
