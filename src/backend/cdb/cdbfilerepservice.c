@@ -154,6 +154,10 @@ FileRepSubProcess_ShutdownHandler(SIGNAL_ARGS)
 				{
 					FileRepResync_Cleanup();
 				}
+				else
+				{
+					LockReleaseAll(DEFAULT_LOCKMETHOD, false);
+				}
 				
 				/*
 				 * We remove ourself from LW waiter list (if applicable).
@@ -746,12 +750,11 @@ FileRepSubProcess_Main()
 		
 		LWLockReleaseAll();
 
-		if (fileRepProcessType == FileRepProcessTypeResyncManager)
+		if (FileRepPrimary_IsResyncManagerOrWorker())
 		{
 			LockReleaseAll(DEFAULT_LOCKMETHOD, false);
 		}
 
-		
 		if (FileRepIsBackendSubProcess(fileRepProcessType))
 		{
 			AbortBufferIO();
