@@ -1287,6 +1287,80 @@ explain select * from orca.index_test where c = 5;
 -- force_explain
 explain select * from orca.index_test where a = 5 and c = 5;
 
+-- bitmap test
+
+CREATE TABLE orca.outer_table (
+    flex_value_id numeric(15,0) ,
+    language character varying(4) ,
+    last_update_date date
+)
+WITH (appendonly=true, orientation=column) DISTRIBUTED BY (flex_value_id);
+
+
+set allow_system_table_mods="DML";
+UPDATE pg_class
+SET
+	relpages = 1::int,
+	reltuples = 0.0::real
+WHERE relname = 'outer_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'ofa_applsys');
+UPDATE pg_class
+SET
+	relpages = 64::int,
+	reltuples = 61988.0::real
+WHERE relname = 'outer_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'applsys');
+
+CREATE TABLE orca.inner_table (
+    flex_value_set_id numeric(10,0) ,
+    flex_value_id numeric(15,0) ,
+    flex_value character varying(150) ,
+    last_update_date date
+)
+WITH (appendonly=true, orientation=column) DISTRIBUTED BY (flex_value_set_id ,flex_value_id);
+
+CREATE INDEX inner_table_idx ON orca.inner_table USING btree (flex_value_id);
+UPDATE pg_class
+SET
+	relpages = 64::int,
+	reltuples = 30994.0::real
+WHERE relname = 'inner_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'applsys');
+
+
+insert into orca.outer_table values(12345,'ZHS');
+insert into orca.outer_table values(012345,'ZHS');
+insert into orca.inner_table values(54321,12345);
+insert into orca.inner_table values(654321,123456);
+
+CREATE TABLE orca.join_table(fid numeric(10,0));
+insert into orca.join_table VALUES(54321);
+
+select disable_xform('CXformInnerJoin2HashJoin');
+select disable_xform('CXformInnerJoin2IndexGetApply');
+
+explain SELECT fid FROM
+(SELECT b1.flex_value_set_id, b1.flex_value_id
+FROM
+orca.inner_table b1,
+orca.outer_table c1
+WHERE
+b1.flex_value_id = c1.flex_value_id 
+and c1.language = 'ZHS') t,
+orca.join_table
+WHERE orca.join_table.fid = t.flex_value_set_id;
+
+SELECT fid FROM
+(SELECT b1.flex_value_set_id, b1.flex_value_id
+FROM
+orca.inner_table b1,
+orca.outer_table c1
+WHERE
+b1.flex_value_id = c1.flex_value_id 
+and c1.language = 'ZHS') t,
+orca.join_table
+WHERE orca.join_table.fid = t.flex_value_set_id;
+
 -- clean up
 drop schema orca cascade;
 reset optimizer_segments;
+
+
+
