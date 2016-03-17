@@ -3383,17 +3383,6 @@ Feature: Validate command line arguments
         And the directory "/tmp/special_ao_table_data.ans" is removed or does not exist
         And the user runs command "dropdb " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 ""
 
-	Scenario: Restoring a nonexistent table should fail with clear error message
-        Given the test is initialized
-        And there is a "heap" table "heap_table" in "bkdb" with data
-        When the user runs "gpcrondump -a -x bkdb"
-        Then gpcrondump should return a return code of 0
-        And the timestamp from gpcrondump is stored
-        When the user runs gpdbrestore with the stored timestamp and options "-T public.heap_table2"
-        Then gpdbrestore should return a return code of 2
-        Then gpdbrestore should print Table public.heap_table2 not found in backup to stdout
-        Then gpdbrestore should not print Issue with 'ANALYZE' of restored table 'public.heap_table2' in 'bkdb' database to stdout
-
     Scenario: Absolute path should be provided with -u option for gpcrondump
         Given the test is initialized
         And there is a "heap" table "heap_table" in "bkdb" with data
