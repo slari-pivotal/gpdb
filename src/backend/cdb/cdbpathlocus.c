@@ -579,6 +579,7 @@ cdbpathlocus_join(CdbPathLocus a, CdbPathLocus b)
     ListCell       *bcell;
     List           *equivpathkeylist;
     CdbPathLocus    ojlocus;
+    ojlocus.partkey = NIL;
 
     Assert(cdbpathlocus_is_valid(a) &&
            cdbpathlocus_is_valid(b));
