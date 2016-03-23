@@ -35,6 +35,7 @@ export MACOSX_DEPLOYMENT_TARGET=10.9;
 
 ```
 cd gpAux/
+make sync_tools
 # build optimized 32bit
 make dist enable_gphdfs=yes ARCH_BIT=GPOS_32BIT CFLAGS="-Wno-deprecated";
 ```
