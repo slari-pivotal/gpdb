@@ -17,8 +17,9 @@ All the following steps are automated by scripts at https://github.com/greenplum
 
 ## Dependencies
 
-* Java 1.6
-* gcc 4.4.2 for OSX 106, assume installed at `/opt` with `/opt/gcc_env-osx106.sh` available
+* Java 1.6 (https://support.apple.com/kb/DL1572?locale=en_US)
+* gcc 4.4.2 for OSX 106, assume installed at `/opt` with `/opt/gcc_env-osx106.sh` available (http://intranet.greenplum.com/releng/tools/gcc/4.4.2/osx106-gcc-4.4.2.tar.gz)
+* Xcode 6.3.2 commandline (other than default Xcode 7.0+) to avoid `long long int is 64bit` error during configure
 * All other dependencies are tracked by `./gpAux/releng/make/dependencies/ivy.xml` and will be retrieved automatically during build
 
 ## Environment
@@ -29,7 +30,29 @@ export GPROOT=`pwd`/gpAux;
 export JAVA_HOME=`/usr/libexec/java_home -v 1.6`;
 source /opt/gcc_env-osx106.sh;
 export MACOSX_DEPLOYMENT_TARGET=10.9;
+
+# ensure `make sync_tools` can install under /opt
+sudo chown -R $USERNAME:admin /opt
 ```
+
+Add following lines to `/etc/sysctl.conf` file (create one if it isn’t there)
+```
+kern.sysv.shmmax=2147483648
+kern.sysv.shmmin=1
+kern.sysv.shmmni=64
+kern.sysv.shmseg=16
+kern.sysv.shmall=524288
+kern.maxfiles=65535
+kern.maxfilesperproc=65536
+```
+
+Run the following command as root for the changes to take effect:
+
+```
+sudo sh -c "cat /etc/sysctl.conf | xargs -n1 sysctl -w"
+```
+
+If you get an error for shmmni, ignore and proceed. 
 
 ## Build
 
