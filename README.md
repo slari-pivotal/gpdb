@@ -60,8 +60,10 @@ If you get an error for shmmni, ignore and proceed.
 cd gpAux/
 make sync_tools
 # build optimized 32bit
-make dist enable_gphdfs=yes ARCH_BIT=GPOS_32BIT CFLAGS="-Wno-deprecated";
+make dist enable_gphdfs=yes ARCH_BIT=GPOS_32BIT;
 ```
+
+NOTE: If you hit `pljava` issue, just disable it in the `Makefile` under `gpAux`.
 
 ## Compatibility Fix
 
