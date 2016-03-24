@@ -152,7 +152,7 @@ timeouts[] =
 
 static pthread_t ic_rx_thread;
 static pthread_mutex_t	rx_thread_mutex = PTHREAD_MUTEX_INITIALIZER;
-static bool ic_rx_thread_created = true;
+static bool ic_rx_thread_created = false;
 
 static volatile bool rx_thread_shutdown = false;
 static volatile bool rx_thread_shutdown_complete = false;
@@ -4254,12 +4254,17 @@ rx_handle_mismatch(struct icpkthdr *pkt, struct sockaddr_storage *peer, int peer
 void
 WaitInterconnectQuitUDP(void)
 {
+	if (Gp_role == GP_ROLE_UTILITY)
+	{
+		return;
+	}
+
 	/* In case ic thread is waiting lock */
 	pthread_mutex_unlock(&rx_thread_mutex);
 
 	rx_thread_shutdown = true;
 
-	if(ic_rx_thread_created)
+	if (ic_rx_thread_created)
 	{
 		SendDummyPacket();
 		pthread_join(ic_rx_thread, NULL);

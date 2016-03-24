@@ -6925,6 +6925,11 @@ dumpConnections(ChunkTransportStateEntry *pEntry, const char *fname)
 void
 WaitInterconnectQuitUDPIFC(void)
 {
+	if (Gp_role == GP_ROLE_UTILITY)
+	{
+		return;	
+	}
+
 	/*
 	 * Just in case ic thread is waiting on the locks.
 	*/
@@ -6933,10 +6938,10 @@ WaitInterconnectQuitUDPIFC(void)
 
 	compare_and_swap_32(&ic_control_info.shutdown, 0, 1);
 
-	if(ic_control_info.threadCreated)
+	if (ic_control_info.threadCreated)
 	{
 		SendDummyPacket();
 		pthread_join(ic_control_info.threadHandle, NULL);
 	}
-	ic_control_info.threadCreated = 0;
+	ic_control_info.threadCreated = false;
 }
