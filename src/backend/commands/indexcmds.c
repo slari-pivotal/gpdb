@@ -1595,19 +1595,24 @@ ReindexIndex(ReindexStmt *stmt)
 }
 
 /*
- * Perform REINDEX on each relation of the relids list.  The caller should
- * close the transaction before calling this since it opens and closes a
- * transaction per relation.  This is designed for QD/utility, and is not
- * useful for QE.
+ * Perform REINDEX on each relation of the relids list.  The function
+ * opens and closes a transaction per relation.  This is designed for
+ * QD/utility, and is not useful for QE.
  */
 static void
 ReindexRelationList(List *relids)
 {
 	ListCell   *lc;
 
-	/* The caller should have closed transaction (see function comments). */
-	Assert(!IsTransactionOrTransactionBlock());
 	Assert(Gp_role != GP_ROLE_EXECUTE);
+
+	/*
+	 * Commit ongoing transaction so that we can start a new
+	 * transaction per relation.
+	 */
+	CommitTransactionCommand();
+
+	SIMPLE_FAULT_INJECTOR(ReindexDB);
 
 	foreach (lc, relids)
 	{
@@ -1653,6 +1658,13 @@ ReindexRelationList(List *relids)
 
 		CommitTransactionCommand();
 	}
+
+	/*
+	 * We committed the transaction above, so start a new one before
+	 * returning.
+	 */
+	setupRegularDtxContext();
+	StartTransactionCommand();
 }
 
 /*
@@ -1753,13 +1765,8 @@ ReindexTable(ReindexStmt *stmt)
 		caql_endscan(pcqCtx);
 	}
 
-	/* Now reindex each rel in a separate transaction */
-	CommitTransactionCommand();
-
 	ReindexRelationList(relids);
 
-	setupRegularDtxContext();
-	StartTransactionCommand();
 	MemoryContextDelete(private_context);
 }
 
@@ -1875,14 +1882,7 @@ ReindexDatabase(ReindexStmt *stmt)
 	}
 	caql_endscan(pcqCtx);
 
-	/* Now reindex each rel in a separate transaction */
-	CommitTransactionCommand();
-
-	SIMPLE_FAULT_INJECTOR(ReindexDB);
-
 	ReindexRelationList(relids);
 
-	setupRegularDtxContext();
-	StartTransactionCommand();
 	MemoryContextDelete(private_context);
 }
