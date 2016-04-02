@@ -344,12 +344,6 @@ select histogram_bounds from pg_stats where tablename = 'foo_numeric' and attnam
  {-83028485,-34338492.215397047,-24926804.045047420,0,3,4.31,6,9,12,15,18,21,24,27,30,16397.038491,74881,93901.57763026,7799461.4119,NaN}
 (1 row)
 
-select most_common_vals from pg_stats where tablename = 'foo_numeric' and attname = 'b';
-                                                                   most_common_vals                                                                   
-------------------------------------------------------------------------------------------------------------------------------------------------------
- {NaN,0,-24926804.045047420,16397.038491,7799461.4119,-34338492.215397047,93901.57763026,4.31,-83028485,74881,8,2,22,28,17,25,19,11,5,14,3,9,12,29,6}
-(1 row)
-
 reset gp_create_table_random_default_distribution;
 --
 -- Ensure that VACUUM ANALYZE does not result in incorrect statistics

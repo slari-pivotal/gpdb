@@ -266,8 +266,6 @@ ANALYZE foo_numeric;
 
 select histogram_bounds from pg_stats where tablename = 'foo_numeric' and attname = 'b';
 
-select most_common_vals from pg_stats where tablename = 'foo_numeric' and attname = 'b';
-
 reset gp_create_table_random_default_distribution;
 
 --
