@@ -3805,6 +3805,21 @@ def impl(context, filename):
     cmd = Command(name="killing pid", cmdStr='kill -9 %s' % pid)
     cmd.run(validateAfter=True)
 
+@then('an attribute of table "{table}" in database "{dbname}" is deleted on segment with content id "{segid}"')
+def impl(context, table, dbname, segid):
+    local_cmd = 'psql %s -t -c "SELECT port,hostname FROM gp_segment_configuration WHERE content=%s;"' % (dbname, segid)
+    run_command(context, local_cmd)
+    port, host = context.stdout_message.split("|")
+    port = port.strip()
+    host = host.strip()
+    user = os.environ.get('USER')
+    source_file = os.path.join(os.environ.get('GPHOME'),'greenplum_path.sh')
+    # Yes, the below line is ugly.  It looks much uglier when done with separate strings, given the multiple levels of escaping required.
+    remote_cmd = """
+ssh %s "source %s; export PGUSER=%s; export PGPORT=%s; export PGOPTIONS=\\\"-c gp_session_role=utility\\\"; psql -d %s -c \\\"SET allow_system_table_mods=\'dml\'; DELETE FROM pg_attribute where attrelid=\'%s\'::regclass::oid;\\\""
+""" % (host, source_file, user, port, dbname, table)
+    run_command(context, remote_cmd.strip())
+
 @then('The user runs sql "{query}" in "{dbname}" on first primary segment')
 @when('The user runs sql "{query}" in "{dbname}" on first primary segment')
 @given('The user runs sql "{query}" in "{dbname}" on first primary segment')
@@ -3826,4 +3841,3 @@ def impl(context, path, num):
     result = validate_local_path(path)
     if result != int(num):
         raise Exception("expected %s items but found %s items in path %s" % (num, result, path) )
-

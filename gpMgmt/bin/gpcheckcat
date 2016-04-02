@@ -164,6 +164,7 @@ class Global():
         self.totalCheckRun = 0
         self.checkStatus = True
         self.failedChecks = []
+        self.missing_attr_tables = []
 
 GV = Global()
 
@@ -2981,10 +2982,10 @@ def checkTableMissingEntry(cat):
                         ('WARNING' if log_level == logging.WARNING else 'FAIL'))
             logger_with_level('  %s has %d issue(s)' % (catname, nrows))
             fields = curs.listfields()
-            log_literal(logger,log_level,"    " + " | ".join(fields))
-            for row in curs.getresult():
-                log_literal(logger,log_level,"    " + " | ".join(map(str, row)))
+            log_literal(logger, log_level, "    " + " | ".join(fields))
             results = curs.getresult()
+            for row in results:
+                log_literal(logger, log_level, "    " + " | ".join(map(str, row)))
             processMissingDuplicateEntryResult(catname, fields, results, "missing")
             if catname == 'pg_type':
             	generateVerifyFile(catname, fields, results, 'missing_extraneous')
@@ -3270,10 +3271,10 @@ def checkTableDuplicateEntry(cat):
             logger.error('  %s has %d issue(s)' % (catname, nrows))
 
             fields = curs.listfields()
-            log_literal(logger,logging.ERROR,"    " + " | ".join(fields))
-            for row in curs.getresult():
-                log_literal(logger,logging.ERROR,"    " + " | ".join(map(str, row)))
+            log_literal(logger, logging.ERROR, "    " + " | ".join(fields))
             results = curs.getresult()
+            for row in results:
+                log_literal(logger, logging.ERROR, "    " + " | ".join(map(str, row)))
             processMissingDuplicateEntryResult(catname, fields, results, "duplicate")
             if catname == 'pg_type':
                 generateVerifyFile(catname, fields, results, 'duplicate')
@@ -4474,6 +4475,8 @@ class GPObject:
                         each.report()
             myprint('')
 
+
+
         # Report foreign key issues
         if len(self.foreignkeyIssues):
             for catname,issues in self.foreignkeyIssues.iteritems():
@@ -4499,6 +4502,26 @@ class GPObject:
             myprint('')
 
         myprint = _myprint
+
+        # Collect all tables with missing issues for later reporting
+        if len(self.missingIssues):
+            db = connect2(GV.cfg[1], utilityMode=False)
+            oid_query = "select (select nspname from pg_namespace where oid=relnamespace) || '.' || relname from pg_class where oid=%d"
+            type_query = "select (select nspname from pg_namespace where oid=relnamespace) || '.' || relname from pg_class where reltype=%d"
+            for issues in self.missingIssues.values() :
+                for issue in issues:
+                    # Get schemaname.tablename corresponding to oid
+                    for key in issue.pkeys:
+                        if 'relid' in key or key in ['ev_class', 'reloid', 'fmterrtbl']:
+                            table_list = db.query(oid_query % issue.pkeys[key]).getresult()
+                            if table_list:
+                                GV.missing_attr_tables.append( (table_list[0][0], issue.segids) )
+                        elif key == 'oid':
+                            table_list = db.query(type_query % issue.pkeys[key]).getresult()
+                            if table_list:
+                                GV.missing_attr_tables.append( (table_list[0][0], issue.segids) )
+
+
 
     def __cmp__(self, other):
         if isinstance(other, GPObject):
@@ -4724,6 +4747,39 @@ def checkcatReport():
             if par.isTopLevel():
                 reportAllIssuesRecursive(par, GPObjectGraph)
         myprint('')
+
+        # Report tables with missing attributes in a more usable format
+        if len(GV.missing_attr_tables):
+            # Expand partition tables
+            db = connect2(GV.cfg[1], utilityMode=False)
+            parent_tables = [t[0] for t in db.query("SELECT DISTINCT (schemaname || '.' || tablename) FROM pg_partitions").getresult()]
+            partition_leaves_sql = """
+            SELECT x.partitionschemaname || '.' || x.partitiontablename
+            FROM (
+                 SELECT distinct schemaname, tablename, partitionschemaname, partitiontablename, partitionlevel
+                 FROM pg_partitions
+                 WHERE schemaname || '.' || tablename in (%s)
+                 ) as X,
+            (SELECT schemaname, tablename maxtable, max(partitionlevel) maxlevel
+             FROM pg_partitions
+             group by (tablename, schemaname)
+            ) as Y
+            WHERE x.schemaname = y.schemaname and x.tablename = Y.maxtable and x.partitionlevel = Y.maxlevel;
+            """ % ("'" + "', '".join([pg.escape_string(t) for t in parent_tables]) + "'")
+
+            GV.missing_attr_tables = list(set(GV.missing_attr_tables))
+            myprint('----------------------------------------------------')
+            myprint("    Tables with missing issues:")
+            myprint("        Format [database name].[schema name].[table name].[segment id]:")
+            for table, segids in GV.missing_attr_tables:
+                if table in parent_tables:
+                    for part_table in db.query(partition_leaves_sql).getresult():
+                        GV.missing_attr_tables.append( (part_table[0], segids) )
+            for table, segids in sorted(GV.missing_attr_tables):
+                for id in segids[1:-1].split(','):
+                    myprint("        Table %s.%s.%s" % (GV.dbname, table, id))
+            myprint('')
+            myprint('')
 
     notReported = set(GV.failedChecks).difference(reportedCheck)
     if len(notReported) > 0:
