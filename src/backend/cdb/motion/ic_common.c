@@ -306,7 +306,7 @@ InitMotionLayerIPC(void)
 		InitMotionTCP(&TCP_listenerFd, &tcp_listener);
 	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
 		InitMotionUDPIFC(&UDP_listenerFd, &udp_listener);
-	else (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
+	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
 		InitMotionUDP(&UDP_listenerFd, &udp_listener);
 
 	Gp_listener_port = (udp_listener<<16) | tcp_listener;
