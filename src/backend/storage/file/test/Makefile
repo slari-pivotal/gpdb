@@ -2,10 +2,9 @@ subdir=src/backend/storage/file
 top_builddir=../../../../..
 include $(top_builddir)/src/Makefile.global
 
-TARGETS=bfz
+TARGETS=bfz compress_zlib
 
-# Objects from backend, which don't need to be mocked but need to be linked.
-bfz_REAL_OBJS=\
+common_REAL_OBJS=\
         $(top_srcdir)/src/backend/access/hash/hashfunc.o \
         $(top_srcdir)/src/backend/access/transam/filerepdefs.o \
         $(top_srcdir)/src/backend/bootstrap/bootparse.o \
@@ -35,4 +34,17 @@ bfz_REAL_OBJS=\
         $(top_srcdir)/src/timezone/localtime.o \
         $(top_srcdir)/src/timezone/pgtz.o
 
+bfz_REAL_OBJS=$(common_REAL_OBJS)
+    
+compress_zlib_REAL_OBJS=$(common_REAL_OBJS) \
+        $(top_srcdir)/src/backend/access/external/fileam.o \
+        $(top_srcdir)/src/backend/utils/misc/fstream/gfile.o \
+        $(top_srcdir)/src/backend/utils/mmgr/aset.o \
+        $(top_srcdir)/src/backend/utils/mmgr/mcxt.o \
+        $(top_srcdir)/src/backend/utils/mmgr/memaccounting.o \
+        $(top_srcdir)/src/backend/utils/mmgr/memprot.o \
+        $(top_srcdir)/src/backend/utils/mmgr/mpool.o \
+        $(top_srcdir)/src/backend/utils/mmgr/portalmem.o \       
+        
+        
 include $(top_builddir)/src/Makefile.mock
