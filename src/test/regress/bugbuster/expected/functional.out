@@ -494,25 +494,34 @@ CREATE TABLE emp_start_dates
    startdate date
 ) distributed by (startdate);
 insert into employees(empid, name, gender) values(100, 'John Smith', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(100, M) already exists.
 insert into employees(empid, name, gender) values(101, 'John Deere', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg0 sdw11:18506 pid=22924)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(101, M) already exists.
 insert into employees(empid, name, gender) values(102, 'Jane Doe', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(102, F) already exists.
 insert into employees(empid, name, gender) values(103, 'Janet Jackson', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg0 sdw11:18506 pid=22924)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(103, F) already exists.
 insert into employees(empid, name, gender) values(104, 'Anne Smith', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(104, F) already exists.
 insert into employees(empid, name, gender) values(105, 'Ryan Goesling', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg0 sdw11:18506 pid=22924)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(105, M) already exists.
 insert into employees(empid, name, gender) values(106, 'George Clooney', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(106, M) already exists.
 insert into employees(empid, name, gender) values(107, 'Julia Roberts', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg0 sdw11:18506 pid=22924)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(107, F) already exists.
 insert into employees(empid, name, gender) values(108, 'Jennifer Aniston', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(108, F) already exists.
 insert into employees(empid, name, gender) values(109, 'Null Startdate', 'M');
- 
+
 insert into emp_start_dates(empid, startdate) values(100, '2011-01-01'::date);
 insert into emp_start_dates(empid, startdate) values(101, '2010-01-15'::date);
 insert into emp_start_dates(empid, startdate) values(102, '2011-02-28'::date);
@@ -935,26 +944,36 @@ CREATE TABLE emp_start_dates
    startdate date
 ) distributed by (startdate);
 insert into employees(empid, name, gender) values(100, 'John Smith', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(100, M) already exists.
 insert into employees(empid, name, gender) values(101, 'John Deere', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg0 sdw11:18506 pid=22924)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(101, M) already exists.
 insert into employees(empid, name, gender) values(102, 'Jane Doe', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(102, F) already exists.
 insert into employees(empid, name, gender) values(103, 'Janet Jackson', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg0 sdw11:18506 pid=22924)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(103, F) already exists.
 insert into employees(empid, name, gender) values(104, 'Anne Smith', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(104, F) already exists.
 insert into employees(empid, name, gender) values(105, 'Ryan Goesling', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg0 sdw11:18506 pid=22924)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(105, M) already exists.
 insert into employees(empid, name, gender) values(106, 'George Clooney', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(106, M) already exists.
 insert into employees(empid, name, gender) values(107, 'Julia Roberts', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg0 sdw11:18506 pid=22924)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(107, F) already exists.
 insert into employees(empid, name, gender) values(108, 'Jennifer Aniston', 'F');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_women_pkey"  (seg1 sdw11:18507 pid=22926)
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_women_pkey"
+DETAIL:  Key (empid, gender)=(108, F) already exists.
 insert into employees(empid, name, gender) values(109, 'John Mayer', 'M');
-ERROR:  duplicate key violates unique constraint "employees_1_prt_men_pkey"  (seg0 sdw11:18506 pid=22924)
- 
+ERROR:  duplicate key value violates unique constraint "employees_1_prt_men_pkey"
+DETAIL:  Key (empid, gender)=(109, M) already exists.
+
 insert into emp_start_dates(empid, startdate) values(100, '2012-01-01'::date);
 insert into emp_start_dates(empid, startdate) values(101, '2010-01-15'::date);
 insert into emp_start_dates(empid, startdate) values(102, '2008-02-28'::date);
