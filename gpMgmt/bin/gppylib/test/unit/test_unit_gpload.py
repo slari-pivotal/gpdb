@@ -97,6 +97,14 @@ class GpLoadTestCase(unittest.TestCase):
                               False)
 
 
+    def test_case_configvalue(self):
+        gploader = gpload(['-f', os.path.join(os.path.dirname(__file__), 'allconfig.yml')])
+        self.assertEqual(u'test', gploader.getconfig('gpload:output:table'))
+        self.assertEqual(1981, gploader.getconfig('gpload:input:source:port', int))
+        self.assertEqual(True, gploader.getconfig('gpload:preload:reuse_tables', bool))
+        self.assertEqual(False, gploader.getconfig('gpload:input:log_errors', bool, False))
+        self.assertEqual(True, gploader.getconfig('gpload:input:fully_qualified_domain_name', bool))
+
 #------------------------------- Mainline --------------------------------
 if __name__ == '__main__':
     unittest.main()

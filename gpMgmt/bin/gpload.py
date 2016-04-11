@@ -44,6 +44,7 @@ import hashlib
 import datetime,getpass,os,signal,socket,subprocess,threading,time,traceback,re
 import platform
 import uuid
+import socket
 
 thePlatform = platform.system()
 if thePlatform in ['Windows', 'Microsoft']:
@@ -102,6 +103,7 @@ valid_tokens = {
     "error_table": {'parse_children': True, 'parent': "input"},
     "log_errors": {'parse_children': False, 'parent': "input"},
     "header": {'parse_children': True, 'parent': "input"},
+    "fully_qualified_domain_name": {'parse_children': False, 'parent': 'input'},
     "output": {'parse_children': True, 'parent': "gpload"},
     "table": {'parse_children': True, 'parent': "output"}, 
     "mode": {'parse_children': True, 'parent': "output"},
@@ -1619,15 +1621,13 @@ class gpload:
 
             # do default host, the current one
             if not local_hostname:
-                try:
-                    pipe = subprocess.Popen("hostname",
-                                            stdout=subprocess.PIPE,
-                                            stderr=subprocess.PIPE)
-                    result  = pipe.communicate();
-                except OSError, e:
-                    self.log(self.ERROR, "command failed: " + str(e))
-                
-                local_hostname = [result[0].strip()]
+                # if fully_qualified_domain_name is defined and set to true we want to
+                # resolve the fqdn rather than just grabbing the hostname.
+                fqdn = self.getconfig('gpload:input:fully_qualified_domain_name', bool, False)
+                if fqdn:
+                    local_hostname = socket.getfqdn()
+                else:
+                    local_hostname = socket.gethostname()
 
             # build gpfdist parameters
             popenList = ['gpfdist']
