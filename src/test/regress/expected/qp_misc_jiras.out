@@ -920,7 +920,7 @@ insert into qp_misc_jiras.tbl4958_test select i, i%36, i%109 from generate_serie
 select qp_misc_jiras.tbl4958_percent_cont(0.90, i::numeric, j, k) from qp_misc_jiras.tbl4958_test;
  tbl4958_percent_cont 
 ----------------------
-               999954
+               999940
 (1 row)
 
 -- end_ignore
@@ -1661,9 +1661,9 @@ NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'a' as
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 -- start_ignore
 select 'drop schema '||nspname||' cascade;' from pg_namespace where nspname like '%temp%';
-            ?column?             
----------------------------------
- drop schema pg_temp_86 cascade;
+             ?column?              
+-----------------------------------
+ drop schema pg_temp_1230 cascade;
 (1 row)
 
 -- end_ignore
@@ -1907,7 +1907,7 @@ explain select * from qp_misc_jiras.tbl6833_anl; -- should not hit cdbRelSize();
    ->  Append  (cost=0.00..2.00 rows=1 width=12)
          ->  Seq Scan on tbl6833_anl_1_prt_bb_1 tbl6833_anl  (cost=0.00..1.00 rows=1 width=12)
          ->  Seq Scan on tbl6833_anl_1_prt_bb_2 tbl6833_anl  (cost=0.00..1.00 rows=1 width=12)
- Settings:  enable_indexscan=off; enable_nestloop=on; enable_seqscan=off; optimizer=off
+ Settings:  enable_indexscan=off; enable_nestloop=on; enable_seqscan=off
  Optimizer status: legacy query optimizer
 (6 rows)
 
@@ -1930,7 +1930,7 @@ explain select * from qp_misc_jiras.tbl6833_vac; -- should not hit cdbRelSize();
    ->  Append  (cost=0.00..2.00 rows=1 width=12)
          ->  Seq Scan on tbl6833_vac_1_prt_bb_1 tbl6833_vac  (cost=0.00..1.00 rows=1 width=12)
          ->  Seq Scan on tbl6833_vac_1_prt_bb_2 tbl6833_vac  (cost=0.00..1.00 rows=1 width=12)
- Settings:  enable_indexscan=off; enable_nestloop=on; enable_seqscan=off; optimizer=off
+ Settings:  enable_indexscan=off; enable_nestloop=on; enable_seqscan=off
  Optimizer status: legacy query optimizer
 (6 rows)
 
@@ -1946,7 +1946,6 @@ drop table qp_misc_jiras.tbl6833_anl;
 drop table qp_misc_jiras.tbl6833_vac;
 -- actual query
 drop table if exists qp_misc_jiras_foo;
-NOTICE:  table "qp_misc_jiras_foo" does not exist, skipping
 create table qp_misc_jiras_foo(x int) distributed by (x);
 SELECT t.attrnums, a.attname, pg_catalog.format_type(a.atttypid, a.atttypmod),
 a.attnotnull, a.attnum, pg_catalog.col_description(a.attrelid, a.attnum)
@@ -2057,16 +2056,16 @@ select get_ao_distribution('qp_misc_jiras.tbl7126_ao');
  get_ao_distribution 
 ---------------------
  (2,33316)
- (1,33336)
  (0,33348)
+ (1,33336)
 (3 rows)
 
 select get_ao_distribution('qp_misc_jiras.tbl7126_ao_zlib3');
  get_ao_distribution 
 ---------------------
  (2,33316)
- (1,33336)
  (0,33348)
+ (1,33336)
 (3 rows)
 
 select get_ao_distribution('qp_misc_jiras.tbl7126_co');
@@ -2578,7 +2577,7 @@ insert into qp_misc_jiras.tbl7740_rank values(1,'M','1');
 insert into qp_misc_jiras.tbl7740_rank values(1,'M','0');
 -- start_ignore 
 alter table qp_misc_jiras.tbl7740_rank split default partition at (values(('F', '0'))) into (partition mother, partition other);
-NOTICE:  exchanged partition "other" of relation "tbl7740_rank" with relation "pg_temp_33751"
+NOTICE:  exchanged partition "other" of relation "tbl7740_rank" with relation "pg_temp_359236"
 NOTICE:  dropped partition "other" for relation "tbl7740_rank"
 NOTICE:  CREATE TABLE will create partition "tbl7740_rank_1_prt_mother" for table "tbl7740_rank"
 NOTICE:  CREATE TABLE will create partition "tbl7740_rank_1_prt_other" for table "tbl7740_rank"
@@ -2657,23 +2656,23 @@ NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'i' as
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 insert into qp_misc_jiras.tbl7553_test values(1,2);
 explain select i as a, i as b from qp_misc_jiras.tbl7553_test group by grouping sets( (a, b), (a));
-                                                                       QUERY PLAN                                                                       
---------------------------------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice2; segments: 3)  (cost=116.12..139.79 rows=2367 width=20)
-   ->  HashAggregate  (cost=116.12..139.79 rows=789 width=20)
+                                                               QUERY PLAN                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=8731.75..8759.25 rows=2750 width=20)
+   ->  HashAggregate  (cost=8731.75..8759.25 rows=917 width=20)
          Group By: "rollup".a, "rollup".a, "rollup"."grouping", "rollup"."group_id"
-         ->  Subquery Scan "rollup"  (cost=51.58..109.67 rows=215 width=20)
-               ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=51.58..103.22 rows=215 width=20)
+         ->  Subquery Scan "rollup"  (cost=8018.50..8724.25 rows=250 width=20)
+               ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=8018.50..8716.75 rows=250 width=20)
                      Hash Key: "rollup".a, "rollup".a, "grouping", group_id()
-                     ->  GroupAggregate  (cost=51.58..90.32 rows=215 width=20)
+                     ->  GroupAggregate  (cost=8018.50..8701.75 rows=250 width=20)
                            Group By: "rollup".a, "rollup"."grouping", "rollup"."group_id"
-                           ->  Subquery Scan "rollup"  (cost=51.58..75.26 rows=287 width=20)
-                                 ->  GroupAggregate  (cost=51.58..66.65 rows=287 width=20)
+                           ->  Subquery Scan "rollup"  (cost=8018.50..8684.25 rows=334 width=20)
+                                 ->  GroupAggregate  (cost=8018.50..8674.25 rows=334 width=20)
                                        Group By: tbl7553_test.i, tbl7553_test.i
-                                       ->  Sort  (cost=51.58..53.74 rows=287 width=4)
+                                       ->  Sort  (cost=8018.50..8233.75 rows=28700 width=4)
                                              Sort Key: tbl7553_test.i, tbl7553_test.i
-                                             ->  Seq Scan on tbl7553_test  (cost=0.00..9.61 rows=287 width=4)
- Settings:  enable_indexscan=off; enable_nestloop=on; enable_seqscan=off; gp_enable_agg_distinct=off; gp_enable_agg_distinct_pruning=off; optimizer=off
+                                             ->  Seq Scan on tbl7553_test  (cost=0.00..961.00 rows=28700 width=4)
+ Settings:  enable_indexscan=off; enable_nestloop=on; enable_seqscan=off; gp_enable_agg_distinct=off; gp_enable_agg_distinct_pruning=off
  Optimizer status: legacy query optimizer
 (16 rows)
 
@@ -2685,23 +2684,23 @@ select i as a, i as b from qp_misc_jiras.tbl7553_test group by grouping sets( (a
 (2 rows)
 
 explain select j as a, j as b from qp_misc_jiras.tbl7553_test group by grouping sets( (a, b), (a)); 
-                                                                       QUERY PLAN                                                                       
---------------------------------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice2; segments: 3)  (cost=116.12..139.79 rows=2367 width=8)
-   ->  HashAggregate  (cost=116.12..139.79 rows=789 width=8)
+                                                               QUERY PLAN                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=8731.75..8759.25 rows=2750 width=8)
+   ->  HashAggregate  (cost=8731.75..8759.25 rows=917 width=8)
          Group By: partial_aggregation.a, partial_aggregation.a, partial_aggregation."grouping", partial_aggregation."group_id"
-         ->  Subquery Scan partial_aggregation  (cost=51.58..109.67 rows=215 width=20)
-               ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=51.58..103.22 rows=215 width=20)
+         ->  Subquery Scan partial_aggregation  (cost=8018.50..8724.25 rows=250 width=20)
+               ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=8018.50..8716.75 rows=250 width=20)
                      Hash Key: "rollup".a, "rollup".a
-                     ->  GroupAggregate  (cost=51.58..90.32 rows=215 width=20)
+                     ->  GroupAggregate  (cost=8018.50..8701.75 rows=250 width=20)
                            Group By: "rollup".a, "rollup"."grouping", "rollup"."group_id"
-                           ->  Subquery Scan "rollup"  (cost=51.58..75.26 rows=287 width=20)
-                                 ->  GroupAggregate  (cost=51.58..66.65 rows=287 width=20)
+                           ->  Subquery Scan "rollup"  (cost=8018.50..8684.25 rows=334 width=20)
+                                 ->  GroupAggregate  (cost=8018.50..8674.25 rows=334 width=20)
                                        Group By: tbl7553_test.j, tbl7553_test.j
-                                       ->  Sort  (cost=51.58..53.74 rows=287 width=4)
+                                       ->  Sort  (cost=8018.50..8233.75 rows=28700 width=4)
                                              Sort Key: tbl7553_test.j, tbl7553_test.j
-                                             ->  Seq Scan on tbl7553_test  (cost=0.00..9.61 rows=287 width=4)
- Settings:  enable_indexscan=off; enable_nestloop=on; enable_seqscan=off; gp_enable_agg_distinct=off; gp_enable_agg_distinct_pruning=off; optimizer=off
+                                             ->  Seq Scan on tbl7553_test  (cost=0.00..961.00 rows=28700 width=4)
+ Settings:  enable_indexscan=off; enable_nestloop=on; enable_seqscan=off; gp_enable_agg_distinct=off; gp_enable_agg_distinct_pruning=off
  Optimizer status: legacy query optimizer
 (16 rows)
 
@@ -2854,6 +2853,7 @@ end;
 $$
 language plpgsql;
 drop table if exists qp_misc_jiras.bar;
+NOTICE:  table "bar" does not exist, skipping
 create table qp_misc_jiras.bar(a int);
 NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'a' as the Greenplum Database data distribution key for this table.
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
@@ -2867,7 +2867,7 @@ end;
 $$
 language plpgsql;
 select gp_segment_id, a, func2(a) from qp_misc_jiras.fim1; -- we should disallow this
-ERROR:  function cannot execute on segment because it accesses relation "qp_misc_jiras.pg_foo" (functions.c:155)  (seg2 slice1 nikos-mac:25434 pid=94008)
+ERROR:  function cannot execute on segment because it accesses relation "qp_misc_jiras.pg_foo" (functions.c:155)  (seg1 slice1 byxbee:25433 pid=80681) (cdbdisp.c:1326)
 DETAIL:  
 SQL statement "select count(*) from qp_misc_jiras.pg_foo"
 PL/pgSQL function "func2" line 4 at execute statement
@@ -3353,44 +3353,45 @@ reset gp_enable_agg_distinct_pruning;
 set enable_groupagg=off;
 -- both queries should use hashagg
 explain select count(distinct j) from (select t1.* from qp_misc_jiras.tbl5994_test t1, qp_misc_jiras.tbl5994_test t2 where t1.j = t2.j) tmp group by j;
-                                                           QUERY PLAN                                                           
---------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice3; segments: 3)  (cost=28696.41..28708.91 rows=1000 width=12)
-   ->  HashAggregate  (cost=28696.41..28708.91 rows=334 width=12)
+                                                         QUERY PLAN                                                          
+-----------------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice3; segments: 3)  (cost=154966.70..154979.20 rows=1000 width=12)
+   ->  HashAggregate  (cost=154966.70..154979.20 rows=334 width=12)
          Group By: partial_aggregation.j
-         ->  HashAggregate  (cost=28668.91..28681.41 rows=334 width=8)
+         ->  HashAggregate  (cost=154939.20..154951.70 rows=334 width=8)
                Group By: t1.j, t1.j
-               ->  Redistribute Motion 3:3  (slice2; segments: 3)  (cost=28631.41..28651.41 rows=334 width=8)
-                     Hash Key: t1.j
-                     ->  HashAggregate  (cost=28631.41..28631.41 rows=334 width=8)
-                           Group By: t1.j, t1.j
-                           ->  Hash Join  (cost=2824.49..21019.90 rows=338290 width=4)
-                                 Hash Cond: t1.j = t2.j
-                                 ->  Seq Scan on tbl5994_test t1  (cost=0.00..355.57 rows=10619 width=4)
-                                 ->  Hash  (cost=1629.85..1629.85 rows=31857 width=4)
-                                       ->  Broadcast Motion 3:3  (slice1; segments: 3)  (cost=0.00..1629.85 rows=31857 width=4)
-                                             ->  Seq Scan on tbl5994_test t2  (cost=0.00..355.57 rows=10619 width=4)
+               ->  HashAggregate  (cost=154921.70..154921.70 rows=334 width=8)
+                     Group By: t1.j, t1.j
+                     ->  Hash Join  (cost=3759.25..99322.62 rows=2471070 width=4)
+                           Hash Cond: t1.j = t2.j
+                           ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=0.00..2683.00 rows=28700 width=4)
+                                 Hash Key: t1.j
+                                 ->  Seq Scan on tbl5994_test t1  (cost=0.00..961.00 rows=28700 width=4)
+                           ->  Hash  (cost=2683.00..2683.00 rows=28700 width=4)
+                                 ->  Redistribute Motion 3:3  (slice2; segments: 3)  (cost=0.00..2683.00 rows=28700 width=4)
+                                       Hash Key: t2.j
+                                       ->  Seq Scan on tbl5994_test t2  (cost=0.00..961.00 rows=28700 width=4)
  Settings:  enable_groupagg=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
-(17 rows)
+(18 rows)
 
 explain select count(distinct j) from (select t1.* from qp_misc_jiras.tbl5994_test t1, qp_misc_jiras.tbl5994_test t2 where t1.i = t2.i) tmp group by j;
-                                                  QUERY PLAN                                                   
----------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice2; segments: 3)  (cost=21551.36..21563.86 rows=1000 width=12)
-   ->  HashAggregate  (cost=21551.36..21563.86 rows=334 width=12)
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=151542.70..151555.20 rows=1000 width=12)
+   ->  HashAggregate  (cost=151542.70..151555.20 rows=334 width=12)
          Group By: partial_aggregation.j
-         ->  HashAggregate  (cost=21523.86..21536.36 rows=334 width=8)
+         ->  HashAggregate  (cost=151515.20..151527.70 rows=334 width=8)
                Group By: t1.j, t1.j
-               ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=21486.36..21506.36 rows=334 width=8)
+               ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=151477.70..151497.70 rows=334 width=8)
                      Hash Key: t1.j
-                     ->  HashAggregate  (cost=21486.36..21486.36 rows=334 width=8)
+                     ->  HashAggregate  (cost=151477.70..151477.70 rows=334 width=8)
                            Group By: t1.j, t1.j
-                           ->  Hash Join  (cost=753.78..13874.85 rows=338290 width=4)
+                           ->  Hash Join  (cost=2037.25..95878.62 rows=2471070 width=4)
                                  Hash Cond: t1.i = t2.i
-                                 ->  Seq Scan on tbl5994_test t1  (cost=0.00..355.57 rows=10619 width=8)
-                                 ->  Hash  (cost=355.57..355.57 rows=10619 width=4)
-                                       ->  Seq Scan on tbl5994_test t2  (cost=0.00..355.57 rows=10619 width=4)
+                                 ->  Seq Scan on tbl5994_test t1  (cost=0.00..961.00 rows=28700 width=8)
+                                 ->  Hash  (cost=961.00..961.00 rows=28700 width=4)
+                                       ->  Seq Scan on tbl5994_test t2  (cost=0.00..961.00 rows=28700 width=4)
  Settings:  enable_groupagg=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (16 rows)
@@ -3398,44 +3399,43 @@ explain select count(distinct j) from (select t1.* from qp_misc_jiras.tbl5994_te
 set enable_groupagg=on;
 -- first query should use groupagg, and second one - hashagg
 explain select count(distinct j) from (select t1.* from qp_misc_jiras.tbl5994_test t1, qp_misc_jiras.tbl5994_test t2 where t1.j = t2.j) tmp group by j;
-                                                           QUERY PLAN                                                           
---------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice3; segments: 3)  (cost=28696.41..28708.91 rows=1000 width=12)
-   ->  HashAggregate  (cost=28696.41..28708.91 rows=334 width=12)
-         Group By: partial_aggregation.j
-         ->  HashAggregate  (cost=28668.91..28681.41 rows=334 width=8)
-               Group By: t1.j, t1.j
-               ->  Redistribute Motion 3:3  (slice2; segments: 3)  (cost=28631.41..28651.41 rows=334 width=8)
-                     Hash Key: t1.j
-                     ->  HashAggregate  (cost=28631.41..28631.41 rows=334 width=8)
-                           Group By: t1.j, t1.j
-                           ->  Hash Join  (cost=2824.49..21019.90 rows=338290 width=4)
-                                 Hash Cond: t1.j = t2.j
-                                 ->  Seq Scan on tbl5994_test t1  (cost=0.00..355.57 rows=10619 width=4)
-                                 ->  Hash  (cost=1629.85..1629.85 rows=31857 width=4)
-                                       ->  Broadcast Motion 3:3  (slice1; segments: 3)  (cost=0.00..1629.85 rows=31857 width=4)
-                                             ->  Seq Scan on tbl5994_test t2  (cost=0.00..355.57 rows=10619 width=4)
+                                                      QUERY PLAN                                                       
+-----------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice3; segments: 3)  (cost=1271484.17..1327095.75 rows=1000 width=12)
+   ->  GroupAggregate  (cost=1271484.17..1327095.75 rows=334 width=12)
+         Group By: t1.j
+         ->  Sort  (cost=1271484.17..1290017.20 rows=2471070 width=4)
+               Sort Key: t1.j
+               ->  Hash Join  (cost=3759.25..99322.62 rows=2471070 width=4)
+                     Hash Cond: t1.j = t2.j
+                     ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=0.00..2683.00 rows=28700 width=4)
+                           Hash Key: t1.j
+                           ->  Seq Scan on tbl5994_test t1  (cost=0.00..961.00 rows=28700 width=4)
+                     ->  Hash  (cost=2683.00..2683.00 rows=28700 width=4)
+                           ->  Redistribute Motion 3:3  (slice2; segments: 3)  (cost=0.00..2683.00 rows=28700 width=4)
+                                 Hash Key: t2.j
+                                 ->  Seq Scan on tbl5994_test t2  (cost=0.00..961.00 rows=28700 width=4)
  Settings:  enable_groupagg=on; optimizer_segments=3
  Optimizer status: legacy query optimizer
-(17 rows)
+(16 rows)
 
 explain select count(distinct j) from (select t1.* from qp_misc_jiras.tbl5994_test t1, qp_misc_jiras.tbl5994_test t2 where t1.i = t2.i) tmp group by j;
-                                                  QUERY PLAN                                                   
----------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice2; segments: 3)  (cost=21551.36..21563.86 rows=1000 width=12)
-   ->  HashAggregate  (cost=21551.36..21563.86 rows=334 width=12)
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=151542.70..151555.20 rows=1000 width=12)
+   ->  HashAggregate  (cost=151542.70..151555.20 rows=334 width=12)
          Group By: partial_aggregation.j
-         ->  HashAggregate  (cost=21523.86..21536.36 rows=334 width=8)
+         ->  HashAggregate  (cost=151515.20..151527.70 rows=334 width=8)
                Group By: t1.j, t1.j
-               ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=21486.36..21506.36 rows=334 width=8)
+               ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=151477.70..151497.70 rows=334 width=8)
                      Hash Key: t1.j
-                     ->  HashAggregate  (cost=21486.36..21486.36 rows=334 width=8)
+                     ->  HashAggregate  (cost=151477.70..151477.70 rows=334 width=8)
                            Group By: t1.j, t1.j
-                           ->  Hash Join  (cost=753.78..13874.85 rows=338290 width=4)
+                           ->  Hash Join  (cost=2037.25..95878.62 rows=2471070 width=4)
                                  Hash Cond: t1.i = t2.i
-                                 ->  Seq Scan on tbl5994_test t1  (cost=0.00..355.57 rows=10619 width=8)
-                                 ->  Hash  (cost=355.57..355.57 rows=10619 width=4)
-                                       ->  Seq Scan on tbl5994_test t2  (cost=0.00..355.57 rows=10619 width=4)
+                                 ->  Seq Scan on tbl5994_test t1  (cost=0.00..961.00 rows=28700 width=8)
+                                 ->  Hash  (cost=961.00..961.00 rows=28700 width=4)
+                                       ->  Seq Scan on tbl5994_test t2  (cost=0.00..961.00 rows=28700 width=4)
  Settings:  enable_groupagg=on; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (16 rows)
@@ -3457,23 +3457,23 @@ show enable_indexscan;
 (1 row)
 
 explain analyze select reltablespace  from pg_class where oid = (select reltoastrelid from pg_class where relname='tbl_8205'); -- force_explain
-                                                             QUERY PLAN                                                             
-------------------------------------------------------------------------------------------------------------------------------------
- Index Scan using pg_class_oid_index on pg_class  (cost=200.27..400.54 rows=1 width=4)
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ Index Scan using pg_class_oid_index on pg_class  (cost=200.28..400.54 rows=1 width=4)
    Index Cond: oid = $0
-   Rows out:  1 rows with 0.025 ms to first row, 0.026 ms to end, start offset by 0.042 ms.
+   Rows out:  1 rows with 0.035 ms to first row, 0.037 ms to end, start offset by 0.062 ms.
    InitPlan
-     ->  Index Scan using pg_class_relname_nsp_index on pg_class  (cost=0.00..200.27 rows=1 width=4)
+     ->  Index Scan using pg_class_relname_nsp_index on pg_class  (cost=0.00..200.28 rows=1 width=4)
            Index Cond: relname = 'tbl_8205'::name
-           Rows out:  1 rows with 0.010 ms to first row, 0.012 ms to end of 2 scans, start offset by 0.044 ms.
+           Rows out:  1 rows with 0.012 ms to first row, 0.016 ms to end of 2 scans, start offset by 0.065 ms.
  Slice statistics:
-   (slice0)    Executor memory: 113K bytes.
-   (slice1)    Executor memory: 113K bytes.
+   (slice0)    Executor memory: 126K bytes.
+   (slice1)    Executor memory: 126K bytes.
  Statement statistics:
    Memory used: 1000K bytes
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
- Total runtime: 0.068 ms
+ Total runtime: 0.100 ms
 (15 rows)
 
 select reltablespace from pg_class where oid = (select reltoastrelid from pg_class where relname='tbl_8205');
@@ -3661,8 +3661,8 @@ from
 group by 1;
    period   |           b            
 ------------+------------------------
- 2009-05-03 | 0.00000000000000000000
  2009-05-01 | 1.00000000000000000000
+ 2009-05-03 | 0.00000000000000000000
 (2 rows)
 
 -- This used to fail on an assert on a segment (palloc)
@@ -3707,19 +3707,19 @@ from (
 	group by 1,2
      ) as t1 
 group by 1, 2;
-                                                             QUERY PLAN                                                             
-------------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice2; segments: 3)  (cost=0.16..0.17 rows=1 width=36)
-   ->  HashAggregate  (cost=0.16..0.17 rows=1 width=36)
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=188210226.40..188211226.40 rows=100000 width=36)
+   ->  HashAggregate  (cost=188210226.40..188211226.40 rows=33334 width=36)
          Group By: "?column3?", a.foo_6325_attr
-         ->  HashAggregate  (cost=0.13..0.14 rows=1 width=36)
+         ->  HashAggregate  (cost=188182726.40..188195226.40 rows=333334 width=36)
                Group By: c.bar_6325_attr::integer, a.foo_6325_attr
-               ->  Nested Loop  (cost=0.04..0.11 rows=2 width=64)
-                     ->  Seq Scan on foo_6325 a  (cost=0.00..0.00 rows=1 width=32)
-                     ->  Materialize  (cost=0.04..0.07 rows=1 width=32)
-                           ->  Broadcast Motion 3:3  (slice1; segments: 3)  (cost=0.00..0.04 rows=1 width=32)
-                                 ->  Seq Scan on bar_6325 c  (cost=0.00..0.00 rows=1 width=32)
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+               ->  Nested Loop  (cost=2898.40..174243526.40 rows=929280000 width=64)
+                     ->  Seq Scan on foo_6325 a  (cost=0.00..628.00 rows=17600 width=32)
+                     ->  Materialize  (cost=2898.40..4482.40 rows=52800 width=32)
+                           ->  Broadcast Motion 3:3  (slice1; segments: 3)  (cost=0.00..2740.00 rows=52800 width=32)
+                                 ->  Seq Scan on bar_6325 c  (cost=0.00..628.00 rows=17600 width=32)
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (12 rows)
 
@@ -3858,15 +3858,15 @@ CREATE AGGREGATE median2(numeric) (
 -- Queries.
 --
 explain select x, "median"(y) from qp_misc_jiras.tbl9613 group by x; -- this should be allowed
-                                                             QUERY PLAN                                                             
-------------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice1; segments: 3)  (cost=28.17..38.09 rows=496 width=36)
-   ->  GroupAggregate  (cost=28.17..38.09 rows=166 width=36)
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice1; segments: 3)  (cost=4464.32..4848.82 rows=1000 width=36)
+   ->  GroupAggregate  (cost=4464.32..4848.82 rows=334 width=36)
          Group By: x
-         ->  Sort  (cost=28.17..29.41 rows=166 width=36)
+         ->  Sort  (cost=4464.32..4588.32 rows=16534 width=36)
                Sort Key: x
-               ->  Seq Scan on tbl9613  (cost=0.00..5.96 rows=166 width=36)
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+               ->  Seq Scan on tbl9613  (cost=0.00..596.00 rows=16534 width=36)
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (8 rows)
 
@@ -3877,20 +3877,20 @@ select x, "median"(y) from qp_misc_jiras.tbl9613 group by x; -- this should be a
 (1 row)
 
 explain select x, median2(y) from qp_misc_jiras.tbl9613 group by x; -- this should be disallowed
-                                                             QUERY PLAN                                                             
-------------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice1; segments: 3)  (cost=28.17..38.09 rows=496 width=36)
-   ->  GroupAggregate  (cost=28.17..38.09 rows=166 width=36)
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice1; segments: 3)  (cost=4464.32..4848.82 rows=1000 width=36)
+   ->  GroupAggregate  (cost=4464.32..4848.82 rows=334 width=36)
          Group By: x
-         ->  Sort  (cost=28.17..29.41 rows=166 width=36)
+         ->  Sort  (cost=4464.32..4588.32 rows=16534 width=36)
                Sort Key: x
-               ->  Seq Scan on tbl9613  (cost=0.00..5.96 rows=166 width=36)
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+               ->  Seq Scan on tbl9613  (cost=0.00..596.00 rows=16534 width=36)
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (8 rows)
 
 select x, median2(y) from qp_misc_jiras.tbl9613 group by x; -- this should be disallowed
-ERROR:  function cannot execute on segment because it accesses relation "qp_misc_jiras.tbl9613" (functions.c:155)  (seg0 slice1 nikos-mac:25432 pid=94006)
+ERROR:  function cannot execute on segment because it accesses relation "qp_misc_jiras.tbl9613" (functions.c:155)  (seg0 slice1 byxbee:25432 pid=80680) (cdbdisp.c:1326)
 DETAIL:  SQL function "_final_median2" during startup
 -- start_ignore
 drop table qp_misc_jiras.tbl9613;
@@ -4030,20 +4030,20 @@ else 'Unidentify' end
 ;
                                                                                                                                                    QUERY PLAN                                                                                                                                                   
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice2; segments: 3)  (cost=0.05..0.07 rows=1 width=96)
-   ->  HashAggregate  (cost=0.05..0.07 rows=1 width=96)
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=264.50..277.00 rows=1000 width=96)
+   ->  HashAggregate  (cost=264.50..277.00 rows=334 width=96)
          Group By: "?column1?", "?column2?"
-         ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=0.01..0.04 rows=1 width=64)
+         ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=223.25..249.50 rows=334 width=64)
                Hash Key: unnamed_attr_1, unnamed_attr_2
-               ->  HashAggregate  (cost=0.01..0.02 rows=1 width=64)
+               ->  HashAggregate  (cost=223.25..229.50 rows=334 width=64)
                      Group By: CASE WHEN ir_voice_sms_and_data.ir_call_supplementary_svc_code = ANY ('{S20,S21}'::bpchar[]) THEN 'MO'::text ELSE 'foo'::text END, CASE WHEN ir_voice_sms_and_data.ir_call_type_group_code::text = ANY ('{H,VH,PCB}'::text[]) THEN 'Thailland'::text ELSE 'Unidentify'::text END
-                     ->  Seq Scan on ir_voice_sms_and_data  (cost=0.00..0.01 rows=1 width=54)
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+                     ->  Seq Scan on ir_voice_sms_and_data  (cost=0.00..194.25 rows=1934 width=54)
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (10 rows)
 
 DROP TABLE qp_misc_jiras.ir_voice_sms_and_data;
--- end_ignore
+-- end_ignore 
 -- start_ignore
 drop table if exists qp_misc_jiras.x cascade;
 NOTICE:  table "x" does not exist, skipping
@@ -4111,7 +4111,7 @@ BEFORE INSERT OR UPDATE ON qp_misc_jiras.test_trig
 FOR EACH ROW
     EXECUTE PROCEDURE fn_trig();
 INSERT INTO qp_misc_jiras.test_trig VALUES (1, 'aaa');
-NOTICE:  1  (seg0 nikos-mac:25432 pid=94006)
+NOTICE:  1  (seg0 byxbee:25432 pid=80680)
 SELECT * FROM qp_misc_jiras.test_trig;
  id | aaa  
 ----+------
@@ -4119,7 +4119,7 @@ SELECT * FROM qp_misc_jiras.test_trig;
 (1 row)
 
 UPDATE qp_misc_jiras.test_trig SET id = id;
-NOTICE:  1  (seg0 nikos-mac:25432 pid=94006)
+NOTICE:  1  (seg0 byxbee:25432 pid=80680)
 SELECT * FROM qp_misc_jiras.test_trig;
  id |  aaa  
 ----+-------
@@ -4159,7 +4159,7 @@ alter table qp_misc_jiras.tbl1_tbl_11257 split default partition
 start (date '2010-09-27' )
 end (date '2010-09-28')
 into (partition d_2010_09_27, partition default_partition);
-NOTICE:  exchanged partition "default_partition" of relation "tbl1_tbl_11257" with relation "pg_temp_37266"
+NOTICE:  exchanged partition "default_partition" of relation "tbl1_tbl_11257" with relation "pg_temp_362339"
 NOTICE:  dropped partition "default_partition" for relation "tbl1_tbl_11257"
 NOTICE:  CREATE TABLE will create partition "tbl1_tbl_11257_1_prt_d_2010_09_27" for table "tbl1_tbl_11257"
 NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "tbl1_tbl_11257_1_prt_d_2010_09_27_pkey" for table "tbl1_tbl_11257_1_prt_d_2010_09_27"
@@ -4219,7 +4219,7 @@ alter table qp_misc_jiras.tbl2_tbl_11257 split default partition
 start (3)
 end (4)
 into (partition p2, partition default_partition);
-NOTICE:  exchanged partition "default_partition" of relation "tbl2_tbl_11257" with relation "pg_temp_37629"
+NOTICE:  exchanged partition "default_partition" of relation "tbl2_tbl_11257" with relation "pg_temp_362702"
 NOTICE:  dropped partition "default_partition" for relation "tbl2_tbl_11257"
 NOTICE:  CREATE TABLE will create partition "tbl2_tbl_11257_1_prt_p2" for table "tbl2_tbl_11257"
 NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "tbl2_tbl_11257_1_prt_p2_pkey" for table "tbl2_tbl_11257_1_prt_p2"
@@ -4254,13 +4254,13 @@ NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'i' as
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 insert into qp_misc_jiras.test_heap values (0, 0);
 explain select  * from qp_misc_jiras.test_heap where ctid='(0,1)' and gp_segment_id >= 0;
-                                                             QUERY PLAN                                                             
-------------------------------------------------------------------------------------------------------------------------------------
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
  Gather Motion 3:1  (slice1; segments: 3)  (cost=0.00..100.02 rows=1 width=8)
    ->  Tid Scan on test_heap  (cost=0.00..100.02 rows=1 width=8)
          TID Cond: ctid = '(0,1)'::tid
          Filter: gp_segment_id >= 0
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (6 rows)
 
@@ -4280,12 +4280,12 @@ NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'i' as
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 insert into qp_misc_jiras.test_ao values (0, 0);
 explain select  * from qp_misc_jiras.test_ao where ctid='(33554432,32769)' and gp_segment_id >= 0;
-                                                             QUERY PLAN                                                             
-------------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice1; segments: 3)  (cost=0.00..13.91 rows=1 width=8)
-   ->  Append-only Scan on test_ao  (cost=0.00..13.91 rows=1 width=8)
-         Filter: gp_segment_id >= 0 AND ctid = '(33554432,32769)'::tid
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice1; segments: 3)  (cost=0.00..1391.50 rows=1 width=8)
+   ->  Append-only Scan on test_ao  (cost=0.00..1391.50 rows=1 width=8)
+         Filter: ctid = '(33554432,32769)'::tid AND gp_segment_id >= 0
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (5 rows)
 
@@ -4305,12 +4305,12 @@ NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'i' as
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 insert into qp_misc_jiras.test_co values (0, 0);
 explain select  * from qp_misc_jiras.test_co where ctid='(33554432,32769)' and gp_segment_id >= 0;
-                                                             QUERY PLAN                                                             
-------------------------------------------------------------------------------------------------------------------------------------
- Gather Motion 3:1  (slice1; segments: 3)  (cost=0.00..13.91 rows=1 width=8)
-   ->  Append-only Columnar Scan on test_co  (cost=0.00..13.91 rows=1 width=8)
-         Filter: gp_segment_id >= 0 AND ctid = '(33554432,32769)'::tid
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice1; segments: 3)  (cost=0.00..1391.50 rows=1 width=8)
+   ->  Append-only Columnar Scan on test_co  (cost=0.00..1391.50 rows=1 width=8)
+         Filter: ctid = '(33554432,32769)'::tid AND gp_segment_id >= 0
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (5 rows)
 
@@ -4333,26 +4333,26 @@ NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'i' as
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 insert into qp_misc_jiras.test_tbl10856 select i, i from generate_series(0, 999999) i;
 explain analyze select count(*) from qp_misc_jiras.test_tbl10856;
-                                                                        QUERY PLAN                                                                         
------------------------------------------------------------------------------------------------------------------------------------------------------------
- Aggregate  (cost=4316.91..4316.92 rows=1 width=8)
-   Rows out:  1 rows with 70 ms to end, start offset by 0.190 ms.
-   ->  Gather Motion 3:1  (slice1; segments: 3)  (cost=4316.84..4316.89 rows=1 width=8)
-         Rows out:  3 rows at destination with 69 ms to first row, 70 ms to end, start offset by 0.190 ms.
-         ->  Aggregate  (cost=4316.84..4316.85 rows=1 width=8)
-               Rows out:  Avg 1.0 rows x 3 workers.  Max 1 rows (seg0) with 70 ms to end, start offset by 0.432 ms.
-               allstat: seg_firststart_total_ntuples/seg0_0.432 ms_70 ms_1/seg1_0.431 ms_68 ms_1/seg2_0.431 ms_68 ms_1//end
-               ->  Seq Scan on test_tbl10856  (cost=0.00..3526.87 rows=105329 width=0)
-                     Rows out:  Avg 333333.3 rows x 3 workers.  Max 333384 rows (seg2) with 0.027 ms to first row, 36 ms to end, start offset by 0.431 ms.
-                     allstat: seg_firststart_total_ntuples/seg0_0.432 ms_34 ms_333357/seg1_0.431 ms_33 ms_333259/seg2_0.431 ms_36 ms_333384//end
+                                                                         QUERY PLAN                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=1176.32..1176.33 rows=1 width=8)
+   Rows out:  1 rows with 150 ms to end, start offset by 0.250 ms.
+   ->  Gather Motion 3:1  (slice1; segments: 3)  (cost=1176.25..1176.30 rows=1 width=8)
+         Rows out:  3 rows at destination with 150 ms to end, start offset by 0.251 ms.
+         ->  Aggregate  (cost=1176.25..1176.26 rows=1 width=8)
+               Rows out:  Avg 1.0 rows x 3 workers.  Max 1 rows (seg0) with 150 ms to end, start offset by 0.490 ms.
+               allstat: seg_firststart_total_ntuples/seg0_0.490 ms_150 ms_1/seg1_0.500 ms_150 ms_1/seg2_0.509 ms_150 ms_1//end
+               ->  Seq Scan on test_tbl10856  (cost=0.00..961.00 rows=28700 width=0)
+                     Rows out:  Avg 333333.3 rows x 3 workers.  Max 333384 rows (seg2) with 0.021 ms to first row, 116 ms to end, start offset by 0.509 ms.
+                     allstat: seg_firststart_total_ntuples/seg0_0.491 ms_116 ms_333357/seg1_0.500 ms_116 ms_333259/seg2_0.509 ms_116 ms_333384//end
  Slice statistics:
-   (slice0)    Executor memory: 159K bytes.
-   (slice1)    Executor memory: 163K bytes avg x 3 workers, 163K bytes max (seg0).
+   (slice0)    Executor memory: 318K bytes.
+   (slice1)    Executor memory: 127K bytes avg x 3 workers, 127K bytes max (seg0).
  Statement statistics:
    Memory used: 128000K bytes
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
- Total runtime: 70.739 ms
+ Total runtime: 150.914 ms
 (18 rows)
 
 drop table if exists qp_misc_jiras.test_tbl10856;
@@ -4478,12 +4478,15 @@ NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'a' as
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 insert into qp_misc_jiras.s select generate_series(1,1000), generate_series(1,1000);
 analyze;
+NOTICE:  ANALYZE detected all empty sample pages for table pg_partition, please run VACUUM FULL for accurate estimation.
+NOTICE:  ANALYZE detected all empty sample pages for table pg_partition_rule, please run VACUUM FULL for accurate estimation.
+NOTICE:  ANALYZE detected all empty sample pages for table pg_attrdef, please run VACUUM FULL for accurate estimation.
 explain select * from qp_misc_jiras.r;
-                                                             QUERY PLAN                                                             
-------------------------------------------------------------------------------------------------------------------------------------
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
  Gather Motion 3:1  (slice1; segments: 3)  (cost=0.00..13.00 rows=1000 width=8)
    ->  Seq Scan on r  (cost=0.00..13.00 rows=334 width=8)
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
 (4 rows)
 
@@ -4491,36 +4494,36 @@ explain analyze select * from qp_misc_jiras.r,qp_misc_jiras.s where r.a=s.b;
                                                                           QUERY PLAN                                                                          
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
  Gather Motion 3:1  (slice2; segments: 3)  (cost=25.50..73.50 rows=1000 width=16)
-   Rows out:  1000 rows at destination with 78 ms to first row, 127 ms to end, start offset by 0.204 ms.
+   Rows out:  1000 rows at destination with 46 ms to first row, 64 ms to end, start offset by 0.301 ms.
    ->  Hash Join  (cost=25.50..73.50 rows=334 width=16)
          Hash Cond: s.b = r.a
-         Rows out:  Avg 333.3 rows x 3 workers.  Max 342 rows (seg1) with 86 ms to first row, 126 ms to end, start offset by 0.434 ms.
-         Executor memory:  11K bytes avg, 11K bytes max (seg1).
-         Work_mem used:  11K bytes avg, 11K bytes max (seg1). Workfile: (0 spilling, 0 reused)
+         Rows out:  Avg 333.3 rows x 3 workers.  Max 342 rows (seg1) with 48 ms to first row, 63 ms to end, start offset by 0.570 ms.
+         Executor memory:  8K bytes avg, 9K bytes max (seg1).
+         Work_mem used:  8K bytes avg, 9K bytes max (seg1). Workfile: (0 spilling, 0 reused)
          (seg1)   Hash chain length 1.0 avg, 1 max, using 342 of 8388619 buckets.
-         allstat: seg_firststart_total_ntuples/seg0_0.408 ms_116 ms_321/seg1_0.434 ms_126 ms_342/seg2_0.446 ms_119 ms_337//end
+         allstat: seg_firststart_total_ntuples/seg0_0.629 ms_63 ms_321/seg1_0.570 ms_63 ms_342/seg2_0.624 ms_62 ms_337//end
          ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=0.00..33.00 rows=334 width=8)
                Hash Key: s.b
-               Rows out:  Avg 333.3 rows x 3 workers at destination.  Max 342 rows (seg1) with 0.114 ms to first row, 0.177 ms to end, start offset by 86 ms.
-               allstat: seg_firststart_total_ntuples/seg0_78 ms_0.142 ms_321/seg1_86 ms_0.177 ms_342/seg2_80 ms_0.135 ms_337//end
+               Rows out:  Avg 333.3 rows x 3 workers at destination.  Max 342 rows (seg1) with 0.093 ms to first row, 0.145 ms to end, start offset by 48 ms.
+               allstat: seg_firststart_total_ntuples/seg0_48 ms_0.139 ms_321/seg1_48 ms_0.145 ms_342/seg2_46 ms_0.120 ms_337//end
                ->  Seq Scan on s  (cost=0.00..13.00 rows=334 width=8)
-                     Rows out:  Avg 333.3 rows x 3 workers.  Max 342 rows (seg1) with 1.982 ms to first row, 2.023 ms to end, start offset by 2.147 ms.
-                     allstat: seg_firststart_total_ntuples/seg0_0.822 ms_2.413 ms_321/seg1_2.147 ms_2.023 ms_342/seg2_2.115 ms_1.947 ms_337//end
+                     Rows out:  Avg 333.3 rows x 3 workers.  Max 342 rows (seg1) with 0.035 ms to first row, 0.084 ms to end, start offset by 0.796 ms.
+                     allstat: seg_firststart_total_ntuples/seg0_0.693 ms_0.049 ms_321/seg1_0.796 ms_0.084 ms_342/seg2_0.804 ms_0.067 ms_337//end
          ->  Hash  (cost=13.00..13.00 rows=334 width=8)
-               Rows in:  Avg 333.3 rows x 3 workers.  Max 342 rows (seg1) with 0.247 ms to end, start offset by 86 ms.
-               allstat: seg_firststart_total_ntuples/seg0_78 ms_0.215 ms_321/seg1_86 ms_0.247 ms_342/seg2_80 ms_0.173 ms_337//end
+               Rows in:  Avg 333.3 rows x 3 workers.  Max 342 rows (seg1) with 0.149 ms to end, start offset by 48 ms.
+               allstat: seg_firststart_total_ntuples/seg0_48 ms_0.122 ms_321/seg1_48 ms_0.149 ms_342/seg2_46 ms_0.141 ms_337//end
                ->  Seq Scan on r  (cost=0.00..13.00 rows=334 width=8)
-                     Rows out:  Avg 333.3 rows x 3 workers.  Max 342 rows (seg1) with 0.048 ms to first row, 0.099 ms to end, start offset by 86 ms.
-                     allstat: seg_firststart_total_ntuples/seg0_78 ms_0.073 ms_321/seg1_86 ms_0.099 ms_342/seg2_80 ms_0.065 ms_337//end
+                     Rows out:  Avg 333.3 rows x 3 workers.  Max 342 rows (seg1) with 0.039 ms to first row, 0.067 ms to end, start offset by 48 ms.
+                     allstat: seg_firststart_total_ntuples/seg0_48 ms_0.047 ms_321/seg1_48 ms_0.067 ms_342/seg2_46 ms_0.061 ms_337//end
  Slice statistics:
-   (slice0)    Executor memory: 267K bytes.
-   (slice1)    Executor memory: 193K bytes avg x 3 workers, 193K bytes max (seg0).
-   (slice2)    Executor memory: 131366K bytes avg x 3 workers, 131387K bytes max (seg1).  Work_mem: 11K bytes max.
+   (slice0)    Executor memory: 318K bytes.
+   (slice1)    Executor memory: 199K bytes avg x 3 workers, 199K bytes max (seg0).
+   (slice2)    Executor memory: 98555K bytes avg x 3 workers, 98555K bytes max (seg0).  Work_mem: 9K bytes max.
  Statement statistics:
    Memory used: 1945600K bytes
- Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer=off; optimizer_segments=3
+ Settings:  enable_bitmapscan=off; enable_groupagg=on; enable_indexscan=on; enable_seqscan=off; optimizer_segments=3
  Optimizer status: legacy query optimizer
- Total runtime: 127.268 ms
+ Total runtime: 64.277 ms
 (31 rows)
 
 drop table qp_misc_jiras.r;
@@ -5137,7 +5140,6 @@ NOTICE:  drop cascades to table qp_misc_jiras.tableb
 NOTICE:  drop cascades to table qp_misc_jiras.tablea
 NOTICE:  drop cascades to table qp_misc_jiras.tbl7404_t2
 NOTICE:  drop cascades to table qp_misc_jiras.tbl7404_t1
-NOTICE:  drop cascades to table qp_misc_jiras.foo
 NOTICE:  drop cascades to table qp_misc_jiras.tbl6027_test
 NOTICE:  drop cascades to external table qp_misc_jiras.tbl3301_bar
 NOTICE:  drop cascades to table qp_misc_jiras.tbl3301_foo

@@ -60,6 +60,7 @@ test: bfv_dd bfv_dd_multicolumn bfv_dd_types
 
 test: qp_misc
 test: qp_misc_jiras
+test: qp_misc_rio
 test: qp_olap_mdqa 
 test: qp_with_clause 
 test: qp_executor qp_olap_windowerr qp_olap_window qp_derived_table qp_bitmapscan
