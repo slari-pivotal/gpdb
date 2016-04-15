@@ -17,6 +17,7 @@
 #include "postmaster/primary_mirror_mode.h"
 
 #include "cdb/ml_ipc.h" /* gettime_elapsed_ms */
+#include "catalog/catquery.h"
 
 
 /*
@@ -527,7 +528,18 @@ modeUpdate(int dbid, char *mode, char status, FilerepModeUpdateLoggingEnum logMs
 	}
 	else
 	{
-		snprintf(cmd, sizeof(cmd), "PGPORT=26432 MASTER_DATA_DIRECTORY=/Users/slari/gitdev/gpdb/gpAux/gpdemo/datadirs/m1/demoDataDir0 gpactivatemirrors -a");
+		char *fselocation = caql_getcstring(NULL,
+								cql("SELECT fselocation FROM pg_filespace_entry"
+									" WHERE fsedbid = :1 ",
+									ObjectIdGetDatum(dbid)));
+
+		if (!fselocation)
+		{
+			elog(ERROR, "FTS: could not find tuple for filespace_entry for dbid %u",
+				 dbid);
+		}
+		snprintf(cmd, sizeof(cmd), "PGPORT=%d MASTER_DATA_DIRECTORY=%s "
+                 "gpactivatemirrors -a", seg_pm_port, fselocation);
 	}
 
 	Assert(strlen(cmd) < sizeof(cmd) - 1);
