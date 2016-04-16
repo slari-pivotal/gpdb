@@ -14,6 +14,8 @@ test: update delete cluster dependency table_functions conversion sirv_functions
 # so it needs to be in a group by itself
 test: sort_finish_pending
 
+test: qp_gist_indexes2 qp_gist_indexes3 qp_gist_indexes4
+
 # namespace will show diff if concurrent work has temporary tables.
 test: without_oid namespace truncate sequence gpdiffcheck gptokencheck olap_setup
 # test 'partition' needs to serial since occasionally it picks up other tables in its view
