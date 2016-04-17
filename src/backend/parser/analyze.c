@@ -77,8 +77,6 @@
 #include "cdb/cdbhash.h"
 #include "cdb/cdbsreh.h"
 
-
-#define MaxPolicyAttributeNumber MaxHeapAttributeNumber
 /* temporary rule to control whether we generate RULEs or not -- for testing */
 bool        enable_partition_rules = false;
 
@@ -2687,7 +2685,6 @@ transformETDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 						 bool iswritable,
 						 bool onmaster)
 {
-	int			maxattrs = MaxPolicyAttributeNumber;
 	GpPolicy*	p = NULL;
 
 	/*
@@ -2711,7 +2708,7 @@ transformETDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 		if(distributedBy == NIL && likeDistributedBy == NIL)
 		{
 			/* defaults to DISTRIBUTED RANDOMLY irrespective of the gp_create_table_random_default_distribution guc */
-			*policyp = createRandomDistribution(maxattrs);
+			*policyp = createRandomDistribution();
 		}
 		else
 		{
@@ -2731,7 +2728,7 @@ transformETDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 		else
 		{
 			/* defaults to DISTRIBUTED RANDOMLY */
-			p = createRandomDistribution(maxattrs);
+			p = createRandomDistribution();
 		}
 
 		*policyp = p;
@@ -2748,7 +2745,6 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 	ListCell   *keys = NULL;
 	GpPolicy  *policy = NULL;
 	int			colindex = 0;
-	int			maxattrs = MaxPolicyAttributeNumber;
 	int			numUniqueIndexes = 0;
 	Constraint *uniqueindex = NULL;
 
@@ -2761,12 +2757,6 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 		*policyp = NULL;
 		return;
 	}
-
-	policy = (GpPolicy *) palloc(sizeof(GpPolicy) + maxattrs *
-								 sizeof(policy->attrs[0]));
-	policy->ptype = POLICYTYPE_PARTITIONED;
-	policy->nattrs = 0;
-	policy->attrs[0] = 1;
 
 	/*
 	 * If distributedBy is NIL, the user did not explicitly say what he
@@ -2943,7 +2933,7 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 	if (gp_create_table_random_default_distribution && NIL == distributedBy)
 	{
 		Assert(NIL == likeDistributedBy);
-		policy = createRandomDistribution(maxattrs);
+		policy = createRandomDistribution();
 		
 		if (!bQuiet)
 		{
@@ -2974,18 +2964,18 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 		if (cxt && list_length(cxt->columns) == 0 && !cxt->inhRelations)
 		{
 			elog(NOTICE, "Table has no attributes to distribute on.");
-			pfree(policy);
 			return;
 		}
 
 		/* we will distribute on at most one column */
-		policy->nattrs = 1;
+		policy = (GpPolicy *) palloc0(sizeof(GpPolicy));
+		policy->ptype = POLICYTYPE_PARTITIONED;
+		policy->nattrs = 0;
 
 		colindex = 0;
 
 		if (cxt && cxt->inhRelations)
 		{
-			bool		found = false;
 			/* try inherited tables */
 			ListCell   *inher;
 
@@ -3013,7 +3003,7 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 					if(isGreenplumDbHashable(typeOid))
 					{
 						char	   *inhname = NameStr(inhattr->attname);
-						policy->attrs[0] = colindex;
+						policy->attrs[policy->nattrs++] = colindex;
 						assignedDefault = true;
 						if (!bQuiet)
 							ereport(NOTICE,
@@ -3023,7 +3013,6 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 										"table. ", inhname),
 								 errhint("The 'DISTRIBUTED BY' clause determines the distribution of data."
 								 		 " Make sure column(s) chosen are the optimal data distribution key to minimize skew.")));
-						found = true;
 						break;
 					}
 				}
@@ -3052,7 +3041,7 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 				 */
 				if(isGreenplumDbHashable(typeOid))
 				{
-					policy->attrs[0] = colindex;
+					policy->attrs[policy->nattrs++] = colindex;
 					assignedDefault = true;
 					if (!bQuiet)
 						ereport(NOTICE,
@@ -3088,7 +3077,16 @@ transformDistributedBy(ParseState *pstate, CreateStmtContext *cxt,
 		 * or defaulted to a primary key or unique column. Process it now and
 		 * set the distribution policy.
 		 */
+		if (list_length(distributedBy) > MaxPolicyAttributeNumber)
+			ereport(ERROR,
+					(errcode(ERRCODE_TOO_MANY_COLUMNS),
+					 errmsg("number of distributed by columns exceeds limit (%d)",
+							MaxPolicyAttributeNumber)));
+		policy = (GpPolicy *) palloc0(sizeof(GpPolicy) - sizeof(policy->attrs)
+								+ list_length(distributedBy) * sizeof(policy->attrs[0]));
+		policy->ptype = POLICYTYPE_PARTITIONED;
 		policy->nattrs = 0;
+
 		if (!(distributedBy->length == 1 && linitial(distributedBy) == NULL))
 		{
 			foreach(keys, distributedBy)
@@ -12431,7 +12429,6 @@ setQryDistributionPolicy(SelectStmt *stmt, Query *qry)
 
 	GpPolicy  *policy = NULL;
 	int			colindex = 0;
-	int			maxattrs = MaxPolicyAttributeNumber;
 
 	if (Gp_role != GP_ROLE_DISPATCH)
 		return;
@@ -12445,10 +12442,17 @@ setQryDistributionPolicy(SelectStmt *stmt, Query *qry)
 		 * Process it now and set the distribution policy.
 		 */
 
-		policy = (GpPolicy *) palloc(sizeof(GpPolicy) + maxattrs * sizeof(policy->attrs[0]));
+
+		if (list_length(stmt->distributedBy) > MaxPolicyAttributeNumber)
+			ereport(ERROR,
+					(errcode(ERRCODE_TOO_MANY_COLUMNS),
+					 errmsg("number of distributed by columns exceeds limit (%d)",
+							MaxPolicyAttributeNumber)));
+
+		policy = (GpPolicy *) palloc0(sizeof(GpPolicy) - sizeof(policy->attrs)
+								+ list_length(stmt->distributedBy) * sizeof(policy->attrs[0]));
 		policy->ptype = POLICYTYPE_PARTITIONED;
 		policy->nattrs = 0;
-		policy->attrs[0] = 1;
 
 		if (stmt->distributedBy->length == 1 && (list_head(stmt->distributedBy) == NULL || linitial(stmt->distributedBy) == NULL))
 		{
@@ -12680,13 +12684,12 @@ transformSingleRowErrorHandling(ParseState *pstate, CreateStmtContext *cxt,
 /*
  * create a policy with random distribution
  */
-GpPolicy *createRandomDistribution(int maxattrs)
+GpPolicy *createRandomDistribution(void)
 {
         GpPolicy*       p = NULL;
-        p = (GpPolicy *) palloc(sizeof(GpPolicy) + maxattrs * sizeof(p->attrs[0]));
+        p = (GpPolicy *) palloc(sizeof(GpPolicy));
         p->ptype = POLICYTYPE_PARTITIONED;
         p->nattrs = 0;
-        p->attrs[0] = 1;
 
         return p;
 }

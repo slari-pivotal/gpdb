@@ -81,6 +81,6 @@ List *transformStorageEncodingClause(List *options);
 List *TypeNameGetStorageDirective(TypeName *typname);
 extern List * form_default_storage_directive(List *enc);
 
-extern struct GpPolicy *createRandomDistribution(int maxattrs);
+extern struct GpPolicy *createRandomDistribution(void);
 
 #endif   /* ANALYZE_H */

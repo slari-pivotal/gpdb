@@ -277,18 +277,17 @@ apply_motion(PlannerInfo *root, Plan *plan, Query *query)
 			{
 				List   *hashExpr;
 				ListCell *exp1;
-				int			maxattrs = 200;
 				
 				if (query->intoPolicy != NULL)
 				{
 					targetPolicy = query->intoPolicy;
 					Assert(query->intoPolicy->ptype == POLICYTYPE_PARTITIONED);
 					Assert(query->intoPolicy->nattrs >= 0);
-					Assert(query->intoPolicy->nattrs <= 1024);
+					Assert(query->intoPolicy->nattrs <= MaxPolicyAttributeNumber);
 				}
 				else if (gp_create_table_random_default_distribution)
 				{
-					targetPolicy = createRandomDistribution(maxattrs);
+					targetPolicy = createRandomDistribution();
 					ereport(NOTICE,
 						(errcode(ERRCODE_SUCCESSFUL_COMPLETION),
 						 errmsg("Using default RANDOM distribution since no distribution was specified."),
@@ -297,15 +296,17 @@ apply_motion(PlannerInfo *root, Plan *plan, Query *query)
 				else
 				{
 					/* User did not specify a DISTRIBUTED BY clause */
-				
-					targetPolicy = palloc0(sizeof(GpPolicy)- sizeof(targetPolicy->attrs) + maxattrs * sizeof(targetPolicy->attrs[0]));
-					targetPolicy->nattrs = 0;
-					
-					targetPolicy->ptype = POLICYTYPE_PARTITIONED;
-					
 					/* Find out what the flow is partitioned on */
 					hashExpr = plan->flow->hashExpr;
-					
+
+					if (hashExpr)
+						targetPolicy = palloc0(sizeof(GpPolicy) - sizeof(targetPolicy->attrs) + list_length(hashExpr) * sizeof(targetPolicy->attrs[0]));
+					else
+						targetPolicy = palloc0(sizeof(GpPolicy));
+
+					targetPolicy->nattrs = 0;
+					targetPolicy->ptype = POLICYTYPE_PARTITIONED;
+
 					if(hashExpr)
 						foreach(exp1, hashExpr)
 						{
@@ -352,6 +353,7 @@ apply_motion(PlannerInfo *root, Plan *plan, Query *query)
 									{
 										/* If it is, use it to partition the result table, to avoid
 										 * unnecessary redistibution of data */
+										Assert(targetPolicy->nattrs < MaxPolicyAttributeNumber);
 										targetPolicy->attrs[targetPolicy->nattrs++] = n;
 										found_expr = true;
 										break;
