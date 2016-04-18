@@ -3,12 +3,12 @@
 --
 
 -- start_ignore
-drop table if exists customer;
-drop table if exists vendor;
-drop table if exists product;
-drop table if exists sale;
-drop table if exists sale_ord;
-drop table if exists util;
+drop table if exists customer cascade;
+drop table if exists vendor cascade;
+drop table if exists product cascade;
+drop table if exists sale cascade;
+drop table if exists sale_ord cascade;
+drop table if exists util cascade;
 -- end_ignore
 
 create table customer 
