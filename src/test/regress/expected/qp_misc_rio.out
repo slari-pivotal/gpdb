@@ -38,21 +38,6 @@ select table_schema, table_name,column_name,ordinal_position from information_sc
 --start_ignore
 drop SCHEMA hotel;
 -- end_ignore
-select table_catalog, table_schema, table_name from information_schema.columns where ordinal_position=1 and table_schema='information_schema' order by ordinal_position, table_name limit 10;
- table_catalog |    table_schema    |            table_name             
----------------+--------------------+-----------------------------------
- regression    | information_schema | _pg_foreign_data_wrappers
- regression    | information_schema | _pg_foreign_servers
- regression    | information_schema | _pg_user_mappings
- regression    | information_schema | administrable_role_authorizations
- regression    | information_schema | applicable_roles
- regression    | information_schema | attributes
- regression    | information_schema | check_constraint_routine_usage
- regression    | information_schema | check_constraints
- regression    | information_schema | column_domain_usage
- regression    | information_schema | column_privileges
-(10 rows)
-
 select * FROM (select attnum::information_schema.cardinal_number from pg_attribute where attnum > 0) q where attnum = 4 limit 10;
  attnum 
 --------

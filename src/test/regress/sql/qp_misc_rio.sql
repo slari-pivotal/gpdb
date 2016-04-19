@@ -38,8 +38,6 @@ select table_schema, table_name,column_name,ordinal_position from information_sc
 drop SCHEMA hotel;
 -- end_ignore
 
-select table_catalog, table_schema, table_name from information_schema.columns where ordinal_position=1 and table_schema='information_schema' order by ordinal_position, table_name limit 10;
-
 select * FROM (select attnum::information_schema.cardinal_number from pg_attribute where attnum > 0) q where attnum = 4 limit 10;
 
 RESET ALL;
