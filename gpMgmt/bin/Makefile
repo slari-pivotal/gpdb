@@ -26,7 +26,7 @@ SERVER_SBIN=$(SERVER_SRC)/../sbin
 LIB_DIR=$(SRC)/lib
 PYLIB_DIR=$(SRC)/ext
 
-all: lockfile paramiko pycrypto pygresql stream pychecker psi unittest2 subprocess32
+all: lockfile paramiko pycrypto pygresql stream pychecker psi psutil unittest2 subprocess32
 
 #
 # Python Libraries
@@ -132,6 +132,17 @@ psi:
 	cd $(PYLIB_SRC)/$(PSI_DIR)/ && CC="$(CC)" python setup.py build
 	cp -r $(PYLIB_SRC)/$(PSI_DIR)/build/lib.*/psi $(PYLIB_DIR)
 
+#
+# PSUTIL
+#
+PSUTIL_VERSION=4.0.0
+PSUTIL_DIR=psutil-$(PSUTIL_VERSION)
+
+psutil:
+	@echo "--- psutil"
+	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PSUTIL_DIR).tar.gz
+	cd $(PYLIB_SRC)/$(PSUTIL_DIR)/ && CC="$(CC)" python setup.py build
+	cp -r $(PYLIB_SRC)/$(PSUTIL_DIR)/build/lib.*/psutil $(PYLIB_DIR)
 
 #
 # PYCHECKER
