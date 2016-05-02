@@ -95,8 +95,6 @@ CreateFileSpace(CreateFileSpaceStmt *stmt)
 	int					 i;     /* Array loop variable */
 	bool				 nulls[Natts_pg_filespace];
 	Datum				 values[Natts_pg_filespace];
-	bool				 enulls[Natts_pg_filespace_entry];
-	Datum				 evalues[Natts_pg_filespace_entry];
 	FileSpaceEntry      *primary  = NULL;
 	FileSpaceEntry      *mirror	  = NULL;
 	List                *nodeSegs = NULL;
@@ -444,8 +442,6 @@ CreateFileSpace(CreateFileSpaceStmt *stmt)
 	if (Gp_role == GP_ROLE_DISPATCH)
 	{
 		rel = heap_open(FileSpaceEntryRelationId, RowExclusiveLock);
-		MemSet(enulls, false, sizeof(enulls));
-		evalues[Anum_pg_filespace_entry_fsefsoid - 1] = ObjectIdGetDatum(fsoid);
 
 		foreach(cell, stmt->locations)
 		{
@@ -651,9 +647,7 @@ RemoveFileSpaceById(Oid fsoid)
 static void 
 DeleteFilespaceEntryTuples(Oid fsoid)
 {
-	int numDel;
-
-	numDel = caql_getcount(
+	caql_getcount(
 			NULL,
 			cql("DELETE FROM pg_filespace_entry "
 				" WHERE fsefsoid = :1 ",
@@ -722,7 +716,6 @@ AlterFileSpaceOwner(List *names, Oid newOwnerId)
 		bool		nulls[Natts_pg_filespace];
 		bool		replace[Natts_pg_filespace];
 		HeapTuple	newtuple;
-		TupleDesc   tupdesc;
 
 		/* Otherwise, must be owner of the existing object */
 		if (!pg_filespace_ownercheck(fsoid, GetUserId()))
@@ -746,7 +739,6 @@ AlterFileSpaceOwner(List *names, Oid newOwnerId)
 		replace[Anum_pg_filespace_fsowner - 1] = true;
 		values[Anum_pg_filespace_fsowner - 1] = ObjectIdGetDatum(newOwnerId);
 
-		tupdesc = RelationGetDescr(rel);
 		newtuple = caql_modify_current(pcqCtx, values, nulls, replace);
 
 		caql_update_current(pcqCtx, newtuple);
@@ -1163,11 +1155,10 @@ add_catalog_filespace_entry(Relation rel, Oid fsoid, int16 dbid, char *location)
 void
 dbid_remove_filespace_entries(Relation rel, int16 dbid)
 {
-	int			 numDel;
 	cqContext	 cqc;
 
 	/* Use the index to scan only attributes of the target relation */
-	numDel = caql_getcount(
+	caql_getcount(
 			caql_addrel(cqclr(&cqc), rel),
 			cql("DELETE FROM pg_filespace_entry "
 				" WHERE fsedbid = :1 ",

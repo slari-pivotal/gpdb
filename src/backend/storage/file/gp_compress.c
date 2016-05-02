@@ -81,13 +81,7 @@ static void gp_decompress_generic(
 	  int64	 bufferCount
 	  )
 {
-	unsigned long compressedSize;
-	unsigned long uncompressedSize;
-	int32				 resultingUncompressedLen;
-
-	compressedSize = (unsigned long)compressedLen;
-	uncompressedSize = (unsigned long)uncompressedLen;
-
+	int32				 resultingUncompressedLen = 0;
 	callCompressionActuator(decompressor,
 							(const void *)compressed,
 							(size_t)compressedLen,
@@ -117,12 +111,10 @@ void gp_decompress_new(
 			CompressionState *compressionState,
 			int64			bufferCount)
 {
-	unsigned long compressedSize;
 	unsigned long uncompressedSize;
 
 	int32 resultingUncompressedLen;
 
-	compressedSize = (unsigned long)compressedLen;
 	uncompressedSize = (unsigned long)uncompressedLen;
 
 	gp_decompress_generic( compressed

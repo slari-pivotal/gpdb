@@ -66,7 +66,6 @@ PrepareQuery(PrepareStmt *stmt, const char *queryString)
 	const char	*commandTag = NULL;
 	Query		*query = NULL;
 	List		*query_list = NIL;
-	List		*plan_list = NIL;
 	List		*query_list_copy = NIL;
 	NodeTag		srctag;  /* GPDB */
 
@@ -128,7 +127,7 @@ PrepareQuery(PrepareStmt *stmt, const char *queryString)
 	query_list_copy = copyObject(query_list); /* planner scribbles on query tree */
 	
 	/* Generate plans for queries.	Snapshot is already set. */
-	plan_list = pg_plan_queries(query_list, NULL, false);
+	pg_plan_queries(query_list, NULL, false);
 	
 	/*
 	 * Save the results.  We don't have the query string for this PREPARE, but
@@ -662,12 +661,10 @@ ExplainExecuteQuery(ExecuteStmt *execstmt, ExplainStmt *stmt, const char * query
 	{
 		PlannedStmt *plannedstmt;
 		Query *query;
-		Plan *plan;
 		bool is_last_query;
 		
 		query = (Query *) lfirst(q);
 		plannedstmt = (PlannedStmt*) lfirst(p);
-		plan = plannedstmt->planTree;
 
 		is_last_query = (lnext(p) == NULL);
 

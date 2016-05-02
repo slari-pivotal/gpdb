@@ -322,11 +322,9 @@ RenameExtProtocol(const char *oldname, const char *newname)
 	HeapTuple	tup;
 	Relation	rel;
 	Oid			ptcId;
-	Oid			ownerId;
 	bool		isNull;
 	cqContext	cqc;		
 	cqContext  *pcqCtx;
-	Datum		ownerDatum;
 	
 	/*
 	 * Check the pg_extprotocol relation to be certain the protocol 
@@ -351,7 +349,7 @@ RenameExtProtocol(const char *oldname, const char *newname)
 	
 	ptcId = HeapTupleGetOid(tup);
 
-	ownerDatum = caql_getattr(pcqCtx,
+	caql_getattr(pcqCtx,
 							  Anum_pg_extprotocol_ptcowner,
 							  &isNull);
 	
@@ -360,8 +358,6 @@ RenameExtProtocol(const char *oldname, const char *newname)
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("internal error: protocol \"%s\"  has no owner defined",
 						 oldname)));	
-
-	ownerId = DatumGetObjectId(ownerDatum);
 
 	if (strcmp(oldname, newname) != 0)
 	{

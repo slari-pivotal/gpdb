@@ -1130,9 +1130,6 @@ ExecOpenScanExternalRelation(EState *estate, Index scanrelid)
 {
 	RangeTblEntry *rtentry;
 	Oid			reloid;
-	LOCKMODE	lockmode;
-
-	lockmode = NoLock;
 
 	rtentry = rt_fetch(scanrelid, estate->es_range_table);
 	reloid = rtentry->relid;

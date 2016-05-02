@@ -953,13 +953,6 @@ tuplesort_begin_datum_mk(ScanState * ss,
 void
 tuplesort_end_mk(Tuplesortstate_mk *state)
 {
-    long		spaceUsed;
-
-    if (state->tapeset)
-        spaceUsed = LogicalTapeSetBlocks(state->tapeset);
-    else
-        spaceUsed = (MemoryContextGetCurrentSpace(state->sortcontext) + 1024) / 1024;
-
     /*
      * Delete temporary "tape" files, if any.
      *
@@ -1694,7 +1687,6 @@ inittapes_mk(Tuplesortstate_mk *state, const char* rwfile_prefix)
 {
     int			maxTapes;
     int 		j;
-    long		tapeSpace;
 
     Assert(is_under_sort_ctxt(state));
 
@@ -1723,17 +1715,6 @@ inittapes_mk(Tuplesortstate_mk *state, const char* rwfile_prefix)
 
     if (trace_sort)
         PG_TRACE1(tuplesort__switch__external, maxTapes);
-
-    /*
-     * Decrease availMem to reflect the space needed for tape buffers; but
-     * don't decrease it to the point that we have no room for tuples. (That
-     * case is only likely to occur if sorting pass-by-value Datums; in all
-     * other scenarios the memtuples[] array is unlikely to occupy more than
-     * half of allowedMem.	In the pass-by-value case it's not important to
-     * account for tuple space, so we don't care if LACKMEM becomes
-     * inaccurate.)
-     */
-    tapeSpace = maxTapes * TAPE_BUFFER_OVERHEAD;
 
     Assert(state->work_set == NULL);
     PlanState *ps = NULL;

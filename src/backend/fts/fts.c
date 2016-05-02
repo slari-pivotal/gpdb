@@ -622,9 +622,9 @@ FtsFindSuperuser(bool try_bootstrap)
 	{
 		Datum	attrName;
 		Oid		userOid;
-		Datum	validuntil;
+		Datum	validuntil __attribute__((unused));
 
-		validuntil = heap_getattr(auth_tup, Anum_pg_authid_rolvaliduntil, 
+		validuntil = heap_getattr(auth_tup, Anum_pg_authid_rolvaliduntil,
 								  RelationGetDescr(auth_rel), &isNull);
 		/* we actually want it to be NULL, that means always valid */
 		if (!isNull)

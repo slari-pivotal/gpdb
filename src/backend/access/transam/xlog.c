@@ -6338,7 +6338,6 @@ StartupXLOG(void)
 	XLogCtlInsert *Insert;
 	CheckPoint	checkPoint;
 	bool		wasShutdown;
-	bool		reachedStopPoint = false;
 	bool		haveBackupLabel = false;
 	XLogRecPtr	RecPtr,
 				LastRec,
@@ -6862,7 +6861,6 @@ StartupXLOG(void)
 				 */
 				if (recoveryStopsHere(record, &recoveryApply))
 				{
-					reachedStopPoint = true;		/* see below */
 					recoveryContinue = false;
 					if (!recoveryApply)
 						break;

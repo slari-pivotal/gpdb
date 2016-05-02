@@ -986,20 +986,15 @@ DatumStreamBlockWrite_CheckDenseInvariant(
 	int32		currentCompressBitMapPosition = 0;
 	int32		currentCompressBitMapCount = 0;
 	int32		currentCompressBitMapOffCount = 0;
-	int32		rle_total_repeat_items = 0;
 
 	int32		currentDeltaBitMapPosition = 0;
 	int32		currentDeltaBitMapCount = 0;
-	int32		currentDeltaBitMapOffCount = 0;
 	int32		currentDeltaBitMapOnCount = 0;
 
 	if (dsw->delta_has_compression)
 	{
 		currentDeltaBitMapPosition = DatumStreamBitMapWrite_Count(&dsw->delta_bitmap) - 1;
 		currentDeltaBitMapCount = DatumStreamBitMapWrite_Count(&dsw->delta_bitmap);
-		currentDeltaBitMapOffCount =
-			currentDeltaBitMapCount
-			- DatumStreamBitMapWrite_OnCount(&dsw->delta_bitmap);
 		currentDeltaBitMapOnCount = DatumStreamBitMapWrite_OnCount(&dsw->delta_bitmap);
 	}
 
@@ -1049,7 +1044,6 @@ DatumStreamBlockWrite_CheckDenseInvariant(
 		currentCompressBitMapCount = DatumStreamBitMapWrite_Count(&dsw->rle_compress_bitmap);
 		currentCompressBitMapOffCount = currentCompressBitMapCount -
 			DatumStreamBitMapWrite_OnCount(&dsw->rle_compress_bitmap);
-		rle_total_repeat_items = dsw->rle_total_repeat_items_written;
 
 		if (currentCompressBitMapPosition != (dsw->physical_datum_count - 1) + currentDeltaBitMapOnCount)
 		{
@@ -4856,7 +4850,7 @@ DatumStreamBlock_IntegrityCheckDenseDelta(
 	totalDeltasSize = 0;
 	for (i = 0; i < deltaExtension->deltas_count; i++)
 	{
-		int32		deltasCount;
+		int32		deltasCount __attribute__((unused));
 		int			byteLen;
 		bool		sign;
 

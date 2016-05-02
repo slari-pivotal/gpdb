@@ -3793,7 +3793,6 @@ get_variable_maximum(PlannerInfo *root, VariableStatData *vardata,
 {
 	Datum		tmax = 0;
 	bool		have_max = false;
-	Form_pg_statistic stats;
 	int16		typLen;
 	bool		typByVal;
 	Datum	   *values;
@@ -3806,7 +3805,6 @@ get_variable_maximum(PlannerInfo *root, VariableStatData *vardata,
 		/* no stats available, so default result */
 		return false;
 	}
-	stats = (Form_pg_statistic) GETSTRUCT(tp);
 
 	get_typlenbyval(vardata->atttype, &typLen, &typByVal);
 

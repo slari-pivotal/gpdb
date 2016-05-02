@@ -622,7 +622,6 @@ AlterResqueueCapabilityEntry(
 		ListCell		*lc2;
 		List			*pentry		 = lfirst(lc);
 		int				 resTypeInt;
-		Node			*pVal;
 		int				 ii;
 		ScanKeyData	 key[1];
 		SysScanDesc	 scan;
@@ -635,8 +634,6 @@ AlterResqueueCapabilityEntry(
 
 		lc2 = lnext(lc2);
 		
-		pVal = lfirst(lc2);
-
 		/* CaQL UNDONE: no test coverage */
 		ScanKeyInit(&key[0],
 					Anum_pg_resqueuecapability_resqueueid,
@@ -739,7 +736,6 @@ void
 CreateQueue(CreateQueueStmt *stmt)
 {
 	Relation	pg_resqueue_rel;
-	TupleDesc	pg_resqueue_dsc;
 	HeapTuple	tuple;
 	cqContext	cqc;
 	cqContext	cqc2;
@@ -928,8 +924,6 @@ CreateQueue(CreateQueueStmt *stmt)
 			cql("INSERT INTO pg_resqueue",
 				NULL));
 
-	pg_resqueue_dsc = RelationGetDescr(pg_resqueue_rel);
-
 	if (caql_getcount(
 			caql_addrel(cqclr(&cqc2), pg_resqueue_rel),
 			cql("SELECT COUNT(*) FROM pg_resqueue WHERE rsqname = :1", 
@@ -1057,7 +1051,6 @@ void
 AlterQueue(AlterQueueStmt *stmt)
 {
 	Relation	pg_resqueue_rel;
-	TupleDesc	pg_resqueue_dsc;
 	HeapTuple	tuple, new_tuple;
 	cqContext	cqc;
 	cqContext  *pcqCtx;
@@ -1303,8 +1296,6 @@ AlterQueue(AlterQueueStmt *stmt)
 	 */
 	Relation resqueueCapabilityRel = heap_open(ResQueueCapabilityRelationId, RowExclusiveLock);
 	Relation resqueueCapabilityIndexRel = index_open(ResQueueCapabilityResqueueidIndexId, AccessShareLock);
-
-	pg_resqueue_dsc = RelationGetDescr(pg_resqueue_rel);
 
 	tuple = caql_getfirst(
 			pcqCtx,
@@ -1618,10 +1609,7 @@ DropQueue(DropQueueStmt *stmt)
 						queueid);
 
 	/* MPP-6923: drop the extended attributes for this queue */	 
-	int numDel;
-
-	numDel = 
-		caql_getcount(
+	caql_getcount(
 				NULL,
 				cql("DELETE FROM pg_resqueuecapability WHERE resqueueid = :1",
 					ObjectIdGetDatum(queueid))

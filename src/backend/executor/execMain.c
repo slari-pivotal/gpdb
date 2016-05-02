@@ -4107,7 +4107,6 @@ get_part(EState *estate, Datum *values, bool *isnull, TupleDesc tupdesc)
 			estate->es_partition_state->result_partition_array_size;
 		RangeTblEntry *rte = makeNode(RangeTblEntry);
 		List *rangeTable;
-		int natts;
 
 		if (estate->es_num_result_relations + 1 >= result_array_size)
 		{
@@ -4123,7 +4122,6 @@ get_part(EState *estate, Datum *values, bool *isnull, TupleDesc tupdesc)
 		}
 
 		resultRelInfo = estate->es_result_relations;
-		natts = resultRelInfo->ri_RelationDesc->rd_att->natts; /* in base relation */
 		resultRelInfo += estate->es_num_result_relations;
 		entry->offset = estate->es_num_result_relations;
 

@@ -3851,7 +3851,6 @@ boolean mapred_create_object(PGconn *conn, mapred_document_t *doc,
 void mapred_remove_object(PGconn *conn, mapred_document_t *doc, mapred_object_t *obj)
 {
 	mapred_plist_t *plist    = NULL;
-	const char     *ckind    = NULL;
 	buffer_t       *buffer   = NULL;
 
 
@@ -3916,7 +3915,6 @@ void mapred_remove_object(PGconn *conn, mapred_document_t *doc, mapred_object_t 
 			case MAPRED_TRANSITION:
 			case MAPRED_COMBINER:
 			case MAPRED_FINALIZER:
-				ckind = mapred_kind_name[obj->kind];
 
 				bufcat(&buffer, "DROP FUNCTION IF EXISTS ");
 				if (!obj->internal)

@@ -53,8 +53,6 @@ get_size_from_segDBs(const char * cmd)
 
 	PG_TRY();
 	{
-		HeapTuple	tup;
-		TupleDesc	tupdesc;
 		bool		isnull;
 		Datum		size;
 
@@ -75,9 +73,6 @@ get_size_from_segDBs(const char * cmd)
 
 			if (SPI_processed < 1)
 				break;
-
-			tup = SPI_tuptable->vals[0];
-			tupdesc = SPI_tuptable->tupdesc;
 
 			size = heap_getattr(SPI_tuptable->vals[0], 1, SPI_tuptable->tupdesc, &isnull);
 			if (isnull)

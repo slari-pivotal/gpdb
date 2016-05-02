@@ -1398,7 +1398,6 @@ make_lower_targetlist(Query *parse,
 	List	   *tlist = parse->targetList;
 	List	   *extravars = NIL;
 	List	   *lower_tlist;
-	bool		need_tlist_eval;
 	int			i;
 	SortClause *dummy;
 	ListCell   *lc;
@@ -1434,8 +1433,6 @@ make_lower_targetlist(Query *parse,
 	lower_tlist = add_to_flat_tlist(lower_tlist, extravars, false /* resjunk */);
 	list_free(extravars);
 
-	need_tlist_eval = false;
-	
 	/* Find or add target list entries for partitioning or ordering exprs
 	 * mentioned in window specs to be fed by this targetlist. 
 	 */
@@ -1494,7 +1491,6 @@ make_lower_targetlist(Query *parse,
 				lower_tlist = lappend(lower_tlist, te);
 				/* NOTE that the addition must be an expr other than 
 				 *  a simple Var.  Do we care? */
-				need_tlist_eval = true;
 			}
 		}
 		list_free(extra_tles);

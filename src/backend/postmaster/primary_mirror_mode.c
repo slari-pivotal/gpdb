@@ -1551,8 +1551,6 @@ doRequestedPrimaryMirrorModeTransitions(bool isInShutdown)
 {
 	PrimaryMirrorModeTransitionArguments requestedTransition;
 	PrimaryMirrorModeTransitionResult result;
-	PrimaryMirrorMode currentMode;
-	DataState_e currentDataState;
 	bool isRequested = false;
 	bool isPrevRequestComplete = false;
 	TransitionState currentState;
@@ -1570,8 +1568,6 @@ doRequestedPrimaryMirrorModeTransitions(bool isInShutdown)
 		isRequested = pmModuleState->isTransitionRequested;
 		isPrevRequestComplete = pmModuleState->isTransitionListenerFinished;
 		requestedTransition = pmModuleState->requestedTransition;
-		currentMode = pmModuleState->mode;
-		currentDataState = pmModuleState->dataState;
 		currentState = pmModuleState->transitionState;
 		transitionNumber = pmModuleState->requestedTransition.transitionNumber;
 		transitionToFault = pmModuleState->requestedTransition.transitionToFault;

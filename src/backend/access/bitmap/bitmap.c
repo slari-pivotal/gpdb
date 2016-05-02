@@ -61,7 +61,6 @@ bmbuild(PG_FUNCTION_ARGS)
 	double      reltuples;
 	BMBuildState bmstate;
 	IndexBuildResult *result;
-	TupleDesc	tupDesc;
 	Oid comptypeOid = InvalidOid;
 	Oid indexOid = InvalidOid;
 	Oid heapOid = InvalidOid;
@@ -81,8 +80,6 @@ bmbuild(PG_FUNCTION_ARGS)
 				errmsg("index \"%s\" already contains data",
 				RelationGetRelationName(index)),
 				errSendAlert(true)));
-
-	tupDesc = RelationGetDescr(index);
 
 	if (indexInfo->opaque != NULL)
 	{
@@ -225,7 +222,6 @@ bmgetmulti(PG_FUNCTION_ARGS)
 
 	if (res)
 	{
-		BMScanPosition  sp;
 		IndexScanDesc copy = copy_scan_desc(scan);
 		BMStreamOpaque *so;
 		int vec;
@@ -242,7 +238,6 @@ bmgetmulti(PG_FUNCTION_ARGS)
 		/* create a memory context for the stream */
 
 		so = palloc(sizeof(BMStreamOpaque));
-		sp = ((BMScanOpaque)copy->opaque)->bm_currPos;
 		so->scan = copy;
 		so->entry = NULL;
 		so->is_done = false;

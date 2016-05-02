@@ -806,7 +806,7 @@ show_session_authorization(void)
 	 * assign_session_authorization
 	 */
 	const char *value = session_authorization_string;
-	Oid			savedoid;
+	Oid			savedoid __attribute__((unused));
 	char	   *endptr;
 
 	if(!value)

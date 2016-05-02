@@ -35,8 +35,6 @@
 void 
 deleteProcCallbacks(Oid profnoid)
 {
-	int numDel;
-
 	Insist(OidIsValid(profnoid));
 
 	/* 
@@ -44,12 +42,11 @@ deleteProcCallbacks(Oid profnoid)
 	 * rows.
 	 */
 
-	numDel = 
-			caql_getcount(
-					NULL,
-					cql("DELETE FROM pg_proc_callback "
-						" WHERE profnoid = :1 ",
-						ObjectIdGetDatum(profnoid)));
+	caql_getcount(
+			NULL,
+			cql("DELETE FROM pg_proc_callback "
+					" WHERE profnoid = :1 ",
+					ObjectIdGetDatum(profnoid)));
 }
 
 

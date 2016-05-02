@@ -305,10 +305,6 @@ ExecEndSubqueryScan(SubqueryScanState *node)
 void
 ExecSubqueryReScan(SubqueryScanState *node, ExprContext *exprCtxt)
 {
-	EState	   *estate;
-
-	estate = node->ss.ps.state;
-
 	ItemPointerSet(&node->cdb_fake_ctid, 0, 0);
 
 	/*

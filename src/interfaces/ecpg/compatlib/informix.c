@@ -745,7 +745,6 @@ rfmtlong(long lng_val, char *fmt, char *outbuf)
 	int			leftalign = 0,
 				blank = 0,
 				sign = 0,
-				entity = 0,
 				entitydone = 0,
 				signdone = 0,
 				brackets_ok = 0;
@@ -791,9 +790,7 @@ rfmtlong(long lng_val, char *fmt, char *outbuf)
 		if (k < 0)
 		{
 			blank = 1;
-			if (k == -2)
-				entity = 1;
-			else if (k == -1)
+			if (k == -1)
 				sign = 1;
 			if (leftalign)
 			{

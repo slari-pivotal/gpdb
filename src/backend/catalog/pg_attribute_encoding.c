@@ -342,15 +342,13 @@ AddRelationAttributeEncodings(Relation rel, List *attr_encodings)
 void
 RemoveAttributeEncodingsByRelid(Oid relid)
 {
-	bool 		found = false;
-
 	/* shouldn't be anything to do in upgrade mode */
 	if (gp_upgrade_mode)
 		return;
 
-	found = (0 != caql_getcount(
+	caql_getcount(
 					 NULL,
 					 cql("DELETE FROM pg_attribute_encoding "
 						 " WHERE attrelid = :1 ",
-						 ObjectIdGetDatum(relid))));
+						 ObjectIdGetDatum(relid)));
 }

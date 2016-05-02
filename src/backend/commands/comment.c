@@ -369,9 +369,7 @@ DeleteComments(Oid oid, Oid classoid, int32 subid)
 	/* Use the index to search for all matching old tuples */
 	if (subid != 0)
 	{
-		int numDel;
-
-		numDel = caql_getcount(
+		caql_getcount(
 				NULL,
 				cql("DELETE FROM pg_description" 
 					" where objoid = :1 AND "
@@ -383,9 +381,7 @@ DeleteComments(Oid oid, Oid classoid, int32 subid)
 	}
 	else
 	{
-		int numDel;
-
-		numDel = caql_getcount(
+		caql_getcount(
 				NULL,
 				cql("DELETE FROM pg_description" 
 					" where objoid = :1 AND "
@@ -403,10 +399,8 @@ DeleteComments(Oid oid, Oid classoid, int32 subid)
 void
 DeleteSharedComments(Oid oid, Oid classoid)
 {
-	int numDel;
-
 	/* Use the index to search for all matching old tuples */
-	numDel = caql_getcount(
+	caql_getcount(
 			NULL,
 			cql("DELETE FROM pg_shdescription" 
 				" where objoid  = :1 AND "

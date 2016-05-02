@@ -1409,7 +1409,7 @@ char *
 psql_scan_slash_command(PsqlScanState state)
 {
 	PQExpBufferData mybuf;
-	int			lexresult;
+	int			lexresult __attribute__((unused));
 
 	/* Must be scanning already */
 	psql_assert(state->scanbufhandle);
@@ -1554,7 +1554,8 @@ psql_scan_slash_option(PsqlScanState state,
 					error = true;
 				}
 
-				if (PQExpBufferBroken(&output))
+				PQExpBufferData *p_output = &output;
+				if (PQExpBufferBroken(p_output))
 				{
 					psql_error("%s: out of memory\n", cmd);
 					error = true;
@@ -1666,7 +1667,7 @@ psql_scan_slash_option(PsqlScanState state,
 void
 psql_scan_slash_command_end(PsqlScanState state)
 {
-	int			lexresult;
+	int			lexresult __attribute__((unused));
 
 	/* Must be scanning already */
 	psql_assert(state->scanbufhandle);

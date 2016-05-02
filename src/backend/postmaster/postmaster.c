@@ -4476,7 +4476,7 @@ do_immediate_shutdown_reaper(void)
 {
 	int         s;
 	int			pid;			/* process id of dead child process */
-	int			exitstatus;		/* its exit status */
+	int			exitstatus __attribute__((unused));		/* its exit status */
 
 	need_call_reaper = 0;
 

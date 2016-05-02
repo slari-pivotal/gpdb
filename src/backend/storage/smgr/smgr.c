@@ -1455,7 +1455,7 @@ smgrtruncate(SMgrRelation reln, BlockNumber nblocks, bool isTemp, bool isLocalBu
 		 * transaction commits or not; the underlying file change is certainly
 		 * not reversible.
 		 */
-		XLogRecPtr	lsn;
+		XLogRecPtr	lsn __attribute__((unused));
 		XLogRecData rdata;
 		xl_smgr_truncate xlrec;
 

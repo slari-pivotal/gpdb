@@ -272,11 +272,6 @@ WalReceiverMain(void)
 	/* We allow SIGQUIT (quickdie) at all times */
 	sigdelset(&BlockSig, SIGQUIT);
 
-	/* Load the libpq-specific functions */
-	if (walrcv_connect == NULL || walrcv_receive == NULL ||
-		walrcv_send == NULL || walrcv_disconnect == NULL)
-		elog(ERROR, "libpqwalreceiver didn't initialize correctly");
-
 	/*
 	 * Create a resource owner to keep track of our resources (not clear that
 	 * we need this, but may as well have one).
@@ -476,8 +471,7 @@ WalRcvDie(int code, Datum arg)
 	SpinLockRelease(&walrcv->mutex);
 
 	/* Terminate the connection gracefully. */
-	if (walrcv_disconnect != NULL)
-		walrcv_disconnect();
+	walrcv_disconnect();
 }
 
 /* SIGHUP: set flag to re-read config file at next convenient time */

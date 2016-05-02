@@ -177,7 +177,6 @@ static char*
 quoteArgument(char* value)
 {
 	StringInfoData quotedVal;
-	char *valptr;
 
 	/* Guess the size of the quoted one
 	 * I don't think it's common to have quote inside the URI.
@@ -192,6 +191,7 @@ quoteArgument(char* value)
 	/* Copy each char and append to quotedVal
 	 * if the char is a quote or a slash, escape it.
 	 */
+	char *valptr __attribute__((unused));
 	for(valptr=value; *value != 0; value++)
 	{
 		char chr = *value;

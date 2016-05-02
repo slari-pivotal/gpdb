@@ -470,7 +470,6 @@ AppendOnlyBlockDirectory_GetEntry(
 	ScanKey scanKeys = blockDirectory->scanKeys;
 	
 	TupleDesc heapTupleDesc;
-	TupleDesc idxTupleDesc;
 	FileSegInfo *fsInfo = NULL;
 	IndexScanDesc idxScanDesc;
 	HeapTuple tuple = NULL;
@@ -565,7 +564,6 @@ AppendOnlyBlockDirectory_GetEntry(
 	 * currently we will need to access all columns at the same time.
 	 */
 	heapTupleDesc = RelationGetDescr(blkdirRel);
-	idxTupleDesc = RelationGetDescr(blkdirIdx);
 
 	Assert(numScanKeys == 3);
 
@@ -602,9 +600,6 @@ AppendOnlyBlockDirectory_GetEntry(
 			 */
 			blockDirectory->currentSegmentFileNum = segmentFileNum;
 			blockDirectory->currentSegmentFileInfo = fsInfo;
-			MinipagePerColumnGroup *minipageInfo;
-			
-			minipageInfo = &blockDirectory->minipages[tmpGroupNo];
 			extract_minipage(blockDirectory,
 							 tuple,
 							 heapTupleDesc,
@@ -1023,7 +1018,6 @@ load_last_minipage(AppendOnlyBlockDirectory *blockDirectory,
 {
 	Relation blkdirRel = blockDirectory->blkdirRel;
 	Relation blkdirIdx = blockDirectory->blkdirIdx;
-	TupleDesc idxTupleDesc;
 	TupleDesc heapTupleDesc;
 	IndexScanDesc idxScanDesc;
 	HeapTuple tuple = NULL;
@@ -1042,7 +1036,6 @@ load_last_minipage(AppendOnlyBlockDirectory *blockDirectory,
 	oldcxt = MemoryContextSwitchTo(blockDirectory->memoryContext);
 	
 	heapTupleDesc = RelationGetDescr(blkdirRel);
-	idxTupleDesc = RelationGetDescr(blkdirIdx);
 
 	Assert(numScanKeys == 3);
 	Assert(blockDirectory->currentSegmentFileInfo != NULL);

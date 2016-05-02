@@ -1626,14 +1626,10 @@ agg_hash_iter(AggState *aggstate)
 {
 	HashAggTable* hashtable = aggstate->hhashtable;
 	HashAggEntry *entry = hashtable->next_entry;
-	SpillSet *spill_set = hashtable->spill_set;
 	MemoryContext oldcxt;
 
 	Assert( hashtable != NULL && hashtable->buckets != NULL && hashtable->nbuckets > 0 );
 
-	if (hashtable->curr_spill_file != NULL)
-		spill_set = hashtable->curr_spill_file->spill_set;
-	
 	oldcxt = MemoryContextSwitchTo(hashtable->entry_cxt);
 
 	while (entry == NULL &&

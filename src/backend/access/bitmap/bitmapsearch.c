@@ -424,7 +424,6 @@ _bitmap_findbitmaps(IndexScanDesc scan, ScanDirection dir  __attribute__((unused
 
 	{
 		Relation		lovHeap, lovIndex;
-		TupleDesc		indexTupDesc;
 		ScanKey			scanKeys;
 		IndexScanDesc	scanDesc;
 		List*			lovItemPoss = NIL;
@@ -438,8 +437,6 @@ _bitmap_findbitmaps(IndexScanDesc scan, ScanDirection dir  __attribute__((unused
 		 */
 		_bitmap_open_lov_heapandindex(scan->indexRelation, metapage, 
 				 &lovHeap, &lovIndex, AccessShareLock);
-
-		indexTupDesc = RelationGetDescr(lovIndex);
 
 		scanKeys = palloc0(scan->numberOfKeys * sizeof(ScanKeyData));
 		for (keyNo = 0; keyNo < scan->numberOfKeys; keyNo++)

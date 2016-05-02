@@ -353,7 +353,6 @@ FileSegInfo **GetAllFileSegInfo_pg_aoseg_rel(
 	int				seginfo_slot_no = AO_FILESEGINFO_ARRAY_SIZE;
 	Datum			segno,
 					eof,
-					eof_uncompressed,
 					tupcount,
 					varblockcount,
 					modcount,
@@ -416,7 +415,7 @@ FileSegInfo **GetAllFileSegInfo_pg_aoseg_rel(
 		if (!isNull)
 			oneseginfo->state = (int64)DatumGetInt16(state);
 
-		eof_uncompressed = fastgetattr(tuple, Anum_pg_aoseg_eofuncompressed, pg_aoseg_dsc, &isNull);
+		fastgetattr(tuple, Anum_pg_aoseg_eofuncompressed, pg_aoseg_dsc, &isNull);
 
 		if(isNull)
 			oneseginfo->eof_uncompressed = InvalidUncompressedEof;
@@ -1768,7 +1767,6 @@ get_ao_distribution_name(PG_FUNCTION_ARGS)
 	char			aoseg_relname[NAMEDATALEN];
 	int 			ret;
 	text	   		*relname = PG_GETARG_TEXT_P(0);
-	Oid				relid;
 
 	Assert(Gp_role == GP_ROLE_DISPATCH);
 
@@ -1785,7 +1783,6 @@ get_ao_distribution_name(PG_FUNCTION_ARGS)
 		funcctx = SRF_FIRSTCALL_INIT();
 
 		parentrv = makeRangeVarFromNameList(textToQualifiedNameList(relname));
-		relid = RangeVarGetRelid(parentrv, false);
 
 		/* get the relid of the parent (main) relation */
 		parentrel = heap_openrv(parentrv, AccessShareLock);

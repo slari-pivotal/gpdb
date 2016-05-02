@@ -1820,7 +1820,6 @@ CopyToDispatch(CopyState cstate)
 {
 	TupleDesc	tupDesc;
 	int			num_phys_attrs;
-	int			attr_count;
 	Form_pg_attribute *attr;
 	CdbCopy    *cdbCopy;
 	StringInfoData cdbcopy_err;
@@ -1829,7 +1828,6 @@ CopyToDispatch(CopyState cstate)
 	tupDesc = cstate->rel->rd_att;
 	attr = tupDesc->attrs;
 	num_phys_attrs = tupDesc->natts;
-	attr_count = list_length(cstate->attnumlist);
 
 	/* We use fe_msgbuf as a per-row buffer regardless of copy_dest */
 	cstate->fe_msgbuf = makeStringInfo();
@@ -2556,7 +2554,6 @@ CopyFromDispatch(CopyState cstate)
 	TupleDesc	tupDesc;
 	Form_pg_attribute *attr;
 	AttrNumber	num_phys_attrs,
-				attr_count,
 				num_defaults;
 	FmgrInfo   *in_functions;
 	FmgrInfo   *out_functions; /* for handling defaults in Greenplum Database */
@@ -2614,7 +2611,6 @@ CopyFromDispatch(CopyState cstate)
 
 	/* variables for partitioning */
 	Datum      *part_values = NULL;
-	Oid		   *part_attr_types = NULL; /* types for partitioning */
 	Oid		   *part_typio = NULL;
 	FmgrInfo   *part_infuncs = NULL;
 	AttrNumber *part_attnum = NULL;
@@ -2655,7 +2651,6 @@ CopyFromDispatch(CopyState cstate)
 	tupDesc = RelationGetDescr(cstate->rel);
 	attr = tupDesc->attrs;
 	num_phys_attrs = tupDesc->natts;
-	attr_count = list_length(cstate->attnumlist);
 	num_defaults = 0;
 	h_attnum = 0;
 
@@ -3295,7 +3290,6 @@ CopyFromDispatch(CopyState cstate)
 							cxt_save = MemoryContextSwitchTo(oldcontext);
 
 							part_values = palloc0(num_phys_attrs * sizeof(Datum));
-							part_attr_types = palloc(num_phys_attrs * sizeof(Oid));
 							part_typio = palloc(num_phys_attrs * sizeof(Oid));
 							part_infuncs =
 								palloc(num_phys_attrs * sizeof(FmgrInfo));
@@ -4343,16 +4337,12 @@ bool
 CopyReadLineText(CopyState cstate, size_t bytesread)
 {
 	int			linesize;
-	char		escapec = '\0';
-
 	/* mark that encoding conversion hasn't occurred yet */
 	cstate->line_buf_converted = false;
 
 	/*
 	 * set the escape char for text format ('\\' by default).
 	 */
-	escapec = cstate->escape[0];
-
 	if (cstate->raw_buf_index >= bytesread)
 	{
 		cstate->raw_buf_done = true;

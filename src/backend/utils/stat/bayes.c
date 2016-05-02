@@ -34,7 +34,7 @@ nb_classify_accum(PG_FUNCTION_ARGS)
 	nb_classify_state  state;
 	Oid                resultType;
 	TupleDesc          resultDesc;
-	TypeFuncClass      funcClass;
+	TypeFuncClass      funcClass __attribute__((unused));
 	int                i;
 	int                nclasses;
 	ArrayType         *classes;          /* arg[1] */
@@ -254,7 +254,7 @@ nb_classify_combine(PG_FUNCTION_ARGS)
 	HeapTupleHeader    tup;
 	Oid                resultType;
 	TupleDesc          resultDesc;
-	TypeFuncClass      funcClass;
+	TypeFuncClass      funcClass __attribute__((unused));
 	HeapTuple          result;
 	Datum              resultDatum[3];
 	bool               resultNull[3];

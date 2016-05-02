@@ -181,7 +181,7 @@ RI_FKey_check(PG_FUNCTION_ARGS)
 	Relation	fk_rel;
 	Relation	pk_rel;
 	HeapTuple	new_row;
-	HeapTuple	old_row;
+	HeapTuple	old_row __attribute__((unused));
 	Buffer		new_row_buf;
 	RI_QueryKey qkey;
 	void	   *qplan;

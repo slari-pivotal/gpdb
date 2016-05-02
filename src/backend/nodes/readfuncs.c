@@ -50,7 +50,7 @@
 
 /* And a few guys need only the pg_strtok support fields */
 #define READ_TEMP_LOCALS()	\
-	char	   *token;		\
+	char	   *token __attribute__((unused));		\
 	int			length
 
 /* ... but most need both */

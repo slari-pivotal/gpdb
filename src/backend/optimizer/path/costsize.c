@@ -2466,12 +2466,10 @@ adjust_selectivity_for_nulltest(Selectivity selec,
 
 			if (IsA(clause, NullTest))
 			{
-				int			nulltesttype;
 				Node	   *node;
 				Node	   *basenode;
 
 				/* extract information */
-				nulltesttype = ((NullTest *) clause)->nulltesttype;
 				node = (Node *) ((NullTest *) clause)->arg;
 	
 				/* CONSIDER: is this really necessary? */

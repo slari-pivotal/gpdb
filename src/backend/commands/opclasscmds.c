@@ -826,13 +826,11 @@ RemoveOpClass(RemoveOpClassStmt *stmt)
 void
 RemoveOpClassById(Oid opclassOid)
 {
-	int			numDel;
-
 	/*
 	 * First remove the pg_opclass entry itself.
 	 */
 
-	numDel = caql_getcount(
+	caql_getcount(
 			NULL,
 			cql("DELETE FROM pg_opclass "
 				" WHERE oid = :1 ",
@@ -841,7 +839,7 @@ RemoveOpClassById(Oid opclassOid)
 	/*
 	 * Remove associated entries in pg_amop.
 	 */
-	numDel = caql_getcount(
+	caql_getcount(
 			NULL,
 			cql("DELETE FROM pg_amop "
 				" WHERE amopclaid = :1 ",
@@ -850,7 +848,7 @@ RemoveOpClassById(Oid opclassOid)
 	/*
 	 * Remove associated entries in pg_amproc.
 	 */
-	numDel = caql_getcount(
+	caql_getcount(
 			NULL,
 			cql("DELETE FROM pg_amproc "
 				" WHERE amopclaid = :1 ",

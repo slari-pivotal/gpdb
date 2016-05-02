@@ -523,16 +523,12 @@ ResLockRelease(LOCKTAG *locktag, uint32 resPortalId)
 	LOCALLOCK		*locallock;
 	uint32			hashcode;
 	LWLockId		partitionLock;
-	ResourceOwner	owner;
 
 	ResPortalIncrement	*incrementSet;
 	ResPortalTag		portalTag;
 
 	/* Check the lock method bits. */
 	Assert(locktag->locktag_lockmethodid == RESOURCE_LOCKMETHOD);
-
-	/* Provide a resource owner. */
-	owner = CurrentResourceOwner;
 
 	/*
 	 * Find the LOCALLOCK entry for this lock and lockmode

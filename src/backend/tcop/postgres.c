@@ -4765,16 +4765,16 @@ PostgresMain(int argc, char *argv[],
 					int seqServerPort = -1;
 					
 					int		localSlice;
-					int		rootIdx;
-					int		primary_gang_id;
-					TimestampTz statementStart;
+					int		rootIdx __attribute__((unused));
+					int		primary_gang_id __attribute__((unused));
+					TimestampTz statementStart __attribute__((unused));
 					Oid 	suid;
 					Oid 	ouid;
 					Oid 	cuid;
 					bool	suid_is_super = false;
 					bool	ouid_is_super = false;
 
-					int unusedFlags;
+					int unusedFlags __attribute__((unused));
 
 					/* Set statement_timestamp() */
  					SetCurrentStatementStartTimestamp();
@@ -4927,7 +4927,7 @@ PostgresMain(int argc, char *argv[],
 					const char *gid;
 
 					DistributedTransactionId gxid;
-					int	primary_gang_id;
+					int	primary_gang_id __attribute__((unused));
 					int serializedSnapshotlen;
 					const char *serializedSnapshot;
 

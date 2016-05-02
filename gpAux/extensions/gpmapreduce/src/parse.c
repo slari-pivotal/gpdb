@@ -1843,13 +1843,11 @@ void mapred_dump_yaml(mapred_object_t *obj)
 	
 int mapred_verify_object(mapred_parser_t *parser, mapred_object_t *obj)
 {
-	char *name;
 	int error = NO_ERROR;
 
 	XASSERT(obj);
 
 	/* Verify that all required fields are present and valid */
-	name = obj->name ? obj->name : "unnamed";
 	switch (obj->kind)
 	{
 		case MAPRED_DOCUMENT:

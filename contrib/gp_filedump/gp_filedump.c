@@ -1643,7 +1643,6 @@ fixupItemBlock(Page page)
 	unsigned int    x;
 	unsigned int    itemSize;
 	unsigned int    itemOffset;
-	unsigned int    itemFlags;
 	ItemId          itemId;
 	int             maxOffset = PageGetMaxOffsetNumber(page);
 
@@ -1653,8 +1652,6 @@ fixupItemBlock(Page page)
 	 */
 	if (IsBtreeMetaPage(page))
 		return;
-
-//	printf("<Data> ------ \n");
 
 	/* Loop through the items on the block.  Check if the block is */
 	/* empty and has a sensible item array listed before running  */
@@ -1666,19 +1663,11 @@ fixupItemBlock(Page page)
 		       maxOffset);
 	else
 	{
-//		int             formatAs;
-//		char            textFlags[8];
-
 		for (x = 1; x < (maxOffset + 1); x++)
 		{
 			itemId = PageGetItemId(page, x);
-			itemFlags = (unsigned int) ItemIdGetFlags(itemId);
 			itemSize = (unsigned int) ItemIdGetLength(itemId);
 			itemOffset = (unsigned int) ItemIdGetOffset(itemId);
-
-//			printf(" Item %3u -- Length: %4u  Offset: %4u (0x%04x)"
-//			"  Flags: %s\n", x, itemSize, itemOffset, itemOffset,
-//			       textFlags);
 
 			/*
 			 * Make sure the item can physically fit on this
@@ -2501,7 +2490,7 @@ FormatBlock()
 		}
 		else
 		{
-			int rc;
+			int rc __attribute__((unused));
 			rc = FormatHeader(page);
 		}
 			

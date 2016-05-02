@@ -802,11 +802,10 @@ void MetaTrackUpdObject(Oid		classid,
 void MetaTrackDropObject(Oid		classid, 
 						 Oid		objoid)
 {
-	int ii = 0;
 
 	if (IsSharedRelation(classid))
 	{
-		ii = caql_getcount(
+		caql_getcount(
 				NULL,
 				cql("DELETE FROM pg_stat_last_shoperation "
 					" WHERE classid = :1 "
@@ -816,7 +815,7 @@ void MetaTrackDropObject(Oid		classid,
 	}
 	else
 	{
-		ii = caql_getcount(
+		caql_getcount(
 				NULL,
 				cql("DELETE FROM pg_stat_last_operation "
 					" WHERE classid = :1 "
@@ -1705,9 +1704,7 @@ heap_create_with_catalog(const char *relname,
 static void
 RelationRemoveInheritance(Oid relid)
 {
-	int numDel = 0;
-
-	numDel = caql_getcount(
+	caql_getcount(
 			NULL,
 			cql("DELETE FROM pg_inherits "
 				" WHERE inhrelid = :1 ",
@@ -1724,7 +1721,6 @@ RemovePartitioning(Oid relid)
 	Relation pgrule;
 	cqContext	*pcqCtx;
 	cqContext	 cqc, cqcrul;
-	int			 numDel = 0;
 
 	if (Gp_role == GP_ROLE_EXECUTE)
 		return;
@@ -1747,7 +1743,7 @@ RemovePartitioning(Oid relid)
 	{
 		Oid paroid = HeapTupleGetOid(tuple);
 
-		numDel = caql_getcount(
+		caql_getcount(
 				caql_addrel(cqclr(&cqcrul), pgrule),
 				cql("DELETE FROM pg_partition_rule "
 					" WHERE paroid = :1 ",
@@ -1761,7 +1757,7 @@ RemovePartitioning(Oid relid)
 
 	/* we might be a leaf partition: delete any records */
 
-	numDel = caql_getcount(
+	caql_getcount(
 			caql_addrel(cqclr(&cqcrul), pgrule),
 			cql("DELETE FROM pg_partition_rule "
 				" WHERE parchildrelid = :1 ",
@@ -1817,9 +1813,7 @@ DeleteRelationTuple(Oid relid)
 void
 DeleteAttributeTuples(Oid relid)
 {
-	int numDel = 0;
-
-	numDel = caql_getcount(
+	caql_getcount(
 			NULL,
 			cql("DELETE FROM pg_attribute "
 				" WHERE attrelid = :1 ",
@@ -2992,11 +2986,9 @@ RemoveRelConstraints(Relation rel, const char *constrName,
 void
 RemoveStatistics(Oid relid, AttrNumber attnum)
 {
-	int numDel = 0;
-
 	if (attnum == 0)
 	{
-		numDel = caql_getcount(
+		caql_getcount(
 				NULL,
 				cql("DELETE FROM pg_statistic "
 					" WHERE starelid = :1 ",
@@ -3004,7 +2996,7 @@ RemoveStatistics(Oid relid, AttrNumber attnum)
 	}
 	else
 	{
-		numDel = caql_getcount(
+		caql_getcount(
 				NULL,
 				cql("DELETE FROM pg_statistic "
 					" WHERE starelid = :1 "

@@ -260,12 +260,10 @@ int64 GetFastSequences(Oid objid, int64 objmod,
 void
 RemoveFastSequenceEntry(Oid objid)
 {
-	int numDel;
-	
 	if (!OidIsValid(objid))
 		return;
 
-	numDel = caql_getcount(
+	caql_getcount(
 			NULL,
 			cql("DELETE FROM gp_fastsequence "
 				" WHERE objid = :1 ",

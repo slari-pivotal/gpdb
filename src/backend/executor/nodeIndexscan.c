@@ -453,14 +453,12 @@ void
 ExecEndIndexScan(IndexScanState *node)
 {
 	Relation	indexRelationDesc;
-	IndexScanDesc indexScanDesc;
 	Relation	relation;
 
 	/*
 	 * extract information from the node
 	 */
 	indexRelationDesc = node->iss_RelationDesc;
-	indexScanDesc = node->iss_ScanDesc;
 	relation = node->ss.ss_currentRelation;
 
 	/*

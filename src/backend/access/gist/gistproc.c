@@ -222,7 +222,7 @@ chooseLR(GIST_SPLITVEC *v,
 			float		p1,
 						p2;
 			GISTENTRY	oldUnion,
-						addon;
+						addon __attribute__((unused));
 
 			gistentryinit(oldUnion, (v->spl_ldatum_exists) ? v->spl_ldatum : v->spl_rdatum,
 						  NULL, NULL, InvalidOffsetNumber, FALSE);

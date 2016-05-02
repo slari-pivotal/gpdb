@@ -545,10 +545,7 @@ do_parse_analyze(Node *parseTree, ParseState *pstate)
 		alters = NIL;
 		for (j = 0; j < i; j++)
 		{
-			AlterTableStmt *n;
 			alters = lappend(alters, stmts[j]);
-
-			n = (AlterTableStmt *)((Query *)stmts[j])->utilityStmt;
 		}
 		result = list_concat(result, others);
 		result = list_concat(result, alters);
@@ -5020,7 +5017,6 @@ preprocess_range_spec(partValidationState *vstate)
 		PartitionElem	*el			= lfirst(lc);
 		PartitionBoundSpec *pbs = (PartitionBoundSpec *)el->boundSpec;
 
-		Node			*pStoreAttr	= NULL;
 		ListCell		*lc2;
 		bool			 bTablename = false;
 
@@ -5038,8 +5034,6 @@ preprocess_range_spec(partValidationState *vstate)
 		}
 
 		pbs = (PartitionBoundSpec *)transformExpr(pstate, (Node *)pbs);
-
-		pStoreAttr = el->storeAttr;
 
 		/* MPP-6297: check for WITH (tablename=name) clause
 		 * [only for dump/restore, set deep in the guts of
@@ -7078,7 +7072,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 	int				 numElts = 0;
 	List			*partElts;
 	ListCell		*lc = NULL;
-	ListCell		*lc_prev = NULL;
 	List			*stenc = NIL;
 
 	Assert(pBy);
@@ -7560,7 +7553,6 @@ partition_range_every(ParseState *pstate, PartitionBy *pBy, List *coltypes,
 			pBSpec->everyGenList = allNewPartns;
 
 l_next_iteration:
-		lc_prev = lc;
 		lc = lnext(lc);
 	} /* end foreach */
 
@@ -7959,7 +7951,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 					 CreateStmt *stmt, Node *partitionBy, GpPolicy *policy)
 {
 	Oid			snamespaceid;
-	char	   *snamespace;
 	int		  	partDepth;	/* depth (starting at zero, but display at 1) */
 	char	  	depthstr[NAMEDATALEN];
 	char	   *at_depth = "";
@@ -8249,7 +8240,6 @@ transformPartitionBy(ParseState *pstate, CreateStmtContext *cxt,
 	 * Determine namespace and name to use for the child table.
 	 */
 	snamespaceid = RangeVarGetCreationNamespace(cxt->relation);
-	snamespace = get_namespace_name(snamespaceid);
 
 	/* set up the partition specification element list if it exists */
 	if (pBy->partSpec)
@@ -11231,9 +11221,7 @@ transformAlterTable_all_PartitionStmt(
 	AlterTableCmd 		*atc1 	   = cmd;
 	RangeVar 			*rv   	   = stmt->relation;
 	PartitionNode 		*pNode 	   = NULL;
-	PartitionNode 		*prevNode  = NULL;
 	int 			 	 partDepth = 0;
-	Oid 			 	 par_oid   = InvalidOid;
 	StringInfoData   sid1, sid2;
 
 	if (atc1->subtype == AT_PartAlter)
@@ -11300,9 +11288,7 @@ transformAlterTable_all_PartitionStmt(
 			if (prule && prule->topRule &&
 				prule->topRule->children)
 			{
-				prevNode = pNode;
 				pNode = prule->topRule->children;
-				par_oid = RelationGetRelid(rel);
 
 				/*
 				 * Don't hold a long lock -- lock on the master is
@@ -11320,7 +11306,6 @@ transformAlterTable_all_PartitionStmt(
 			}
 			else
 			{
-				prevNode = pNode;
 				pNode = NULL;
 			}
 

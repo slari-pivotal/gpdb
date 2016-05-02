@@ -2702,7 +2702,7 @@ AlterType(AlterTypeStmt *stmt)
 static void
 remove_type_encoding(Oid typid)
 {
-	int numDel;
+	int numDel __attribute__((unused));
 
 	numDel = caql_getcount(
 			NULL,

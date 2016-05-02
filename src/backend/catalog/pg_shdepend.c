@@ -733,7 +733,6 @@ dropDatabaseDependencies(Oid databaseId)
 {
 	Relation	sdepRel;
 	cqContext	cqc;
-	int			numDel;
 
 	sdepRel = heap_open(SharedDependRelationId, RowExclusiveLock);
 
@@ -741,7 +740,7 @@ dropDatabaseDependencies(Oid databaseId)
 	 * First, delete all the entries that have the database Oid in the dbid
 	 * field.
 	 */
-	numDel = caql_getcount(
+	caql_getcount(
 			caql_addrel(cqclr(&cqc), sdepRel),
 			cql("DELETE FROM pg_shdepend "
 				" WHERE dbid = :1 ",
@@ -1116,7 +1115,6 @@ shdepDropOwned(List *roleids, DropBehavior behavior)
 		while (HeapTupleIsValid(tuple = caql_getnext(pcqCtx)))
 		{
 			ObjectAddress obj;
-			GrantObjectType objtype;
 			InternalGrant istmt;
 			Form_pg_shdepend sdepForm = (Form_pg_shdepend) GETSTRUCT(tuple);
 
@@ -1156,8 +1154,6 @@ shdepDropOwned(List *roleids, DropBehavior behavior)
 						default:
 							elog(ERROR, "unexpected object type %d",
 								 sdepForm->classid);
-							/* keep compiler quiet */
-							objtype = (GrantObjectType) 0;
 							break;
 					}
 					istmt.is_grant = false;

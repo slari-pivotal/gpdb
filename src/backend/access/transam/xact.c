@@ -1754,7 +1754,6 @@ bool RecordCrashTransactionAbortRecord(
 	XLogRecData rdata[3];
 	int			lastrdata = 0;
 	xl_xact_abort xlrec;
-	XLogRecPtr	recptr;
 	XidStatus status;
 	bool           validStatus;
 
@@ -1850,7 +1849,7 @@ bool RecordCrashTransactionAbortRecord(
 	
 		s->transactionId = xid;
 	}
-	recptr = XLogInsert(RM_XACT_ID, XLOG_XACT_ABORT, rdata);
+	XLogInsert(RM_XACT_ID, XLOG_XACT_ABORT, rdata);
 
 	/*
 	 * Mark the transaction aborted in clog.  This is not absolutely
@@ -2410,7 +2409,6 @@ GetLastTransactionIdFromSnapshot(DistributedTransactionId dxid)
 	else if (SharedLocalSnapshotSlot->total_subcnt > 0)
 	{
 		TransactionId last_id;
-		int64 offset;
 		int64 file_size;
 
 		/*
@@ -2421,7 +2419,7 @@ GetLastTransactionIdFromSnapshot(DistributedTransactionId dxid)
 
 		file_size = (SharedLocalSnapshotSlot->total_subcnt-1) *
 			sizeof(TransactionId);
-		offset = FileSeek(subxip_file, file_size, SEEK_SET);
+		FileSeek(subxip_file, file_size, SEEK_SET);
 		if (FileRead(subxip_file, (char *)(&last_id),
 			     sizeof(TransactionId)) != sizeof(TransactionId))
 		{
@@ -2643,7 +2641,6 @@ RemoveSubtransactionsFromSharedSnapshot(DistributedTransactionId dxid,
 {
 	uint32 removed;
 	TransactionId *subxids = NULL;
-	int64 offset;
 	int32 index = 0;
 	int64 size;
 	int64 read_size;
@@ -2681,7 +2678,7 @@ RemoveSubtransactionsFromSharedSnapshot(DistributedTransactionId dxid,
 	OpenOrCreateSubtransIdFile(dxid);
 	Assert(subxip_file != 0);
 	total_size = 0;
-	offset = FileSeek(subxip_file, 0, SEEK_SET);
+	FileSeek(subxip_file, 0, SEEK_SET);
 
 	subxids = palloc(MAX_XIDBUF_SIZE);
 	while (size > 0)
@@ -2780,7 +2777,6 @@ void
 GetSubXidsInXidBuffer(void)
 {
 	TransactionId* subxids = NULL;
-	int64 offset;
 	int64 size;
 	int64 read_size;
 
@@ -2816,7 +2812,7 @@ GetSubXidsInXidBuffer(void)
 			""); // tableName
 #endif
 
-		offset = FileSeek(subxip_file, 0, SEEK_SET);
+		FileSeek(subxip_file, 0, SEEK_SET);
 		size = (SharedLocalSnapshotSlot->total_subcnt -
 			SharedLocalSnapshotSlot->inmemory_subcnt) *
 			sizeof(TransactionId);
@@ -2874,11 +2870,10 @@ ShowSubtransactionsForSharedSnapshot(void)
 			}
 		}
 
-		int64 offset;
 		uint32 size;
 		uint32 read_size;
 
-		offset = FileSeek(subxip_file, 0, SEEK_SET);
+		FileSeek(subxip_file, 0, SEEK_SET);
 		size = (SharedLocalSnapshotSlot->total_subcnt -
 			SharedLocalSnapshotSlot->inmemory_subcnt) *
 			sizeof(TransactionId);

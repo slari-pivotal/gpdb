@@ -579,11 +579,11 @@ array_int4_add(PG_FUNCTION_ARGS)
 				ndatabytes,
 				nbytes;
 	int		   *dims1,
-			   *lbs1,
+			   *lbs1 __attribute__((unused)),
 				ndims1,
 				ndatabytes1;
 	int		   *dims2,
-			   *lbs2,
+			   *lbs2 __attribute__((unused)),
 				ndims2,
 				ndatabytes2;
 	bool		bigenuf1,

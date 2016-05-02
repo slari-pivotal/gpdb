@@ -32,10 +32,7 @@ static uint8 _bitmap_find_bitset(BM_HRL_WORD word, uint8 lastPos);
 BMLOVItem
 _bitmap_formitem(uint64 currTidNumber)
 {
-	int			nbytes_bmitem;
 	BMLOVItem	bmitem;
-
-	nbytes_bmitem = sizeof(BMLOVItemData);
 
 	bmitem = (BMLOVItem)palloc(sizeof(BMLOVItemData));
 

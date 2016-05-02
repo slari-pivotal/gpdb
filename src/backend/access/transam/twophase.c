@@ -328,7 +328,7 @@ TwoPhaseFindRecoverPostCheckpointPreparedTransactionsMapEntry(TransactionId xid,
 static void
 remove_recover_post_checkpoint_prepared_transactions_map_entry(TransactionId xid, char *caller)
 {
-  prpt_map *entry = NULL;
+  prpt_map *entry __attribute__((unused)) = NULL;
   bool      found = false;;
 
   if (Debug_persistent_print)

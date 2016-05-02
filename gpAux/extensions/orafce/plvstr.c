@@ -573,7 +573,7 @@ plvstr_rvrs(PG_FUNCTION_ARGS)
 	text *str = PG_GETARG_TEXT_PP(0);
 	int start = PG_GETARG_INT32(1);
 	int end = PG_GETARG_INT32(2);
-	int len, aux;
+	int len;
 	int i;
 	int new_len;
 	text *result;
@@ -602,7 +602,6 @@ plvstr_rvrs(PG_FUNCTION_ARGS)
 
 	if (start < 0)
 	{
-		aux = len + end + 1;
 		end = len + start + 1;
 		start = end;
 	}

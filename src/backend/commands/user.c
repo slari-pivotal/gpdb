@@ -1422,18 +1422,15 @@ DropRole(DropRoleStmt *stmt)
 		 * XXX what about grantor entries?	Maybe we should do one heap scan.
 		 */
 		{
-			int numDel;
 			cqContext cqc2;
 
-			numDel = 
-					caql_getcount(
+			caql_getcount(
 							caql_addrel(cqclr(&cqc2), pg_auth_members_rel),
 							cql("DELETE FROM pg_auth_members "
 								" WHERE roleid = :1 ",
 								ObjectIdGetDatum(roleid)));
 
-			numDel = 
-					caql_getcount(
+			caql_getcount(
 							caql_addrel(cqclr(&cqc2), pg_auth_members_rel),
 							cql("DELETE FROM pg_auth_members "
 								" WHERE member = :1 ",
@@ -1809,7 +1806,6 @@ AddRoleMems(const char *rolename, Oid roleid,
 			Oid grantorId, bool admin_opt)
 {
 	Relation	pg_authmem_rel;
-	TupleDesc	pg_authmem_dsc;
 	ListCell   *nameitem;
 	ListCell   *iditem;
 
@@ -1847,7 +1843,6 @@ AddRoleMems(const char *rolename, Oid roleid,
 				 errmsg("must be superuser to set grantor")));
 
 	pg_authmem_rel = heap_open(AuthMemRelationId, RowExclusiveLock);
-	pg_authmem_dsc = RelationGetDescr(pg_authmem_rel);
 
 	forboth(nameitem, memberNames, iditem, memberIds)
 	{

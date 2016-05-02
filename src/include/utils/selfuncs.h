@@ -78,10 +78,19 @@ typedef struct VariableStatData
 	bool		isunique;		/* true if matched to a unique index */
 } VariableStatData;
 
-/* get the pg_statistic tuple, or NULL if none */
-#define getStatsTuple(vardata) \
-(((NULL != (vardata)) && (NULL != (vardata)->statscqCtx)) ?	\
- caql_get_current((vardata)->statscqCtx) : NULL)
+/*
+ * get the pg_statistic tuple, or NULL if none.
+ *
+ * Declaring this as a macro is causing compiler warnings since in
+ * cases where vardata is the address of a stack variable, it can
+ * never be NULL. The compiler considers that suspicious.
+ * An inlined function has similar performance as a macro, and it
+ * doesn't cause the compiler warning.
+ */
+static inline HeapTuple getStatsTuple(VariableStatData *vardata) {
+	return (((NULL != (vardata)) && (NULL != (vardata)->statscqCtx)) ?	\
+			 caql_get_current((vardata)->statscqCtx) : NULL);
+}
 
 typedef enum
 {

@@ -487,8 +487,6 @@ pg_stat_get_activity(PG_FUNCTION_ARGS)
 		/* Values only available to same user or superuser */
 		if (superuser() || beentry->st_userid == GetUserId())
 		{
-			bool		waiting;
-
 			if (*(beentry->st_activity) == '\0')
 			{
 				values[4] = CStringGetTextDatum("<command string not enabled>");
@@ -498,7 +496,6 @@ pg_stat_get_activity(PG_FUNCTION_ARGS)
 				values[4] = CStringGetTextDatum(beentry->st_activity);
 			}
 
-			waiting = beentry->st_waiting != PGBE_WAITING_NONE;
 			values[5] = BoolGetDatum(beentry->st_waiting);
 
 			if (beentry->st_xact_start_timestamp != 0)

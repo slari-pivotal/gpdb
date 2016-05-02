@@ -228,14 +228,12 @@ InitResQueues(void)
 		bool				overcommit;
 		float4				ignorelimit;
 		Cost				thresholds[NUM_RES_LIMIT_TYPES];
-		char				*queuename;
 
 		numQueues++;
 
 		queueform = (Form_pg_resqueue) GETSTRUCT(tuple);
 
 		queueid = HeapTupleGetOid(tuple);
-		queuename = NameStr(queueform->rsqname);
 		thresholds[RES_COUNT_LIMIT] = queueform->rsqcountlimit;
 		thresholds[RES_COST_LIMIT] = queueform->rsqcostlimit;
 

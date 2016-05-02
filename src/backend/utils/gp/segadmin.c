@@ -1201,10 +1201,9 @@ filespace_entry_activate_standby(int standbydbid, int newdbid)
 	HeapTuple tuple;
 	cqContext  *pcqCtx;
 	cqContext	cqc;
-	int numDel = 0;
 
 	/* first, delete the old master */
-	numDel = caql_getcount(
+	caql_getcount(
 			caql_addrel(cqclr(&cqc), rel),
 			cql("DELETE FROM pg_filespace_entry "
 				" WHERE fsedbid = :1 ",

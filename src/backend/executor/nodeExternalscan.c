@@ -106,7 +106,6 @@ ExternalNext(ExternalScanState *node)
 {
 	HeapTuple	tuple;
 	FileScanDesc scandesc;
-	Index		scanrelid;
 	EState	   *estate;
 	ScanDirection direction;
 	TupleTableSlot *slot;
@@ -117,7 +116,6 @@ ExternalNext(ExternalScanState *node)
 	 */
 	estate = node->ss.ps.state;
 	scandesc = node->ess_ScanDesc;
-	scanrelid = ((ExternalScan *) node->ss.ps.plan)->scan.scanrelid;
 	direction = estate->es_direction;
 	slot = node->ss.ss_ScanTupleSlot;
 

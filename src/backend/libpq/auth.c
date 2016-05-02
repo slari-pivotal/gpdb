@@ -1099,7 +1099,7 @@ static void
 pg_GSS_error(int severity, char *errmsg, OM_uint32 maj_stat, OM_uint32 min_stat)
 {
 	gss_buffer_desc gmsg;
-	OM_uint32	lmaj_s,
+	OM_uint32	lmaj_s __attribute__((unused)),
 				lmin_s,
 				msg_ctx;
 	char		msg_major[128],
@@ -1150,7 +1150,7 @@ check_valid_until_for_gssapi(Port *port)
 {
 	int         retval = 0;  
 	char        *valuntil = NULL;
-	char        *shadow_pass = NULL;
+	char        *shadow_pass __attribute__((unused)) = NULL;
 	List        **line = NULL;
 	ListCell    *token = NULL;
 

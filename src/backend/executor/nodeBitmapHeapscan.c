@@ -552,13 +552,11 @@ void
 ExecEndBitmapHeapScan(BitmapHeapScanState *node)
 {
 	Relation	relation;
-	HeapScanDesc scanDesc;
 
 	/*
 	 * extract information from the node
 	 */
 	relation = node->ss.ss_currentRelation;
-	scanDesc = node->ss_currentScanDesc;
 
 	/*
 	 * Free the exprcontext

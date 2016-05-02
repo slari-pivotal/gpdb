@@ -468,7 +468,6 @@ AlterForeignDataWrapper(AlterFdwStmt *stmt)
 	Datum		repl_val[Natts_pg_foreign_data_wrapper];
 	bool		repl_null[Natts_pg_foreign_data_wrapper];
 	bool		repl_repl[Natts_pg_foreign_data_wrapper];
-	Oid			fdwId;
 	bool		isnull;
 	Datum		datum;
 	Oid			fdwvalidator;
@@ -498,8 +497,6 @@ AlterForeignDataWrapper(AlterFdwStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 		errmsg("foreign-data wrapper \"%s\" does not exist", stmt->fdwname)));
-
-	fdwId = HeapTupleGetOid(tp);
 
 	memset(repl_val, 0, sizeof(repl_val));
 	memset(repl_null, false, sizeof(repl_null));

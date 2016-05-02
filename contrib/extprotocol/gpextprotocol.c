@@ -209,7 +209,6 @@ demoprot_export(PG_FUNCTION_ARGS)
 Datum 
 demoprot_validate_urls(PG_FUNCTION_ARGS)
 {
-	List			   *urls;
 	int					nurls;
 	int					i;
 	ValidatorDirection	direction;
@@ -219,7 +218,6 @@ demoprot_validate_urls(PG_FUNCTION_ARGS)
 		elog(ERROR, "demoprot_validate_urls: not called by external protocol manager");
 
 	nurls 		= EXTPROTOCOL_VALIDATOR_GET_NUM_URLS(fcinfo);
-	urls  		= EXTPROTOCOL_VALIDATOR_GET_URL_LIST(fcinfo);
 	direction 	= EXTPROTOCOL_VALIDATOR_GET_DIRECTION(fcinfo);
 	
 	/*

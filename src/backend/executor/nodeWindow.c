@@ -2450,8 +2450,7 @@ initWindowFuncState(WindowState * wstate, Window * node)
 		ListCell   *lcarg;
 		int			i  ,
 					funcno;
-		Oid			winOwner,
-					winResType;
+		Oid			winOwner;
 		bool		isAgg,
 					isWin ,
 					isSet;
@@ -2556,7 +2555,6 @@ initWindowFuncState(WindowState * wstate, Window * node)
 		isAgg = proform->proisagg;
 		isWin = proform->proiswin;
 		isSet = proform->proretset;
-		winResType = proform->prorettype;
 		winOwner = proform->proowner;
 
 		caql_endscan(pcqCtx);
@@ -4780,14 +4778,12 @@ fetchTupleSlotThroughBuf(WindowState * wstate)
 	bool		found = false;
 	Window	   *window = (Window *) wstate->ps.plan;
 	ExprContext *econtext = wstate->ps.ps_ExprContext;
-	bool		has_prior_tuple = false;
 
 	/* Read the previous tupleslot if any */
 	if (ntuplestore_acc_tell(buffer->reader, NULL))
 	{
 		found = ntuplestore_acc_current_tupleslot(buffer->reader,
 												  wstate->priorslot);
-		has_prior_tuple = found;
 	}
 
 	if (found)

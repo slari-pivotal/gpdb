@@ -18,7 +18,6 @@ AppendOnlyScanNext(ScanState *scanState)
 	AppendOnlyScanState *node = (AppendOnlyScanState *)scanState;
 	
 	AppendOnlyScanDesc scandesc;
-	Index		scanrelid;
 	EState	   *estate;
 	ScanDirection direction;
 	TupleTableSlot *slot;
@@ -29,7 +28,6 @@ AppendOnlyScanNext(ScanState *scanState)
 	 */
 	estate = node->ss.ps.state;
 	scandesc = node->aos_ScanDesc;
-	scanrelid = ((AppendOnlyScan *) node->ss.ps.plan)->scan.scanrelid;
 	direction = estate->es_direction;
 	slot = node->ss.ss_ScanTupleSlot;
 
