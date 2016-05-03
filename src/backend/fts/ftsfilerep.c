@@ -503,12 +503,25 @@ modeUpdate(int dbid, char *mode, char status, FilerepModeUpdateLoggingEnum logMs
 		runInBg = ' ';
 	}
 
-	if ((seg_rep_port > 0) && (peer_pm_port > 0) && (peer_rep_port >0))
+	if (peer_rep_port == -1)
 	{
-		/* we are using filerep
-		 * issue the command to change modes */
-
-	(void) snprintf
+			/* we are using segment WAL replication.  Call gpactivatemirrors */
+		char *fselocation = caql_getcstring(NULL,
+								cql("SELECT fselocation FROM pg_filespace_entry"
+									" WHERE fsedbid = :1 ",
+									ObjectIdGetDatum(dbid)));
+		if (!fselocation)
+		{
+			elog(ERROR, "FTS: could not find tuple for filespace_entry for dbid %u",
+				 dbid);
+		}
+		snprintf(cmd, sizeof(cmd), "PGPORT=%d MASTER_DATA_DIRECTORY=%s "
+                 "gpactivatemirrors -a", seg_pm_port, fselocation);
+	}
+	else
+	{
+			/* use the existing gp_primarymirror infrastructure to make state change */
+		snprintf
 		(
 		cmd, sizeof(cmd),
 		"gp_primarymirror -m %s -s %c -H %s -P %d -R %d -h %s -p %d -r %d -n %d -t %d %c",
@@ -525,21 +538,6 @@ modeUpdate(int dbid, char *mode, char status, FilerepModeUpdateLoggingEnum logMs
 		runInBg
 		)
 		;
-	}
-	else
-	{
-		char *fselocation = caql_getcstring(NULL,
-								cql("SELECT fselocation FROM pg_filespace_entry"
-									" WHERE fsedbid = :1 ",
-									ObjectIdGetDatum(dbid)));
-
-		if (!fselocation)
-		{
-			elog(ERROR, "FTS: could not find tuple for filespace_entry for dbid %u",
-				 dbid);
-		}
-		snprintf(cmd, sizeof(cmd), "PGPORT=%d MASTER_DATA_DIRECTORY=%s "
-                 "gpactivatemirrors -a", seg_pm_port, fselocation);
 	}
 
 	Assert(strlen(cmd) < sizeof(cmd) - 1);

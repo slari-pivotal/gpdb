@@ -19,6 +19,7 @@
 
 /* global state */
 extern bool am_walsender;
+extern bool	walsender_shutdown;
 extern bool am_cascading_walsender;
 extern volatile sig_atomic_t walsender_ready_to_stop;
 

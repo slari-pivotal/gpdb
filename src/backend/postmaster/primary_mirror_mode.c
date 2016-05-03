@@ -799,6 +799,15 @@ getFileRepRoleAndState(
 				}
 
 				break;
+
+                       /* replace by a seg walrep specific mode and structure */
+			case PMModeMirrorlessSegment:
+				fileRepRole = FileRepNoRoleConfigured;
+				dataState = pmModuleState->dataState;
+				segmentState = pmModuleState->segmentState;
+				transitionTargetDataState = DataStateNotInitialized;
+				break;
+
 			default:
 				fileRepRole = FileRepNoRoleConfigured;
 				dataState = DataStateNotInitialized;

@@ -5404,12 +5404,20 @@ PostgresMain(int argc, char *argv[],
 				send_ready_for_query = true;
 				break;
 
+			case 'X':
+
 				/*
 				 * 'X' means that the frontend is closing down the socket. EOF
 				 * means unexpected loss of frontend connection. Either way,
 				 * perform normal shutdown.
 				 */
-			case 'X':
+				if (am_walsender)
+				{
+					walsender_shutdown = true;
+				}
+
+				/* follow through to the case for EOF */
+
 			case EOF:
 
 				/*

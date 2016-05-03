@@ -78,6 +78,7 @@ WalSnd	   *MyWalSnd = NULL;
 
 /* Global state */
 bool		am_walsender = false;		/* Am I a walsender process ? */
+bool		walsender_shutdown = false;	/* normal shutdown of WAL Sender */
 int			max_wal_senders = 1;	/* the maximum number of concurrent walsenders */
 
 /* User-settable parameters for walsender */
@@ -127,6 +128,7 @@ static void WalSndLastCycleHandler(SIGNAL_ARGS);
 static int	WalSndLoop(void);
 static void InitWalSenderSlot(void);
 static void WalSndKill(int code, Datum arg);
+static void WalWaitForSegmentConfigurationChange(void);
 static void XLogSend(char *msgbuf, bool *caughtup,  bool *catchup_in_range);
 static void IdentifySystem(void);
 static void StartReplication(StartReplicationCmd *cmd);
@@ -779,11 +781,28 @@ InitWalSenderSlot(void)
 	on_shmem_exit(WalSndKill, 0);
 }
 
+
+
 /* Destroy the per-walsender data structure for this walsender process */
 static void
 WalSndKill(int code, Datum arg)
 {
 	Assert(MyWalSnd != NULL);
+
+		/* In case of segmment WAL replication, we want to inform the master
+		 * that the mirror is down. Need to add a check that this is only called
+		 * for segments and not master. ?? */
+
+	/* to be removed ??
+	elog(LOG, "WalSndKill: entering");
+	debug_backtrace();
+	*/
+
+	if (!walsender_shutdown)
+	{
+		updateSegmentState(SegmentStateFault, FaultTypeMirror);
+		WalWaitForSegmentConfigurationChange();
+	}
 
 	/*
 	 * Acquire the SyncRepLock here to avoid any race conditions
@@ -816,6 +835,66 @@ WalSndKill(int code, Datum arg)
 	/* WalSnd struct isn't mine anymore */
 	MyWalSnd = NULL;
 }
+
+
+
+/*******************************************************************************
+ * Wait for gp_segment_configuration to change at the master when the mirror
+ * goes down.
+ *
+ * Returns: nothing
+ */
+
+	static void
+WalWaitForSegmentConfigurationChange(void)
+{
+	FileRepRole_e  fileRepRole = FileRepRoleNotInitialized;
+	SegmentState_e segmentState = SegmentStateNotInitialized;
+	DataState_e    dataState = DataStateNotInitialized;
+	bool	       isInTransition = false;
+	DataState_e    dataStateTransition = DataStateNotInitialized;
+	bool           reported = false;              /* have reported the fault? */
+
+	while (1)
+	{
+		getFileRepRoleAndState(&fileRepRole, &segmentState, &dataState,
+							   &isInTransition, &dataStateTransition);
+
+		if (dataState == DataStateNotInitialized)
+		{
+			if (segmentState == SegmentStateFault)
+			{
+				if (!reported) 		/* remove reporting?? */
+				{
+					ereport(LOG,
+							(errmsg("Failure is detected in segment mirroring. "
+									" Update requested for the "
+									"gp_segment_configuration table.")));
+				}
+
+				pg_usleep(500000L); /* 500 ms?? */
+				continue;
+			}
+			else
+			{						/* possibly dead code.  Remove?? */
+				ereport(ERROR,
+						(errmsg("Internal error: wait for segment configuration"
+								" requested without a fault")));
+			}
+		}
+		else
+		{
+			ereport(LOG,
+					(errmsg("Failover to primary segment.  "
+							"Segment mirroring is suspended.")));
+				/* database is resumed */
+			break;
+		}
+
+	} 	/* end forever loop */
+}
+
+
 
 /*
  * Read 'count' bytes from WAL into 'buf', starting at location 'startptr'
