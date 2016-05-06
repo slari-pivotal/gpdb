@@ -1090,8 +1090,7 @@ exec_mpp_query(const char *query_string,
     	plan = (PlannedStmt *) deserializeNode(serializedPlantree,serializedPlantreelen);
 		if ( !plan ||
 			!IsA(plan, PlannedStmt) ||
-			plan->sliceTable != NULL ||
-			plan->memoryAccount != NULL)
+			plan->sliceTable != NULL)
 		{
 			elog(ERROR, "MPPEXEC: receive invalid planned statement");
 		}
@@ -4142,7 +4141,7 @@ PostgresMain(int argc, char *argv[],
 	volatile bool send_ready_for_query = true;
 	int			topErrLevel;
 
-	MemoryAccount *postgresMainMemoryAccount = NULL;
+	MemoryAccountIdType postgresMainMemoryAccountId = MEMORY_OWNER_TYPE_Undefined;
 	
         /*
 	 * CDB: Catch program error signals.
@@ -4173,8 +4172,8 @@ PostgresMain(int argc, char *argv[],
 	 * In that case, we risk switching to a stale memoryAccount that is no
 	 * longer valid. This is because we reset the memory accounts frequently.
 	 */
-	postgresMainMemoryAccount = MemoryAccounting_CreateAccount(0, MEMORY_OWNER_TYPE_MainEntry);
-	MemoryAccounting_SwitchAccount(postgresMainMemoryAccount);
+	postgresMainMemoryAccountId = MemoryAccounting_CreateAccount(0, MEMORY_OWNER_TYPE_MainEntry);
+	MemoryAccounting_SwitchAccount(postgresMainMemoryAccountId);
 
 	set_ps_display("startup", false);
 
@@ -4575,7 +4574,25 @@ PostgresMain(int argc, char *argv[],
 		MemoryContextSwitchTo(MessageContext);
 		MemoryContextResetAndDeleteChildren(MessageContext);
 		VmemTracker_ResetMaxVmemReserved();
-		MemoryAccounting_ResetPeakBalance();
+
+		/* Reset memory accounting */
+
+		/*
+		 * We finished processing the last query and currently we are not under
+		 * any transaction. So reset memory accounting. Note: any memory
+		 * allocated before resetting will go into the rollover memory account,
+		 * allocated under top memory context.
+		 */
+		MemoryAccounting_Reset();
+
+		postgresMainMemoryAccountId = MemoryAccounting_CreateAccount(0, MEMORY_OWNER_TYPE_MainEntry);
+		/*
+		 * Don't attempt to save previous memory account. This will be invalid by the time we attempt to restore.
+		 * This is why we are not using our START_MEMORY_ACCOUNT and END_MEMORY_ACCOUNT macros
+		 */
+		MemoryAccounting_SwitchAccount(postgresMainMemoryAccountId);
+
+		/* End of memory accounting setup */
 
 		initStringInfo(&input_message);
 
@@ -4671,27 +4688,6 @@ PostgresMain(int argc, char *argv[],
 		IdleTracker_DeactivateProcess();
 		firstchar = ReadCommand(&input_message);
 		IdleTracker_ActivateProcess();
-
-		if (!IsTransactionOrTransactionBlock()){
-			/* Reset memory accounting */
-
-			/*
-			 * We finished processing the last query and currently we are not under
-			 * any transaction. So reset memory accounting. Note: any memory
-			 * allocated before resetting will go into the rollover memory account,
-			 * allocated under top memory context.
-			 */
-			MemoryAccounting_Reset();
-
-			postgresMainMemoryAccount = MemoryAccounting_CreateAccount(0, MEMORY_OWNER_TYPE_MainEntry);
-			/*
-			 * Don't attempt to save previous memory account. This will be invalid by the time we attempt to restore.
-			 * This is why we are not using our START_MEMORY_ACCOUNT and END_MEMORY_ACCOUNT macros
-			 */
-			MemoryAccounting_SwitchAccount(postgresMainMemoryAccount);
-
-			/* End of memory accounting setup */
-		}
 
 		/*
 		 * (4) disable async signal conditions again.

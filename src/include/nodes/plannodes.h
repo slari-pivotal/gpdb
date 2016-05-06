@@ -163,9 +163,6 @@ typedef struct PlannedStmt
 		/* What is the memory reserved for this query's execution? */
 		uint64		query_mem;
 
-		/* The overall memory consumption account (i.e., outside of an operator) */
-		MemoryAccount *memoryAccount;
-
 		List *transientTypeRecords;
 
 } PlannedStmt;
@@ -302,7 +299,7 @@ typedef struct Plan
 	uint64 operatorMemKB;
 
 	/* MemoryAccount to use for recording the memory usage of different plan nodes. */
-	MemoryAccount* memoryAccount;
+	MemoryAccountIdType memoryAccountId;
 } Plan;
 
 /* ----------------

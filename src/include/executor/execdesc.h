@@ -60,6 +60,9 @@ typedef struct QueryDesc
 	Oid			es_lastoid;		/* oid of row inserted */
 	bool		extended_query;   /* simple or extended query protocol? */
 	char		*portal_name;	/* NULL for unnamed portal */
+
+	/* The overall memory consumption account (i.e., outside of an operator) */
+	MemoryAccountIdType memoryAccountId;
 	
 	/* CDB: EXPLAIN ANALYZE statistics */
 	struct CdbExplain_ShowStatCtx  *showstatctx;

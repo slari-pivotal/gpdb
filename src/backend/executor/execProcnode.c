@@ -219,7 +219,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 	int origSliceIdInPlan = estate->currentSliceIdInPlan;
 	int origExecutingSliceId = estate->currentExecutingSliceId;
 
-	MemoryAccount* curMemoryAccount = NULL;
+	MemoryAccountIdType curMemoryAccountId = MEMORY_OWNER_TYPE_Undefined;
 
 	/*
 	 * Is current plan node supposed to execute in current slice?
@@ -258,9 +258,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			 * control nodes
 			 */
 		case T_Result:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Result);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Result);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitResult((Result *) node,
 												  estate, eflags);
@@ -269,9 +269,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Append:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Append);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Append);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitAppend((Append *) node,
 												  estate, eflags);
@@ -280,9 +280,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Sequence:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Sequence);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Sequence);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitSequence((Sequence *) node,
 													estate, eflags);
@@ -291,9 +291,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_BitmapAnd:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapAnd);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapAnd);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 
 			result = (PlanState *) ExecInitBitmapAnd((BitmapAnd *) node,
@@ -303,9 +303,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_BitmapOr:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapOr);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapOr);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitBitmapOr((BitmapOr *) node,
 													estate, eflags);
@@ -321,9 +321,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 		case T_AOCSScan:
 		case T_TableScan:
 			/* SeqScan, AppendOnlyScan and AOCSScan are defunct */
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, TableScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, TableScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitTableScan((TableScan *) node,
 													 estate, eflags);
@@ -332,9 +332,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_DynamicTableScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, DynamicTableScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, DynamicTableScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitDynamicTableScan((DynamicTableScan *) node,
 													 estate, eflags);
@@ -343,9 +343,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_ExternalScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, ExternalScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, ExternalScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitExternalScan((ExternalScan *) node,
 														estate, eflags);
@@ -354,9 +354,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_IndexScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, IndexScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, IndexScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitIndexScan((IndexScan *) node,
 													 estate, eflags);
@@ -365,9 +365,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_DynamicIndexScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, DynamicIndexScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, DynamicIndexScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitDynamicIndexScan((DynamicIndexScan *) node,
 													estate, eflags);
@@ -376,9 +376,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_BitmapIndexScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapIndexScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapIndexScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitBitmapIndexScan((BitmapIndexScan *) node,
 														   estate, eflags);
@@ -387,9 +387,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_BitmapHeapScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapHeapScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapHeapScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitBitmapHeapScan((BitmapHeapScan *) node,
 														  estate, eflags);
@@ -398,9 +398,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_BitmapAppendOnlyScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapAppendOnlyScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapAppendOnlyScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitBitmapAppendOnlyScan((BitmapAppendOnlyScan*) node,
 														        estate, eflags);
@@ -409,9 +409,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_BitmapTableScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapTableScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, BitmapTableScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitBitmapTableScan((BitmapTableScan*) node,
 														        estate, eflags);
@@ -420,9 +420,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_TidScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, TidScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, TidScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitTidScan((TidScan *) node,
 												   estate, eflags);
@@ -431,9 +431,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_SubqueryScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, SubqueryScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, SubqueryScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitSubqueryScan((SubqueryScan *) node,
 														estate, eflags);
@@ -442,9 +442,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_FunctionScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, FunctionScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, FunctionScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitFunctionScan((FunctionScan *) node,
 														estate, eflags);
@@ -453,9 +453,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_TableFunctionScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, TableFunctionScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, TableFunctionScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitTableFunction((TableFunctionScan *) node,
 														 estate, eflags);
@@ -464,9 +464,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_ValuesScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, ValuesScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, ValuesScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitValuesScan((ValuesScan *) node,
 													  estate, eflags);
@@ -475,9 +475,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_NestLoop:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, NestLoop);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, NestLoop);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitNestLoop((NestLoop *) node,
 													estate, eflags);
@@ -486,9 +486,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_MergeJoin:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, MergeJoin);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, MergeJoin);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitMergeJoin((MergeJoin *) node,
 													 estate, eflags);
@@ -497,9 +497,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_HashJoin:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, HashJoin);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, HashJoin);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitHashJoin((HashJoin *) node,
 													estate, eflags);
@@ -511,9 +511,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			 * share input nodes
 			 */
 		case T_ShareInputScan:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, ShareInputScan);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, ShareInputScan);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitShareInputScan((ShareInputScan *) node, estate, eflags);
 			}
@@ -524,9 +524,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			 * materialization nodes
 			 */
 		case T_Material:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Material);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Material);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitMaterial((Material *) node,
 													estate, eflags);
@@ -535,9 +535,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Sort:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Sort);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Sort);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitSort((Sort *) node,
 												estate, eflags);
@@ -546,9 +546,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Agg:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Agg);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Agg);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitAgg((Agg *) node,
 											   estate, eflags);
@@ -557,9 +557,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Window:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Window);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Window);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitWindow((Window *) node,
 											   estate, eflags);
@@ -568,9 +568,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Unique:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Unique);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Unique);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitUnique((Unique *) node,
 												  estate, eflags);
@@ -579,9 +579,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Hash:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Hash);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Hash);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitHash((Hash *) node,
 												estate, eflags);
@@ -590,9 +590,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_SetOp:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, SetOp);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, SetOp);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitSetOp((SetOp *) node,
 												 estate, eflags);
@@ -601,9 +601,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Limit:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Limit);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Limit);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitLimit((Limit *) node,
 												 estate, eflags);
@@ -612,9 +612,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Motion:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Motion);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Motion);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitMotion((Motion *) node,
 												  estate, eflags);
@@ -623,9 +623,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			break;
 
 		case T_Repeat:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Repeat);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, Repeat);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitRepeat((Repeat *) node,
 												  estate, eflags);
@@ -633,9 +633,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			END_MEMORY_ACCOUNT();
 			break;
 		case T_DML:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, DML);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, DML);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitDML((DML *) node,
 												  estate, eflags);
@@ -643,9 +643,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			END_MEMORY_ACCOUNT();
 			break;
 		case T_SplitUpdate:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, SplitUpdate);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, SplitUpdate);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitSplitUpdate((SplitUpdate *) node,
 												  estate, eflags);
@@ -653,9 +653,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			END_MEMORY_ACCOUNT();
 			break;
 		case T_AssertOp:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, AssertOp);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, AssertOp);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
  			result = (PlanState *) ExecInitAssertOp((AssertOp *) node,
  												  estate, eflags);
@@ -663,9 +663,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			END_MEMORY_ACCOUNT();
  			break;
 		case T_RowTrigger:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, RowTrigger);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, RowTrigger);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
  			result = (PlanState *) ExecInitRowTrigger((RowTrigger *) node,
  												   estate, eflags);
@@ -673,9 +673,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 			END_MEMORY_ACCOUNT();
  			break;
 		case T_PartitionSelector:
-			curMemoryAccount = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, PartitionSelector);
+			curMemoryAccountId = CREATE_EXECUTOR_MEMORY_ACCOUNT(isAlienPlanNode, node, PartitionSelector);
 
-			START_MEMORY_ACCOUNT(curMemoryAccount);
+			START_MEMORY_ACCOUNT(curMemoryAccountId);
 			{
 			result = (PlanState *) ExecInitPartitionSelector((PartitionSelector *) node,
 															estate, eflags);
@@ -721,7 +721,9 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 	 * subPlans (is that actually possible? perhaps not).
 	 */
 	if (result != NULL)
-	{
+	{		
+		SAVE_EXECUTOR_MEMORY_ACCOUNT(result, curMemoryAccountId);
+
 		foreach(l, result->subPlan)
 		{
 			SubPlanState *sstate = (SubPlanState *) lfirst(l);
@@ -742,10 +744,6 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 	if (estate->es_instrument && result != NULL)
 		result->instrument = InstrAlloc(1);
 
-	if (result != NULL)
-	{
-		SAVE_EXECUTOR_MEMORY_ACCOUNT(result, curMemoryAccount);
-	}
 	return result;
 }
 
@@ -802,7 +800,7 @@ ExecProcNode(PlanState *node)
 {
 	TupleTableSlot *result = NULL;
 
-	START_MEMORY_ACCOUNT(node->plan->memoryAccount);
+	START_MEMORY_ACCOUNT(node->plan->memoryAccountId);
 	{
 
 #ifndef WIN32
@@ -1247,7 +1245,7 @@ MultiExecProcNode(PlanState *node)
 
 	Assert(NULL != node->plan);
 
-	START_MEMORY_ACCOUNT(node->plan->memoryAccount);
+	START_MEMORY_ACCOUNT(node->plan->memoryAccountId);
 	{
 		PG_TRACE5(execprocnode__enter, Gp_segment, currentSliceId, nodeTag(node), node->plan->plan_node_id, node->plan->plan_parent_node_id);
 
