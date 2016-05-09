@@ -19,7 +19,6 @@
 struct SliceTable;                          /* #include "nodes/execnodes.h" */
 
 /* listener filedescriptors */
-extern int		TCP_listenerFd;
 extern int		UDP_listenerFd;
 
 /*

@@ -425,10 +425,9 @@ cdbconn_doConnect(SegmentDatabaseDescriptor *segdbDesc,
 
         /* Don't use elog, it's not thread-safe */
         if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
-            write_log("Connected to %s motionListener=%d/%d\n",
+            write_log("Connected to %s motionListener=%d\n",
 						 segdbDesc->whoami,
-						 (segdbDesc->motionListener & 0x0ffff),
-						 ((segdbDesc->motionListener>>16) & 0x0ffff));
+						 segdbDesc->motionListener);
     }
 
     return segdbDesc->conn != NULL;
