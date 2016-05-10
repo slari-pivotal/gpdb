@@ -809,6 +809,9 @@ bool gp_plpgsql_clear_cache_always = false;
 char *gp_default_storage_options = NULL;
 int  writable_external_table_bufsize = 64;
 
+IndexCheckType gp_indexcheck_insert = INDEX_CHECK_NONE;
+IndexCheckType gp_indexcheck_vacuum = INDEX_CHECK_NONE;
+
 /*
  * Displayable names for context types (enum GucContext)
  *
@@ -6519,6 +6522,26 @@ static struct config_int ConfigureNamesInt[] =
 		},
 		&log_count_recovered_files_batch,
 		1000, 0, INT_MAX, NULL, NULL
+	},
+
+	{
+		{"gp_indexcheck_insert", PGC_USERSET, DEVELOPER_OPTIONS,
+			gettext_noop("Validate that a unique index does not already have the new tid during insert."),
+			NULL,
+			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE | GUC_GPDB_ADDOPT
+		},
+		(int *) &gp_indexcheck_insert,
+		INDEX_CHECK_NONE, 0, INDEX_CHECK_ALL, NULL, NULL
+	},
+
+	{
+		{"gp_indexcheck_vacuum", PGC_USERSET, DEVELOPER_OPTIONS,
+			gettext_noop("Validate index after lazy vacuum."),
+			NULL,
+			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE | GUC_GPDB_ADDOPT
+		},
+		(int *) &gp_indexcheck_vacuum,
+		INDEX_CHECK_NONE, 0, INDEX_CHECK_ALL, NULL, NULL
 	},
 
 	/* End-of-list marker */
