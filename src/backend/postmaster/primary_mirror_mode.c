@@ -1987,8 +1987,19 @@ applyStepForTransitionToPrimarySegmentMode(PrimaryMirrorModeTransitionArguments 
 				case PMModeQuiescentSegment:
 				case PMModeMirrorlessSegment:
 				case PMModeUninitialized:
-					*stateInOut = TSDoFilerepBackendsShutdown;
+                                     /* we are doing walrep, so bypass filrep */
+					if (args->hostPort == -1)
+					{
+						elog(LOG, "TransitiontoPrimary: initializing XLog Startup");
+						XLogStartupInit();
+						copyTransitionInputParameters(args, SegmentStateInitialization);
+						*stateInOut = TSDoDatabaseStartup;
+					}
+					else
+						*stateInOut = TSDoFilerepBackendsShutdown;
+
 					return PMTransitionSuccess;
+
 				default:
 					return invalidMode(args);
 			}
