@@ -1992,7 +1992,7 @@ applyStepForTransitionToPrimarySegmentMode(PrimaryMirrorModeTransitionArguments 
 					{
 						elog(LOG, "TransitiontoPrimary: initializing XLog Startup");
 						XLogStartupInit();
-						copyTransitionInputParameters(args, SegmentStateInitialization);
+						copyTransitionInputParameters(args, SegmentStateInResyncTransition);
 						*stateInOut = TSDoDatabaseStartup;
 					}
 					else
