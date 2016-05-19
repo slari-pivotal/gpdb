@@ -1005,9 +1005,12 @@ CHK_FILE () {
 		LOG_MSG "[INFO]:-End Function $FUNCNAME"
 }
 CHK_DIR () {
-		LOG_MSG "[INFO]:-Start Function $FUNCNAME"
-		DIR_NAME=$1;shift
-		DIR_HOST=$1
+		# this function might be called very early, before logfiles are initialized
+		if [ x"" == x"$3" ];then
+			LOG_MSG "[INFO]:-Start Function $FUNCNAME"
+		fi
+		DIR_NAME=$1
+		DIR_HOST=$2
 		if [ x"" == x"$DIR_HOST" ];then
 			EXISTS=`if [ -d $DIR_NAME ];then $ECHO 0;else $ECHO 1;fi`
 		else
@@ -1019,7 +1022,9 @@ CHK_DIR () {
 			EXISTS=1
 			fi
 		fi
-		LOG_MSG "[INFO]:-End Function $FUNCNAME"
+		if [ x"" == x"$3" ];then
+			LOG_MSG "[INFO]:-End Function $FUNCNAME"
+		fi
 }
 
 CHK_WRITE_DIR () {
