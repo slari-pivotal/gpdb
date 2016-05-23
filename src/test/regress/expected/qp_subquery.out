@@ -1288,6 +1288,44 @@ select * from TblUp2;
  5 | 6
 (3 rows)
 
+--
+-- Whole-row variable, typemod initialization issue
+--
+-- start_ignore
+drop table if exists typemod_init ;
+NOTICE:  table "typemod_init" does not exist, skipping
+CREATE TABLE typemod_init
+(
+  varchar_col character varying(4000)
+);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'varchar_col' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+insert into typemod_init values ('A');
+SELECT A
+FROM
+(
+   SELECT A.varchar_col
+   FROM
+   (
+       SELECT A.varchar_col
+       FROM typemod_init A
+   ) A
+   GROUP BY A.varchar_col
+) A LEFT OUTER JOIN
+(
+   SELECT A.varchar_col
+   FROM
+   (
+       SELECT A.varchar_col
+       FROM typemod_init A
+   ) A
+   GROUP BY A.varchar_col
+) B ON A.varchar_col = B.varchar_col;
+  a  
+-----
+ (A)
+(1 row)
+
 -- start_ignore
 drop schema qp_subquery cascade;
 -- end_ignore

@@ -44,35 +44,33 @@
 
 #include "postgres.h"
 
+#include "access/appendonlywriter.h"
 #include "access/genam.h"
 #include "access/heapam.h"
-#include "access/appendonlywriter.h"
+#include "catalog/catalog.h" // isMasterOnly()
 #include "catalog/index.h"
-#include "executor/execdebug.h"
-#include "parser/parsetree.h"
-#include "utils/memutils.h"
-#include "utils/relcache.h"
-#include "utils/workfile_mgr.h"
-
-#include "cdb/cdbvars.h"
-#include "nodes/primnodes.h"
-#include "nodes/execnodes.h"
-
-#include "cdb/cdbutil.h"
-#include "cdb/cdbgang.h"
-#include "cdb/cdbvars.h"
 #include "cdb/cdbdisp.h"
 #include "cdb/cdbdispatchresult.h"
-#include "cdb/ml_ipc.h"
+#include "cdb/cdbgang.h"
 #include "cdb/cdbmotion.h"
 #include "cdb/cdbsreh.h"
+#include "cdb/cdbutil.h"
+#include "cdb/cdbvars.h"
 #include "cdb/memquota.h"
-#include "catalog/catalog.h" // isMasterOnly()
+#include "cdb/ml_ipc.h"
+#include "executor/execdebug.h"
 #include "executor/spi.h"
-#include "utils/elog.h"
 #include "miscadmin.h"
+#include "nodes/execnodes.h"
+#include "nodes/primnodes.h"
 #include "nodes/makefuncs.h"
+#include "parser/parsetree.h"
 #include "storage/ipc.h"
+#include "utils/elog.h"
+#include "utils/memutils.h"
+#include "utils/relcache.h"
+#include "utils/typcache.h"
+#include "utils/workfile_mgr.h"
 
 /* ----------------------------------------------------------------
  *		global counters for number of tuples processed, retrieved,
@@ -646,6 +644,17 @@ void
 ExecAssignResultType(PlanState *planstate, TupleDesc tupDesc)
 {
 	TupleTableSlot *slot = planstate->ps_ResultTupleSlot;
+
+	/*
+	 * In PostgreSQL, we rely on ExecEvalWholeRowVar() to do this, at
+	 * execution time. In Greenplum, however, the typmods assigned to
+	 * rowtypes must be the same between the master and all segments,
+	 * so we must assign typmods at executor startup, before the plan
+	 * gets dispatched to segments.
+	 */
+	if (tupDesc->tdtypeid == RECORDOID &&
+		tupDesc->tdtypmod < 0)
+		assign_record_type_typmod(tupDesc);
 
 	ExecSetSlotDescriptor(slot, tupDesc);
 }

@@ -606,6 +606,41 @@ update TblUp1 set a=100 where a not in (select a from TblUp3);
 select * from TblUp1;
 update TblUp2 set a=100 where a not in (select a from TblUp4);
 select * from TblUp2;
+
+--
+-- Whole-row variable, typemod initialization issue
+--
+-- start_ignore
+drop table if exists typemod_init ;
+
+CREATE TABLE typemod_init
+(
+  varchar_col character varying(4000)
+);
+
+insert into typemod_init values ('A');
+
+SELECT A
+FROM
+(
+   SELECT A.varchar_col
+   FROM
+   (
+       SELECT A.varchar_col
+       FROM typemod_init A
+   ) A
+   GROUP BY A.varchar_col
+) A LEFT OUTER JOIN
+(
+   SELECT A.varchar_col
+   FROM
+   (
+       SELECT A.varchar_col
+       FROM typemod_init A
+   ) A
+   GROUP BY A.varchar_col
+) B ON A.varchar_col = B.varchar_col;
+
 -- start_ignore
 drop schema qp_subquery cascade;
 -- end_ignore
