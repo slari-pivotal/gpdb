@@ -7648,7 +7648,7 @@ static struct config_string ConfigureNamesString[] =
 		{"gp_interconnect_type", PGC_USERSET, GP_ARRAY_TUNING,
 		 gettext_noop("Sets the protocol used for inter-node communication."),
 		 gettext_noop("Only support \"udpifc\" for now."),
-		 GUC_GPDB_ADDOPT | GUC_NO_SHOW_ALL | GUC_DISALLOW_IN_FILE
+		 GUC_GPDB_ADDOPT
 		},
 		&gp_interconnect_type_str,
 		"udpifc", gpvars_assign_gp_interconnect_type, gpvars_show_gp_interconnect_type
