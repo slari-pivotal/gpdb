@@ -82,7 +82,7 @@ extern List * getAllReaderGangs(void);
 
 extern List * getAllIdleReaderGangs(void);
 
-extern List * getAllBusyReaderGangs(void);
+extern List * getAllAllocatedReaderGangs(void);
 
 extern void detectFailedConnections(void);
 

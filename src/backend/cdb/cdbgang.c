@@ -1313,7 +1313,7 @@ static Gang *primaryWriterGang = NULL;
 List *
 getAllReaderGangs()
 {
-	return list_concat(getAllIdleReaderGangs(), getAllBusyReaderGangs());
+	return list_concat(getAllIdleReaderGangs(), getAllAllocatedReaderGangs());
 }
 
 List *
@@ -1338,7 +1338,7 @@ getAllIdleReaderGangs()
 }
 
 List *
-getAllBusyReaderGangs()
+getAllAllocatedReaderGangs()
 {
 	List	   *res = NIL;
 	ListCell   *le;
