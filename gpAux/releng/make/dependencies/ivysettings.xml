@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivysettings>
+  <property name="repo.host" value="repo.pivotal.io" override="false"/>
+  <property name="repo.realm" value="Artifactory Realm" override="false"/>
+  <property name="repo.user" value="build_readonly"  override="false"/>
+  <property name="repo.pass" value="7wdLJRV4HW2q"  override="false"/>
+  <credentials host="${repo.host}" realm="${repo.realm}" username="${repo.user}" passwd="${repo.pass}"/>
 
   <!-- ====================================================================== -->
 
@@ -34,8 +39,8 @@
     </filesystem>
 
     <url name="public">
-      <ivy      pattern="https://repo.eng.pivotal.io/artifactory/gpdb-ext-release-local/[organization]/[module]/[revision]/[type]s/ivy-[revision].xml" />
-      <artifact pattern="https://repo.eng.pivotal.io/artifactory/gpdb-ext-release-local/[organization]/[module]/[revision]/[type]s/[artifact]-[revision].[ext]" />
+      <ivy      pattern="https://repo.pivotal.io/gpdb-ext-release-local/[organization]/[module]/[revision]/[type]s/ivy-[revision].xml" />
+      <artifact pattern="https://repo.pivotal.io/gpdb-ext-release-local/[organization]/[module]/[revision]/[type]s/[artifact]-[revision].[ext]" />
     </url>
 
     <chain name="chain-resolver">
