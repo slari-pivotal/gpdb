@@ -1,0 +1,18 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: pivotaldata/centos511-java7-gpdb-dev-image
+    username: gpdb
+    password: one team one dream
+    email: releng@pivotal.io
+inputs:
+  - name: gpdb4_src
+  - name: installer_rhel5_gpdb4
+run:
+  path: gpdb4_src/ci/concourse/scripts/gpdb_sync_to_dist.bash
+params:
+  REMOTE_USER: user
+  REMOTE_HOST: fully.qualified.hostname
+  REMOTE_DIRECTORY: /path/to/directory/
+  INSTALLER_ZIP: installer_rhel5_gpdb4/greenplum-db-VERSION-OS-x86_64.zip

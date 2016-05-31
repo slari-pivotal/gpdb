@@ -44,3 +44,6 @@ Debug
 Release
 pgsql.sln
 cscope.*
+
+#emacs
+*~

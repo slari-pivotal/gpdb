@@ -8,6 +8,8 @@ default: all
 top_builddir=../..
 ifneq "$(wildcard $(top_builddir)/src/Makefile.global)" ""
 include $(top_builddir)/src/Makefile.global
+else
+TAR=tar
 endif
 
 #
@@ -255,7 +257,7 @@ check-regress:
 
 check: $(MOCK_BIN) unittest2
 	@echo "Running unit tests..."
-	@PYTHONPATH=$(SERVER_SRC):$(SERVER_SBIN):$(SRC)/ext:$(PYTHONPATH):$(PYTHONSRC_INSTALL_PYTHON_PATH):$(SBIN_DIR):$(LIB_DIR):$(PYLIB_DIR)/mock-1.0.1 \
+	@PYTHONPATH=${PYTHONPATH}:$(SERVER_SRC):$(SERVER_SBIN):$(SRC)/ext:$(PYTHONPATH):$(PYTHONSRC_INSTALL_PYTHON_PATH):$(SBIN_DIR):$(LIB_DIR):$(PYLIB_DIR)/mock-1.0.1 \
 	gppylib/gpunit discover --verbose -s $(SRC)/gppylib -p "test_unit*.py" 2> $(SRC)/../gpMgmt_testunit_results.log 1> $(SRC)/../gpMgmt_testunit_output.log
 
 solarisTest:

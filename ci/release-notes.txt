@@ -1,0 +1,123 @@
+How to produce a 4.3 release
+
+----------------------------------------------------------------------
+Source Code
+----------------------------------------------------------------------
+
+  Git Repo (private): git@github.com:greenplum-db/gpdb4.git
+
+  Branch: 4.3_STABLE
+
+  Git Branch Tags: A tag is applied to the branch at release time to correpond to the RC build attempt
+    e.g. 4.3.8.2-build-1, 4.3.8.2MS26-build-1
+
+----------------------------------------------------------------------
+Pulse Tools
+----------------------------------------------------------------------
+
+  This repository contains several tools that will be used to interact
+  with pulse.
+
+  Git Repo: ssh://git@stash.eng.pivotal.io:2222/releng/main.git
+
+  The tools referenced below are located within tools/pulse/bin.
+    
+----------------------------------------------------------------------
+Build Version
+----------------------------------------------------------------------
+
+  Stored in root of code branch - getversion
+
+  The value that is manually updated is GP_VERSION
+
+    e.g. GP_VERSION=4.3.8.2
+  
+----------------------------------------------------------------------
+Pulse Release Candidate (RC) builds
+----------------------------------------------------------------------
+
+  GPDB-4_3_x-rcbuilds-1repo: http://pulse-releng.greenplum.com/admin/projects/GPDB-4_3_x-rcbuilds-1repo
+
+  Update the Pulse's project version to reflect the release.
+
+    projectviews.py -u techops -p ZumVPg9uAYVAD4AyyEsm \
+                    -w http://pulse-releng.greenplum.com \
+                    -s "project.version" \
+                    -m "project.version=4.3.8.2" \
+                    -P 'GPDB-4_3_x-rcbuilds-1repo'
+
+  For a build of all GPDB components and platforms, all build stages
+  need to be enabled.  The following script can be used to enable all
+  build stages:
+  
+    build_stage_switch.py -U techops -P ZumVPg9uAYVAD4AyyEsm \
+                          -w pulse-releng \
+                          -p GPDB-4_3_x-rcbuilds-1repo \
+                          -e \
+                          -b "aix5_ppc_32 aix5_ppc_64 hpux_ia64 osx106_x86 rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 rhel7_x86_64 sol10_sparc_32 sol10_sparc_64 sol10_x86_32 sol10_x86_64 suse10_x86_64 suse11_x86_64 win32"
+
+  The following script can be used to trigger the builds.  Note the -r
+  option references the git tag corresponding to the RC build attempt.
+  
+    pulse_trigger.py -U techops -P ZumVPg9uAYVAD4AyyEsm \
+                     -d http://pulse-releng.greenplum.com/xmlrpc \
+                     -p GPDB-4_3_x-rcbuilds-1repo \
+                     -r 4.3.8.2-build-1 \
+                     -v 'PROJECT_TAG=4.3.8.2-build-1;PROJECT_BRANCH=4.3.8.2;RC_BUILD_NUMBER=1;project.branch=4.3.8.2;project.version=4.3.8.2;PROJECT_VERSION=4.3.8.2'
+
+  After the build is complete, the build will be "pinned" to ensure it
+  is not removed by a pulse cleanup rule.
+  
+----------------------------------------------------------------------
+Regression Testing
+----------------------------------------------------------------------
+
+  Execute 4.3_STABLE regression test runs using the standard nightly
+  projects.  When triggered, the projects will be given parameters
+  indicating an RC build is used and from where to pick up the
+  installer.
+
+  TBD: provide a complete example for the 4.3.8.2 release.
+
+----------------------------------------------------------------------
+PivNet publishing
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+Customer specific (Morgan Stanley)
+----------------------------------------------------------------------
+
+  o Update version string for MS.  MS has their own release
+    identifier.  Create a branch corresponding to the release so we
+    can submit the version string change (getversion).  Apply a branch
+    tag to identify the RC attempt.
+  
+      e.g. 4.3.8.2MS26
+  
+  o Only rhel5_x86_64 and win32 platforms are build and delivered.
+
+      build_stage_switch.py -U techops -P ZumVPg9uAYVAD4AyyEsm \
+                            -w pulse-releng \
+                            -p GPDB-4_3_x-rcbuilds-1repo \
+                            -d \
+                            -b "aix5_ppc_32 aix5_ppc_64 hpux_ia64 osx106_x86 rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 rhel7_x86_64 sol10_sparc_32 sol10_sparc_64 sol10_x86_32 sol10_x86_64 suse10_x86_64 suse11_x86_64 win32"
+      
+      build_stage_switch.py -U techops -P ZumVPg9uAYVAD4AyyEsm \
+                            -w pulse-releng \
+                            -p GPDB-4_3_x-rcbuilds-1repo \
+                            -e \
+                            -b "rhel5_x86_64 win32"
+
+  o Perform RC build
+
+      pulse_trigger.py -U techops -P ZumVPg9uAYVAD4AyyEsm \
+                       -d http://pulse-releng.greenplum.com/xmlrpc \
+                       -p GPDB-4_3_x-rcbuilds-1repo \
+                       -r 4.3.8.2MS26-build-1 \
+                       -v 'PROJECT_TAG=4.3.8.2MS26-build-1;PROJECT_BRANCH=4.3.8.2MS26;RC_BUILD_NUMBER=1;project.branch=4.3.8.2MS26;project.version=4.3.8.2MS26;PROJECT_VERSION=4.3.8.2MS26'
+
+  o Perform test runs
+
+    After the test runs are complete, the runs will be manually
+    "pinned" to ensure they are not removed by a pulse cleanup rule.
+  
