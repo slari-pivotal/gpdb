@@ -46,13 +46,13 @@ function _main() {
         exit 1
     fi
 
-    install_sync_tools
-    configure
-    install_gpdb
-    ./gpdb4_src/ci/concourse/scripts/setup_gpadmin_user.bash
-    make_cluster
-    gen_env
-    run_test
+    time install_sync_tools
+    time configure
+    time install_gpdb
+    time ./gpdb4_src/ci/concourse/scripts/setup_gpadmin_user.bash
+    time make_cluster
+    time gen_env
+    time run_test
 }
 
 _main "$@"
