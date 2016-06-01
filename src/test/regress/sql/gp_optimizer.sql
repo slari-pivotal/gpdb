@@ -1358,6 +1358,9 @@ and c1.language = 'ZHS') t,
 orca.join_table
 WHERE orca.join_table.fid = t.flex_value_set_id;
 
+-- renaming columns
+select * from (values (2),(null)) v(k);
+
 -- clean up
 drop schema orca cascade;
 reset optimizer_segments;

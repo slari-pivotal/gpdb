@@ -9883,6 +9883,14 @@ WHERE orca.join_table.fid = t.flex_value_set_id;
  54321
 (2 rows)
 
+-- renaming columns
+select * from (values (2),(null)) v(k);
+ k
+---
+ 2
+
+(2 rows)
+
 -- clean up
 drop schema orca cascade;
 NOTICE:  drop cascades to table orca.join_table
