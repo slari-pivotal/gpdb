@@ -3494,6 +3494,26 @@ Feature: Validate command line arguments
         Then verify the metadata dump file does contain "ALTER TABLE rank_1_prt_p1 SET SCHEMA aaa"
         Then verify the metadata dump file does contain "ALTER TABLE rank_1_prt_p2 SET SCHEMA aaa"
 
+    Scenario: Database owner can be assigned to role containing special characters
+        Given the test is initialized
+        When the user runs "psql -c 'DROP ROLE IF EXISTS "Foo%user"' -d bkdb"
+        Then psql should return a return code of 0
+        When the user runs "psql -c 'CREATE ROLE "Foo%user"' -d bkdb"
+        Then psql should return a return code of 0
+        When the user runs "psql -c 'ALTER DATABASE bkdb OWNER TO "Foo%user"' -d bkdb"
+        Then psql should return a return code of 0
+        And there is a "ao" table "public.ao_table" in "bkdb" with data
+        When the user runs "gpcrondump -a -x bkdb"
+        Then gpcrondump should return a return code of 0
+        And the timestamp from gpcrondump is stored
+        And verify that the "cdatabase" file in " " dir contains "OWNER = "Foo%user""
+        When the user runs gpdbrestore with the stored timestamp
+        Then gpdbrestore should return a return code of 0
+        And verify that the owner of "bkdb" is "Foo%user"
+        And database "bkdb" is dropped and recreated
+        When the user runs "psql -c 'DROP ROLE "Foo%user"' -d bkdb"
+        Then psql should return a return code of 0
+
     # THIS SHOULD BE THE LAST TEST
     @backupfire
     Scenario: cleanup for backup feature
