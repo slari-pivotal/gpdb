@@ -56,6 +56,8 @@ If you get an error for shmmni, ignore and proceed.
 
 ## Build
 
+[Build Instructions](gpAux/BUILD_INSTRUCTIONS)
+
 ```
 cd gpAux/
 make sync_tools
