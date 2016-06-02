@@ -10,9 +10,12 @@ function echo_expected_env_variables() {
 
 function _main() {
   echo_expected_env_variables
-  cat "$INSTALL_SCRIPT_SRC" "$GPDB_TARGZ" > installer_bin.bin
-  chmod a+x installer_bin.bin
-  zip "$INSTALLER_ZIP" installer_bin.bin
+  local installer_bin
+  installer_bin=$( echo "$INSTALLER_ZIP" | sed "s/.zip/.bin/" | xargs basename)
+
+  cat "$INSTALL_SCRIPT_SRC" "$GPDB_TARGZ" > "$installer_bin"
+  chmod a+x "$installer_bin"
+  zip "$INSTALLER_ZIP" "$installer_bin"
 }
 
 _main "$@"
