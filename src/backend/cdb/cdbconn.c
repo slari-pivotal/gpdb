@@ -344,6 +344,21 @@ cdbconn_doConnect(SegmentDatabaseDescriptor *segdbDesc,
 			nkeywords++;
 		}
 	}
+	else
+	{
+			/*
+			 * We need hostaddr and host to be empty string if the connection goes to master. 
+			 * Or else, it will fallback to environment variable(PGHOSTADDR/PGHOST) and won't 
+			 * use Unix domain socket * in connectDBStart.
+			 */
+			keywords[nkeywords] = "hostaddr";
+			values[nkeywords] = "";
+			nkeywords++;
+
+			keywords[nkeywords] = "host";
+			values[nkeywords] = "";
+			nkeywords++;
+	}
 
 	snprintf(portstr, sizeof(portstr), "%u", q->port);
 	keywords[nkeywords] = "port";
