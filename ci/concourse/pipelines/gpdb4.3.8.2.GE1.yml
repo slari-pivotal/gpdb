@@ -1,0 +1,236 @@
+## ======================================================================
+## resources
+## ======================================================================
+
+resources:
+- name: gpdb4_src
+  type: git
+  source:
+    branch: 4.3.8.2.GE1
+    private_key: {{private-repo-key}}
+    uri: git@github.com:greenplum-db/gpdb4.git
+- name: bin_gpdb4
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: bin_gpdb4/bin_gpdb4.tar.gz
+- name: sync_tools_gpdb4
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: sync_tools_gpdb4/sync_tools_gpdb4.tar.gz
+- name: installer_rhel5_gpdb4
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_rhel5_gpdb4/greenplum-db-4.3.8.2.GE1-RHEL5-x86_64.zip
+
+## ======================================================================
+## jobs
+## ======================================================================
+
+# Stage 1: Build and C Unit Tests
+
+jobs:
+- name: compile_gpdb
+  public: true
+  plan:
+  - get: gpdb4_src
+    trigger: true
+  - task: build_gpdb
+    file: gpdb4_src/ci/concourse/build_gpdb.yml
+  - put: bin_gpdb4
+    params:
+      from: bin_gpdb4/bin_gpdb4.tar.gz
+  - put: sync_tools_gpdb4
+    params:
+      from: sync_tools_gpdb4/sync_tools_gpdb4.tar.gz
+
+# Stage 2: Installcheck and Python Unit Tests
+
+# If a new test is added to this stage, add the name of the job to the list of
+# stage 2 jobs under the following line in the first job in the stage 3 section:
+#
+#     passed: &Stage2Jobs
+
+- name: icb_orca
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [compile_gpdb]
+    - get: sync_tools_gpdb4
+      passed: [compile_gpdb]
+    - get: bin_gpdb4
+      passed: [compile_gpdb]
+      trigger: true
+  - task: ic_gpdb
+    file: gpdb4_src/ci/concourse/ic_gpdb.yml
+    params:
+      MAKE_TEST_COMMAND: installcheck-bugbuster
+      BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+
+- name: icb_planner
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [compile_gpdb]
+    - get: sync_tools_gpdb4
+      passed: [compile_gpdb]
+    - get: bin_gpdb4
+      passed: [compile_gpdb]
+      trigger: true
+  - task: ic_gpdb
+    file: gpdb4_src/ci/concourse/ic_gpdb.yml
+    params:
+      MAKE_TEST_COMMAND: installcheck-bugbuster
+      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+
+- name: icg_orca
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [compile_gpdb]
+    - get: sync_tools_gpdb4
+      passed: [compile_gpdb]
+    - get: bin_gpdb4
+      passed: [compile_gpdb]
+      trigger: true
+  - task: ic_gpdb
+    file: gpdb4_src/ci/concourse/ic_gpdb.yml
+    params:
+      MAKE_TEST_COMMAND: installcheck-good
+      BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+
+- name: icg_planner
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [compile_gpdb]
+    - get: sync_tools_gpdb4
+      passed: [compile_gpdb]
+    - get: bin_gpdb4
+      passed: [compile_gpdb]
+      trigger: true
+  - task: ic_gpdb
+    file: gpdb4_src/ci/concourse/ic_gpdb.yml
+    params:
+      MAKE_TEST_COMMAND: installcheck-good
+      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+
+- name: MU_check
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [compile_gpdb]
+    - get: sync_tools_gpdb4
+      passed: [compile_gpdb]
+    - get: bin_gpdb4
+      passed: [compile_gpdb]
+      trigger: true
+  - task: MU_check
+    file: gpdb4_src/ci/concourse/gpMgmt_check_gpdb.yml
+
+# Stage 3: Packaging
+
+- name: gpdb_rhel5_packaging
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [icb_orca]
+    - get: bin_gpdb4
+      passed: &Stage2Jobs
+      - icb_orca
+      - icb_planner
+      - icg_orca
+      - icg_planner
+      - MU_check
+      trigger: true
+  - task: gpdb_rhel5_packaging
+    file: gpdb4_src/ci/concourse/gpdb_packaging.yml
+    params:
+      INSTALL_SCRIPT_SRC: gpdb4_src/gpAux/releng/bin/installer-header-rhel5-gpdb.sh
+      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.8.2.GE1-RHEL5-x86_64.zip
+  - put: installer_rhel5_gpdb4
+    params:
+      file: packaged_gpdb/greenplum-db-4.3.8.2.GE1-RHEL5-x86_64.zip
+
+# Stage 3b: Sync package to dist.eng.pivotal.io
+- name: gpdb_sync_to_dist
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [gpdb_rhel5_packaging]
+    - get: installer_rhel5_gpdb4
+      passed: [gpdb_rhel5_packaging]
+      trigger: true
+  - task: gpdb_rhel5_sync_to_dist
+    file: gpdb4_src/ci/concourse/gpdb_sync_to_dist.yml
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      INSTALLER_ZIP: installer_rhel5_gpdb4/greenplum-db-4.3.8.2.GE1-RHEL5-x86_64.zip
+      SSH_KEY: {{private-repo-key}}
+
+# Stage 4: Behave Tests
+
+# When creating a new job, to ensure that the test runs only when all stage 3
+# jobs have passed, use the following syntax:
+#
+#  - aggregate:
+#    - get: gpdb4_src
+#      passed: [compile_gpdb]
+#    - get: bin_gpdb4
+#      passed: *Stage3Jobs
+#      trigger: true
+#
+# This uses Yaml pointer syntax; for details, see http://tinyurl.com/gprkjoq
+#
+# Tests should be named with the format [team]_[tag] where team is the
+# initials of the team that owns the suite (e.g. MU = Management Utilities)
+# and tag is the tag passed to behave.
+
+- name: MU_backupsmoke
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [gpdb_rhel5_packaging]
+    - get: bin_gpdb4
+      passed: &Stage3Jobs
+      - gpdb_rhel5_packaging
+      trigger: true
+  - task: MU_backupsmoke
+    file: gpdb4_src/ci/concourse/behave_tests.yml
+    params:
+      BEHAVE_TAGS: backupsmoke
+
+- name: MU_backup
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb4_src
+      passed: [gpdb_rhel5_packaging]
+    - get: bin_gpdb4
+      passed: *Stage3Jobs
+      trigger: true
+  - task: MU_backup
+    file: gpdb4_src/ci/concourse/behave_tests.yml
+    params:
+      BEHAVE_TAGS: backup
