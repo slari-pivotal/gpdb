@@ -169,25 +169,6 @@ jobs:
     params:
       file: packaged_gpdb/greenplum-db-4.3.8.2.GE1-RHEL5-x86_64.zip
 
-# Stage 3b: Sync package to dist.eng.pivotal.io
-- name: gpdb_sync_to_dist
-  public: true
-  plan:
-  - aggregate:
-    - get: gpdb4_src
-      passed: [gpdb_rhel5_packaging]
-    - get: installer_rhel5_gpdb4
-      passed: [gpdb_rhel5_packaging]
-      trigger: true
-  - task: gpdb_rhel5_sync_to_dist
-    file: gpdb4_src/ci/concourse/gpdb_sync_to_dist.yml
-    params:
-      REMOTE_USER: build
-      REMOTE_HOST: artifacts.ci.eng.pivotal.io
-      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-      INSTALLER_ZIP: installer_rhel5_gpdb4/greenplum-db-4.3.8.2.GE1-RHEL5-x86_64.zip
-      SSH_KEY: {{private-repo-key}}
-
 # Stage 4: Behave Tests
 
 # When creating a new job, to ensure that the test runs only when all stage 3
