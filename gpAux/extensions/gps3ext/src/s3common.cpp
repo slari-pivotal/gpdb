@@ -198,7 +198,7 @@ UrlParser::UrlParser(const char *url) {
     // only parse len, no need to memset this->fullurl
     result = http_parser_parse_url(this->fullurl, len, false, &u);
     if (result != 0) {
-        S3ERROR("Parse error : %d\n", result);
+        S3ERROR("Failed to parse URL \"%s\", error code: %d\n", this->fullurl, result);
         return;
     }
 
