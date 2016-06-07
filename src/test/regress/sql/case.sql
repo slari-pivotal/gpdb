@@ -303,6 +303,49 @@ SELECT a,b,"decode"(a,1,1),
 SELECT b,c,decode(c,'a',ARRAY[1,2],'e',ARRAY[3,4],'o',ARRAY[5,6],'u',ARRAY[7,8],'i',ARRAY[9,10],0) as newb from mytable;
 
 --
+-- Case expression in group by
+--
+SELECT
+	CASE t.field1
+    	WHEN IS NOT DISTINCT FROM ''::text THEN 'Undefined'::character varying
+        ELSE t.field1
+	END AS field1
+	FROM ( SELECT 'test value'::text AS field1) t
+  	GROUP BY
+	CASE t.field1
+		WHEN IS NOT DISTINCT FROM ''::text THEN 'Undefined'::character varying
+		ELSE t.field1
+	END;
+	
+--
+-- Variant of case expression in group by
+--
+SELECT
+	CASE t.field1
+    	WHEN IS NOT DISTINCT FROM ''::text THEN 'Undefined'::character varying
+        ELSE t.field1
+	END AS field1
+	FROM ( SELECT 'test value'::text AS field1) t
+  	GROUP BY 1;
+	
+--
+-- decode in group by
+--	
+SELECT
+	decode(t.field1, ''::text, 'Undefined'::character varying, t.field1) as field1
+	FROM ( SELECT 'test value'::text AS field1) t
+  	GROUP BY
+	decode(t.field1, ''::text, 'Undefined'::character varying, t.field1);
+	
+--
+-- variant of decode in group by
+--
+	SELECT
+	decode(t.field1, ''::text, 'Undefined'::character varying, t.field1) as field1
+	FROM ( SELECT 'test value'::text AS field1) t
+  	GROUP BY 1;
+
+--
 -- Clean up
 --
 
