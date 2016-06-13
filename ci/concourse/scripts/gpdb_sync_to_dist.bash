@@ -5,6 +5,7 @@ set -euo pipefail
 function echo_expected_env_variables() {
   echo "Target remote directory: $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIRECTORY"
   echo "Local installer zip: $INSTALLER_ZIP"
+  echo "Local source code package: $GPDB_SRC_TAR_GZ"
 }
 
 function validate_remote_dir() {
@@ -18,7 +19,7 @@ function validate_remote_dir() {
   echo " validated"
 }
 
-function scp_zip() {
+function scp_zip_src() {
   local remote_path
   local ssh_key_file
   remote_path="$REMOTE_DIRECTORY/`basename $INSTALLER_ZIP`"
@@ -41,6 +42,16 @@ function scp_zip() {
   ssh -i $ssh_key_file -o UserKnownHostsFile=/dev/null \
       -o LogLevel=error -o StrictHostKeyChecking=no \
       "$REMOTE_USER@$REMOTE_HOST" "mv $remote_path.new $remote_path" > /dev/null
+
+  #Upload the packaged source code
+  remote_path="$REMOTE_DIRECTORY/`basename $GPDB_SRC_TAR_GZ`"
+
+  scp -i $ssh_key_file -o UserKnownHostsFile=/dev/null \
+      -o LogLevel=error -o StrictHostKeyChecking=no \
+      "$GPDB_SRC_TAR_GZ" "$REMOTE_USER@$REMOTE_HOST:$remote_path.new" > /dev/null
+  ssh -i $ssh_key_file -o UserKnownHostsFile=/dev/null \
+      -o LogLevel=error -o StrictHostKeyChecking=no \
+      "$REMOTE_USER@$REMOTE_HOST" "mv $remote_path.new $remote_path" > /dev/null
 }
 
 function echo_completion() {
@@ -53,7 +64,7 @@ function _main() {
 
   validate_remote_dir
 
-  scp_zip
+  scp_zip_src
 
   echo_completion
 }

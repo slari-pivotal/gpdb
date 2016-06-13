@@ -8,13 +8,9 @@ image_resource:
     email: releng@pivotal.io
 inputs:
   - name: gpdb_src
+outputs:
   - name: gpdb_src_tar_gz
-  - name: installer_rhel5_gpdb
 run:
-  path: gpdb_src/ci/concourse/scripts/gpdb_sync_to_dist.bash
+  path: gpdb_src/ci/concourse/scripts/gpdb_src_packaging.bash
 params:
-  REMOTE_USER: user
-  REMOTE_HOST: fully.qualified.hostname
-  REMOTE_DIRECTORY: /path/to/directory/
-  INSTALLER_ZIP: installer_rhel5_gpdb/greenplum-db-VERSION-OS-x86_64.zip
   GPDB_SRC_TAR_GZ: gpdb_src_tar_gz/greenplum-db-VERSION_OS-x86_64_src.tar.gz
