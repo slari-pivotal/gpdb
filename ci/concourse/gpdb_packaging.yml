@@ -7,13 +7,13 @@ image_resource:
     password: one team one dream
     email: releng@pivotal.io
 inputs:
-  - name: gpdb4_src
-  - name: bin_gpdb4
+  - name: gpdb_src
+  - name: bin_gpdb
 outputs:
   - name: packaged_gpdb
 run:
-  path: gpdb4_src/ci/concourse/scripts/gpdb_packaging.bash
+  path: gpdb_src/ci/concourse/scripts/gpdb_packaging.bash
 params:
-  INSTALL_SCRIPT_SRC: gpdb4_src/gpAux/releng/bin/installer-header-foraspecificOS.sh
-  GPDB_TARGZ: bin_gpdb4/bin_gpdb4.tar.gz
+  INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-foraspecificOS.sh
+  GPDB_TARGZ: bin_gpdb/bin_gpdb.tar.gz
   INSTALLER_ZIP: packaged_gpdb/greenplum-db-VERSION-OS-x86_64.zip

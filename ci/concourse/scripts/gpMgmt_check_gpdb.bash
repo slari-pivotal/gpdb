@@ -30,8 +30,8 @@ function gen_env(){
 		}
 		source /usr/local/greenplum-db-devel/greenplum_path.sh
 		source /opt/gcc_env.sh
-		source \${1}/gpdb4_src/gpAux/gpdemo/gpdemo-env.sh
-		cd \${1}/gpdb4_src/gpMgmt/bin
+		source \${1}/gpdb_src/gpAux/gpdemo/gpdemo-env.sh
+		cd \${1}/gpdb_src/gpMgmt/bin
 		make check
 	EOF
 
@@ -43,7 +43,7 @@ function _main() {
     install_sync_tools
     configure
     install_gpdb
-    ./gpdb4_src/ci/concourse/scripts/setup_gpadmin_user.bash
+    ./gpdb_src/ci/concourse/scripts/setup_gpadmin_user.bash
     make_cluster
     gen_env
     run_test

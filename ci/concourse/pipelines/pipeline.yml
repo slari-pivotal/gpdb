@@ -3,36 +3,36 @@
 ## ======================================================================
 
 resources:
-- name: gpdb4_src
+- name: gpdb_src
   type: git
   source:
-    branch: 4.3_STABLE
+    branch: ci_into_master
     private_key: {{private-repo-key}}
     uri: git@github.com:greenplum-db/gpdb4.git
-- name: bin_gpdb4
+- name: bin_gpdb
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: bin_gpdb4/bin_gpdb4.tar.gz
-- name: sync_tools_gpdb4
+    versioned_file: bin_gpdb/bin_gpdb.tar.gz
+- name: sync_tools_gpdb
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: sync_tools_gpdb4/sync_tools_gpdb4.tar.gz
-- name: installer_rhel5_gpdb4
+    versioned_file: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+- name: installer_rhel5_gpdb
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_rhel5_gpdb4/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
+    versioned_file: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
 
 ## ======================================================================
 ## jobs
@@ -44,16 +44,16 @@ jobs:
 - name: compile_gpdb
   public: true
   plan:
-  - get: gpdb4_src
+  - get: gpdb_src
     trigger: true
   - task: build_gpdb
-    file: gpdb4_src/ci/concourse/build_gpdb.yml
-  - put: bin_gpdb4
+    file: gpdb_src/ci/concourse/build_gpdb.yml
+  - put: bin_gpdb
     params:
-      from: bin_gpdb4/bin_gpdb4.tar.gz
-  - put: sync_tools_gpdb4
+      from: bin_gpdb/bin_gpdb.tar.gz
+  - put: sync_tools_gpdb
     params:
-      from: sync_tools_gpdb4/sync_tools_gpdb4.tar.gz
+      from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
 
 # Stage 2: Installcheck and Python Unit Tests
 
@@ -66,15 +66,15 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [compile_gpdb]
-    - get: sync_tools_gpdb4
+    - get: sync_tools_gpdb
       passed: [compile_gpdb]
-    - get: bin_gpdb4
+    - get: bin_gpdb
       passed: [compile_gpdb]
       trigger: true
   - task: ic_gpdb
-    file: gpdb4_src/ci/concourse/ic_gpdb.yml
+    file: gpdb_src/ci/concourse/ic_gpdb.yml
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
@@ -83,15 +83,15 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [compile_gpdb]
-    - get: sync_tools_gpdb4
+    - get: sync_tools_gpdb
       passed: [compile_gpdb]
-    - get: bin_gpdb4
+    - get: bin_gpdb
       passed: [compile_gpdb]
       trigger: true
   - task: ic_gpdb
-    file: gpdb4_src/ci/concourse/ic_gpdb.yml
+    file: gpdb_src/ci/concourse/ic_gpdb.yml
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
@@ -100,15 +100,15 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [compile_gpdb]
-    - get: sync_tools_gpdb4
+    - get: sync_tools_gpdb
       passed: [compile_gpdb]
-    - get: bin_gpdb4
+    - get: bin_gpdb
       passed: [compile_gpdb]
       trigger: true
   - task: ic_gpdb
-    file: gpdb4_src/ci/concourse/ic_gpdb.yml
+    file: gpdb_src/ci/concourse/ic_gpdb.yml
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
@@ -117,15 +117,15 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [compile_gpdb]
-    - get: sync_tools_gpdb4
+    - get: sync_tools_gpdb
       passed: [compile_gpdb]
-    - get: bin_gpdb4
+    - get: bin_gpdb
       passed: [compile_gpdb]
       trigger: true
   - task: ic_gpdb
-    file: gpdb4_src/ci/concourse/ic_gpdb.yml
+    file: gpdb_src/ci/concourse/ic_gpdb.yml
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
@@ -134,15 +134,15 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [compile_gpdb]
-    - get: sync_tools_gpdb4
+    - get: sync_tools_gpdb
       passed: [compile_gpdb]
-    - get: bin_gpdb4
+    - get: bin_gpdb
       passed: [compile_gpdb]
       trigger: true
   - task: MU_check
-    file: gpdb4_src/ci/concourse/gpMgmt_check_gpdb.yml
+    file: gpdb_src/ci/concourse/gpMgmt_check_gpdb.yml
 
 # Stage 3: Packaging
 
@@ -150,9 +150,9 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [icb_orca]
-    - get: bin_gpdb4
+    - get: bin_gpdb
       passed: &Stage2Jobs
       - icb_orca
       - icb_planner
@@ -161,11 +161,11 @@ jobs:
       - MU_check
       trigger: true
   - task: gpdb_rhel5_packaging
-    file: gpdb4_src/ci/concourse/gpdb_packaging.yml
+    file: gpdb_src/ci/concourse/gpdb_packaging.yml
     params:
-      INSTALL_SCRIPT_SRC: gpdb4_src/gpAux/releng/bin/installer-header-rhel5-gpdb.sh
+      INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-rhel5-gpdb.sh
       INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
-  - put: installer_rhel5_gpdb4
+  - put: installer_rhel5_gpdb
     params:
       file: packaged_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
 
@@ -174,18 +174,18 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [gpdb_rhel5_packaging]
-    - get: installer_rhel5_gpdb4
+    - get: installer_rhel5_gpdb
       passed: [gpdb_rhel5_packaging]
       trigger: true
   - task: gpdb_rhel5_sync_to_dist
-    file: gpdb4_src/ci/concourse/gpdb_sync_to_dist.yml
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-      INSTALLER_ZIP: installer_rhel5_gpdb4/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
+      INSTALLER_ZIP: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
       SSH_KEY: {{private-repo-key}}
 
 # Stage 4: Behave Tests
@@ -194,9 +194,9 @@ jobs:
 # jobs have passed, use the following syntax:
 #
 #  - aggregate:
-#    - get: gpdb4_src
+#    - get: gpdb_src
 #      passed: [compile_gpdb]
-#    - get: bin_gpdb4
+#    - get: bin_gpdb
 #      passed: *Stage3Jobs
 #      trigger: true
 #
@@ -210,14 +210,14 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [gpdb_rhel5_packaging]
-    - get: bin_gpdb4
+    - get: bin_gpdb
       passed: &Stage3Jobs
       - gpdb_rhel5_packaging
       trigger: true
   - task: MU_backupsmoke
-    file: gpdb4_src/ci/concourse/behave_tests.yml
+    file: gpdb_src/ci/concourse/behave_tests.yml
     params:
       BEHAVE_TAGS: backupsmoke
 
@@ -225,12 +225,12 @@ jobs:
   public: true
   plan:
   - aggregate:
-    - get: gpdb4_src
+    - get: gpdb_src
       passed: [gpdb_rhel5_packaging]
-    - get: bin_gpdb4
+    - get: bin_gpdb
       passed: *Stage3Jobs
       trigger: true
   - task: MU_backup
-    file: gpdb4_src/ci/concourse/behave_tests.yml
+    file: gpdb_src/ci/concourse/behave_tests.yml
     params:
       BEHAVE_TAGS: backup

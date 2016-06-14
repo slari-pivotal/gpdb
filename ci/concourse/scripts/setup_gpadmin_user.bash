@@ -28,7 +28,7 @@ ssh_keyscan_for_user() {
 }
 
 transfer_ownership() {
-  chown -R gpadmin:gpadmin gpdb4_src
+  chown -R gpadmin:gpadmin gpdb_src
   chown -R gpadmin:gpadmin /usr/local/greenplum-db-devel
 }
 

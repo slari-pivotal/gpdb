@@ -7,12 +7,12 @@ image_resource:
     password: one team one dream
     email: releng@pivotal.io
 inputs:
-  - name: gpdb4_src
-  - name: installer_rhel5_gpdb4
+  - name: gpdb_src
+  - name: installer_rhel5_gpdb
 run:
-  path: gpdb4_src/ci/concourse/scripts/gpdb_sync_to_dist.bash
+  path: gpdb_src/ci/concourse/scripts/gpdb_sync_to_dist.bash
 params:
   REMOTE_USER: user
   REMOTE_HOST: fully.qualified.hostname
   REMOTE_DIRECTORY: /path/to/directory/
-  INSTALLER_ZIP: installer_rhel5_gpdb4/greenplum-db-VERSION-OS-x86_64.zip
+  INSTALLER_ZIP: installer_rhel5_gpdb/greenplum-db-VERSION-OS-x86_64.zip

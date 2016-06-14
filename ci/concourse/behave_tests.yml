@@ -7,10 +7,10 @@ image_resource:
     password: one team one dream
     email: releng@pivotal.io
 inputs:
-  - name: gpdb4_src
-  - name: bin_gpdb4
+  - name: gpdb_src
+  - name: bin_gpdb
 outputs:
 params:
   BEHAVE_TAGS: ""
 run:
-  path: gpdb4_src/ci/concourse/scripts/behave_tests.bash
+  path: gpdb_src/ci/concourse/scripts/behave_tests.bash

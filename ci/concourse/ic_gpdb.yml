@@ -7,12 +7,12 @@ image_resource:
     password: one team one dream
     email: releng@pivotal.io
 inputs:
-  - name: gpdb4_src
-  - name: bin_gpdb4
-  - name: sync_tools_gpdb4
+  - name: gpdb_src
+  - name: bin_gpdb
+  - name: sync_tools_gpdb
 outputs:
 params:
   MAKE_TEST_COMMAND: ""
   BLDWRAP_POSTGRES_CONF_ADDONS: ""
 run:
-  path: gpdb4_src/ci/concourse/scripts/ic_gpdb4.bash
+  path: gpdb_src/ci/concourse/scripts/ic_gpdb.bash
