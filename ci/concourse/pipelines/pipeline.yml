@@ -6,7 +6,7 @@ resources:
 - name: gpdb_src
   type: git
   source:
-    branch: ci_into_master
+    branch: 4.3_STABLE
     private_key: {{private-repo-key}}
     uri: git@github.com:greenplum-db/gpdb4.git
 - name: bin_gpdb
