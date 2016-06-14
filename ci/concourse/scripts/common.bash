@@ -36,9 +36,14 @@ function configure() {
 
 function make_cluster() {
   source /usr/local/greenplum-db-devel/greenplum_path.sh
+  workaround_before_concourse_stops_stripping_suid_bits
   pushd gpdb_src/gpAux/gpdemo
       su gpadmin -c make cluster
   popd
+}
+
+workaround_before_concourse_stops_stripping_suid_bits() {
+  chmod u+s /bin/ping
 }
 
 function run_test() {
