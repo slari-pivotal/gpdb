@@ -1441,7 +1441,7 @@ openLB(clbHandle* LB,char* name)
 int
 setDDBoostCredential(char *hostname, char *user, char *password, char* log_level ,char* log_size, char *default_backup_directory, char *ddboost_storage_unit, bool remote)
 {
-	/* TODO: validate default backup directory name if needed
+	/* TODO: validate default backup directory name if needed 
 	   TODO: validate storage unit
 	*/
 	if (validateDDBoostCredential(hostname, user, password, log_level , log_size, default_backup_directory, remote))
@@ -1748,7 +1748,6 @@ initDDSystem(ddp_inst_desc_t *ddp_inst, ddp_conn_desc_t *ddp_conn, ddp_client_in
 {
 	int err = DD_ERR_NONE;
 	unsigned int POOL_SIZE = DDBOOST_POOL_SIZE;
-	char *storage_unit_name = NULL;
 	char *dd_boost_username = NULL;
 	char *dd_boost_passwd = NULL;
 	char *dd_boost_hostname = NULL;

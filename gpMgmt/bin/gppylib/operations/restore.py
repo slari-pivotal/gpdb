@@ -1167,6 +1167,9 @@ class GetDDboostDumpTablesOperation(GetDumpTablesOperation):
     def execute(self):
         ddboost_cmdStr = 'gpddboost --readFile --from-file=%s' % self.context.generate_filename("dump")
 
+        if self.ddboost_storage_unit:
+            ddboost_cmdStr += ' --ddboost-storage-unit=%s' % self.ddboost_storage_unit
+
         cmdStr = ddboost_cmdStr + self.gunzip_maybe + self.grep_cmdStr
         cmd = Command('DDBoost copy of master dump file', cmdStr)
 

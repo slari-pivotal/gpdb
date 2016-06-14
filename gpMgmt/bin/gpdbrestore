@@ -615,6 +615,9 @@ def create_parser():
     # For DDBoost Restore
     ddOpt = OptionGroup(parser, "DDBoost")
     ddOpt.add_option('--ddboost', dest='ddboost', help="Dump to DDBoost using ~/.ddconfig", action="store_true", default=False)
+
+    ddOpt.add_option('--ddboost-storage-unit', dest='ddboost_storage_unit', default=None,
+                     help="Storage unit where backup files are retrieved from the ddboost server")
     parser.add_option_group(ddOpt)
 
     return parser

@@ -408,7 +408,7 @@ class GpCronDump(Operation):
 
            4. After configuration is written, run "gpddboost --verify".  This
            may fail if username/password is incorrect.  It will also create a
-           storage unit named "GPDB" on the DD if it doesn't already exist.
+           storage unit specified by ddboost_storage_unit if it doesn't exist.
 
            5. The previous steps verify user-specified DD Boost config
            parameters.  Upon successful verification, this step crates the DD
@@ -471,7 +471,7 @@ class GpCronDump(Operation):
                             selfDD.id)
             logger.info("\tHostname: %s" % selfDD.hostname)
             logger.info("\tDefault Backup Directory: %s" % \
-                            selfDD.defaultBackupDir)
+                            selfDD.DDBackupDir)
             if not userinput.ask_yesno(None,
                                        "\nDo you want to replace " +
                                        "this configuration?",
@@ -942,6 +942,9 @@ class GpCronDump(Operation):
                     arglist.append("-a")
                 if not self.context.ddboost_ping:
                     arglist.append("--skip-ping")
+                if self.ddboost_storage_unit:
+                    arglist.append('--ddboost-storage-unit')
+                    arglist.append(self.ddboost_storage_unit)
                 logger.info("Replicating %s to remote Data Domain. (gpmfr.py %s)" % (name, " ".join(arglist)))
                 mfropt, mfrargs = p.parse_args(arglist, None)
                 mfr = gpmfr.GpMfr(mfropt, mfrargs)
@@ -1005,6 +1008,7 @@ class GpCronDump(Operation):
             pipe_list.append('%s:%s' % (master.getSegmentHostName(), self.context.generate_filename("master_config")))
 
         return pipe_list
+
 
     def show_ddboost_config(self):
         cmdStr = 'gpddboost --show-config'
@@ -1427,12 +1431,17 @@ def create_parser():
                            help="Default backup directory on local Data Domain system.")
     ddConfigOpt.add_option('--ddboost-remote', dest='ddboost_remote', action='store_true', default=False,
                            help="Configuration parameters for remote Data Domain system.")
+    ddConfigOpt.add_option('--ddboost-storage-unit', dest='ddboost_storage_unit', action='store', default=None,
+                           help="Storage unit where backup files are placed on the ddboost server")
     ddConfigOpt.add_option('--ddboost-config-remove', dest='ddboost_config_remove', action='store_true', default=False,
                            help="Remove ~/.ddconfig file.")
     ddConfigOpt.add_option('--ddboost-verify', dest='ddboost_verify', action='store_true', default=False,
                            help="Verify DDBoost credentials on DDBoost host.")
     ddConfigOpt.add_option('--ddboost-skip-ping', dest='ddboost_ping', action='store_false', default=True,
                            help="Ping DDBoost host as a sanity check before writing configuration.")
+    ddConfigOpt.add_option('--ddboost-show-config', dest='ddboost_show_config', action='store_true', default=False,
+                           help="Show DDBoost and MFR related configuration information: DDBoost hostname, \n"
+                                "username, default backup directory, default storage unit.")
     parser.add_option_group(ddConfigOpt)
 
     parser.setHelp([

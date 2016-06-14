@@ -668,6 +668,7 @@ class DumpDatabase(Operation):
         return dump_line
 
 class CreateIncrementsFile(Operation):
+
     def __init__(self, context):
         self.orig_lines_in_file = []
         full_dump_timestamp = get_latest_full_dump_timestamp(context)
@@ -1235,8 +1236,10 @@ class DumpGlobal(Operation):
             abspath = self.context.generate_filename("global", self.timestamp)
             relpath = abspath.split(self.context.backup_dir+"/")[1]
             logger.debug('Copying %s to DDBoost' % abspath)
-            cmd = Command('DDBoost copy of %s' % abspath,
-                          'gpddboost --copyToDDBoost --from-file=%s --to-file=%s' % (abspath, relpath))
+            cmdStr = 'gpddboost --copyToDDBoost --from-file=%s --to-file=%s' % (abspath, relpath)
+            if self.ddboost_storage_unit:
+                cmdStr += ' --ddboost-storage-unit=%s' % self.ddboost_storage_unit
+            cmd = Command('DDBoost copy of %s' % abspath, cmdStr)
             cmd.run(validateAfter=True)
 
     def create_pgdump_command_line(self):
@@ -1257,8 +1260,10 @@ class DumpConfig(Operation):
             abspath = config_backup_file
             relpath = os.path.join(self.context.dump_dir, self.context.db_date_dir, config_backup_file)
             logger.debug('Copying %s to DDBoost' % abspath)
-            cmd = Command('DDBoost copy of %s' % abspath,
-                          'gpddboost --copyToDDBoost --from-file=%s --to-file=%s' % (abspath, relpath))
+            cmdStr = 'gpddboost --copyToDDBoost --from-file=%s --to-file=%s' % (abspath, relpath)
+            if self.ddboost_storage_unit:
+                cmdStr += ' --ddboost-storage-unit=%s' % self.ddboost_storage_unit
+            cmd = Command('DDBoost copy of %s' % abspath, cmdStr)
             cmd.run(validateAfter=True)
             res = cmd.get_results()
             if res.rc != 0:
@@ -1282,8 +1287,11 @@ class DumpConfig(Operation):
                 abspath = config_backup_file
                 relpath = config_backup_file[config_backup_file.index(self.context.dump_dir):]
                 logger.debug('Copying %s to DDBoost' % abspath)
+                cmdStr = 'gpddboost --copyToDDBoost --from-file=%s --to-file=%s' % (abspath, relpath)
+                if self.ddboost_storage_unit:
+                    cmdStr += ' --ddboost-storage-unit=%s' % self.ddboost_storage_unit
                 cmd = Command('DDBoost copy of %s' % abspath,
-                              'gpddboost --copyToDDBoost --from-file=%s --to-file=%s' % (abspath, relpath),
+                              cmdStr,
                               ctxt=REMOTE,
                               remoteHost=host)
                 cmd.run(validateAfter=True)
@@ -1326,8 +1334,10 @@ class DeleteCurrentDump(Operation):
                 if self.context.timestamp in line:
                     abspath = os.path.join(relpath, line)
                     logger.debug('Deleting %s from DDBoost' % abspath)
-                    cmd = Command('DDBoost delete of %s' % abspath,
-                                  'gpddboost --del-file=%s' % abspath)
+                    cmdStr = 'gpddboost --del-file=%s' % abspath
+                    if self.ddboost_storage_unit:
+                        cmdStr += ' --ddboost-storage-unit=%s' % self.ddboost_storage_unit
+                    cmd = Command('DDBoost delete of %s' % abspath, cmdStr)
                     cmd.run(validateAfter=True)
 
 class DeleteCurrentSegDump(Operation):
@@ -1541,8 +1551,11 @@ set allow_system_table_mods="DML";
             abspath = self.context.generate_filename("stats")
             relpath = abspath.split(self.context.backup_dir + "/")[1]
             logger.debug('Copying %s to DDBoost' % abspath)
-            cmd = Command('DDBoost copy of %s' % abspath,
-                          'gpddboost --copyToDDBoost --from-file=%s --to-file=%s' % (abspath, relpath))
+            cmdStr = 'gpddboost'
+            if self.ddboost_storage_unit:
+                cmdStr +=  ' --ddboost-storage-unit=%s' % self.ddboost_storage_unit
+            cmdStr += ' --copyToDDBoost --from-file=%s --to-file=%s' % (abspath, relpath)
+            cmd = Command('DDBoost copy of %s' % abspath, cmdStr)
             cmd.run(validateAfter=True)
 
     def dump_table(self, table):

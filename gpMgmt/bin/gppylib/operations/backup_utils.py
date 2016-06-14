@@ -15,6 +15,7 @@ from gppylib import pgconf
 from optparse import Values
 from pygresql import pg
 from gppylib.operations.utils import DEFAULT_NUM_WORKERS
+import gzip
 
 logger = gplog.get_default_logger()
 
@@ -408,6 +409,21 @@ def check_backup_type(report_file_contents, backup_type):
             if line.split(':')[-1].strip() == backup_type:
                 return True
     return False
+
+def get_lines_from_zipped_file(fname):
+    """
+    Don't strip white space here as it may be part of schema name and table name
+    """
+    content = []
+    fd = gzip.open(fname, 'r')
+    try:
+        for line in fd:
+            content.append(line.strip('\n'))
+    except err:
+        raise Exception("Error reading from file %s: %s" % (fname, err))
+    finally:
+        fd.close()
+    return content
 
 def get_lines_from_file(fname, context=None):
     """
