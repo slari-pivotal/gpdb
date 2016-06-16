@@ -9,12 +9,6 @@ function set_env() {
     export TIMEFORMAT=$'\e[4;33mIt took %R seconds to complete this step\e[0m';
 }
 
-function number_of_cores() {
-    local core_count
-    core_count=$(grep -c 'core id' /proc/cpuinfo)
-    echo "${core_count}"
-}
-
 ## ----------------------------------------------------------------------
 ## Test functions
 ## ----------------------------------------------------------------------

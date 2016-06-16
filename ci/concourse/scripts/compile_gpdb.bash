@@ -21,7 +21,7 @@ function make_sync_tools() {
 
 function build_gpdb() {
   pushd gpdb_src/gpAux
-    make GPROOT=/usr/local parallelexec_opts=-j"$(number_of_cores)" dist
+    make GPROOT=/usr/local dist
   popd
 }
 
