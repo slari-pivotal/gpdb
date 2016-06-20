@@ -301,8 +301,9 @@ FileRepOperationToString[] = {
 	_("drop files from dir"),
 	_("drop temporary files"),
 	_("online verification"),
+	_("start checksum computation of a SLRU directory"),
+	_("verify checksum of a SLRU directory"),
 	_("not specified"),
-
 };
 
 const char*
@@ -347,6 +348,7 @@ FileRepStatusToString[] = {
 	_("read-only file system"),
 	_("mirror loss occurred"),
 	_("mirror error"),
+	_("slru checksum failed")
 };
 
 const char *
@@ -2940,6 +2942,7 @@ FileRep_IsOperationSynchronous(FileRepOperation_e fileRepOperation)
 		case FileRepOperationCreateAndOpen:
 		case FileRepOperationValidation:
 		case FileRepOperationVerify:
+		case FileRepOperationVerifySlruDirectoryChecksum:
 			return TRUE;
 
 		case FileRepOperationOpen:
@@ -2948,7 +2951,7 @@ FileRep_IsOperationSynchronous(FileRepOperation_e fileRepOperation)
 		case FileRepOperationWrite:
 		case FileRepOperationDropFilesFromDir:
 		case FileRepOperationDropTemporaryFiles:
-
+		case FileRepOperationStartSlruChecksum:
 			return FALSE;
 
 		case FileRepOperationNotSpecified:

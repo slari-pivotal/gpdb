@@ -22,6 +22,15 @@
 #define MULTIXACT_OFFSETS_DIR	"pg_multixact/offsets"
 #define SUBTRANS_DIR			"pg_subtrans" 
 
+#define SLRU_FILENAME_LEN		4     /* SLRU filenames are 4 characters each */
+#define SLRU_CHECKSUM_FILENAME 	"slru_checksum_file"
+#define SLRU_MD5_BUFLEN			33     /* MD5 is 32 bytes + 1 null-terminator */
+
+                           /* room for filename + ":" + " " + md5 hash + "\n" */
+#define SLRU_CKSUM_LINE_LEN		(SLRU_FILENAME_LEN + 3 + SLRU_MD5_BUFLEN)
+
+#define SLRU_CKSUM_LINE_DELIM	"\n"
+
 /*
  * Page status codes.  Note that these do not include the "dirty" bit.
  * page_dirty can be TRUE only in the VALID or WRITE_IN_PROGRESS states;
@@ -126,5 +135,8 @@ extern void SimpleLruTruncate(SlruCtl ctl, int cutoffPage, bool lockHeld);
 extern bool SlruScanDirectory(SlruCtl ctl, int cutoffPage, bool doDeletions);
 extern bool SimpleLruPageExists(SlruCtl ctl, int pageno);
 extern int SlruRecoverMirror(void);
+extern int SlruCreateChecksumFile(const char *fullDirName);
+extern int SlruMirrorVerifyDirectoryChecksum(char *dirName, char *cksumFile,
+											 char *primaryMd5);
 
 #endif   /* SLRU_H */

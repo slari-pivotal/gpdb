@@ -138,6 +138,8 @@ FileRepAckMirror_ConstructAndInsertMessage(
 		case FileRepOperationValidation:
 		case FileRepOperationCreate:
 		case FileRepOperationVerify:	
+		case FileRepOperationStartSlruChecksum:
+		case FileRepOperationVerifySlruDirectoryChecksum:
 			fileRepMessageHeader->fileRepOperationDescription = fileRepOperationDescription;
 			break;
 			
