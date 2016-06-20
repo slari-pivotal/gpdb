@@ -55,8 +55,13 @@ function scp_zip_src() {
 }
 
 function echo_completion() {
+  # remove '/data' off of the remote directory as not present in the URL
   local remote_dir_url=${REMOTE_DIRECTORY:5}
-  echo "Uploaded installer file: http://$REMOTE_HOST$remote_dir_url/`basename $INSTALLER_ZIP`"
+  # artifacts and artifacts-cache are mirrored, but we show the user
+  # artifacts-cache as it is faster to access on the network
+  local remote_host_cache=`echo $REMOTE_HOST | sed 's/^artifacts[.]/artifacts-cache./'`
+  echo "Uploaded installer file: http://$remote_host_cache$remote_dir_url/`basename $INSTALLER_ZIP`"
+  echo "Uploaded source code (if TINC was present): http://$remote_host_cache$remote_dir_url/`basename $GPDB_SRC_TAR_GZ`"
 }
 
 function _main() {

@@ -10,7 +10,7 @@ function _main() {
   echo_expected_env_variables
   cd gpdb_src
 
-  #Only the TINC directory will be needed downstream at the momeny, so
+  #Only the TINC directory will be needed downstream at the moment, so
   #we will tar it up if it exists. If not, we will just use an empty
   #file for our packaged source code
   if [ -d "src/test/tinc" ]; then
