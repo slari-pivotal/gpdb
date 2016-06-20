@@ -1,5 +1,5 @@
 # -*-makefile-*-
-# $PostgreSQL: pgsql/src/Makefile.global.in,v 1.232 2006/10/08 17:15:33 tgl Exp $
+# $PostgreSQL: pgsql/src/Makefile.global.in,v 1.240 2007/11/13 00:13:19 tgl Exp $
 
 #------------------------------------------------------------------------------
 # All PostgreSQL makefiles include this file and use the variables it sets,
@@ -37,6 +37,8 @@ MAJORVERSION = @PG_MAJORVERSION@
 
 # GPDB version number
 GP_MAJORVERSION = @GP_MAJORVERSION@
+
+ADDON_DIR = @ADDON_DIR@
 
 # Support for VPATH builds
 vpath_build = @vpath_build@
@@ -166,9 +168,12 @@ with_python	= @with_python@
 with_tcl	= @with_tcl@
 with_java   = @with_java@
 with_openssl	= @with_openssl@
-with_libxml     = @with_libxml
+with_ossp_uuid	= @with_ossp_uuid@
+with_libxml	= @with_libxml@
+with_libxslt	= @with_libxslt@
 with_system_tzdata = @with_system_tzdata@
 with_zlib	= @with_zlib@
+with_apr_config	= @with_apr_config@
 enable_shared	= @enable_shared@
 enable_rpath	= @enable_rpath@
 enable_nls	= @enable_nls@
@@ -178,11 +183,14 @@ enable_coverage	= @enable_coverage@
 enable_thread_safety	= @enable_thread_safety@
 enable_largefile	= @enable_largefile@
 enable_orca		= @enable_orca@
+enable_codegen		= @enable_codegen@
+enable_gpfdist		= @enable_gpfdist@
 enable_snmp			= @enable_snmp@
 enable_email		= @enable_email@
 enable_connectemc	= @enable_connectemc@
 enable_ddboost	    = @enable_ddboost@
 enable_netbackup	= @enable_netbackup@
+enable_mapreduce    = @enable_mapreduce@
 
 python_includespec	= @python_includespec@
 python_libdir		= @python_libdir@
@@ -204,6 +212,7 @@ TCL_SHLIB_LD_LIBS	= @TCL_SHLIB_LD_LIBS@
 PTHREAD_CFLAGS		= @PTHREAD_CFLAGS@
 PTHREAD_LIBS		= @PTHREAD_LIBS@
 
+have_yaml 		= @have_yaml@
 have_docbook	= @have_docbook@
 DOCBOOKSTYLE	= @DOCBOOKSTYLE@
 COLLATEINDEX	= @COLLATEINDEX@
@@ -233,12 +242,6 @@ SUN_STUDIO_CC = @SUN_STUDIO_CC@
 CFLAGS = @CFLAGS@
 CFLAGS_SSE42 = @CFLAGS_SSE42@
 
-ifneq ($(findstring mingw32,$(CC)),mingw32)
-ifeq ($(GCC), yes)
- CFLAGS += -Werror
-endif # GCC
-endif
-
 # Kind-of compilers
 
 BISON = @BISON@
@@ -257,6 +260,7 @@ DLLWRAP = @DLLWRAP@
 LIBS = @LIBS@
 LDAP_LIBS_FE = @LDAP_LIBS_FE@
 LDAP_LIBS_BE = @LDAP_LIBS_BE@
+OSSP_UUID_LIBS = @OSSP_UUID_LIBS@
 LD = @LD@
 with_gnu_ld = @with_gnu_ld@
 ld_R_works = @ld_R_works@
@@ -315,6 +319,14 @@ else
 	JAR         = $(missing) jar
 	JAVADOC     = $(missing) javadoc
 endif
+
+# apr-1-config
+
+APR_1_CONFIG		= @APR_1_CONFIG@
+apr_includes		= @apr_includes@
+apr_link_ld_libs	= @apr_link_ld_libs@
+apr_cflags			= @apr_cflags@
+apr_cppflags		= @apr_cppflags@
 
 # Miscellaneous
 
@@ -541,10 +553,10 @@ TAS         = @TAS@
 	$(CPP) $(CPPFLAGS) -o $@ $<
 
 %.gz: %
-	$(GZIP) -f --best $<
+	$(GZIP) --best -c $< >$@
 
 %.bz2: %
-	$(BZIP2) -f $<
+	$(BZIP2) -c $< >$@
 
 ifeq ($(PORTNAME),win32)
 # Build rules to add versioninfo resources to win32 binaries
