@@ -28,7 +28,9 @@
 
 static char predump_errmsg[1024];
 
-bool shouldDumpSchemaOnly(int g_role, bool incrementalBackup, void *list) {
+bool
+shouldDumpSchemaOnly(int g_role, bool incrementalBackup, void *list)
+{
     if (g_role != ROLE_SEGDB || !incrementalBackup)
         return false;
 
@@ -440,7 +442,7 @@ MakeString(const char *fmt,...)
  * based on the format convention key_contextid_dbid_credentials
  */
 bool
-ParseCDBDumpInfo(const char *progName, char *pszCDBDumpInfo, char **ppCDBDumpKey, int *pContentID, int *pDbID, char **ppCDBPassThroughCredentials)
+ParseCDBDumpInfo(const char *progName, char *pszCDBDumpInfo, char **ppCDBDumpKey, int *pRole, int *pContentID, int *pDbID, char **ppCDBPassThroughCredentials)
 {
 	int			rtn;
 
@@ -448,7 +450,7 @@ ParseCDBDumpInfo(const char *progName, char *pszCDBDumpInfo, char **ppCDBDumpKey
 
 	regex_t		rCDBDumpInfo;
 
-	if (0 != regcomp(&rCDBDumpInfo, "([0-9]+)_([0-9]+)_([0-9]+)_([^[:space:]]*)", REG_EXTENDED))
+	if (0 != regcomp(&rCDBDumpInfo, "([0-9]+)_(-?[0-9]+)_([0-9]+)_([^[:space:]]*)", REG_EXTENDED))
 	{
 		mpp_err_msg_cache("ERROR", progName, "Error compiling regular expression for parsing CDB Dump Info\n");
 		return false;
@@ -463,7 +465,7 @@ ParseCDBDumpInfo(const char *progName, char *pszCDBDumpInfo, char **ppCDBDumpKey
 		char		errbuf[1024];
 
 		regerror(rtn, &rCDBDumpInfo, errbuf, 1024);
-		mpp_err_msg_cache("Error parsing CDBDumpInfo %s: not valid : %s\n", pszCDBDumpInfo, errbuf);
+		mpp_err_msg_cache("Error", progName, "parsing CDBDumpInfo %s: not valid : %s\n", pszCDBDumpInfo, errbuf);
 		regfree(&rCDBDumpInfo);
 		return false;
 	}
@@ -480,6 +482,8 @@ ParseCDBDumpInfo(const char *progName, char *pszCDBDumpInfo, char **ppCDBDumpKey
 	*pContentID = GetMatchInt(&matches[2], pszCDBDumpInfo);
 
 	*pDbID = GetMatchInt(&matches[3], pszCDBDumpInfo);
+
+	*pRole = (*pDbID == 1) ? 1 : 0;
 
 	*ppCDBPassThroughCredentials = GetMatchString(&matches[4], pszCDBDumpInfo);
 	if (*ppCDBPassThroughCredentials == NULL)
@@ -1439,7 +1443,8 @@ parseDDBoostCredential(char *hostname, char *user, char *password, const char *p
 }
 
 /* if the file too long this will rotate the files_name to file_name_0 - .._10 . the last file is deleted*/
-void rotate_dd_logs(const char *file_name, unsigned int num_of_files, unsigned int log_size)
+void
+rotate_dd_logs(const char *file_name, unsigned int num_of_files, unsigned int log_size)
 {
     struct stat st;
 
@@ -1652,12 +1657,14 @@ insertIntoHashTable(Oid o, char t)
     return 0;
 }
 
-int hashFunc(Oid k)
+int
+hashFunc(Oid k)
 {
     return k % HASH_TABLE_SIZE;
 }
 
-char getTypstorage(Oid o)
+char
+getTypstorage(Oid o)
 {
     int index  = hashFunc(o);
     Node *temp = hash_table[index];
@@ -1672,7 +1679,8 @@ char getTypstorage(Oid o)
     return EMPTY_TYPSTORAGE;
 }
 
-int removeNode(Oid o)
+int
+removeNode(Oid o)
 {
     int index = hashFunc(o);
 
@@ -1704,7 +1712,8 @@ int removeNode(Oid o)
     return -1;
 }
 
-void cleanUpTable()
+void
+cleanUpTable()
 {
 
     int i = 0;

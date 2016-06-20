@@ -61,7 +61,7 @@ static bool testPartitioningSupport(void);
 static void transformPassThroughParms(InputOptions * pInputOpts);
 static bool copyFilesToSegments(InputOptions * pInputOpts, SegmentDatabaseArray *segDBAr);
 static int	getRemoteVersion(void);
-static bool no_expand_children; /* Do not expand child partitions. This option is passed from gpcrondump.py */
+static bool no_expand_children; /* Do not expand child partitions. This option is passed from gpcrondump */
 
 /*
  * static and extern global variables left over from pg_dump
@@ -85,6 +85,7 @@ static char *selectSchemaName = NULL;	/* name of a single schema to dump */
 static char *tableFileName = NULL;	/* file name with tables to dump (--table-file)	*/
 static char *schemaFileName = NULL;	/* file name with tables to dump (--schema-file)	*/
 static char *excludeTableFileName = NULL; /* file name with tables to exclude (--exclude-table-file) */
+static bool g_is_old_format = false;
 
 /* NetBackup related variables */
 static char *netbackup_service_host = NULL;
@@ -781,6 +782,7 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 		{"netbackup-block-size", required_argument, NULL, 18},
 		{"netbackup-keyword", required_argument, NULL, 19},
 		{"schema-file", required_argument, NULL, 20},
+		{"old-format", no_argument, NULL, 22},
 
 		{NULL, 0, NULL, 0}
 	};
@@ -1152,6 +1154,10 @@ fillInputOptions(int argc, char **argv, InputOptions * pInputOpts)
 				addFileNameParam("schema-file", optarg, pInputOpts);
 				include_everything = false;
 				break;
+			case 22:
+                g_is_old_format = true;
+                pInputOpts->pszPassThroughParms = addPassThroughLongParm("old-format", NULL, pInputOpts->pszPassThroughParms);
+                break;
 			default:
 				mpp_err_msg_cache(logError, progname, "Try \"%s --help\" for more information.\n", progname);
 				goto cleanup;
@@ -1372,14 +1378,15 @@ exit_nicely(void)
 
 	pszErrorMsg = MakeString("*** aborted because of error: %s\n", lastMsg);
 
-	mpp_err_msg(logError, progname, pszErrorMsg);
+	if (pszErrorMsg)
+	{
+		mpp_err_msg(logError, progname, pszErrorMsg);
+		free(pszErrorMsg);
+	}
 
 	/* Clean-up synchronization variables */
 	pthread_mutex_destroy(&MyMutex);
 	pthread_cond_destroy(&MyCondVar);
-
-	if (pszErrorMsg)
-		free(pszErrorMsg);
 
 	PQfinish(g_conn);
 	g_conn = NULL;

@@ -168,6 +168,7 @@ static int	plainText = 0;
 static int	g_role = 0;
 static char *g_CDBDumpInfo = NULL;
 static char *g_CDBDumpKey = NULL;
+static int	g_contentID = 0;
 static int	g_dbID = 0;
 static char *g_CDBPassThroughCredentials = NULL;
 static pthread_t g_main_tid = (pthread_t) 0;
@@ -178,6 +179,7 @@ static StatusOpList *g_pStatusOpList = NULL;
 static char tableFileName[300];
 static char schemaFileName[300];
 static char *dump_prefix = NULL;
+static bool g_is_old_format = false;
 
 static const char *logInfo = "INFO";
 static const char *logWarn = "WARN";
@@ -468,6 +470,7 @@ main(int argc, char **argv)
 		{"netbackup-keyword", required_argument, NULL, 15},
 		{"no-lock", no_argument, NULL, 16},
 		{"schema-file", required_argument, NULL, 17},
+		{"old-format", no_argument, NULL, 19},
 		{NULL, 0, NULL, 0}
 	};
 	int			optindex;
@@ -663,7 +666,7 @@ main(int argc, char **argv)
 
 			case 1:				/* MPP Dump Info Format is Key_role_dbid */
 				g_CDBDumpInfo = pg_strdup(optarg);
-				if (!ParseCDBDumpInfo((char *) progname, g_CDBDumpInfo, &g_CDBDumpKey, &g_role, &g_dbID, &g_CDBPassThroughCredentials))
+				if (!ParseCDBDumpInfo((char *) progname, g_CDBDumpInfo, &g_CDBDumpKey, &g_role, &g_contentID, &g_dbID, &g_CDBPassThroughCredentials))
 					exit(1);
 				break;
 
@@ -680,7 +683,13 @@ main(int argc, char **argv)
 					exit(1);
 				}
 				include_everything = false;
-                		strcpy(tableFileName, optarg);
+				if (strlcpy(tableFileName, optarg, sizeof(tableFileName)) >= sizeof(tableFileName))
+				{
+					fprintf(stderr,
+							_("%s: invalid --table-file option, filename too long\n"),
+							progname);
+					exit(1);
+				}
 				break;
 			case 4: 			/*	--exclude-table-file */
 				if (!open_file_and_append_to_list(optarg, &table_exclude_patterns, "exclude tables list"))
@@ -740,6 +749,9 @@ main(int argc, char **argv)
 				include_everything = false;
 				strncpy(schemaFileName, optarg, sizeof(optarg)+1);
 				break;
+            case 19:
+                g_is_old_format = true;
+                break;
 
 			default:
 				fprintf(stderr, _("Try \"%s --help\" for more information.\n"), progname);
@@ -768,7 +780,13 @@ main(int argc, char **argv)
 			exit(1);
 		}
 		include_everything = false;
-		strncpy(tableFileName, incrementalFilter, sizeof(tableFileName));
+		if (strlcpy(tableFileName, incrementalFilter, sizeof(tableFileName)) >= sizeof(tableFileName))
+		{
+			fprintf(stderr,
+					_("%s: invalid --incremental-filter option -- filename too long\n"),
+					progname);
+			exit(1);
+		}
 	}
 
 	if (optind < (argc - 1))
@@ -824,7 +842,7 @@ main(int argc, char **argv)
 #ifdef USE_DDBOOST
 	if (dd_boost_enabled)
 	{
-		/* The storage unit is created by the gpcrondump.py, before all the agents are executed */
+		/* The storage unit is created by the gpcrondump, before all the agents are executed */
 		/* Hence it is always false here														*/
 		/* remote is always false when doing backup to primary DDR */
 		int err = DD_ERR_NONE;
@@ -1273,7 +1291,7 @@ skipalldata:
 
 		fileFormat = 'f';	/*dump post schema data into local file first*/
 
-		char *postDumpFileName = formPostDumpFilePathName(g_pszCDBOutputDirectory, g_CDBDumpKey, g_role, g_dbID);
+		char *postDumpFileName = formPostDumpFilePathName(g_pszCDBOutputDirectory, g_CDBDumpKey, g_contentID, g_dbID);
 
 		g_fout = makeArchive(postDumpFileName);
 
@@ -2476,7 +2494,7 @@ dumpDumpableObject(Archive *fout, DumpableObject *dobj)
 	{
 		case DO_NAMESPACE:
 			if (!postDataSchemaOnly)
-			dumpNamespace(fout, (NamespaceInfo *) dobj);
+				dumpNamespace(fout, (NamespaceInfo *) dobj);
 			break;
 		case DO_TYPE:
 			if (!postDataSchemaOnly)
@@ -7536,6 +7554,9 @@ formGenericFilePathName(char *keyword, char *pszBackupDirectory, char *pszBackup
 	int			len;
 	char	   *pszBackupFileName;
 
+	if (g_is_old_format) {
+		pszInstID = (pszInstID == 1) ? 1 : 0;
+	}
 	snprintf(szFileNamePrefix, 1 + PATH_MAX, "%sgp_%s_%d_%d_", DUMP_PREFIX, keyword, pszInstID, pszSegID);
 
 	/* Now add up the length of the pieces */
@@ -7555,12 +7576,14 @@ formGenericFilePathName(char *keyword, char *pszBackupDirectory, char *pszBackup
 	{
 		mpp_err_msg(logWarn, progname, "Backup catalog FileName based on path %s and key %s too long",
 					pszBackupDirectory, pszBackupKey);
+		exit_nicely();
 	}
 
 	pszBackupFileName = (char *) malloc(sizeof(char) * (1 + len));
 	if (pszBackupFileName == NULL)
 	{
 		mpp_err_msg(logError, progname, "out of memory");
+		exit_nicely();
 	}
 
 	strcpy(pszBackupFileName, pszBackupDirectory);
@@ -7609,19 +7632,19 @@ dumpDatabaseDefinition()
 	/* MPP addition end */
 
 	pszBackupFileName = formCDatabaseFilePathName(g_pszCDBOutputDirectory,
-											   g_CDBDumpKey, g_role, g_dbID);
+											   g_CDBDumpKey, g_contentID, g_dbID);
 
 	/*
 	 * Make sure we can create this file before we spin off sh cause we don't
 	 * get a good error message from sh if we can't write to the file
 	 */
 	fcat = fopen(pszBackupFileName, "w");
-	free(pszBackupFileName);
 	if (fcat == NULL)
 	{
 		mpp_err_msg(logError, progname, "Error creating file %s in gp_dump_agent",
 					pszBackupFileName);
 	}
+	free(pszBackupFileName);
 
 	fprintf(fcat, "--\n-- Database creation\n--\n\n");
 
@@ -7728,7 +7751,7 @@ dumpDatabaseDefinitionToDDBoost()
 	/* MPP addition end */
 
 	pszBackupFileName = formCDatabaseFilePathName(g_pszDDBoostDir,
-								   g_CDBDumpKey, g_role, g_dbID);
+								   g_CDBDumpKey, g_contentID, g_dbID);
 
 	/*
 	 * Make sure we can create this file before we spin off sh cause we don't
@@ -7741,8 +7764,7 @@ dumpDatabaseDefinitionToDDBoost()
 	if (err)
 	{
 		mpp_err_msg(logError, progname, "Error creating directory on ddboost\n");
-		free(pszBackupFileName);
-		return ;
+		exit_nicely();
 	}
 
 	path1.path_name = pszBackupFileName;
@@ -7752,8 +7774,7 @@ dumpDatabaseDefinitionToDDBoost()
 	{
 		mpp_err_msg(logError, progname, "Error creating file %s on ddboost from gp_dump_agent",
 					pszBackupFileName);
-		free(pszBackupFileName);
-		return ;
+		exit_nicely();
 	}
 	free(pszBackupFileName);
 
@@ -7762,7 +7783,7 @@ dumpDatabaseDefinitionToDDBoost()
 	if(err)
 	{
 		mpp_err_msg(logError, progname, "Write to cdatabase file failed\n");
-		return;
+		exit_nicely();
 	}
 
 	offset += ret_count;
@@ -7825,7 +7846,10 @@ dumpDatabaseDefinitionToDDBoost()
 	nmemb = strlen(createQry->data);
 	err = ddp_write(handle, createQry->data, nmemb, offset, &ret_count);
 	if (ret_count != nmemb)
+	{
 		mpp_err_msg(logError, progname, "write to cdatabase file failed on ddboost\n");
+		exit_nicely();
+	}
 
 	ddp_close_file(handle);
 	PQclear(res);

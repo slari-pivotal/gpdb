@@ -3,6 +3,7 @@ import fnmatch
 import getpass
 import glob
 import gzip
+import json
 import os
 import platform
 import shutil
@@ -24,9 +25,25 @@ from test.behave_utils.gpfdist_utils.gpfdist_mgmt import Gpfdist
 from test.behave_utils.utils import *
 from test.behave_utils.PgHba import PgHba, Entry
 
+timestamp_json = '/tmp/old_to_new_timestamps.json'
 master_data_dir = os.environ.get('MASTER_DATA_DIRECTORY')
+global_timestamps = dict()
 if master_data_dir is None:
     raise Exception('Please set MASTER_DATA_DIRECTORY in environment')
+
+def _write_timestamp_to_json(context):
+    scenario_name = context._stack[0]['scenario'].name
+    timestamp = get_timestamp_from_output(context)
+    if not global_timestamps.has_key(scenario_name):
+	global_timestamps[scenario_name] = list()
+    global_timestamps[scenario_name].append(timestamp)
+    with open(timestamp_json, 'w') as outfile:
+        json.dump(global_timestamps, outfile)
+
+def _read_timestamp_from_json(context):
+    scenario_name = context._stack[0]['scenario'].name
+    with open(timestamp_json, 'r') as infile:
+        return json.load(infile)[scenario_name]
 
 @given('the database is running')
 def impl(context):
@@ -375,14 +392,6 @@ def parse_netbackup_params():
     else:
         return nbudata
 
-@given('the netbackup params have been parsed')
-def impl(context):
-    NETBACKUPDICT = defaultdict(dict)
-    NETBACKUPDICT['NETBACKUPINFO'] = parse_netbackup_params()
-    context.netbackup_service_host = NETBACKUPDICT['NETBACKUPINFO']['NETBACKUP_PARAMS']['NETBACKUP_SERVICE_HOST']
-    context.netbackup_policy = NETBACKUPDICT['NETBACKUPINFO']['NETBACKUP_PARAMS']['NETBACKUP_POLICY']
-    context.netbackup_schedule = NETBACKUPDICT['NETBACKUPINFO']['NETBACKUP_PARAMS']['NETBACKUP_SCHEDULE']
-
 def run_valgrind_command(context, command, suppressions_file):
     current_path = os.path.realpath(__file__)
     current_dir = os.path.dirname(current_path)
@@ -411,7 +420,7 @@ def impl(context, command, options):
     elif bnr_tool == 'gp_restore':
         command_str = "%s %s --gp-k %s --gp-d db_dumps/%s --gp-r db_dumps/%s" % (command, options, context.backup_timestamp, context.backup_timestamp[0:8], context.backup_timestamp[0:8])
     elif bnr_tool == 'gp_restore_agent':
-        command_str = "%s %s --gp-k %s --gp-d db_dumps/%s -p %s -U %s --target-host localhost --target-port %s db_dumps/%s/gp_dump_1_1_%s_post_data.gz" % (command, options, ts, ts[0:8], port, user, port, ts[0:8], ts)
+        command_str = "%s %s --gp-k %s --gp-d db_dumps/%s -p %s -U %s --target-host localhost --target-port %s db_dumps/%s/gp_dump_-1_1_%s_post_data.gz" % (command, options, ts, ts[0:8], port, user, port, ts[0:8], ts)
 
     run_valgrind_command(context, command_str, "valgrind_suppression.txt")
 
@@ -436,7 +445,7 @@ def impl(context, command, options, suppressions_file):
     elif bnr_tool == 'gp_restore':
         command_str = "%s %s --gp-k %s --gp-d db_dumps/%s --gp-r db_dumps/%s --netbackup-service-host %s" % (command, options, context.backup_timestamp, context.backup_timestamp[0:8], context.backup_timestamp[0:8], netbackup_service_host)
     elif bnr_tool == 'gp_restore_agent':
-        command_str = "%s %s --gp-k %s --gp-d db_dumps/%s -p %s -U %s --target-host localhost --target-port %s db_dumps/%s/gp_dump_1_1_%s_post_data.gz --netbackup-service-host %s" % (command, options, ts, ts[0:8], port, user, port, ts[0:8], ts, netbackup_service_host)
+        command_str = "%s %s --gp-k %s --gp-d db_dumps/%s -p %s -U %s --target-host localhost --target-port %s db_dumps/%s/gp_dump_-1_1_%s_post_data.gz --netbackup-service-host %s" % (command, options, ts, ts[0:8], port, user, port, ts[0:8], ts, netbackup_service_host)
     else:
         command_str = "%s %s" % (command, options)
 
@@ -601,18 +610,20 @@ def get_timestamp_from_output(context):
 @then('the full backup timestamp from gpcrondump is stored')
 def impl(context):
     context.full_backup_timestamp = get_timestamp_from_output(context)
+    _write_timestamp_to_json(context)
 
 @when('the timestamp from gpcrondump is stored')
 @then('the timestamp from gpcrondump is stored')
 def impl(context):
     context.backup_timestamp = get_timestamp_from_output(context)
+    _write_timestamp_to_json(context)
 
 @when('the timestamp is labeled "{lbl}"')
 def impl(context, lbl):
-    if not hasattr(context, 'timestamp_labels'):
-        context.timestamp_labels = {}
+    if not 'timestamp_labels' in context._root:
+        context._root['timestamp_labels'] = {}
 
-    context.timestamp_labels[lbl] = get_timestamp_from_output(context)
+    context._root['timestamp_labels'][lbl] = get_timestamp_from_output(context)
 
 @given('there is a list to store the incremental backup timestamps')
 def impl(context):
@@ -627,6 +638,7 @@ def impl(context):
 def impl(context):
     context.backup_timestamp = get_timestamp_from_output(context)
     context.inc_backup_timestamps.append(context.backup_timestamp)
+    _write_timestamp_to_json(context)
 
 @then('verify data integrity of database "{dbname}" between source and destination system, work-dir "{dir}"')
 def impl(context, dbname, dir):
@@ -738,7 +750,7 @@ def impl(context):
     context.inc_backup_timestamps = sorted(context.inc_backup_timestamps)
     latest_ts = context.inc_backup_timestamps[-1]
     plan_file_dir = os.path.join(master_data_dir, 'db_dumps', latest_ts[0:8])
-    plan_file_count =  len(glob.glob('/%s/*_plan' % plan_file_dir))
+    plan_file_count =  len(glob.glob('/%s/*%s_plan' % (plan_file_dir, latest_ts)))
     if plan_file_count != 1:
         raise Exception('Expected only one plan file, found %s' % plan_file_count)
     filename = '%s/gp_restore_%s_plan' % (plan_file_dir, latest_ts)
@@ -812,7 +824,7 @@ def impl(context, dbname, backup_dir):
 @when('the user runs gp_restore with the the stored timestamp and subdir for metadata only in "{dbname}"')
 @then('the user runs gp_restore with the the stored timestamp and subdir for metadata only in "{dbname}"')
 def impl(context, dbname):
-    command = 'gp_restore -i --gp-k %s --gp-d db_dumps/%s --gp-i --gp-r db_dumps/%s --gp-l=p -d %s --gp-c -s db_dumps/%s/gp_dump_1_1_%s.gz' % \
+    command = 'gp_restore -i --gp-k %s --gp-d db_dumps/%s --gp-i --gp-r db_dumps/%s --gp-l=p -d %s --gp-c -s db_dumps/%s/gp_dump_-1_1_%s.gz' % \
                             (context.backup_timestamp, context.backup_subdir, context.backup_subdir, dbname, context.backup_subdir, context.backup_timestamp)
     run_gpcommand(context, command)
 
@@ -820,6 +832,13 @@ def impl(context, dbname):
 @then('the user runs gpdbrestore with the stored timestamp')
 def impl(context):
     command = 'gpdbrestore -e -t %s -a' % context.backup_timestamp
+    run_gpcommand(context, command)
+
+@when('the user runs gpdbrestore with the stored json timestamp')
+@then('the user runs gpdbrestore with the stored json timestamp')
+def impl(context):
+    timestamp = _read_timestamp_from_json(context)[0]
+    command = 'gpdbrestore -e -t %s -a' % timestamp
     run_gpcommand(context, command)
 
 @when('the user runs gpdbrestore with the stored timestamp to print the backup set with options "{options}"')
@@ -1048,6 +1067,15 @@ def impl(context, table_type, tablename, dbname):
         raise Exception("Table '%s' does not exist when it should" % tablename)
     validate_restore_data(context, tablename, dbname)
 
+@when('verify that the data in the "{table_type}" table "{tablename}" is the same in "{dbname}" as in "{old_dbname}"')
+@then('verify that the data in the "{table_type}" table "{tablename}" is the same in "{dbname}" as in "{old_dbname}"')
+def impl(context, table_type, tablename, dbname, old_dbname):
+    if not check_table_exists(context, dbname=dbname, table_name=tablename, table_type=table_type):
+        raise Exception("Table '%s' does not exist in database %s when it should" % (tablename, dbname))
+    if not check_table_exists(context, dbname=old_dbname, table_name=tablename, table_type=table_type):
+        raise Exception("Table '%s' does not exist in database %s when it should" % (tablename, dbname))
+    validate_restore_data(context, tablename, dbname, old_dbname=old_dbname)
+
 @given('there is schema "{schema_list}" exists in "{dbname}"')
 @then('there is schema "{schema_list}" exists in "{dbname}"')
 def impl(context, schema_list, dbname):
@@ -1096,17 +1124,17 @@ def verify_file_contents(context, file_type, file_dir, text_find, should_contain
     elif file_type == 'report':
         fn = '%sgp_dump_%s.rpt' % (context.dump_prefix, context.backup_timestamp)
     elif file_type == 'status':
-        fn = '%sgp_dump_status_1_1_%s' % (context.dump_prefix, context.backup_timestamp)
+        fn = '%sgp_dump_status_-1_1_%s' % (context.dump_prefix, context.backup_timestamp)
     elif file_type == 'filter':
         fn = '%sgp_dump_%s_filter' % (context.dump_prefix, context.backup_timestamp)
     elif file_type == "statistics":
-        fn = '%sgp_statistics_1_1_%s' % (context.dump_prefix, context.backup_timestamp)
+        fn = '%sgp_statistics_-1_1_%s' % (context.dump_prefix, context.backup_timestamp)
     elif file_type == 'schema':
         fn = '%sgp_dump_%s_schema' % (context.dump_prefix, context.backup_timestamp)
     elif file_type == 'cdatabase':
-        fn = '%sgp_cdatabase_1_1_%s' % (context.dump_prefix, context.backup_timestamp)
+        fn = '%sgp_cdatabase_-1_1_%s' % (context.dump_prefix, context.backup_timestamp)
     elif file_type == 'dump':
-        fn = '%sgp_dump_1_1_%s.gz' % (context.dump_prefix, context.backup_timestamp)
+        fn = '%sgp_dump_-1_1_%s.gz' % (context.dump_prefix, context.backup_timestamp)
 
     subdirectory = context.backup_timestamp[0:8]
 
@@ -1171,11 +1199,10 @@ def impl(context, dbname):
                 dump_dir = os.path.join(context.backup_dir, 'db_dumps', '%s' % (context.timestamp_key[0:8]))
             else:
                 dump_dir = os.path.join(master_data_dir, 'db_dumps', '%s' % (context.timestamp_key[0:8]))
-
-            master_dump_files = ['%s/gp_dump_1_1_%s' % (dump_dir, context.timestamp_key),
-                                 '%s/gp_dump_status_1_1_%s'  % (dump_dir, context.timestamp_key),
-                                 '%s/gp_cdatabase_1_1_%s' % (dump_dir, context.timestamp_key),
-                                 '%s/gp_dump_1_1_%s_post_data' % (dump_dir, context.timestamp_key)]
+            master_dump_files = ['%s/gp_dump_-1_1_%s' % (dump_dir, context.timestamp_key),
+                                 '%s/gp_dump_status_-1_1_%s'  % (dump_dir, context.timestamp_key),
+                                 '%s/gp_cdatabase_-1_1_%s' % (dump_dir, context.timestamp_key),
+                                 '%s/gp_dump_-1_1_%s_post_data' % (dump_dir, context.timestamp_key)]
 
             for dump_file in master_dump_files:
                 cmd = Command('check for dump files', 'ls -1 %s | wc -l' % (dump_file))
@@ -1261,9 +1288,9 @@ def parse_plan_file(filename):
 def modify_plan_with_labels(context, expected_plan):
     newplan = {}
     for k in expected_plan:
-        if k not in context.timestamp_labels:
+        if k not in context._root['timestamp_labels']:
             raise Exception("Label '%s' not specified in behave test" % k)
-        ts = context.timestamp_labels[k]
+        ts = context._root['timestamp_labels'][k]
         newplan[ts] = expected_plan[k]
     return newplan
 
@@ -1317,7 +1344,7 @@ def impl(context, filetype, dir):
     elif filetype == "plan":
         filename = 'gp_restore_%s_plan' % context.backup_timestamp
     elif filetype == "global":
-        filename = 'gp_global_1_1_%s' % context.backup_timestamp
+        filename = 'gp_global_-1_1_%s' % context.backup_timestamp
     elif filetype == "report":
         filename = 'gp_dump_%s.rpt' % context.backup_timestamp
     else:
@@ -1343,9 +1370,9 @@ def impl(context, filetype, dir):
     elif filetype == "plan":
         filename = 'gp_restore_%s_plan' % context.backup_timestamp
     elif filetype == "global":
-        filename = 'gp_global_1_1_%s' % context.backup_timestamp
+        filename = 'gp_global_-1_1_%s' % context.backup_timestamp
     elif filetype == "statistics":
-        filename = 'gp_statistics_1_1_%s' % context.backup_timestamp
+        filename = 'gp_statistics_-1_1_%s' % context.backup_timestamp
     elif filetype == 'pipes':
         filename = 'gp_dump_%s_pipes' % context.backup_timestamp
     elif filetype == 'regular_files':
@@ -1371,12 +1398,16 @@ def impl(context, tmp_file_prefix):
     else:
         raise Exception('Invalid call to temp file removal %s' % tmp_file_prefix)
 
-@then('tables names should be identical to stored table names in "{dbname}" except "{fq_table_name}"')
-def impl(context, dbname, fq_table_name):
+@then('tables names should be identical to stored table names in "{dbname}" except "{fq_table_names_list}"')
+def impl(context, dbname, fq_table_names_list):
     table_names = sorted(get_table_names(dbname))
     stored_table_names = sorted(context.table_names)
-    if fq_table_name != "" :
-        stored_table_names.remove(fq_table_name.strip().split('.'))
+
+    if fq_table_names_list:
+        fq_table_names = fq_table_names_list.split(',')
+        for fq_table_name in fq_table_names:
+            if fq_table_name != "" :
+                stored_table_names.remove(fq_table_name.strip().split('.'))
 
     if table_names != stored_table_names:
         print "Table names after backup:"
@@ -1406,6 +1437,10 @@ def impl(context, dbname):
 @then('verify that the data of "{expected_count}" tables in "{dbname}" is validated after restore')
 def impl(context, dbname, expected_count):
     validate_db_data(context, dbname, int(expected_count))
+
+@then('verify that the data of "{expected_count}" tables is the same in "{dbname}" as in "{old_dbname}" after restore')
+def impl(context, dbname, expected_count, old_dbname):
+    validate_db_data(context, dbname, int(expected_count), old_dbname=old_dbname)
 
 @then('all the data from the remote segments in "{dbname}" are stored in path "{dir}" for "{backup_type}"')
 def impl(context, dbname, dir, backup_type):
@@ -2114,11 +2149,14 @@ def impl(context):
 
             for i in range(len(stored_row)):
                 value = row[i]
+                if value == '':
+                    value = 'None'
 
                 if isinstance(stored_row[i], bool):
                     value = str(True if row[i] == 't' else False)
                 if value == '':
                     value = 'None'
+
                 if value != str(stored_row[i]):
                     match_this_row = False
                     break
@@ -2410,11 +2448,11 @@ def impl(context, file_type, directory, options):
     reg_file_count = 6
 
     pipes_pattern_list = ['gp_dump_.*_%s.*(?:\.gz)?' % context.backup_timestamp]
-    regular_pattern_list = ['gp_cdatabase_1_1_%s' % context.backup_timestamp, 'gp_dump_%s.*' % context.backup_timestamp, 'gp_dump_status_1_1_%s' % context.backup_timestamp]
+    regular_pattern_list = ['gp_cdatabase_-1_1_%s' % context.backup_timestamp, 'gp_dump_%s.*' % context.backup_timestamp, 'gp_dump_status_-1_1_%s' % context.backup_timestamp]
 
     if '-G' in option_list:
         pipe_file_count += 1
-        pipes_pattern_list += ['gp_global_1_1_%s' % context.backup_timestamp]
+        pipes_pattern_list += ['gp_global_-1_1_%s' % context.backup_timestamp]
     if '-g' in option_list:
         pipe_file_count += get_num_segments(primary=True, mirror=False, master=True, standby=False)
         pipes_pattern_list += ['gp_master_config_files_%s.*' % context.backup_timestamp, 'gp_segment_config_files_.*_.*_%s.*' % context.backup_timestamp]
@@ -3857,6 +3895,13 @@ def impl(context):
         And the backup files in "/tmp" are deleted
     ''')
 
+@given('the test is initialized with database "{dbname}"')
+def impl(context, dbname):
+    context.execute_steps(u'''
+        Given the database is running
+        And database "%s" is dropped and recreated
+    ''' % dbname)
+
 @then('validate and run gpcheckcat repair')
 def impl(context):
     context.execute_steps(u'''
@@ -4061,6 +4106,102 @@ def impl(context, segc_id, mirror_existence_state):
         cluster_state = dbconn.execSQL(conn, sql).fetchone()
         if cluster_state[0] != int(mirror_existence_state):
             raise Exception("mirror_existence_state of segment %s is %s. Expected %s." % (segc_id, cluster_state[0], mirror_existence_state))
+
+@given('a role "{role_name}" is created')
+@when('a role "{role_name}" is created')
+@then('a role "{role_name}" is created')
+def impl(context, role_name):
+    with dbconn.connect(dbconn.DbURL(dbname='template1')) as conn:
+        pghba = PgHba()
+        new_entry = Entry(entry_type='local',
+                          database='all',
+                          user=role_name,
+                          authmethod="password")
+        pghba.add_entry(new_entry)
+        pghba.write()
+
+        dbconn.execSQL(conn, "Drop role if exists dsp_role")
+
+        dbconn.execSQL(conn, "Create role %s with login password 'dsprolepwd'" % role_name)
+        dbconn.execSQL(conn, "select pg_reload_conf()")
+        conn.commit()
+
+@given('the backup files for the stored timestamp are in the old format in dir "{directory}"')
+@when('the backup files for the stored timestamp are in the old format in dir "{directory}"')
+@then('the backup files for the stored timestamp are in the old format in dir "{directory}"')
+def impl(context, directory):
+    store_timestamp_in_old_format(context, directory=directory)
+
+@given('the backup files for the stored timestamp are in the old format')
+@when('the backup files for the stored timestamp are in the old format')
+@then('the backup files for the stored timestamp are in the old format')
+def impl(context):
+    store_timestamp_in_old_format(context)
+
+@given('the backup files for the stored timestamp are in the old format with prefix "{prefix}"')
+@when('the backup files for the stored timestamp are in the old format with prefix "{prefix}"')
+@then('the backup files for the stored timestamp are in the old format with prefix "{prefix}"')
+def impl(context, prefix):
+    store_timestamp_in_old_format(context, prefix=prefix)
+
+def store_timestamp_in_old_format(context, directory = None, prefix = ""):
+
+    gparray = GpArray.initFromCatalog(dbconn.DbURL())
+    primary_segs = [seg for seg in gparray.getDbList() if seg.isSegmentPrimary() or seg.isSegmentMaster()]
+
+    try: context.backup_timestamp
+    except: context.backup_timestamp = None
+
+    if context.backup_timestamp is not None:
+        timestamp = context.backup_timestamp
+    else:
+        timestamp = context.full_backup_timestamp
+
+    if directory is None:
+        master_dump_dir = gparray.master.getSegmentDataDirectory()
+    else :
+        master_dump_dir = directory
+
+    if prefix is not "":
+        prefix = prefix + "_"
+    for ps in primary_segs:
+        if directory is None:
+            seg_dir = ps.getSegmentDataDirectory()
+        else:
+            seg_dir = directory
+        dump_dir = os.path.join(seg_dir, 'db_dumps', timestamp[0:8])
+        segdbId = ps.getSegmentDbId()
+        segcid = ps.getSegmentContentId()
+        segdbname = ps.getSegmentHostName()
+        new_format = "%s_%s" % (segcid, segdbId)
+        old_format = "%s_%s" % (1 if ps.isSegmentMaster() else 0, segdbId)
+
+        rename_files_to_older_format = """ ssh {segdbname} 'if [ -d "{dump_dir}" ]; then for i in `ls {dump_dir}/*{new_format}_{timestamp}* | xargs`; do
+                                           old_format=${{i/{new_format}/{old_format}}}
+                                           if [ ! -f $old_format ]; then mv $i $old_format; fi ;
+                                           done; fi;'
+                                       """.format(segdbname=segdbname,
+                                                  dump_dir=dump_dir,
+                                                  new_format=new_format,
+                                                  old_format=old_format,
+                                                  timestamp=timestamp)
+
+        run_command(context, rename_files_to_older_format)
+
+        if context.exception:
+            raise context.exception
+
+        #replace new format with old format on master directory report file
+        master_report_file = os.path.join(master_dump_dir, 'db_dumps', timestamp[0:8], '%sgp_dump_%s.rpt' % (prefix,timestamp))
+        change_report_file_content = "sed -i 's|%s|%s|' %s" % (new_format, old_format, master_report_file)
+
+        run_command(context, change_report_file_content)
+
+@then('the timestamp will be stored in json format')
+@given('the timestamp will be stored in json format')
+@when('the timestamp will be stored in json format')
+def impl(context):
+    context.is_timestamp_stored_as_json = True
 
 @given('a role "{role_name}" is created')
 @when('a role "{role_name}" is created')
