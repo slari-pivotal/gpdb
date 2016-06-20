@@ -59,3 +59,8 @@ LIMIT 2;
 
 reset gp_enable_mk_sort;
 
+-- Reset fault injector.
+-- Fault may not have been triggered yet, so avoid to trigger it later.
+--start_ignore
+\! gpfaultinjector -f execshare_input_next -y reset --seg_dbid 2
+--end_ignore

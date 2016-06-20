@@ -103,3 +103,14 @@ LIMIT 2;
 (2 rows)
 
 reset gp_enable_mk_sort;
+-- Reset fault injector.
+-- Fault may not have been triggered yet, so avoid to trigger it later.
+--start_ignore
+\! gpfaultinjector -f execshare_input_next -y reset --seg_dbid 2
+20160620:21:26:49:073413 gpfaultinjector:f073eea8-5b77-481e-7ebe-57c8b925edd6:gpadmin-[INFO]:-Starting gpfaultinjector with args: -f execshare_input_next -y reset --seg_dbid 2
+20160620:21:26:49:073413 gpfaultinjector:f073eea8-5b77-481e-7ebe-57c8b925edd6:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3.9.0 build dev'
+20160620:21:26:49:073413 gpfaultinjector:f073eea8-5b77-481e-7ebe-57c8b925edd6:gpadmin-[INFO]:-Obtaining Segment details from master...
+20160620:21:26:49:073413 gpfaultinjector:f073eea8-5b77-481e-7ebe-57c8b925edd6:gpadmin-[INFO]:-Injecting fault on 1 segment(s)
+20160620:21:26:49:073413 gpfaultinjector:f073eea8-5b77-481e-7ebe-57c8b925edd6:gpadmin-[INFO]:-Injecting fault on f073eea8-5b77-481e-7ebe-57c8b925edd6:/tmp/build/e18b2f02/gpdb_src/gpAux/gpdemo/datadirs/dbfast1/demoDataDir0:content=0:dbid=2:mode=s:status=u
+20160620:21:26:49:073413 gpfaultinjector:f073eea8-5b77-481e-7ebe-57c8b925edd6:gpadmin-[INFO]:-DONE
+--end_ignore
