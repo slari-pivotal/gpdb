@@ -5,8 +5,11 @@ bin/dists.dss
 bin/explain.pl
 bin/generate_load_tpch.pl
 bin/gp
+bin/gp_filedump
 bin/gpaddmirrors.py
+bin/gpcheckmirrorseg.pl
 bin/gpdbupgrade
+bin/gpdebug
 bin/gpexpandsystem
 bin/gpfaultinjector
 bin/gpha
@@ -17,6 +20,7 @@ bin/gprecoverseg.py
 bin/gpsuspend
 bin/gptorment.pl
 bin/gpugcluster
+bin/gpverify
 bin/lib/gpgetconfig.py
 bin/lib/gpsnap.py
 bin/lib/gptest.py
@@ -24,9 +28,8 @@ bin/pgbench
 bin/postgresql_conf_gp_additions
 bin/run_operator_tests.pl
 bin/test_fsync
-bin/gp_filedump
-docs/contrib/README.gp_filedump
 docs/cli_help/gpsuspend_help
+docs/contrib/README.gp_filedump
 lib/python/gppylib/programs/clsInjectFault.py
+sbin/gprepairmirrorseg.py
 sbin/gpsuspend.py
-
