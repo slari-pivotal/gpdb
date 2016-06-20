@@ -1,7 +1,7 @@
 PROGRAM = gp_filedump
-OBJS	= gp_filedump.o pg_crc.o crc32c.o numutils.o heaptuple.o cdbappendonlystorageformat.o stringinfo.o quicklz1.o quicklz3.o
+OBJS	= gp_filedump.o pg_crc.o numutils.o heaptuple.o cdbappendonlystorageformat.o stringinfo.o quicklz1.o quicklz3.o
 
-EXTRA_CLEAN = pg_crc.c crc32c.c cdbappendonlystorageformat.c stringinfo.c quicklz1.c quicklz3.c
+EXTRA_CLEAN = pg_crc.c cdbappendonlystorageformat.c stringinfo.c quicklz1.c quicklz3.c
 #PG_CPPFLAGS = -msse4.2
 
 DOCS = README.gp_filedump
@@ -19,9 +19,6 @@ endif
 pg_crc.c: $(top_srcdir)/src/backend/utils/hash/pg_crc.c
 	rm -f $@ && $(LN_S) $< .
 	
-crc32c.c: $(top_srcdir)/src/backend/utils/hash/crc32c.c
-	rm -f $@ && $(LN_S) $< .
-
 assert.c: $(top_srcdir)/src/backend/utils/error/assert.c
 	rm -f $@ && $(LN_S) $< .
 

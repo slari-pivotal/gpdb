@@ -432,13 +432,13 @@ ReadControlFile(void)
 		}
 
 		/* Check the CRC using old algorithm. */
-		INIT_CRC32(crc);
-		COMP_CRC32(crc,
+		INIT_TRADITIONAL_CRC32(crc);
+		COMP_TRADITIONAL_CRC32(crc,
 				   buffer,
 				   offsetof(ControlFileData, crc));
-		FIN_CRC32(crc);
+		FIN_TRADITIONAL_CRC32(crc);
 
-		if (EQ_CRC32(crc, ((ControlFileData *) buffer)->crc))
+		if (EQ_TRADITIONAL_CRC32(crc, ((ControlFileData *) buffer)->crc))
 		{
 			/* Valid data... */
 			memcpy(&ControlFile, buffer, sizeof(ControlFile));

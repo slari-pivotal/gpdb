@@ -9934,7 +9934,6 @@ $as_echo "#define HAVE_RSA_BSAFE_FIPS 1" >>confdefs.h
 fi
 
 
-LIBS="$pgac_save_LIBS"
 
 # for contrib/uuid-ossp
 if test "$with_ossp_uuid" = yes ; then

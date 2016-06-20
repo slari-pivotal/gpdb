@@ -40,7 +40,7 @@ LIBS := $(filter-out -lpgport, $(LIBS))
 # configure thinks strlcpy is a built-in on linux, which it is not
 # (it is a BSD thing) so force the use of our strlcpy here.
 OBJS= execute.o typename.o descriptor.o data.o error.o prepare.o memory.o \
-	connect.o misc.o path.o pgstrcasecmp.o strlcpy.o \
+	connect.o misc.o path.o pgstrcasecmp.o \
 	$(filter snprintf.o, $(LIBOBJS))
 
 # thread.c is needed only for non-WIN32 implementation of path.c

@@ -3384,8 +3384,8 @@ RecordIsValid(XLogRecord *record, XLogRecPtr recptr, int emode)
 		 */
 
 		/* First the rmgr data */
-		INIT_CRC32(crc);
-		COMP_CRC32(crc, XLogRecGetData(record), len);
+		INIT_LEGACY_CRC32(crc);
+		COMP_LEGACY_CRC32(crc, XLogRecGetData(record), len);
 
 		/* Add in the backup blocks, if any */
 		blk = (char *) XLogRecGetData(record) + len;
@@ -3405,22 +3405,22 @@ RecordIsValid(XLogRecord *record, XLogRecPtr recptr, int emode)
 				return false;
 			}
 			blen = sizeof(BkpBlock) + BLCKSZ - bkpb.hole_length;
-			COMP_CRC32(crc, blk, blen);
+			COMP_LEGACY_CRC32(crc, blk, blen);
 			blk += blen;
 		}
 
 		/* Finally include the record header */
-		COMP_CRC32(crc, (char *) record + sizeof(pg_crc32),
+		COMP_LEGACY_CRC32(crc, (char *) record + sizeof(pg_crc32),
 				   SizeOfXLogRecord - sizeof(pg_crc32));
-		FIN_CRC32(crc);
-	}
+		FIN_LEGACY_CRC32(crc);
 
-	if (!EQ_CRC32(record->xl_crc, crc))
-	{
-		ereport(emode,
-		(errmsg("incorrect resource manager data checksum in record at %X/%X",
-				recptr.xlogid, recptr.xrecoff)));
-		return false;
+		if (!EQ_LEGACY_CRC32(record->xl_crc, crc))
+		{
+			ereport(emode,
+			(errmsg("incorrect resource manager data checksum in record at %X/%X",
+					recptr.xlogid, recptr.xrecoff)));
+			return false;
+		}
 	}
 
 	return true;
@@ -5068,15 +5068,15 @@ ReadControlFile(void)
 			   offsetof(ControlFileData, crc));
 	FIN_CRC32C(crc);
 
-	if (!EQ_CRC32(crc, ControlFile->crc))
+	if (!EQ_CRC32C(crc, ControlFile->crc))
 	{
 		/* We might have an old record.  Recompute using old crc algorithm, and re-check. */
-		INIT_CRC32(crc);
-		COMP_CRC32(crc,
+		INIT_LEGACY_CRC32(crc);
+		COMP_LEGACY_CRC32(crc,
 				   (char *) ControlFile,
 				   offsetof(ControlFileData, crc));
-		FIN_CRC32(crc);
-		if (!EQ_CRC32(crc, ControlFile->crc))
+		FIN_LEGACY_CRC32(crc);
+		if (!EQ_LEGACY_CRC32(crc, ControlFile->crc))
 				ereport(FATAL,
 						(errmsg("incorrect checksum in control file")));
 	}

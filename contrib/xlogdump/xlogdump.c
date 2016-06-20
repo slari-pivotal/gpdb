@@ -239,8 +239,8 @@ RecordIsValid(XLogRecord *record, XLogRecPtr recptr)
 		 */
 
 		/* First the rmgr data */
-		INIT_CRC32(crc);
-		COMP_CRC32(crc, XLogRecGetData(record), len);
+		INIT_TRADITIONAL_CRC32(crc);
+		COMP_TRADITIONAL_CRC32(crc, XLogRecGetData(record), len);
 
 		/* Add in the backup blocks, if any */
 		blk = (char *) XLogRecGetData(record) + len;
@@ -259,18 +259,18 @@ RecordIsValid(XLogRecord *record, XLogRecPtr recptr)
 				return false;
 			}
 			blen = sizeof(BkpBlock) + BLCKSZ - bkpb.hole_length;
-			COMP_CRC32(crc, blk, blen);
+			COMP_TRADITIONAL_CRC32(crc, blk, blen);
 			blk += blen;
 		}
 
 		/* Finally include the record header */
-		COMP_CRC32(crc, (char *) record + sizeof(pg_crc32),
+		COMP_TRADITIONAL_CRC32(crc, (char *) record + sizeof(pg_crc32),
 				   SizeOfXLogRecord - sizeof(pg_crc32));
-		FIN_CRC32(crc);
+		FIN_TRADITIONAL_CRC32(crc);
 
 	}
 
-	if (!EQ_CRC32(record->xl_crc, crc))
+	if (!EQ_TRADITIONAL_CRC32(record->xl_crc, crc))
 	{
 		printf("incorrect resource manager data checksum in record at %X/%X\n",
 			   recptr.xlogid, recptr.xrecoff);

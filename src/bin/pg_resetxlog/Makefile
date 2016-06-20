@@ -21,7 +21,7 @@ LIBS := $(filter-out -lreadline -ledit -ltermcap -lncurses -lcurses -lcurl -lssl
 
 override CPPFLAGS += -DFRONTEND
 
-OBJS= pg_resetxlog.o $(WIN32RES)
+OBJS= pg_resetxlog.o ../../../src/backend/utils/hash/pg_crc.o $(WIN32RES)
 
 all: submake-libpgport pg_resetxlog
 

@@ -1219,7 +1219,6 @@ if test "$ac_cv_lib_ccme_core_R_LIB_CTX_new" = yes ; then
 fi
 AC_SUBST(RSA_BSAFE_DY_LIBS)
 AC_SUBST(RSA_BSAFE_STATIC_LIBS)
-LIBS="$pgac_save_LIBS"
 
 # for contrib/uuid-ossp
 if test "$with_ossp_uuid" = yes ; then
