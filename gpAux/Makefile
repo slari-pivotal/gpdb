@@ -1280,6 +1280,8 @@ copylicense:
 	   if [ -d $${proddir} ]; then \
 	      echo cp -v ${BLD_TOP}/LICENSE $${proddir}; \
 	      echo cp -v ${BLD_TOP}/NOTICE  $${proddir}; \
+	      cp -v ${BLD_TOP}/releng/GPDB-LICENSE.txt $${proddir}; \
+	      cp -v ${BLD_TOP}/releng/LICENSE.thirdparty $${proddir}; \
 	   fi; \
 	done
 
