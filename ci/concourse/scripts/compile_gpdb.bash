@@ -34,7 +34,9 @@ function unittest_check_gpdb() {
 function export_gpdb() {
   TARBALL=$(pwd)/bin_gpdb/bin_gpdb.tar.gz
   pushd /usr/local/greenplum-db-devel
-  tar -czf ${TARBALL} *
+    source greenplum_path.sh
+    python -m compileall -x test .
+    tar -czf ${TARBALL} *
   popd
 }
 
