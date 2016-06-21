@@ -31,17 +31,12 @@ function unittest_check_gpdb() {
   popd
 }
 
-function set_py_perms() {
-  pushd /usr/local/greenplum-db-devel
-    find . -name "*.py" -exec chmod 755 \{\} \;
-  popd
-}
-
 function export_gpdb() {
   TARBALL=$(pwd)/bin_gpdb/bin_gpdb.tar.gz
   pushd /usr/local/greenplum-db-devel
     source greenplum_path.sh
     python -m compileall -x test .
+    chmod -R 755 .
     tar -czf "${TARBALL}" ./*
   popd
 }
@@ -51,7 +46,6 @@ function _main() {
   make_sync_tools
   build_gpdb
   unittest_check_gpdb
-  set_py_perms
   export_gpdb
 }
 
