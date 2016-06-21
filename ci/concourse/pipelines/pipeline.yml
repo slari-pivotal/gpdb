@@ -159,7 +159,7 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [icb_orca]
+      passed: [icg_planner]
     - get: bin_gpdb
       passed: &Stage2Jobs
       - icb_orca
@@ -183,7 +183,7 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [icg_planner]
+      passed: *Stage2Jobs
       trigger: true
   - task: gpdb_src_packaging
     file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
