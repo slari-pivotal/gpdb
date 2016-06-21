@@ -10,6 +10,8 @@ s/^WARNING:  gpmon:.*No buffer space available socket.*//
 m/^ Optimizer status:.*/
 s/^ Optimizer status:.*//
 
+m/^WARNING:  could not close temporary file .*: No such file or directory/
+s/^WARNING:  could not close temporary file .*: No such file or directory//
 -- end_matchignore
 
 -- start_matchsubs
