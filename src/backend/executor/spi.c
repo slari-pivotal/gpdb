@@ -1943,7 +1943,7 @@ _SPI_pquery(QueryDesc * queryDesc, bool fire_triggers, long tcount)
 
 			/* 
 			 * Checking if we need to put this through resource queue.
-			 * Same as in pquery.c, except we check ActivePortal->holdingResLock.
+			 * Same as in pquery.c, except we check ActivePortal->releaseResLock.
 			 * If the Active portal already hold a lock on the queue, we cannot
 			 * acquire it again.
 			 */
@@ -1968,14 +1968,14 @@ _SPI_pquery(QueryDesc * queryDesc, bool fire_triggers, long tcount)
 				 */
 				if (ActivePortal)
 				{
-					if (!ActivePortal->holdingResLock)
+					if (!ActivePortal->releaseResLock)
 					{
 						/** TODO: siva - can we ever reach this point? */
 						PortalSetStatus(ActivePortal, PORTAL_QUEUE);
 					
 						_SPI_assign_query_mem(queryDesc);
 
-						ActivePortal->holdingResLock =
+						ActivePortal->releaseResLock =
 							ResLockPortal(ActivePortal, queryDesc);
 						PortalSetStatus(ActivePortal, PORTAL_ACTIVE);
 					} 
@@ -1994,7 +1994,7 @@ _SPI_pquery(QueryDesc * queryDesc, bool fire_triggers, long tcount)
 						 * allocated to the function scan operator.
 						 */
 						Assert(ActivePortal);
-						Assert(ActivePortal->holdingResLock);
+						Assert(ActivePortal->releaseResLock);
 
 						_SPI_assign_query_mem(queryDesc);
 					}

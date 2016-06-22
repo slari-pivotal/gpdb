@@ -808,14 +808,17 @@ ResLockUtilityPortal(Portal portal, float4 ignoreCostLimit)
 			/* If we had acquired the resource queue lock, release it and clean up */
 			ResLockRelease(&tag, portal->portalId);
 
+			/*
+			 * Perfmon related stuff: clean up if we got cancelled
+			 * while waiting.
+			 */
+
 			portal->queueId = InvalidOid;
 			portal->portalId = INVALID_PORTALID;
 
 			PG_RE_THROW();
 		}
 		PG_END_TRY();
-
-		Assert((lockResult != LOCKACQUIRE_NOT_AVAIL) && !(portal->cursorOptions & CURSOR_OPT_HOLD));
 	}
 	return returnReleaseOk;
 }
@@ -845,14 +848,12 @@ ResUnLockPortal(Portal portal)
 		ResLockRelease(&tag, portal->portalId);
 
 		/* Count holdable cursors.*/
-		if ((portal->cursorOptions & CURSOR_OPT_HOLD) && portal->holdingResLock)
+		if (portal->cursorOptions & CURSOR_OPT_HOLD)
 		{
 			Assert(numHoldPortals > 0);
 			numHoldPortals--;
 		}
 	}
-
-	portal->holdingResLock = false;
 
 	return;
 }
@@ -1071,14 +1072,11 @@ ResHandleUtilityStmt(Portal portal, Node *stmt)
 		Assert(resQueue);
 		int numSlots = (int) ceil(resQueue->limits[RES_COUNT_LIMIT].threshold_value);
 
-		/* There can actually have a problem when there is a concurrent ALTER RESOURCE QUEUE, but
- 		 * since concurrent ALTER RESOURCE QUEUE is a known cause for temporary inconsistent resource
- 		 * queue status, so it should be fine here */
 		if (numSlots >= 1) /* statement limit exists */
 		{
 			PortalSetStatus(portal, PORTAL_QUEUE);
 
-			portal->holdingResLock = ResLockUtilityPortal(portal, resQueue->ignorecostlimit);
+			portal->releaseResLock = ResLockUtilityPortal(portal, resQueue->ignorecostlimit);
 		}
 		PortalSetStatus(portal, PORTAL_ACTIVE);
 	}
