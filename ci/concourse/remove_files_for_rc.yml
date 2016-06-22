@@ -1,0 +1,19 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: pivotaldata/centos511-java7-gpdb-dev-image
+    username: gpdb
+    password: one team one dream
+    email: releng@pivotal.io
+inputs:
+  - name: gpdb_src
+  - name: bin_gpdb
+outputs:
+  - name: rc_bin_gpdb
+run:
+  path: gpdb_src/ci/concourse/scripts/remove_files_for_rc.bash
+params:
+  FILES_TO_REMOVE_LISTING: gpdb_src/gpAux/releng/NON_PRODUCTION_FILES.txt
+  INPUT_TARBALL: bin_gpdb/bin_gpdb.tar.gz
+  OUTPUT_TARBALL: rc_bin_gpdb/bin_gpdb.tar.gz
