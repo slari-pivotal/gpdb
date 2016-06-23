@@ -220,14 +220,9 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [icb_orca]
+      passed: [icg_planner]
     - get: bin_gpdb
-      passed: &Stage2Jobs
-      - icb_orca
-      - icb_planner
-      - icg_orca
-      - icg_planner
-      - MU_check
+      passed: *Stage2Jobs
       trigger: true
   - task: remove_files_for_rc
     file: gpdb_src/ci/concourse/remove_files_for_rc.yml
@@ -296,7 +291,7 @@ jobs:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-        FILE_ZIP: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
+        FILE_TO_UPLOAD: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -306,7 +301,7 @@ jobs:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-        FILE_ZIP: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
+        FILE_TO_UPLOAD: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_src_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -316,8 +311,9 @@ jobs:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-        FILE_ZIP: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
+        FILE_TO_UPLOAD: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
         SSH_KEY: {{private-repo-key}}
+
 # Stage 4: Behave Tests
 
 # When creating a new job, to ensure that the test runs only when all stage 3

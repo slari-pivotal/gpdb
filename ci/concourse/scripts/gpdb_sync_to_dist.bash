@@ -4,7 +4,7 @@ set -euo pipefail
 
 function echo_expected_env_variables() {
   echo "Target remote directory: $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIRECTORY"
-  echo "Local file zip: $FILE_ZIP"
+  echo "Local file to upload: $FILE_TO_UPLOAD"
 }
 
 function validate_remote_dir() {
@@ -21,7 +21,7 @@ function validate_remote_dir() {
 function scp_zip_src() {
   local remote_path
   local ssh_key_file
-  remote_path="$REMOTE_DIRECTORY/`basename $FILE_ZIP`"
+  remote_path="$REMOTE_DIRECTORY/`basename $FILE_TO_UPLOAD`"
   ssh_key_file="$(mktemp -t ssh_key)"
   echo "$SSH_KEY" > "$ssh_key_file"
 
@@ -37,7 +37,7 @@ function scp_zip_src() {
   #being left sitting on the server
   scp -i $ssh_key_file -o UserKnownHostsFile=/dev/null \
       -o LogLevel=error -o StrictHostKeyChecking=no \
-      "$FILE_ZIP" "$REMOTE_USER@$REMOTE_HOST:$remote_path.new" > /dev/null
+      "$FILE_TO_UPLOAD" "$REMOTE_USER@$REMOTE_HOST:$remote_path.new" > /dev/null
   ssh -i $ssh_key_file -o UserKnownHostsFile=/dev/null \
       -o LogLevel=error -o StrictHostKeyChecking=no \
       "$REMOTE_USER@$REMOTE_HOST" "mv $remote_path.new $remote_path" > /dev/null
@@ -49,7 +49,7 @@ function echo_completion() {
   # artifacts and artifacts-cache are mirrored, but we show the user
   # artifacts-cache as it is faster to access on the network
   local remote_host_cache=`echo $REMOTE_HOST | sed 's/^artifacts[.]/artifacts-cache./'`
-  echo "Uploaded file: http://$remote_host_cache$remote_dir_url/`basename $FILE_ZIP`"
+  echo "Uploaded file: http://$remote_host_cache$remote_dir_url/`basename $FILE_TO_UPLOAD`"
 }
 
 function _main() {

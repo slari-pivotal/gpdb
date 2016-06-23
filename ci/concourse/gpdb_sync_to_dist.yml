@@ -16,4 +16,4 @@ params:
   REMOTE_USER: user
   REMOTE_HOST: fully.qualified.hostname
   REMOTE_DIRECTORY: /path/to/directory/
-  FILE_ZIP: OBJECT_rhel5_gpdb/greenplum-db-VERSION-OS-x86_64.zip
+  FILE_TO_UPLOAD: OBJECT_rhel5_gpdb/greenplum-db-VERSION-OS-x86_64.zip
