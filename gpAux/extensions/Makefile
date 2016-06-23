@@ -30,32 +30,41 @@ mapreduce:
 		$(MAKE) -C gpmapreduce; \
 	fi
 
+gphdfs:
+	if [ "$(enable_gphdfs)" = "yes" ]; then \
+		echo "gphdfs enabled"; \
+		PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -C gphdfs USE_PGXS=1 docdir=$(INSTLOC)/docs install \
+		ANT=/opt/releng/apache-ant/bin/ant \
+		JAVA_HOME=${JAVA_HOME}
+	fi
+
 install: mapreduce
 	if [ "$(enable_mapreduce)" = "yes" ]; then \
 		$(MAKE) -C gpmapreduce install; \
 	fi
 
+install: gphdfs
+	if [ "$(enable_gphdfs)" = "yes" ]; then \
+		$(MAKE) -C gphdfs install; \
+	fi
+
 clean:
 	@if [ -f gpfdist/GNUmakefile ]; then $(MAKE) -C gpfdist clean; fi; \
 	if [ "$(enable_mapreduce)" = "yes" ]; then $(MAKE) -C gpmapreduce clean; fi
+	if [ "$(enable_gphdfs)" = "yes" ]; then $(MAKE) -C gphdfs clean; fi
 
 
 distclean:
 	@if [ -f gpfdist/GNUmakefile ]; then $(MAKE) -C gpfdist clean; fi; \
 	if [ "$(enable_mapreduce)" = "yes" ]; then $(MAKE) -C gpmapreduce distclean; fi
-
-.PHONY:
-mkgphdfs:
-	PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -C gphdfs USE_PGXS=1 docdir=$(INSTLOC)/docs install \
-		ANT=/opt/releng/apache-ant/bin/ant \
-		JAVA_HOME=${JAVA_HOME}
+	if [ "$(enable_gphdfs)" = "yes" ]; then $(MAKE) -C gphdfs distclean; fi
 
 mks3ext:
 	PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -B -C gps3ext USE_PGXS=1 install
 	PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -B -C gps3ext/bin/gpcheckcloud USE_PGXS=1 install
 
 # Only include include these files when running enterprise build
-ENTERPRISE_TARGETS="mkdbgen mkgphdfs mkorafce mkplr mkpljava"
+ENTERPRISE_TARGETS="mkdbgen mkorafce mkplr mkpljava"
 ifneq ($(findstring $(MAKECMDGOALS), $(ENTERPRISE_TARGETS)),)
 include $(BLD_TOP)/Makefile.global
 include $(BLD_TOP)/Makefile.thirdparty

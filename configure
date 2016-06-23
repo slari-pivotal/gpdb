@@ -726,6 +726,7 @@ with_perl
 with_tcl
 enable_thread_safety
 INCLUDES
+enable_gphdfs
 enable_mapreduce
 enable_netbackup
 enable_ddboost
@@ -848,6 +849,7 @@ enable_connectemc
 enable_ddboost
 enable_netbackup
 enable_mapreduce
+enable_gphdfs
 enable_thread_safety
 enable_thread_safety_force
 with_tcl
@@ -1524,6 +1526,7 @@ Optional Features:
   --enable-ddboost        enable DD Boost support
   --enable-netbackup     enable NetBackup support
   --enable-mapreduce      enable Greenplum Mapreduce support
+  --enable-gphdfs      enable Greenplum HDFS support
   --disable-thread-safety  Do not make client libraries thread-safe
   --enable-thread-safety-force  force thread-safety despite thread test failure
   --disable-largefile     omit support for large files
@@ -5657,13 +5660,48 @@ $as_echo "#define USE_MAPREDUCE 1" >>confdefs.h
   esac
 
 else
-  enable_mapreduce=no
+  enable_mapreduce=yes
+
+$as_echo "#define USE_MAPREDUCE 1" >>confdefs.h
 
 fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: checking whether to build with Greenplum Mapreduce... $enable_mapreduce" >&5
 $as_echo "checking whether to build with Greenplum Mapreduce... $enable_mapreduce" >&6; }
+
+
+#
+# --enable-gphdfs enables GPHDFS support
+#
+
+pgac_args="$pgac_args enable_gphdfs"
+
+# Check whether --enable-gphdfs was given.
+if test "${enable_gphdfs+set}" = set; then :
+  enableval=$enable_gphdfs;
+  case $enableval in
+    yes)
+
+$as_echo "#define USE_GPHDFS 1" >>confdefs.h
+
+      ;;
+    no)
+      :
+      ;;
+    *)
+      as_fn_error $? "no argument expected for --enable-gphdfs option" "$LINENO" 5
+      ;;
+  esac
+
+else
+  enable_gphdfs=no
+
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: checking whether to build with Greenplum HDFS... $enable_gphdfs" >&5
+$as_echo "checking whether to build with Greenplum HDFS... $enable_gphdfs" >&6; }
 
 
 #
@@ -12009,6 +12047,34 @@ fi
 ## Functions, global variables
 ##
 
+# Find and populate JAVA_HOME
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for JAVA_HOME" >&5
+$as_echo_n "checking for JAVA_HOME... " >&6; }
+# We used a fake loop so that we can use "break" to exit when the result
+# is found.
+while true
+do
+  # If the user defined JAVA_HOME, don't touch it.
+  test "${JAVA_HOME+set}" = set && break
+
+  # On Mac OS X 10.5 and following, run /usr/libexec/java_home to get
+  # the value of JAVA_HOME to use.
+  # (http://developer.apple.com/library/mac/#qa/qa2001/qa1170.html).
+  JAVA_HOME=`/usr/libexec/java_home 2>/dev/null`
+  test x"$JAVA_HOME" != x && break
+
+  # See if we can find the java executable, and compute from there.
+  JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))
+  test x"$JAVA_HOME" != x && break
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Could not compute JAVA_HOME" >&5
+$as_echo "$as_me: Could not compute JAVA_HOME" >&6;}
+  break
+done
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $JAVA_HOME" >&5
+$as_echo "$JAVA_HOME" >&6; }
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for int timezone" >&5
 $as_echo_n "checking for int timezone... " >&6; }
 if ${pgac_cv_var_int_timezone+:} false; then :
@@ -13607,7 +13673,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # are not supported.  For example, on Solaris -D_POSIX_PTHREAD_SEMANTICS
 # enables 5-arg getpwuid_r, among other things.
 PTHREAD_CFLAGS="$PTHREAD_CFLAGS -D_REENTRANT -D_THREAD_SAFE -D_POSIX_PTHREAD_SEMANTICS"
-
 
 # At this point, we don't want to muck with the compiler name for threading.
 # Let's see who fails, perhaps AIX.  2004-04-23
