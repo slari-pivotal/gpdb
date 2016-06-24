@@ -4,7 +4,7 @@ image_resource:
   source:
     repository: pivotaldata/centos511-java7-gpdb-dev-image
     username: gpdb
-    password: one team one dream
+    password: a7vBWDg3mlMv
     email: releng@pivotal.io
 inputs:
   - name: gpdb_src
