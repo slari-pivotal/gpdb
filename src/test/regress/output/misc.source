@@ -449,6 +449,10 @@ SELECT user_relns() AS user_relns
  equipment_r
  f_star
  fast_emp4000
+ fkc_foreign_table1
+ fkc_foreign_table2
+ fkc_primary_table1
+ fkc_primary_table2
  float4_tbl
  float8_tbl
  func_index_heap
@@ -512,7 +516,7 @@ SELECT user_relns() AS user_relns
  toyemp
  varchar_tbl
  xacttest
-(100 rows)
+(104 rows)
 
 SELECT name(equipment(hobby_construct(text 'skywalking', text 'mer'))) ORDER BY 1;
  name 

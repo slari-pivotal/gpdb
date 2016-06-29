@@ -564,12 +564,11 @@ ExecInsert(TupleTableSlot *slot,
 		if (resultRelInfo->ri_NumIndices > 0)
 			ExecInsertIndexTuples(xslot, &(((HeapTuple) xtuple)->t_self), estate, false);
 
-	}
-
-	if (planGen == PLANGEN_PLANNER)
-	{
-		/* AFTER ROW INSERT Triggers */
-		ExecARInsertTriggers(estate, resultRelInfo, tuple);
+		if (planGen == PLANGEN_PLANNER)
+		{
+			/* AFTER ROW INSERT Triggers */
+			ExecARInsertTriggers(estate, resultRelInfo, tuple);
+		}
 	}
 }
 
@@ -807,7 +806,7 @@ ldelete:;
 	 */
 
 
-	if (planGen == PLANGEN_PLANNER)
+	if (!(isAORowsTable || isAOColsTable) && planGen == PLANGEN_PLANNER)
 	{
 		/* AFTER ROW DELETE Triggers */
 		ExecARDeleteTriggers(estate, resultRelInfo, tupleid);
@@ -1098,10 +1097,9 @@ lreplace:;
 	{
 		if (resultRelInfo->ri_NumIndices > 0)
 			ExecInsertIndexTuples(partslot, &(((HeapTuple) tuple)->t_self), estate, false);
+
+		/* AFTER ROW UPDATE Triggers */
+		ExecARUpdateTriggers(estate, resultRelInfo, tupleid, tuple);
 	}
-
-	/* AFTER ROW UPDATE Triggers */
-	ExecARUpdateTriggers(estate, resultRelInfo, tupleid, tuple);
-
 }
 
