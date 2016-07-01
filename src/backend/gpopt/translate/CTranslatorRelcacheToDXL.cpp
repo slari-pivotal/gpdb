@@ -91,15 +91,6 @@ const ULONG rgulCmpTypeMappings[][2] =
 	{IMDType::EcmptLEq, CmptLEq}
 };
 
-// TODO: solimm1 - 01/09/2014: remove function properties map when catalog is fixed to include correct properties
-
-// initialization of function properties map
-const CTranslatorRelcacheToDXL::SFuncProps CTranslatorRelcacheToDXL::m_rgfp[] =
-{
-	{GPDB_PG_GET_PART_RULE_DEF_1, IMDFunction::EfsStable, IMDFunction::EfdaReadsSQLData, true, true}, // pg_get_partition_rule_def(oid)
-	{GPDB_PG_GET_PART_RULE_DEF_2, IMDFunction::EfsStable, IMDFunction::EfdaReadsSQLData, true, true}, // pg_get_partition_rule_def(oid, bool)
-};
-
 //---------------------------------------------------------------------------
 //	@function:
 //		CTranslatorRelcacheToDXL::Pimdobj
@@ -1670,19 +1661,16 @@ CTranslatorRelcacheToDXL::LookupFuncProps
 	GPOS_ASSERT(NULL != fStrict);
 	GPOS_ASSERT(NULL != fReturnsSet);
 
-	// lookup function properties first n the local map
-	const ULONG ulSize = GPOS_ARRAY_SIZE(m_rgfp);
-	for (ULONG ul = 0; ul < ulSize; ul++)
+	// TODO: frahman 07/01/2016: remove hard coded function properties map when catalog is fixed to include correct properties.
+	// Lookup function properties first in patchy catalog bypass
+	if (GPDB_PG_GET_PART_RULE_DEF_1 == oidFunc || GPDB_PG_GET_PART_RULE_DEF_2 == oidFunc)
 	{
-		if (m_rgfp[ul].Oid() == oidFunc)
-		{
-			*pefs = m_rgfp[ul].Efs();
-			*pefda = m_rgfp[ul].Efda();
-			*fStrict = m_rgfp[ul].FStrict();
-			*fReturnsSet = m_rgfp[ul].FReturnsSet();
+		*pefs = IMDFunction::EfsStable;
+		*pefda = IMDFunction::EfdaReadsSQLData;
+		*fStrict = true;
+		*fReturnsSet = true;
 
-			return;
-		}
+		return;
 	}
 
 	CHAR cFuncStability = gpdb::CFuncStability(oidFunc);

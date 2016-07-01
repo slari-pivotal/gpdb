@@ -33,7 +33,7 @@ else
 	ARCH_FLAGS = -m64
 endif
 
-BLD_FLAGS = $(ARCH_FLAGS) -D$(ARCH_BIT) -D$(ARCH_CPU) -D$(ARCH_OS) $(GPOPT_flags) -std=c++11
+BLD_FLAGS = $(ARCH_FLAGS) -D$(ARCH_BIT) -D$(ARCH_CPU) -D$(ARCH_OS) $(GPOPT_flags)
 override CPPFLAGS := -fPIC $(CPPFLAGS)
 override CPPFLAGS := $(BLD_FLAGS)  $(CPPFLAGS)
 override CPPFLAGS := -I $(XERCES)/include $(CPPFLAGS)
