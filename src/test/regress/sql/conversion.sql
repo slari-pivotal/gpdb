@@ -1,4 +1,10 @@
 --
+-- Check convert usage
+--
+select convert( 'text_in_utf8', 'ISO-8859-7', 'UTF8');
+select convert( 'text_in_utf8', 'ISO-8859-7');
+
+--
 -- create user defined conversion
 --
 CREATE USER conversion_test_user WITH NOCREATEDB NOCREATEUSER;
