@@ -1346,7 +1346,7 @@ bouncer:
 
 installcheck-good :
 	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
-	@cd $(BUILDDIR)/src/test/regress && $(MAKE) installcheck-good
+	@cd $(BUILDDIR)/src/test/regress && $(MAKE) installcheck-good && gpcheckcat -A
 
 installcheck-extensions :
 	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
@@ -1363,7 +1363,7 @@ installcheck-olaptest :
 
 installcheck-bugbuster :
 	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
-	@cd $(BUILDDIR)/src/test/regress && $(MAKE) installcheck-bugbuster
+	@cd $(BUILDDIR)/src/test/regress && $(MAKE) installcheck-bugbuster && gpcheckcat -A
 
 #---------------------------------------------------------------------
 # More internal functions
