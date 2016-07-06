@@ -1,4 +1,44 @@
 ## ======================================================================
+## groups
+## ======================================================================
+
+groups:
+- name: all
+  jobs:
+  - compile_gpdb_centos
+  - icb_orca_centos
+  - icb_planner_centos
+  - icg_orca_centos
+  - icg_planner_centos
+  - MU_check_centos
+  - gpdb_packaging_centos
+  - gpdb_rc_packaging_centos
+  - gpdb_src_packaging_centos
+  - gpdb_sync_to_dist_centos
+  - MU_backup_centossmoke_centos
+  - MU_backup_centos
+  - manual_testing_centos
+  - push_to_pivnet_manually_centos
+- name: CentOS (RHEL)
+  jobs:
+  - compile_gpdb_centos
+  - icb_orca_centos
+  - icb_planner_centos
+  - icg_orca_centos
+  - icg_planner_centos
+  - MU_check_centos
+  - gpdb_packaging_centos
+  - gpdb_rc_packaging_centos
+  - gpdb_src_packaging_centos
+  - gpdb_sync_to_dist_centos
+  - MU_backup_centossmoke_centos
+  - MU_backup_centos
+  - manual_testing_centos
+  - push_to_pivnet_manually_centos
+- name: SLES
+  jobs: []
+
+## ======================================================================
 ## resources
 ## ======================================================================
 
@@ -73,7 +113,7 @@ resources:
 # Stage 1: Build and C Unit Tests
 
 jobs:
-- name: compile_gpdb
+- name: compile_gpdb_centos
   public: true
   plan:
   - get: gpdb_src
@@ -94,16 +134,16 @@ jobs:
 #
 #     passed: &Stage2Jobs
 
-- name: icb_orca
+- name: icb_orca_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: bin_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
       trigger: true
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
@@ -111,16 +151,16 @@ jobs:
       MAKE_TEST_COMMAND: installcheck-bugbuster
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
 
-- name: icb_planner
+- name: icb_planner_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: bin_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
       trigger: true
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
@@ -128,16 +168,16 @@ jobs:
       MAKE_TEST_COMMAND: installcheck-bugbuster
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
 
-- name: icg_orca
+- name: icg_orca_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: bin_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
       trigger: true
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
@@ -145,16 +185,16 @@ jobs:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
 
-- name: icg_planner
+- name: icg_planner_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: bin_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
       trigger: true
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
@@ -162,38 +202,38 @@ jobs:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
 
-- name: MU_check
+- name: MU_check_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
     - get: bin_gpdb
-      passed: [compile_gpdb]
+      passed: [compile_gpdb_centos]
       trigger: true
-  - task: MU_check
+  - task: MU_check_centos
     file: gpdb_src/ci/concourse/gpMgmt_check_gpdb.yml
 
 # Stage 3: Packaging of installer file
 
-- name: gpdb_rhel5_packaging
+- name: gpdb_packaging_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [icg_planner]
+      passed: [icg_planner_centos]
     - get: bin_gpdb
       passed: &Stage2Jobs
-      - icb_orca
-      - icb_planner
-      - icg_orca
-      - icg_planner
-      - MU_check
+      - icb_orca_centos
+      - icb_planner_centos
+      - icg_orca_centos
+      - icg_planner_centos
+      - MU_check_centos
       trigger: true
   - aggregate:
-    - task: gpdb_rhel5_packaging
+    - task: gpdb_packaging_centos
       file: gpdb_src/ci/concourse/gpdb_packaging.yml
       params:
         INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-rhel5-gpdb.sh
@@ -215,19 +255,19 @@ jobs:
 
 # Stage 3a: Packaging the Release Candidate (rc)
 
-- name: gpdb_rhel5_rc_packaging
+- name: gpdb_rc_packaging_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [icg_planner]
+      passed: [icg_planner_centos]
     - get: bin_gpdb
       passed: *Stage2Jobs
       trigger: true
   - task: remove_files_for_rc
     file: gpdb_src/ci/concourse/remove_files_for_rc.yml
   - aggregate:
-    - task: gpdb_rhel5_rc_packaging
+    - task: gpdb_rc_packaging_centos
       file: gpdb_src/ci/concourse/gpdb_packaging.yml
       input_mapping:
         bin_gpdb: rc_bin_gpdb
@@ -255,15 +295,15 @@ jobs:
         file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.9.0-build-1-RHEL5-x86_64.zip
 
 # Stage 3b: Packaging of source code
-- name: gpdb_src_packaging
+- name: gpdb_src_packaging_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
       passed: *Stage2Jobs
       trigger: true
-  - task: gpdb_src_packaging
-    file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
+  - task: gpdb_src_packaging_centos
+    file: gpdb_src/ci/concourse/gpdb_src_packaging_centos.yml
     params:
       GPDB_SRC_TAR_GZ: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
   - put: gpdb_src_tar_gz
@@ -271,22 +311,22 @@ jobs:
       from: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
-- name: gpdb_sync_to_dist
+- name: gpdb_sync_to_dist_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [gpdb_rhel5_packaging]
+      passed: [gpdb_packaging_centos]
     - get: gpdb_src_tar_gz
-      passed: [gpdb_src_packaging]
+      passed: [gpdb_src_packaging_centos]
     - get: installer_rhel5_gpdb
-      passed: [gpdb_rhel5_packaging]
+      passed: [gpdb_packaging_centos]
     - get: installer_appliance_rhel5_gpdb
-      passed: [gpdb_rhel5_packaging]
+      passed: [gpdb_packaging_centos]
       trigger: true
   - aggregate:
     - task: gpdb_rhel5_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist_centos.yml
       params:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
@@ -294,7 +334,7 @@ jobs:
         FILE_TO_UPLOAD: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist_centos.yml
       input_mapping:
         installer_rhel5_gpdb: installer_appliance_rhel5_gpdb
       params:
@@ -304,7 +344,7 @@ jobs:
         FILE_TO_UPLOAD: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_src_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist_centos.yml
       input_mapping:
         installer_rhel5_gpdb: gpdb_src_tar_gz
       params:
@@ -321,7 +361,7 @@ jobs:
 #
 #  - aggregate:
 #    - get: gpdb_src
-#      passed: [compile_gpdb]
+#      passed: [compile_gpdb_centos]
 #    - get: bin_gpdb
 #      passed: *Stage3Jobs
 #      trigger: true
@@ -332,31 +372,55 @@ jobs:
 # initials of the team that owns the suite (e.g. MU = Management Utilities)
 # and tag is the tag passed to behave.
 
-- name: MU_backupsmoke
+- name: MU_backup_centossmoke_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [gpdb_rhel5_packaging]
+      passed: [gpdb_packaging_centos]
     - get: bin_gpdb
       passed: &Stage3Jobs
-      - gpdb_rhel5_packaging
+      - gpdb_packaging_centos
       trigger: true
-  - task: MU_backupsmoke
+  - task: MU_backup_centossmoke_centos
     file: gpdb_src/ci/concourse/behave_tests.yml
     params:
       BEHAVE_TAGS: backupsmoke
 
-- name: MU_backup
+- name: MU_backup_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [gpdb_rhel5_packaging]
+      passed: [gpdb_packaging_centos]
     - get: bin_gpdb
       passed: *Stage3Jobs
       trigger: true
-  - task: MU_backup
+  - task: MU_backup_centos
     file: gpdb_src/ci/concourse/behave_tests.yml
     params:
       BEHAVE_TAGS: backup
+
+- name: manual_testing_centos
+  public: true
+  plan:
+  - get: installer_appliance_rhel5_gpdb
+    passed: [gpdb_sync_to_dist_centos]
+  - task: ask_PMs_to_verify
+    config:
+      platform: linux
+      run:
+        path: /bin/false
+
+- name: push_to_pivnet_manually_centos
+  public: true
+  plan:
+  - get: installer_rhel5_gpdb_rc
+    passed: [gpdb_rc_packaging_centos]
+  - get: installer_appliance_rhel5_gpdb_rc
+    passed: [gpdb_rc_packaging_centos]
+  - task: ask_PMs_to_verify
+    config:
+      platform: linux
+      run:
+        path: /bin/false
