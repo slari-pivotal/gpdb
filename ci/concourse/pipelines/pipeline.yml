@@ -19,7 +19,7 @@ groups:
   - MU_backup_centos
   - manual_testing_centos
   - push_to_pivnet_manually_centos
-- name: CentOS (RHEL)
+- name: CentOS/RHEL
   jobs:
   - compile_gpdb_centos
   - icb_orca_centos
