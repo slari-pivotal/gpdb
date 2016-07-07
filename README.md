@@ -147,6 +147,53 @@ source gpdemo-env.sh
 make installcheck-good
 ```
 
+## Development with Docker (alpha)
+We provide a docker image with all dependencies required to compile and test
+GPDB. You can view the dependency dockerfile at `./docker/base/Dockerfile`.
+The image is hosted on docker hub at `pivotaldata/gpdb4-devel`. This docker
+image is currently under heavy development.
+
+### Running regression tests with Docker
+
+1. Create a docker host with 8gb RAM and 4 cores
+    ```bash
+    docker-machine create -d virtualbox --virtualbox-cpu-count 4 --virtualbox-disk-size 50000 --virtualbox-memory 8192 gpdb
+    eval $(docker-machine env gpdb)
+    ```
+
+2. Build your code on gpdb4-devel rootfs
+    ```bash
+    cd [path/to/gpdb4]
+    docker build .
+    # image beefc4f3 built
+    ```
+    The top level Dockerfile will automatically sync your current working
+    directory into the docker image. This means that any code you are working
+    on will automatically be built and ready for testing in the docker context
+
+3. Log into docker image and start ssh
+    ```bash
+    docker run -it beefc4f3
+    # on docker image
+    ./docker/start_ssh.bash
+    ```
+
+4. As `gpadmin` user run `make cluster`
+    ```bash
+    su gpadmin
+    source /usr/local/gpdb/greenplum_path.sh
+    cd gpAux/gpdemo
+    make cluster
+    source gpdemo-env.sh
+    ```
+
+5. Run `installcheck-good`
+    ```bash
+    cd ../../
+    # wd is /workspace/gpdb
+    make installcheck-good
+    ```
+
 # Glossary
 
 **QD** Query Dispatcher. A synonym for the master server.
