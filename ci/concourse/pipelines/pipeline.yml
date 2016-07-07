@@ -49,6 +49,12 @@ resources:
     branch: 4.3_STABLE
     private_key: {{private-repo-key}}
     uri: git@github.com:greenplum-db/gpdb4.git
+- name: centos511-java7-gpdb-dev-image
+  type: docker-image
+  source:
+    repository: pivotaldata/centos511-java7-gpdb-dev-image
+    username: {{docker_username}}
+    password: {{docker_password}}
 - name: bin_gpdb
   type: s3
   source:
@@ -116,10 +122,15 @@ jobs:
 - name: compile_gpdb_centos
   public: true
   plan:
-  - get: gpdb_src
-    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      trigger: true
+    - get: centos511-java7-gpdb-dev-image
   - task: build_gpdb
     file: gpdb_src/ci/concourse/build_gpdb.yml
+    image: centos511-java7-gpdb-dev-image
+    params:
+      TARGET_OS: centos
   - put: bin_gpdb
     params:
       from: bin_gpdb/bin_gpdb.tar.gz
