@@ -68,7 +68,12 @@ setup_sshd() {
   setup_ssh_for_user root
 
   # Test that sshd can start
-  /etc/init.d/sshd start
+  if [ -x /etc/init.d/sshd ]; then
+    /etc/init.d/sshd start
+  else
+    # Ubuntu uses ssh instead of sshd
+    /etc/init.d/ssh start
+  fi
 
   ssh_keyscan_for_user root
   ssh_keyscan_for_user gpadmin

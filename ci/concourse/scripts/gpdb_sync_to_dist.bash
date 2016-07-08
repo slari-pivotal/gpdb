@@ -14,7 +14,7 @@ function validate_remote_dir() {
   #grep will fail if the regex does not match and this script will stop due to the set -euo.
   echo -e "Validating that $REMOTE_DIRECTORY is a valid path (must be a" \
           "subdirectory of /data/dist/GPDB)...\c"
-  echo "$REMOTE_DIRECTORY" | grep '^/data/dist/GPDB/[/a-zA-Z0-9\-\_]\+$' > /dev/null
+  echo "$REMOTE_DIRECTORY" | grep '^/data/dist/GPDB/[/a-zA-Z0-9\_\-]\+$' > /dev/null
   echo " validated"
 }
 

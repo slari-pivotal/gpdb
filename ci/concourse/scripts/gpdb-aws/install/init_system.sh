@@ -27,6 +27,13 @@ sed -i -r "s| MIRROR_DATA_DIRECTORY=\(.*\)| MIRROR_DATA_DIRECTORY\=\(${MIRROR_DA
 sed -i -r "s|MASTER_DIRECTORY=/data/master|MASTER_DIRECTORY=${MASTER_DIRECTORY}|" ~gpadmin/gpconfigs/gpinitsystem_config
 echo "Running gpinitsystem"
 
+source /usr/local/greenplum-db/greenplum_path.sh
+
+cp ~root/hostfile ~gpadmin/hostfile
+chown gpadmin:gpadmin ~gpadmin/hostfile
+
+gpseginstall -f ~gpadmin/hostfile -p changeme
+
 if [[ "$STANDBY" -ge 1 ]]; then
   echo | su - gpadmin -c "bash -c 'gpinitsystem -a -c ~gpadmin/gpconfigs/gpinitsystem_config -s smdw'" || [[ $? -lt 2 ]]
 else

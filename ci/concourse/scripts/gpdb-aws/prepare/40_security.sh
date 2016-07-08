@@ -39,7 +39,9 @@ create_gpadmin() {
 }
 
 generate_keys() {
+  echo "STARTED GENERATE_KEYS ID100"
   for U in root gpadmin; do
+    echo "LOOP GENERATE_KEYS ID200 ${U}"
     su $U -c "mkdir -p ~${U}/.ssh"
     su $U -c "[[ -f ~${U}/.ssh/id_rsa ]] || ssh-keygen -N '' -f ~${U}/.ssh/id_rsa"
 

@@ -247,7 +247,7 @@ export TRACE=\"$TRACE\"
 export STANDBY=\"$STANDBY\"
 "
 
-  echo -e "$EXPORTS" | cat - ${BASEDIR}/postinit_system.sh | ssh -i ${AWS_KEYPAIR} root@$IP 'bash -s'
+  echo -e "$EXPORTS" | cat - ${BASEDIR}/postinit_system.sh | ssh -i ${AWS_KEYPAIR} ${SSH_USER}@$IP 'bash -s'
 }
 
 install_gpcc() {

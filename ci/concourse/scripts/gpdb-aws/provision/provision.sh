@@ -173,6 +173,11 @@ create_image() {
 
   local NAME="${IMAGE_NAME} (Version ${IMAGE_VERSION} - Key ${KEYNAME} - Base ${AMI})"
 
+  if [[ -n "$BOOTSTRAP_OVERRIDE" ]]; then
+    export IMAGE_ID=$BOOTSTRAP_OVERRIDE
+    return
+  fi
+
   if IMAGE_ID=$(ec2-describe-images --show-empty-fields | grep IMAGE | grep "${NAME}" | cut -f2); then
     log "Found matching image ${IMAGE_ID}, skipping"
 
@@ -183,6 +188,7 @@ create_image() {
   INSTANCE_IDS=($(
     ec2-run-instances $AMI \
       -n 1 \
+      -g $AWS_SECURITY_GROUP \
       --show-empty-fields \
       -k $KEYNAME \
       --instance-type c4.2xlarge \
@@ -273,6 +279,7 @@ run_instances() {
   INSTANCE_IDS=($(
     ec2-run-instances $IMAGE_ID \
       -n $INSTANCES \
+      -g $AWS_SECURITY_GROUP \
       --tenancy ${TENANCY} \
       --show-empty-fields \
       -k $KEYNAME \
@@ -292,16 +299,18 @@ run_instances() {
 
 update_software() {
   local IPS
-  IPS=$(ec2-describe-instances --show-empty-fields ${INSTANCE_IDS[*]} | grep INSTANCE | cut -f17)
+  IPS=$(ec2-describe-instances --show-empty-fields ${INSTANCE_IDS[*]} | grep INSTANCE | cut -f18)
 
   log "Updating software on instances"
 
   run_updates() {
     local IP=$1
 
-    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t -t ${SSH_USER}@${IP} "sudo -u root yum update -y"
-    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t -t ${SSH_USER}@${IP} "sudo -u root yum install -y xfsprogs mdadm unzip ed ntp postgresql time bc vim"
+    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -o StrictHostKeyChecking=no -t -t ${SSH_USER}@${IP} "sudo -u root yum update -y"
+    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t -t ${SSH_USER}@${IP} "sudo -u root yum install -y xfsprogs mdadm unzip ed ntp postgresql valgrind time bc vim"
     $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t -t ${SSH_USER}@${IP} "sudo -u root yum groupinstall -y 'Development Tools'"
+    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t -t ${SSH_USER}@${IP} "sudo -u root yum install -y numactl-devel"
+
   }
 
   for IP in $IPS; do
@@ -364,14 +373,14 @@ create_hostfiles() {
   J=0
   for I in $(seq 0 $(expr $COUNT - 1)); do
     if [[ $I -eq 0 ]]; then
-      echo "${EXTERNAL_IPS[$I]} mdw" >> ${WORK_DIR}/external-hosts
+      echo "${INTERNAL_IPS[$I]} mdw" >> ${WORK_DIR}/external-hosts
       echo "${INTERNAL_IPS[$I]} mdw" >> ${WORK_DIR}/internal-hosts
 
       continue
     fi
 
     if [[ $I -eq 1 ]] && [[ $STANDBY -eq 1 ]]; then
-      echo "${EXTERNAL_IPS[$I]} smdw" >> ${WORK_DIR}/external-hosts
+      echo "${INTERNAL_IPS[$I]} smdw" >> ${WORK_DIR}/external-hosts
       echo "${INTERNAL_IPS[$I]} smdw" >> ${WORK_DIR}/internal-hosts
 
       continue
@@ -379,13 +388,13 @@ create_hostfiles() {
 
     if [[ $I -ge $(expr 1 + $STANDBY + $SEGMENT_HOSTS) ]]; then
       ETL_NUMBER=$(expr $I - $STANDBY - $SEGMENT_HOSTS)
-      echo "${EXTERNAL_IPS[$I]} etl${ETL_NUMBER}" >> ${WORK_DIR}/external-hosts
+      echo "${INTERNAL_IPS[$I]} etl${ETL_NUMBER}" >> ${WORK_DIR}/external-hosts
       echo "${INTERNAL_IPS[$I]} etl${ETL_NUMBER}" >> ${WORK_DIR}/internal-hosts
 
       continue
     fi
 
-    echo "${EXTERNAL_IPS[$I]} sdw$(expr $I - $STANDBY)" >> ${WORK_DIR}/external-hosts
+    echo "${INTERNAL_IPS[$I]} sdw$(expr $I - $STANDBY)" >> ${WORK_DIR}/external-hosts
     echo "${INTERNAL_IPS[$I]} sdw$(expr $I - $STANDBY)" >> ${WORK_DIR}/internal-hosts
   done
 }
@@ -446,6 +455,12 @@ wait_until_status() {
 }
 
 wait_until_check_ok() {
+  if [ -n "$SKIP_STATUS_CHECK" ]; then
+    echo "SKIPPING STATUS CHECK: waiting 30 seconds"
+    sleep 30
+    return
+  fi
+
   local STATUS=$1
 
   log "Waiting for instances to pass status checks"

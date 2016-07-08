@@ -90,7 +90,10 @@ export HOST=\"$HOST\"
   log "Setting up $HOST ($IP)"
 
   for S in ${BASEDIR}/??_*.sh; do
-    echo -e "$EXPORTS;\n$(cat "$S");\nexit" | $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t -t ${SSH_USER}@${IP} 'sudo -u root bash -s' 2>&1
+    echo -e "$EXPORTS;\n$(cat "$S");\nexit" | \
+      $SSH_PROXY ssh -i "${AWS_KEYPAIR}" \
+      -o StrictHostKeyChecking=no -t -t \
+      ${SSH_USER}@${IP} 'sudo -u root bash -s' 2>&1
   done
 }
 
@@ -108,8 +111,20 @@ ensure_connectivity() {
   while read -u 3 LINE; do
     local IP=$(echo $LINE | cut -d' ' -f1)
 
-    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t ${SSH_USER}@${IP} "sudo -u root echo -e \"$ROOT_KEYS\" >> ~root/.ssh/authorized_keys"
-    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t ${SSH_USER}@${IP} "sudo -u gpadmin echo -e \"$GPADMIN_KEYS\" >> ~gpadmin/.ssh/authorized_keys"
+    # use heredocs to avoid strange ssh behavior around double quotes
+
+    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t ${SSH_USER}@${IP} <<COMMAND
+    sudo -u root bash -c "echo -e '$ROOT_KEYS' >> ~root/.ssh/authorized_keys"
+COMMAND
+
+    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t ${SSH_USER}@${IP} <<COMMAND
+    sudo -u gpadmin bash -c "echo -e '$GPADMIN_KEYS' >> ~gpadmin/.ssh/authorized_keys"
+COMMAND
+
+    $SSH_PROXY ssh -i "${AWS_KEYPAIR}" -t ${SSH_USER}@${IP} <<COMMAND
+    sudo -u root bash -c "sed -e 's/,command=\".*\"//g' -i ~root/.ssh/authorized_keys"
+COMMAND
+
   done 3< $EXTERNAL_HOSTS
 }
 
