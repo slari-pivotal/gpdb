@@ -54,7 +54,7 @@ Pulse Release Candidate (RC) builds
                           -w pulse-releng \
                           -p GPDB-4_3_x-rcbuilds-1repo \
                           -e \
-                          -b "aix5_ppc_32 aix5_ppc_64 hpux_ia64 osx106_x86 rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 rhel7_x86_64 sol10_sparc_32 sol10_sparc_64 sol10_x86_32 sol10_x86_64 suse10_x86_64 suse11_x86_64 win32"
+                          -b "aix5_ppc_32 aix5_ppc_64 hpux_ia64 osx106_x86 rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 rhel7_x86_64 sol10_sparc_32 sol10_sparc_64 sol10_x86_32 sol10_x86_64 suse11_x86_64 win32"
 
   The following script can be used to trigger the builds.  Note the -r
   option references the git tag corresponding to the RC build attempt.
@@ -100,7 +100,7 @@ Customer specific (Morgan Stanley)
                             -w pulse-releng \
                             -p GPDB-4_3_x-rcbuilds-1repo \
                             -d \
-                            -b "aix5_ppc_32 aix5_ppc_64 hpux_ia64 osx106_x86 rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 rhel7_x86_64 sol10_sparc_32 sol10_sparc_64 sol10_x86_32 sol10_x86_64 suse10_x86_64 suse11_x86_64 win32"
+                            -b "aix5_ppc_32 aix5_ppc_64 hpux_ia64 osx106_x86 rhel5_x86_32 rhel5_x86_64 rhel6_x86_64 rhel7_x86_64 sol10_sparc_32 sol10_sparc_64 sol10_x86_32 sol10_x86_64 suse11_x86_64 win32"
       
       build_stage_switch.py -U techops -P ZumVPg9uAYVAD4AyyEsm \
                             -w pulse-releng \

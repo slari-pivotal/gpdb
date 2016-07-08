@@ -104,7 +104,7 @@ if [ "${BRANCH}" = "main" ]; then
     if [ "${MPP_ARCH}" = "SOL-x86_64" ] ; then
         RHOME="/releng/lib/R"
     fi
-    if [ "${MPP_ARCH}" = "SuSE10-x86_64" ] ; then
+    if [ "${MPP_ARCH}" = "SuSE11-x86_64" ] ; then
         RHOME="/releng/R-2.6.1/lib64/R/"
     fi
 

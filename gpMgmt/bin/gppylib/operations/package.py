@@ -436,7 +436,7 @@ class ValidateInstallPackage(Operation):
         if not IsVersionCompatible(self.gppkg).run():
             raise GpdbVersionError
 
-        # TODO: AK: I've changed our use of the OS tag from 'Linux' to 'rhel5' or 'suse10'.
+        # TODO: AK: I've changed our use of the OS tag from 'Linux' to 'rhel5' or 'suse11'.
         # So, the two lines below will not work properly.
         #if self.gppkg.os.lower() != platform.system().lower():
         #    raise OSCompatibilityError(self.gppkg.os, platform.system().lower())

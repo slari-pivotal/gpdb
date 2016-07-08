@@ -129,7 +129,7 @@ ISCONFIG=../GNUmakefile
 ## On these platforms, we do the full build including the server. On other
 ## platforms, we do a client-only build.
 ##
-SERVER_PLATFORMS=rhel5_x86_32 rhel5_x86_64 suse10_x86_64 linux_x86_64 osx106_x86
+SERVER_PLATFORMS=rhel5_x86_32 rhel5_x86_64 suse11_x86_64 linux_x86_64 osx106_x86
 
 #---------------------------------------------------------------------
 # GPPKG
@@ -139,7 +139,7 @@ SERVER_PLATFORMS=rhel5_x86_32 rhel5_x86_64 suse10_x86_64 linux_x86_64 osx106_x86
 ## Support gppkg platforms
 ##
 
-GPPKG_PLATFORMS=rhel5_x86_64 rhel6_x86_64 suse10_x86_64 suse11_x86_64
+GPPKG_PLATFORMS=rhel5_x86_64 rhel6_x86_64 suse11_x86_64 suse11_x86_64
 
 #---------------------------------------------------------------------
 # Compiler options
@@ -183,7 +183,6 @@ rhel5_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --wi
 rhel6_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml
 sol10_x86_64_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
 sol_x86_64_CONFIGFLAGS=--without-libcurl
-suse10_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost ${ORCA_CONFIG} --with-libxml
 suse11_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost ${ORCA_CONFIG} --with-libxml
 linux_x86_64_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
 osx106_x86_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml

@@ -62,7 +62,7 @@ add_platform_check() {
 		EOF_HEADER
 	fi
 	
-	if [ "${MPP_ARCH}" = "SuSE10-x86_64" ] ; then
+	if [ "${MPP_ARCH}" = "SuSE11-x86_64" ] ; then
 		cat <<-EOF_HEADER
 			platform="SuSE"
 			arch=x86_64
