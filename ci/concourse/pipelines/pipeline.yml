@@ -15,7 +15,7 @@ groups:
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging_centos
   - gpdb_sync_to_dist_centos
-  - MU_backup_centossmoke_centos
+  - MU_backup_smoke_centos
   - MU_backup_centos
   - manual_testing_centos
   - push_to_pivnet_manually_centos
@@ -31,7 +31,7 @@ groups:
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging_centos
   - gpdb_sync_to_dist_centos
-  - MU_backup_centossmoke_centos
+  - MU_backup_smoke_centos
   - MU_backup_centos
   - manual_testing_centos
   - push_to_pivnet_manually_centos
@@ -314,7 +314,7 @@ jobs:
       passed: *Stage2Jobs
       trigger: true
   - task: gpdb_src_packaging_centos
-    file: gpdb_src/ci/concourse/gpdb_src_packaging_centos.yml
+    file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
     params:
       GPDB_SRC_TAR_GZ: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
   - put: gpdb_src_tar_gz
@@ -337,7 +337,7 @@ jobs:
       trigger: true
   - aggregate:
     - task: gpdb_rhel5_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist_centos.yml
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       params:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
@@ -345,7 +345,7 @@ jobs:
         FILE_TO_UPLOAD: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist_centos.yml
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       input_mapping:
         installer_rhel5_gpdb: installer_appliance_rhel5_gpdb
       params:
@@ -355,7 +355,7 @@ jobs:
         FILE_TO_UPLOAD: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_src_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist_centos.yml
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       input_mapping:
         installer_rhel5_gpdb: gpdb_src_tar_gz
       params:
@@ -383,7 +383,7 @@ jobs:
 # initials of the team that owns the suite (e.g. MU = Management Utilities)
 # and tag is the tag passed to behave.
 
-- name: MU_backup_centossmoke_centos
+- name: MU_backup_smoke_centos
   public: true
   plan:
   - aggregate:
@@ -393,7 +393,7 @@ jobs:
       passed: &Stage3Jobs
       - gpdb_packaging_centos
       trigger: true
-  - task: MU_backup_centossmoke_centos
+  - task: MU_backup_smoke_centos
     file: gpdb_src/ci/concourse/behave_tests.yml
     params:
       BEHAVE_TAGS: backupsmoke
