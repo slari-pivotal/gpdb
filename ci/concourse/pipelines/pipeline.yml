@@ -126,8 +126,8 @@ jobs:
     - get: gpdb_src
       trigger: true
     - get: centos511-java7-gpdb-dev-image
-  - task: build_gpdb
-    file: gpdb_src/ci/concourse/build_gpdb.yml
+  - task: compile_gpdb
+    file: gpdb_src/ci/concourse/compile_gpdb.yml
     image: centos511-java7-gpdb-dev-image
     params:
       TARGET_OS: centos
