@@ -17,7 +17,8 @@ groups:
   - gpdb_sync_to_dist_centos
   - MU_backup_smoke_centos
   - MU_backup_centos
-  - manual_testing_centos
+  - manual_testing_on_pulse_centos
+  - manual_appliance_testing_centos
   - push_to_pivnet_manually_centos
 - name: all
   jobs:
@@ -34,7 +35,8 @@ groups:
   - gpdb_sync_to_dist_centos
   - MU_backup_smoke_centos
   - MU_backup_centos
-  - manual_testing_centos
+  - manual_testing_on_pulse_centos
+  - manual_appliance_testing_centos
   - push_to_pivnet_manually_centos
 - name: SLES
   jobs:
