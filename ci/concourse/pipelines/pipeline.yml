@@ -63,14 +63,15 @@ resources:
     repository: pivotaldata/sles11sp4-toolchain
     username: {{docker_username}}
     password: {{docker_password}}
-- name: bin_gpdb
+
+- name: bin_gpdb_centos
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: bin_gpdb/bin_gpdb.tar.gz
+    versioned_file: bin_gpdb_centos/bin_gpdb.tar.gz
 
 - name: bin_gpdb_sles
   type: s3
@@ -81,14 +82,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: bin_gpdb_sles/bin_gpdb.tar.gz
 
-- name: sync_tools_gpdb
+- name: sync_tools_gpdb_centos
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+    versioned_file: sync_tools_gpdb_centos/sync_tools_gpdb.tar.gz
 
 - name: sync_tools_gpdb_sles
   type: s3
@@ -159,10 +160,10 @@ jobs:
     image: centos511-java7-gpdb-dev-image
     params:
       TARGET_OS: centos
-  - put: bin_gpdb
+  - put: bin_gpdb_centos
     params:
       from: bin_gpdb/bin_gpdb.tar.gz
-  - put: sync_tools_gpdb
+  - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
 
@@ -191,7 +192,7 @@ jobs:
 # If a new test is added to this stage, add the name of the job to the list of
 # stage 2 jobs under the following line in the first job in the stage 3 section:
 #
-#     passed: &Stage2Jobs
+#     passed: &Stage2JobsCentos
 
 - name: icb_orca_centos
   public: true
@@ -200,8 +201,10 @@ jobs:
     - get: gpdb_src
       passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
       passed: [compile_gpdb_centos]
     - get: bin_gpdb
+      resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
   - task: ic_gpdb
@@ -217,8 +220,10 @@ jobs:
     - get: gpdb_src
       passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
       passed: [compile_gpdb_centos]
     - get: bin_gpdb
+      resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
   - task: ic_gpdb
@@ -234,8 +239,10 @@ jobs:
     - get: gpdb_src
       passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
       passed: [compile_gpdb_centos]
     - get: bin_gpdb
+      resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
   - task: ic_gpdb
@@ -251,8 +258,10 @@ jobs:
     - get: gpdb_src
       passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
       passed: [compile_gpdb_centos]
     - get: bin_gpdb
+      resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
   - task: ic_gpdb
@@ -268,8 +277,10 @@ jobs:
     - get: gpdb_src
       passed: [compile_gpdb_centos]
     - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
       passed: [compile_gpdb_centos]
     - get: bin_gpdb
+      resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
   - task: MU_check_centos
@@ -284,7 +295,8 @@ jobs:
     - get: gpdb_src
       passed: [icg_planner_centos]
     - get: bin_gpdb
-      passed: &Stage2Jobs
+      resource: bin_gpdb_centos
+      passed: &Stage2JobsCentos
       - icb_orca_centos
       - icb_planner_centos
       - icg_orca_centos
@@ -321,7 +333,8 @@ jobs:
     - get: gpdb_src
       passed: [icg_planner_centos]
     - get: bin_gpdb
-      passed: *Stage2Jobs
+      resource: bin_gpdb_centos
+      passed: *Stage2JobsCentos
       trigger: true
   - task: remove_files_for_rc
     file: gpdb_src/ci/concourse/remove_files_for_rc.yml
@@ -359,7 +372,7 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: *Stage2Jobs
+      passed: *Stage2JobsCentos
       trigger: true
   - task: gpdb_src_packaging_centos
     file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
@@ -422,7 +435,8 @@ jobs:
 #    - get: gpdb_src
 #      passed: [compile_gpdb_centos]
 #    - get: bin_gpdb
-#      passed: *Stage3Jobs
+#      resource: bin_gpdb_centos
+#      passed: *Stage3JobsCentos
 #      trigger: true
 #
 # This uses Yaml pointer syntax; for details, see http://tinyurl.com/gprkjoq
@@ -438,7 +452,8 @@ jobs:
     - get: gpdb_src
       passed: [gpdb_packaging_centos]
     - get: bin_gpdb
-      passed: &Stage3Jobs
+      resource: bin_gpdb_centos
+      passed: &Stage3JobsCentos
       - gpdb_packaging_centos
       trigger: true
   - task: MU_backup_smoke_centos
@@ -453,7 +468,8 @@ jobs:
     - get: gpdb_src
       passed: [gpdb_packaging_centos]
     - get: bin_gpdb
-      passed: *Stage3Jobs
+      resource: bin_gpdb_centos
+      passed: *Stage3JobsCentos
       trigger: true
   - task: MU_backup_centos
     file: gpdb_src/ci/concourse/behave_tests.yml
