@@ -482,7 +482,18 @@ jobs:
     params:
       BEHAVE_TAGS: backup
 
-- name: manual_testing_centos
+- name: manual_testing_on_pulse_centos
+  public: true
+  plan:
+  - get: installer_rhel5_gpdb
+    passed: [gpdb_sync_to_dist_centos]
+  - task: ask_teams_to_kick_off_jobs
+    config:
+      platform: linux
+      run:
+        path: /bin/false
+
+- name: manual_appliance_testing_centos
   public: true
   plan:
   - get: installer_appliance_rhel5_gpdb
