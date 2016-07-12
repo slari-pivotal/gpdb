@@ -1,6 +1,6 @@
 #!/bin/sh
 
-installPath=/usr/local/GP-4.3.8.2.GE1
+installPath=/usr/local/GP-%%GP_VERSION%%
 install_log=$( pwd )/install-$( date +%d%m%y-%H%M%S ).log
 
 cat > ${install_log} <<-EOF
@@ -9,8 +9,8 @@ cat > ${install_log} <<-EOF
                     Appliance Automated Installer
 ----------------------------------------------------------------------
 Timestamp ......... : $( date )
-Product Installer.. : greenplum-db-appliance-4.3.8.2.GE1-build-1-RHEL5-x86_64
-Product Version ... : 4.3.8.2.GE1
+Product Installer.. : $( basename $0 )
+Product Version ... : $( echo $installPath | cut -d "-" -f 2 )
 Build Number ...... : 
 Install Dir ....... : ${installPath}
 Install Log file .. : ${install_log}

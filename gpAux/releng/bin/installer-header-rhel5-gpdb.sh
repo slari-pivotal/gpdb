@@ -800,57 +800,61 @@ EOF
         esac
 done
 
-installPath=
-defaultInstallPath=/usr/local/greenplum-db
-while [ -z "${installPath}" ] ; do
-    cat <<-EOF
+installPath=/usr/local/greenplum-db-%%GP_VERSION%%
+defaultinstallPath=${installPath}
+user_specified_installPath=
 
-********************************************************************************
-Provide the installation path for Greenplum Database or press ENTER to 
-accept the default installation path: /usr/local/greenplum-db
-********************************************************************************
+while [ -z "${user_specified_installPath}" ] ; do
+	cat <<-EOF
+	
+		********************************************************************************
+		Provide the installation path for Greenplum Database or press ENTER to 
+		accept the default installation path: $defaultinstallPath
+		********************************************************************************
+	
+	EOF
 
-EOF
+    read user_specified_installPath leftover
 
-    read installPath leftover
-
-    if [ -z "${installPath}" ] ; then
-        installPath=${defaultInstallPath}
+    if [ -z "${user_specified_installPath}" ] ; then
+        user_specified_installPath=${installPath}
     fi
 
-    if echo "${installPath}" | grep ' ' > /dev/null; then
-    cat <<-EOF
+    if [ -n "${leftover}" ] ; then
+	    cat <<-EOF
+			
+			********************************************************************************
+			WARNING: Spaces are not allowed in the installation path.  Please specify
+			         an installation path without an embedded space.
+			********************************************************************************
+			
+		EOF
+        user_specified_installPath=
+        continue
+    fi
 
-********************************************************************************
-WARNING: Spaces are not allowed in the installation path.  Please specify
-         an installation path without an embedded space.
-********************************************************************************
-
-EOF
-                installPath=
-    else
     pathVerification=
-    while [ -z "${pathVerification}" ] ; do
-        cat <<-EOF
-
-********************************************************************************
-Install Greenplum Database into <${installPath}>? [yes|no]
-********************************************************************************
-
-EOF
-
-        read pathVerification leftover
-
-        case $pathVerification in
-            [yY] | [yY][eE][sS])
-                pathVerification=1
-                ;;
-            [nN] | [nN][oO])
-                installPath=
-               ;;
-        esac
-    done
-fi
+	while [ -z "${pathVerification}" ] ; do
+	    cat <<-EOF
+			
+			********************************************************************************
+			Install Greenplum Database into ${user_specified_installPath}? [yes|no]
+			********************************************************************************
+			
+		EOF
+	
+	    read pathVerification leftover
+	
+	    case $pathVerification in
+	        [yY] | [yY][eE][sS])
+	            pathVerification=1
+                installPath=${user_specified_installPath}
+	            ;;
+	        [nN] | [nN][oO])
+	            user_specified_installPath=
+	           ;;
+	    esac
+	done
 done
 
 if [ ! -d "${installPath}" ] ; then
@@ -860,7 +864,7 @@ if [ ! -d "${installPath}" ] ; then
 
 ********************************************************************************
 ${installPath} does not exist.
-Create ${installPath} ? [yes|no ]
+Create ${installPath} ? [yes|no]
 (Selecting no will exit the installer)
 ********************************************************************************
 
