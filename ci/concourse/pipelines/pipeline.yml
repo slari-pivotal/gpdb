@@ -22,6 +22,7 @@ groups:
 - name: all
   jobs:
   - compile_gpdb_centos
+  - compile_gpdb_sles
   - icb_orca_centos
   - icb_planner_centos
   - icg_orca_centos
@@ -36,7 +37,8 @@ groups:
   - manual_testing_centos
   - push_to_pivnet_manually_centos
 - name: SLES
-  jobs: []
+  jobs:
+  - compile_gpdb_sles
 
 ## ======================================================================
 ## resources
@@ -55,6 +57,12 @@ resources:
     repository: pivotaldata/centos511-java7-gpdb-dev-image
     username: {{docker_username}}
     password: {{docker_password}}
+- name: sles11sp4-toolchain
+  type: docker-image
+  source:
+    repository: pivotaldata/sles11sp4-toolchain
+    username: {{docker_username}}
+    password: {{docker_password}}
 - name: bin_gpdb
   type: s3
   source:
@@ -63,6 +71,16 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: bin_gpdb/bin_gpdb.tar.gz
+
+- name: bin_gpdb_sles
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: bin_gpdb_sles/bin_gpdb.tar.gz
+
 - name: sync_tools_gpdb
   type: s3
   source:
@@ -71,6 +89,16 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+
+- name: sync_tools_gpdb_sles
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: sync_tools_gpdb_sles/sync_tools_gpdb.tar.gz
+
 - name: installer_rhel5_gpdb
   type: s3
   source:
@@ -135,6 +163,26 @@ jobs:
     params:
       from: bin_gpdb/bin_gpdb.tar.gz
   - put: sync_tools_gpdb
+    params:
+      from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+
+- name: compile_gpdb_sles
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      trigger: true
+    - get: sles11sp4-toolchain
+  - task: build_gpdb
+    file: gpdb_src/ci/concourse/compile_gpdb.yml
+    image: sles11sp4-toolchain
+    privileged: true
+    params:
+      TARGET_OS: sles
+  - put: bin_gpdb_sles
+    params:
+      from: bin_gpdb/bin_gpdb.tar.gz
+  - put: sync_tools_gpdb_sles
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
 
