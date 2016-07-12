@@ -51,12 +51,14 @@ resources:
     branch: 4.3_STABLE
     private_key: {{private-repo-key}}
     uri: git@github.com:greenplum-db/gpdb4.git
+
 - name: centos511-java7-gpdb-dev-image
   type: docker-image
   source:
     repository: pivotaldata/centos511-java7-gpdb-dev-image
     username: {{docker_username}}
     password: {{docker_password}}
+
 - name: sles11sp4-toolchain
   type: docker-image
   source:
@@ -108,6 +110,7 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
+
 - name: installer_appliance_rhel5_gpdb
   type: s3
   source:
@@ -116,6 +119,7 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
+
 - name: gpdb_src_tar_gz
   type: s3
   source:
@@ -124,6 +128,7 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
+
 - name: installer_rhel5_gpdb_rc
   type: s3
   source:
@@ -132,6 +137,7 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-4.3.9.0-build-1-RHEL5-x86_64.zip
+
 - name: installer_appliance_rhel5_gpdb_rc
   type: s3
   source:
