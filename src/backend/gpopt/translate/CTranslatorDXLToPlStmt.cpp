@@ -213,7 +213,8 @@ CTranslatorDXLToPlStmt::InitTranslators()
 PlannedStmt *
 CTranslatorDXLToPlStmt::PplstmtFromDXL
 	(
-	const CDXLNode *pdxln
+	const CDXLNode *pdxln,
+	const Query *pquery
 	)
 {
 	GPOS_ASSERT(NULL != pdxln);
@@ -250,7 +251,7 @@ CTranslatorDXLToPlStmt::PplstmtFromDXL
 
 	// store partitioned table indexes in planned stmt
 	pplstmt->queryPartOids = m_pctxdxltoplstmt->PlPartitionedTables();
-	pplstmt->canSetTag = true;
+	pplstmt->canSetTag = pquery->canSetTag;
 	pplstmt->relationOids = plOids;
 	pplstmt->numSelectorsPerScanId = m_pctxdxltoplstmt->PlNumPartitionSelectors();
 

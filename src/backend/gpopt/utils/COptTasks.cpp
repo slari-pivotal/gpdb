@@ -640,7 +640,8 @@ COptTasks::Pplstmt
 	(
 	IMemoryPool *pmp,
 	CMDAccessor *pmda,
-	const CDXLNode *pdxln
+	const CDXLNode *pdxln,
+	const Query *pquery
 	)
 {
 
@@ -666,7 +667,7 @@ COptTasks::Pplstmt
 	
 	// translate DXL -> PlannedStmt
 	CTranslatorDXLToPlStmt trdxltoplstmt(pmp, pmda, &ctxdxltoplstmt, gpdb::UlSegmentCountGP());
-	return trdxltoplstmt.PplstmtFromDXL(pdxln);
+	return trdxltoplstmt.PplstmtFromDXL(pdxln, pquery);
 }
 
 
@@ -1020,7 +1021,7 @@ COptTasks::PvOptimizeTask
 			// translate DXL->PlStmt only when needed
 			if (poctx->m_fGeneratePlStmt)
 			{
-				poctx->m_pplstmt = (PlannedStmt *) gpdb::PvCopyObject(Pplstmt(pmp, &mda, pdxlnPlan));
+				poctx->m_pplstmt = (PlannedStmt *) gpdb::PvCopyObject(Pplstmt(pmp, &mda, pdxlnPlan, ptrquerytodxl->Pquery()));
 			}
 
 			CStatisticsConfig *pstatsconf = pocconf->Pstatsconf();
@@ -1269,7 +1270,7 @@ COptTasks::PvPlstmtFromDXLTask
 
 		// translate DXL -> PlannedStmt
 		CTranslatorDXLToPlStmt trdxltoplstmt(pmp, amda.Pmda(), &ctxdxlplstmt, gpdb::UlSegmentCountGP());
-		PlannedStmt *pplstmt = trdxltoplstmt.PplstmtFromDXL(pdxlnOriginal);
+		PlannedStmt *pplstmt = trdxltoplstmt.PplstmtFromDXL(pdxlnOriginal, poctx->m_pquery);
 		if (optimizer_print_plan)
 		{
 			elog(NOTICE, "Plstmt: %s", gpdb::SzNodeToString(pplstmt));
