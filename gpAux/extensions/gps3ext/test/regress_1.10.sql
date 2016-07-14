@@ -22,7 +22,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- ========
 
@@ -32,7 +34,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- ========
 
@@ -42,7 +46,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- ========
 
@@ -52,7 +58,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- ========
 
@@ -62,7 +70,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- ========
 
@@ -72,7 +82,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- ========
 
@@ -82,7 +94,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- ========
 
@@ -92,7 +106,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- ========
 
@@ -102,7 +118,9 @@ create READABLE external table s3example (date text, time text, open float, high
 
 \d s3example
 
+SELECT count(*) FROM s3example;
 SELECT sum(open) FROM s3example;
+SELECT avg(open) FROM s3example;
 
 -- =======
 -- CLEANUP

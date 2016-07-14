@@ -246,28 +246,12 @@ bool S3ExtBase::ValidateURL() {
 
     ibegin = find_Nth(url, 3, "/");
     iend = find_Nth(url, 4, "/");
-    if (ibegin == string::npos) {
+    if ((iend == string::npos) || (ibegin == string::npos)) {
         return false;
     }
-    // s3://s3-region.amazonaws.com/bucket
-    if (iend == string::npos) {
-        this->bucket = url.substr(ibegin + 1, url.length() - ibegin);
-        this->prefix = "";
-        return true;
-    }
-
     this->bucket = url.substr(ibegin + 1, iend - ibegin - 1);
 
-    // s3://s3-region.amazonaws.com/bucket/
-    if (iend == url.length()) {
-        this->prefix = "";
-        return true;
-    }
-
-    ibegin = find_Nth(url, 4, "/");
-    // s3://s3-region.amazonaws.com/bucket/prefix
-    // s3://s3-region.amazonaws.com/bucket/prefix/whatever
-    this->prefix = url.substr(ibegin + 1, url.length() - ibegin - 1);
+    this->prefix = url.substr(iend + 1, url.length() - iend - 1);
 
     return true;
 }

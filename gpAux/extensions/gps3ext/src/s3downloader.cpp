@@ -758,15 +758,10 @@ xmlParserCtxtPtr DoGetXML(const string &region, const string &url,
     header->Add(X_AMZ_CONTENT_SHA256, "UNSIGNED-PAYLOAD");
 
     std::stringstream query;
-    if (!marker.empty()) {
-        query << "marker=" << marker;
-        if (!prefix.empty()) {
-            query << "&";
-        }
+    if (marker != "") {
+        query << "marker=" << marker << "&";
     }
-    if (!prefix.empty()) {
-        query << "prefix=" << prefix;
-    }
+    query << "prefix=" << prefix;
 
     if (!SignRequestV4("GET", header, region, p.Path(), query.str(), cred)) {
         S3ERROR("Failed to sign in DoGetXML()");
@@ -920,22 +915,20 @@ ListBucketResult *ListBucket(const string &schema, const string &region,
     xmlParserCtxtPtr xmlcontext = NULL;
 
     do {
-        url << schema << "://" << host.str() << "/" << bucket;
+        if (prefix != "") {
+            url << schema << "://" << host.str() << "/" << bucket << "?";
 
-        if (!marker.empty() || !prefix.empty()) {
-            url << "?";
-        }
-
-        if (!marker.empty()) {
-            url << "marker=" << marker;
-        }
-
-        if (!prefix.empty()) {
-            if (!marker.empty()) {
-                url << "&";
+            if (marker != "") {
+                url << "marker=" << marker << "&";
             }
 
             url << "prefix=" << prefix;
+        } else {
+            url << schema << "://" << bucket << "." << host.str() << "?";
+
+            if (marker != "") {
+                url << "marker=" << marker;
+            }
         }
 
         xmlcontext = DoGetXML(region, url.str(), prefix, cred, marker);

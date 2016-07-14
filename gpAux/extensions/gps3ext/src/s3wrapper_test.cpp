@@ -156,32 +156,6 @@ TEST(ExtWrapper, ValidateURL_normal) {
 
     ASSERT_TRUE(myData->ValidateURL());
     EXPECT_STREQ("us-west-2", myData->get_region().c_str());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("dataset1/normal", myData->get_prefix().c_str());
-
-    delete myData;
-}
-
-TEST(ExtWrapper, ValidateURL_NoPrefixAndSlash) {
-    S3ExtBase *myData;
-    myData = new S3Reader(
-        "s3://s3-us-west-2.amazonaws.com/s3test.pivotal.io");
-
-    ASSERT_TRUE(myData->ValidateURL());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("", myData->get_prefix().c_str());
-
-    delete myData;
-}
-
-TEST(ExtWrapper, ValidateURL_NoPrefix) {
-    S3ExtBase *myData;
-    myData = new S3Reader(
-        "s3://s3-us-west-2.amazonaws.com/s3test.pivotal.io/");
-
-    ASSERT_TRUE(myData->ValidateURL());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("", myData->get_prefix().c_str());
 
     delete myData;
 }
@@ -193,8 +167,6 @@ TEST(ExtWrapper, ValidateURL_default) {
 
     ASSERT_TRUE(myData->ValidateURL());
     EXPECT_STREQ("external-1", myData->get_region().c_str());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("dataset1/normal", myData->get_prefix().c_str());
 
     delete myData;
 }
@@ -206,8 +178,6 @@ TEST(ExtWrapper, ValidateURL_useast1) {
 
     ASSERT_TRUE(myData->ValidateURL());
     EXPECT_STREQ("external-1", myData->get_region().c_str());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("dataset1/normal", myData->get_prefix().c_str());
 
     delete myData;
 }
@@ -219,8 +189,6 @@ TEST(ExtWrapper, ValidateURL_eucentral1) {
 
     ASSERT_TRUE(myData->ValidateURL());
     EXPECT_STREQ("eu-central-1", myData->get_region().c_str());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("dataset1/normal", myData->get_prefix().c_str());
 
     delete myData;
 }
@@ -232,8 +200,6 @@ TEST(ExtWrapper, ValidateURL_eucentral11) {
 
     ASSERT_TRUE(myData->ValidateURL());
     EXPECT_STREQ("eu-central-1", myData->get_region().c_str());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("dataset1/normal", myData->get_prefix().c_str());
 
     delete myData;
 }
@@ -246,8 +212,6 @@ TEST(ExtWrapper, ValidateURL_apnortheast2) {
 
     ASSERT_TRUE(myData->ValidateURL());
     EXPECT_STREQ("ap-northeast-2", myData->get_region().c_str());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("dataset1/normal", myData->get_prefix().c_str());
 
     delete myData;
 }
@@ -260,8 +224,6 @@ TEST(ExtWrapper, ValidateURL_apnortheast21) {
 
     ASSERT_TRUE(myData->ValidateURL());
     EXPECT_STREQ("ap-northeast-2", myData->get_region().c_str());
-    EXPECT_STREQ("s3test.pivotal.io", myData->get_bucket().c_str());
-    EXPECT_STREQ("dataset1/normal", myData->get_prefix().c_str());
 
     delete myData;
 }
