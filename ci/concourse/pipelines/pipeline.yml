@@ -27,7 +27,9 @@ groups:
   - icb_orca_centos
   - icb_planner_centos
   - icg_orca_centos
+  - icg_orca_sles
   - icg_planner_centos
+  - icg_planner_sles
   - MU_check_centos
   - gpdb_packaging_centos
   - gpdb_rc_packaging_centos
@@ -41,6 +43,8 @@ groups:
 - name: SLES
   jobs:
   - compile_gpdb_sles
+  - icg_orca_sles
+  - icg_planner_sles
 
 ## ======================================================================
 ## resources
@@ -259,6 +263,27 @@ jobs:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
 
+- name: icg_orca_sles
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [compile_gpdb_sles]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_sles
+      passed: [compile_gpdb_sles]
+    - get: bin_gpdb
+      resource: bin_gpdb_sles
+      passed: [compile_gpdb_sles]
+      trigger: true
+    - get: sles11sp4-toolchain
+  - task: ic_gpdb
+    file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: sles11sp4-toolchain
+    params:
+      MAKE_TEST_COMMAND: installcheck-good
+      BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+
 - name: icg_planner_centos
   public: true
   plan:
@@ -274,6 +299,27 @@ jobs:
       trigger: true
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    params:
+      MAKE_TEST_COMMAND: installcheck-good
+      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+
+- name: icg_planner_sles
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [compile_gpdb_sles]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_sles
+      passed: [compile_gpdb_sles]
+    - get: bin_gpdb
+      resource: bin_gpdb_sles
+      passed: [compile_gpdb_sles]
+      trigger: true
+    - get: sles11sp4-toolchain
+  - task: ic_gpdb
+    file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: sles11sp4-toolchain
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: ""

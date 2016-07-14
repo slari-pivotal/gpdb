@@ -2,6 +2,8 @@
 
 # Based on install_hawq_toolchain.bash in Pivotal-DataFabric/ci-infrastructure repo
 
+set -euxo pipefail
+
 setup_ssh_for_user() {
   local user="${1}"
   local home_dir
@@ -30,13 +32,25 @@ ssh_keyscan_for_user() {
 transfer_ownership() {
   chown -R gpadmin:gpadmin gpdb_src
   chown -R gpadmin:gpadmin /usr/local/greenplum-db-devel
+  chown -R gpadmin:gpadmin /home/gpadmin
 }
 
-setup_gpadmin_user() {
-  /usr/sbin/useradd gpadmin
+setup_gpadmin_user_on_centos() {
+  /usr/sbin/useradd gpadmin #by default, makes a gpadmin group for this user
   echo -e "password\npassword" | passwd gpadmin
   groupadd supergroup
   usermod -a -G supergroup gpadmin
+  setup_ssh_for_user gpadmin
+  transfer_ownership
+}
+
+setup_gpadmin_user_on_sles() {
+  /usr/sbin/useradd gpadmin
+  groupadd gpadmin
+  usermod -A gpadmin gpadmin
+  echo -e "password\npassword" | passwd gpadmin
+  groupadd supergroup
+  usermod -A supergroup gpadmin
   setup_ssh_for_user gpadmin
   transfer_ownership
 }
@@ -61,7 +75,13 @@ setup_sshd() {
 }
 
 _main() {
-  setup_gpadmin_user
+  TEST_OS="$1"
+
+  if [ "$TEST_OS" = "centos" ]; then
+    setup_gpadmin_user_on_centos
+  elif [ "$TEST_OS" = "sles" ]; then
+    setup_gpadmin_user_on_sles
+  fi
   setup_sshd
 }
 

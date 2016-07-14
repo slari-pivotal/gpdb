@@ -23,6 +23,7 @@ function install_sync_tools() {
 }
 
 function configure() {
+  source /opt/gcc_env.sh
   pushd gpdb_src/gpAux
       make INSTLOC=/usr/local/greenplum-db-devel ../GNUmakefile
   popd

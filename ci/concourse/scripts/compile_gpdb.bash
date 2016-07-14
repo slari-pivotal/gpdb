@@ -6,14 +6,12 @@ CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
 
 function prep_env_for_centos() {
-  source /opt/gcc_env.sh
   ln -s "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/python-2.6.2" /opt
   export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.39.x86_64
   export PATH=${JAVA_HOME}/bin:${PATH}
 }
 
 function prep_env_for_sles() {
-  source /opt/gcc_env.sh
   ln -s "$(pwd)/gpdb_src/gpAux/ext/suse11_x86_64/python-2.6.2" /opt
   export JAVA_HOME=/usr/lib64/jvm/java-1.6.0-openjdk-1.6.0
   export PATH=${JAVA_HOME}/bin:${PATH}
@@ -27,6 +25,7 @@ function make_sync_tools() {
 }
 
 function build_gpdb() {
+  source /opt/gcc_env.sh
   pushd gpdb_src/gpAux
     make GPROOT=/usr/local dist
   popd
