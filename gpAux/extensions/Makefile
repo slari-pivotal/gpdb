@@ -24,7 +24,7 @@ mkgphdfs:
 
 mks3ext:
 	PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -B -C gps3ext USE_PGXS=1 install
-	PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -B -C gps3ext -f Makefile.check USE_PGXS=1 install
+	PATH=$(INSTLOC)/bin:$(PATH) $(MAKE) -B -C gps3ext -f Makefile.chkcfg USE_PGXS=1 install
 
 # Use $JAVA_HOME if specified, otherwise look for java in the likely places.
 # Note that Darwin's JVM layout is pretty weird.  JDK 1.6 apears to be the

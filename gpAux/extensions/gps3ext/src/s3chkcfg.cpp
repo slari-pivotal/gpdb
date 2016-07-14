@@ -1,10 +1,10 @@
-#include "gpcheckcloud.h"
+#include "s3chkcfg.h"
 
 volatile bool QueryCancelPending = false;
 
 int main(int argc, char *argv[]) {
     int opt = 0;
-    bool ret = true;
+    int ret = 0;
 
     s3ext_logtype = STDERR_LOG;
     s3ext_loglevel = EXT_ERROR;
@@ -36,12 +36,12 @@ int main(int argc, char *argv[]) {
         break;
     }
 
-    if (ret) {
-        exit(EXIT_SUCCESS);
-    } else {
+    if (!ret) {
         fprintf(stderr, "Failed. Please check the arguments.\n\n");
         print_usage(stderr);
         exit(EXIT_FAILURE);
+    } else {
+        exit(EXIT_SUCCESS);
     }
 }
 
@@ -59,12 +59,12 @@ void print_template() {
 
 void print_usage(FILE *stream) {
     fprintf(stream,
-            "Usage: gpcheckcloud -c \"s3://endpoint/bucket/prefix "
+            "Usage: s3chkcfg -c \"s3://endpoint/bucket/prefix "
             "config=path_to_config_file\", to check the configuration.\n"
-            "       gpcheckcloud -d \"s3://endpoint/bucket/prefix "
+            "       s3chkcfg -d \"s3://endpoint/bucket/prefix "
             "config=path_to_config_file\", to download and output to stdout.\n"
-            "       gpcheckcloud -t, to show the config template.\n"
-            "       gpcheckcloud -h, to show this help.\n");
+            "       s3chkcfg -t, to show the config template.\n"
+            "       s3chkcfg -h, to show this help.\n");
 }
 
 bool read_config(const char *config) {
