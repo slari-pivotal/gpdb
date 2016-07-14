@@ -47,7 +47,7 @@ class S3Reader : public S3ExtBase {
 
    protected:
     virtual string getKeyURL(const string& key);
-    bool getNextDownloader();
+    void getNextDownloader();
 
     // private:
     unsigned int contentindex;
