@@ -224,6 +224,7 @@ jobs:
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+      TEST_OS: centos
 
 - name: icb_planner_centos
   public: true
@@ -243,6 +244,7 @@ jobs:
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      TEST_OS: centos
 
 - name: icg_orca_centos
   public: true
@@ -262,6 +264,7 @@ jobs:
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+      TEST_OS: centos
 
 - name: icg_orca_sles
   public: true
@@ -283,6 +286,7 @@ jobs:
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+      TEST_OS: sles
 
 - name: icg_planner_centos
   public: true
@@ -302,6 +306,7 @@ jobs:
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      TEST_OS: centos
 
 - name: icg_planner_sles
   public: true
@@ -323,6 +328,7 @@ jobs:
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      TEST_OS: sles
 
 - name: MU_check_centos
   public: true
