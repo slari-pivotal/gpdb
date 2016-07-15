@@ -37,11 +37,14 @@ groups:
   - gpdb_src_packaging_centos
   - gpdb_rc_packaging_sles
   - gpdb_sync_to_dist_centos
+  - gpdb_sync_to_dist_sles
   - MU_backup_smoke_centos
   - MU_backup_centos
   - manual_testing_on_pulse_centos
   - manual_appliance_testing_centos
+  - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_centos
+  - push_to_pivnet_manually_sles
 - name: SLES
   jobs:
   - compile_gpdb_sles
@@ -49,6 +52,9 @@ groups:
   - icg_planner_sles
   - gpdb_packaging_sles
   - gpdb_rc_packaging_sles
+  - gpdb_sync_to_dist_sles
+  - manual_testing_on_pulse_sles
+  - push_to_pivnet_manually_sles
 
 ## ======================================================================
 ## resources
@@ -555,6 +561,24 @@ jobs:
         FILE_TO_UPLOAD: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
         SSH_KEY: {{private-repo-key}}
 
+- name: gpdb_sync_to_dist_sles
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_packaging_sles]
+    - get: installer_sles11sp4_gpdb
+      passed: [gpdb_packaging_sles]
+      trigger: true
+  - task: gpdb_sles_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: installer_sles11sp4_gpdb/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
+      SSH_KEY: {{private-repo-key}}
+
 # Stage 4: Behave Tests
 
 # When creating a new job, to ensure that the test runs only when all stage 3
@@ -627,6 +651,17 @@ jobs:
       run:
         path: /bin/false
 
+- name: manual_testing_on_pulse_sles
+  public: true
+  plan:
+  - get: installer_sles11sp4_gpdb
+    passed: [gpdb_sync_to_dist_sles]
+  - task: ask_teams_to_kick_off_jobs
+    config:
+      platform: linux
+      run:
+        path: /bin/false
+
 - name: push_to_pivnet_manually_centos
   public: true
   plan:
@@ -634,6 +669,17 @@ jobs:
     passed: [gpdb_rc_packaging_centos]
   - get: installer_appliance_rhel5_gpdb_rc
     passed: [gpdb_rc_packaging_centos]
+  - task: ask_PMs_to_verify
+    config:
+      platform: linux
+      run:
+        path: /bin/false
+
+- name: push_to_pivnet_manually_sles
+  public: true
+  plan:
+  - get: installer_sles11sp4_gpdb_rc
+    passed: [gpdb_rc_packaging_sles]
   - task: ask_PMs_to_verify
     config:
       platform: linux
