@@ -32,8 +32,10 @@ groups:
   - icg_planner_sles
   - MU_check_centos
   - gpdb_packaging_centos
+  - gpdb_packaging_sles
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging_centos
+  - gpdb_rc_packaging_sles
   - gpdb_sync_to_dist_centos
   - MU_backup_smoke_centos
   - MU_backup_centos
@@ -45,6 +47,8 @@ groups:
   - compile_gpdb_sles
   - icg_orca_sles
   - icg_planner_sles
+  - gpdb_packaging_sles
+  - gpdb_rc_packaging_sles
 
 ## ======================================================================
 ## resources
@@ -117,6 +121,15 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
 
+- name: installer_sles11sp4_gpdb
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
+
 - name: installer_appliance_rhel5_gpdb
   type: s3
   source:
@@ -143,6 +156,15 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-4.3.9.0-build-1-RHEL5-x86_64.zip
+
+- name: installer_sles11sp4_gpdb_rc
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/greenplum-db-4.3.9.0-build-1-SLES11SP4-x86_64.zip
 
 - name: installer_appliance_rhel5_gpdb_rc
   type: s3
@@ -386,6 +408,27 @@ jobs:
       params:
         file: packaged_gpdb_appliance/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
 
+- name: gpdb_packaging_sles
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [icg_planner_sles]
+    - get: bin_gpdb
+      resource: bin_gpdb_sles
+      passed: &Stage2JobsSles
+      - icg_orca_sles
+      - icg_planner_sles
+      trigger: true
+  - task: gpdb_packaging_sles
+    file: gpdb_src/ci/concourse/gpdb_packaging.yml
+    params:
+      INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11sp4-gpdb.sh
+      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
+  - put: installer_sles11sp4_gpdb
+    params:
+      file: packaged_gpdb/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
+
 # Stage 3a: Packaging the Release Candidate (rc)
 
 - name: gpdb_rc_packaging_centos
@@ -427,6 +470,30 @@ jobs:
     - put: installer_appliance_rhel5_gpdb_rc
       params:
         file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.9.0-build-1-RHEL5-x86_64.zip
+
+- name: gpdb_rc_packaging_sles
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [icg_planner_sles]
+    - get: bin_gpdb
+      resource: bin_gpdb_sles
+      passed: *Stage2JobsSles
+      trigger: true
+  - task: remove_files_for_rc
+    file: gpdb_src/ci/concourse/remove_files_for_rc.yml
+  - task: gpdb_rc_packaging_sles
+    file: gpdb_src/ci/concourse/gpdb_packaging.yml
+    input_mapping:
+      bin_gpdb: rc_bin_gpdb
+    params:
+      INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11sp4-gpdb.sh
+      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      ADD_README_INSTALL: true
+  - put: installer_sles11sp4_gpdb_rc
+    params:
+      file: packaged_gpdb/greenplum-db-4.3.9.0-build-1-SLES11SP4-x86_64.zip
 
 # Stage 3b: Packaging of source code
 - name: gpdb_src_packaging_centos
