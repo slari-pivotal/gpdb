@@ -38,12 +38,16 @@ function gen_env(){
 	chmod a+x /opt/run_test.sh
 }
 
+function setup_gpadmin_user() {
+    ./gpdb_src/ci/concourse/scripts/setup_gpadmin_user.bash "$TEST_OS"
+}
+
 function _main() {
 
     install_sync_tools
     configure
     install_gpdb
-    ./gpdb_src/ci/concourse/scripts/setup_gpadmin_user.bash
+    setup_gpadmin_user
     make_cluster
     gen_env
     run_test
