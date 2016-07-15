@@ -345,6 +345,8 @@ jobs:
       trigger: true
   - task: MU_check_centos
     file: gpdb_src/ci/concourse/gpMgmt_check_gpdb.yml
+    params:
+      TEST_OS: centos
 
 # Stage 3: Packaging of installer file
 

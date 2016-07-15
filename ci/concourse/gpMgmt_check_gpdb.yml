@@ -11,5 +11,7 @@ inputs:
   - name: bin_gpdb
   - name: sync_tools_gpdb
 outputs:
+params:
+  TEST_OS: ""
 run:
   path: gpdb_src/ci/concourse/scripts/gpMgmt_check_gpdb.bash
