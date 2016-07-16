@@ -3332,7 +3332,6 @@ Feature: Validate command line arguments
         Then gpdbrestore should print Name has an invalid character to stdout
 
     Scenario: gpdbrestore, -S option, -S truncate option schema level restore with special chars in schema name
->>>>>>> e681291... Fix bug in gpdbrestore -S schema level restore with truncate option
         Given the test is initialized
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
         And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/special_chars/create_special_schema.sql template1"
