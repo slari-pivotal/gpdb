@@ -114,6 +114,7 @@ class Global():
         self.alldb     = []
         self.db        = {}
         self.tmpdir    = None
+        self.opt['-E'] = False
 
         self.reset_stmt_queues()
 
@@ -207,14 +208,18 @@ def getalldbs():
 ###############################
 def parseCommandLine():
     try:
-        (options, args) = getopt.getopt(sys.argv[1:], '?p:P:U:B:vg:t:AOS:R:C:l')
+        # A colon following the flag indicates an argument is expected
+        (options, args) = getopt.getopt(sys.argv[1:], '?p:P:U:B:vg:t:AOS:R:C:lE')
     except Exception, e:
         usage('Error: ' + str(e))
 
     for (switch, val) in options:
-        if switch == '-?':      usage(0)
-        elif switch[1] in 'pBPUgSRC': GV.opt[switch] = val
-        elif switch[1] in 'vtAOl':   GV.opt[switch] = True
+        if switch == '-?':
+            usage(0)
+        elif switch[1] in 'pBPUgSRC':
+            GV.opt[switch] = val
+        elif switch[1] in 'vtAOlE':
+            GV.opt[switch] = True
 
     def setdef(x, v):
         if not GV.opt[x]:
@@ -3721,6 +3726,9 @@ def do_repair(sql_repair_contents, issue_type, description):
 
 def do_repair_for_extra(catalog_issues):
     if len(catalog_issues) == 0:
+        return
+    if not GV.opt['-E']:
+        setError(ERROR_NOREPAIR)
         return
 
     setError(ERROR_REMOVE)
