@@ -9,7 +9,7 @@ image_resource:
 inputs:
   - name: gpdb_src
   - name: gpdb_src_tar_gz
-  - name: installer_rhel5_gpdb
+  - name: installer_sles11sp4_gpdb
 run:
   path: gpdb_src/ci/concourse/scripts/gpdb_sync_to_dist.bash
 params:
