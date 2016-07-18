@@ -567,6 +567,7 @@ jobs:
   - aggregate:
     - get: gpdb_src
       passed: [gpdb_packaging_sles]
+    - get: gpdb_src_tar_gz
     - get: installer_sles11sp4_gpdb
       passed: [gpdb_packaging_sles]
       trigger: true
