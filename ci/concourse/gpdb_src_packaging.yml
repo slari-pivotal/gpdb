@@ -13,4 +13,4 @@ outputs:
 run:
   path: gpdb_src/ci/concourse/scripts/gpdb_src_packaging.bash
 params:
-  GPDB_SRC_TAR_GZ: gpdb_src_tar_gz/greenplum-db-VERSION_OS-x86_64_src.tar.gz
+  GPDB_SRC_TAR_GZ: gpdb_src_archive/greenplum-db-VERSION_OS-x86_64_src.tar.gz
