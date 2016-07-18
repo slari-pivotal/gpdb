@@ -8,7 +8,10 @@ include $(BLD_TOP)/Makefile.global
 OS=$(word 1,$(subst _, ,$(BLD_ARCH)))
 ARCH=$(shell uname -p)
 
-GEOS_VER=3.3.8
+# Override it to path of libs downloaded from Ivy repo
+RELENG_TOOLS=$(shell cd $(BLD_TOP)/ext/$(BLD_ARCH) && pwd)
+
+GEOS_VER=3.4.2
 GEOS_REL=1
 GEOS_DIR=$(RELENG_TOOLS)/geos-$(GEOS_VER)
 GEOS_CONFIG=$(GEOS_DIR)/bin/geos-config

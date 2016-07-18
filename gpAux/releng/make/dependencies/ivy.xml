@@ -58,5 +58,7 @@
       <dependency org="zlib"            name="zlib"            rev="1.2.3"          conf="osx106_x86->osx106_x86" />
       <dependency org="gnu"             name="libgsasl"        rev="1.8.0"          conf="osx106_x86->osx106_x86" />
       <dependency org="Samba"           name="ccache"          rev="3.2.3"          conf="osx106_x86->osx106_x86;rhel5_x86_64->rhel5_x86_64;rhel6_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64;suse11_x86_64->suse10_x86_64" />
+      <dependency org="geos"            name="geos"            rev="3.4.2"          conf="rhel5_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64" />
+      <dependency org="PROJ.4"          name="proj"            rev="4.8.0"          conf="rhel5_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64" />
     </dependencies>
 </ivy-module>
