@@ -26,19 +26,19 @@ function scp_zip_src() {
   echo "$SSH_KEY" > "$ssh_key_file"
 
   #We do not use mkdir -p, to prevent the user from accidentally creating random
-  #directories on our server. Also, we use StrictHostKeyChecking=no an
+  #directories on our server. Also, we use StrictHostKeyChecking=no and
   #LogLevel=error to avoid printing warning messages such as "permanently added
   #to the list of known hosts"
-  ssh -i $ssh_key_file -o UserKnownHostsFile=/dev/null \
+  ssh -i "$ssh_key_file" -o UserKnownHostsFile=/dev/null \
       -o LogLevel=error -o StrictHostKeyChecking=no \
       "$REMOTE_USER@$REMOTE_HOST" "if [ ! -d $REMOTE_DIRECTORY ]; then mkdir $REMOTE_DIRECTORY; fi" > /dev/null
 
   #scp is not an atomic operation, so we use a scp/ssh mv to avoid broken files
   #being left sitting on the server
-  scp -i $ssh_key_file -o UserKnownHostsFile=/dev/null \
+  scp -i "$ssh_key_file" -o UserKnownHostsFile=/dev/null \
       -o LogLevel=error -o StrictHostKeyChecking=no \
       "$FILE_TO_UPLOAD" "$REMOTE_USER@$REMOTE_HOST:$remote_path.new" > /dev/null
-  ssh -i $ssh_key_file -o UserKnownHostsFile=/dev/null \
+  ssh -i "$ssh_key_file" -o UserKnownHostsFile=/dev/null \
       -o LogLevel=error -o StrictHostKeyChecking=no \
       "$REMOTE_USER@$REMOTE_HOST" "mv $remote_path.new $remote_path" > /dev/null
 }

@@ -8,12 +8,12 @@ image_resource:
     email: releng@pivotal.io
 inputs:
   - name: gpdb_src
-  - name: gpdb_src_tar_gz
-  - name: installer_sles11sp4_gpdb
+  - name: gpdb_src_archive
+  - name: gpdb_installer
 run:
   path: gpdb_src/ci/concourse/scripts/gpdb_sync_to_dist.bash
 params:
   REMOTE_USER: user
   REMOTE_HOST: fully.qualified.hostname
   REMOTE_DIRECTORY: /path/to/directory/
-  FILE_TO_UPLOAD: OBJECT_rhel5_gpdb/greenplum-db-VERSION-OS-x86_64.zip
+  FILE_TO_UPLOAD: component_os_gpdb/greenplum-db-VERSION-OS-x86_64.zip

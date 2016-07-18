@@ -154,14 +154,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
 
-- name: gpdb_src_tar_gz
+- name: gpdb_src_archive
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
+    versioned_file: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
 
 - name: installer_rhel5_gpdb_rc
   type: s3
@@ -564,10 +564,10 @@ jobs:
   - task: gpdb_src_packaging_centos
     file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
     params:
-      GPDB_SRC_TAR_GZ: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
-  - put: gpdb_src_tar_gz
+      gpdb_src_archive: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
+  - put: gpdb_src_archive
     params:
-      from: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
+      from: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
 - name: gpdb_sync_to_dist_centos
@@ -576,7 +576,7 @@ jobs:
   - aggregate:
     - get: gpdb_src
       passed: [gpdb_packaging_centos]
-    - get: gpdb_src_tar_gz
+    - get: gpdb_src_archive
       passed: [gpdb_src_packaging_centos]
     - get: installer_rhel5_gpdb
       passed: [gpdb_packaging_centos]
@@ -586,31 +586,31 @@ jobs:
   - aggregate:
     - task: gpdb_rhel5_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: installer_rhel5_gpdb
       params:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-        FILE_TO_UPLOAD: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
+        FILE_TO_UPLOAD: gpdb_installer/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       input_mapping:
-        installer_rhel5_gpdb: installer_appliance_rhel5_gpdb
+        gpdb_installer: installer_appliance_rhel5_gpdb
       params:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-        FILE_TO_UPLOAD: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
+        FILE_TO_UPLOAD: gpdb_installer/greenplum-db-appliance-4.3.9.0-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_src_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-      input_mapping:
-        installer_rhel5_gpdb: gpdb_src_tar_gz
       params:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-        FILE_TO_UPLOAD: gpdb_src_tar_gz/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
+        FILE_TO_UPLOAD: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
         SSH_KEY: {{private-repo-key}}
 
 - name: gpdb_sync_to_dist_sles
@@ -619,17 +619,19 @@ jobs:
   - aggregate:
     - get: gpdb_src
       passed: [gpdb_packaging_sles]
-    - get: gpdb_src_tar_gz
+    - get: gpdb_src_archive
     - get: installer_sles11sp4_gpdb
       passed: [gpdb_packaging_sles]
       trigger: true
   - task: gpdb_sles_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: installer_sles11sp4_gpdb
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-      FILE_TO_UPLOAD: installer_sles11sp4_gpdb/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
+      FILE_TO_UPLOAD: gpdb_installer/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
       SSH_KEY: {{private-repo-key}}
 
 # Stage 4: Behave Tests
