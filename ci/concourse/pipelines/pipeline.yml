@@ -564,7 +564,7 @@ jobs:
   - task: gpdb_src_packaging_centos
     file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
     params:
-      gpdb_src_archive: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
+      GPDB_SRC_TAR_GZ: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
   - put: gpdb_src_archive
     params:
       file: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz

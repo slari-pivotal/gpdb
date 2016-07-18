@@ -9,7 +9,7 @@ image_resource:
 inputs:
   - name: gpdb_src
 outputs:
-  - name: gpdb_src_tar_gz
+  - name: gpdb_src_archive
 run:
   path: gpdb_src/ci/concourse/scripts/gpdb_src_packaging.bash
 params:
