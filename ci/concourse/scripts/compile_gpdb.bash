@@ -27,7 +27,7 @@ function make_sync_tools() {
 function build_gpdb() {
   source /opt/gcc_env.sh
   pushd gpdb_src/gpAux
-    make GPROOT=/usr/local dist
+    make "$1" GPROOT=/usr/local dist
   popd
 }
 
@@ -41,6 +41,16 @@ function export_gpdb() {
   TARBALL=$(pwd)/bin_gpdb/bin_gpdb.tar.gz
   pushd /usr/local/greenplum-db-devel
     source greenplum_path.sh
+    python -m compileall -x test .
+    chmod -R 755 .
+    tar -czf "${TARBALL}" ./*
+  popd
+}
+
+function export_gpdb_clients() {
+  TARBALL=$(pwd)/bin_gpdb/bin_gpdb_clients.tar.gz
+  pushd /usr/local/greenplum-clients-devel
+    source /usr/local/greenplum-clients-devel/greenplum_clients_path.sh
     python -m compileall -x test .
     chmod -R 755 .
     tar -czf "${TARBALL}" ./*
@@ -62,9 +72,18 @@ function _main() {
   esac
 
   make_sync_tools
-  build_gpdb
+  # By default, only GPDB Server binary is build.
+  # Use BLD_TARGETS flag with appropriate value string to generate client, loaders
+  # connectors binaries
+  if [ -n "$BLD_TARGETS" ]; then
+    BLD_TARGET_OPTION="BLD_TARGETS='$BLD_TARGETS'"
+  else
+    BLD_TARGET_OPTION=''
+  fi
+  build_gpdb $BLD_TARGET_OPTION
   unittest_check_gpdb
   export_gpdb
+  export_gpdb_clients
 }
 
 _main "$@"

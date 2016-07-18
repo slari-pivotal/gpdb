@@ -91,6 +91,15 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: bin_gpdb_centos/bin_gpdb.tar.gz
 
+- name: bin_gpdb_clients_centos
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: bin_gpdb_centos/bin_gpdb_clients.tar.gz
+
 - name: bin_gpdb_sles
   type: s3
   source:
@@ -200,9 +209,13 @@ jobs:
     image: centos511-java7-gpdb-dev-image
     params:
       TARGET_OS: centos
+      BLD_TARGETS: clients
   - put: bin_gpdb_centos
     params:
       from: bin_gpdb/bin_gpdb.tar.gz
+  - put: bin_gpdb_clients_centos
+    params:
+      from: bin_gpdb/bin_gpdb_clients.tar.gz
   - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz

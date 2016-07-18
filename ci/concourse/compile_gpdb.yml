@@ -15,3 +15,4 @@ run:
   path: gpdb_src/ci/concourse/scripts/compile_gpdb.bash
 params:
   TARGET_OS:
+  BLD_TARGETS: clients
