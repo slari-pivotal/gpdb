@@ -91,15 +91,6 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: bin_gpdb_centos/bin_gpdb.tar.gz
 
-- name: bin_gpdb_clients_centos
-  type: s3
-  source:
-    access_key_id: {{bucket-access-key-id}}
-    bucket: {{bucket-name}}
-    region_name: {{aws-region}}
-    secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: bin_gpdb_centos/bin_gpdb_clients.tar.gz
-
 - name: bin_gpdb_sles
   type: s3
   source:
@@ -172,7 +163,7 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-4.3.9.0-build-1-RHEL5-x86_64.zip
 
-- name: installer_rhel5_clients_gpdb
+- name: installer_rhel5_gpdb_clients
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
@@ -199,6 +190,15 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-build-1-RHEL5-x86_64.zip
 
+- name: installer_sles11sp4_gpdb_clients
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/greenplum-clients-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+
 ## ======================================================================
 ## jobs
 ## ======================================================================
@@ -222,9 +222,9 @@ jobs:
   - put: bin_gpdb_centos
     params:
       from: bin_gpdb/bin_gpdb.tar.gz
-  - put: bin_gpdb_clients_centos
+  - put: installer_rhel5_gpdb_clients
     params:
-      from: bin_gpdb/bin_gpdb_clients.tar.gz
+      from: bin_gpdb/greenplum-clients-4.3.9.0-build-dev-RHEL5-x86_64.zip
   - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -242,9 +242,13 @@ jobs:
     privileged: true
     params:
       TARGET_OS: sles
+      BLD_TARGETS: clients
   - put: bin_gpdb_sles
     params:
       from: bin_gpdb/bin_gpdb.tar.gz
+  - put: installer_sles11sp4_gpdb_clients
+    params:
+      from: bin_gpdb/greenplum-clients-4.3.9.0-build-dev-SLES11SP4-x86_64.zip
   - put: sync_tools_gpdb_sles
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -522,36 +526,6 @@ jobs:
   - put: installer_sles11sp4_gpdb_rc
     params:
       file: packaged_gpdb/greenplum-db-4.3.9.0-build-1-SLES11SP4-x86_64.zip
-
-# TODO: Yet to be completed / tested.  Stage 4: Packaging of gpdb clients
-- name: gpdb_clients_packaging_centos
-  public: true
-  plan:
-  - aggregate:
-    - get: bin_gpdb
-      resource: bin_gpdb_centos
-      trigger: true
-    - get: bin_gpdb_clients_centos
-      trigger: true
-    - get: gpdb_src
-      trigger: true
-  - aggregate:
-    - task: gpdb_clients_packaging_centos
-      file: gpdb_src/ci/concourse/gpdb_clients_packaging.yml
-      input_mapping:
-        bin_gpdb: bin_gpdb_clients
-      output_mapping:
-        packaged_gpdb: packaged_gpdb_clients
-      params:
-        INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-template.txt
-        INSTALLER_ZIP: packaged_gpdb/greenplum-clients-4.3.9.0-build-1-RHEL5-x86_64.zip
-        PRODUCT: Clients
-        PACKAGE: greenplum-clients
-        ADD_README_INSTALL: true
-  - aggregate:
-    - put: installer_rhel5_clients_gpdb
-      params:
-        file: packaged_gpdb_clients/greenplum-clients-4.3.9.0-build-1-RHEL5-x86_64.zip
 
 # Stage 3b: Packaging of source code
 - name: gpdb_src_packaging_centos

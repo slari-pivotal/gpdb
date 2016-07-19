@@ -48,12 +48,10 @@ function export_gpdb() {
 }
 
 function export_gpdb_clients() {
-  TARBALL=$(pwd)/bin_gpdb/bin_gpdb_clients.tar.gz
-  pushd /usr/local/greenplum-clients-devel
-    source /usr/local/greenplum-clients-devel/greenplum_clients_path.sh
-    python -m compileall -x test .
-    chmod -R 755 .
-    tar -czf "${TARBALL}" ./*
+  BIN_FOLDER=$(pwd)/bin_gpdb
+  pushd gpdb_src/gpAux
+    chmod 755 greenplum-clients*zip
+    cp greenplum-clients*zip "$BIN_FOLDER"/
   popd
 }
 
