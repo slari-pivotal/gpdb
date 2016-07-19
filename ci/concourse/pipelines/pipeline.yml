@@ -221,10 +221,10 @@ jobs:
       BLD_TARGETS: clients
   - put: bin_gpdb_centos
     params:
-      from: bin_gpdb/bin_gpdb.tar.gz
+      from: gpdb_artifacts/bin_gpdb.tar.gz
   - put: installer_rhel5_gpdb_clients
     params:
-      from: bin_gpdb/greenplum-clients-4.3.9.0-build-dev-RHEL5-x86_64.zip
+      from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-dev-RHEL5-x86_64.zip
   - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -245,10 +245,10 @@ jobs:
       BLD_TARGETS: clients
   - put: bin_gpdb_sles
     params:
-      from: bin_gpdb/bin_gpdb.tar.gz
+      from: gpdb_artifacts/bin_gpdb.tar.gz
   - put: installer_sles11sp4_gpdb_clients
     params:
-      from: bin_gpdb/greenplum-clients-4.3.9.0-build-dev-SLES11SP4-x86_64.zip
+      from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-dev-SLES11SP4-x86_64.zip
   - put: sync_tools_gpdb_sles
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz

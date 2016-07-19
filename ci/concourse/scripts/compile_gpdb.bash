@@ -38,7 +38,7 @@ function unittest_check_gpdb() {
 }
 
 function export_gpdb() {
-  TARBALL=$(pwd)/bin_gpdb/bin_gpdb.tar.gz
+  TARBALL=$(pwd)/gpdb_artifacts/bin_gpdb.tar.gz
   pushd /usr/local/greenplum-db-devel
     source greenplum_path.sh
     python -m compileall -x test .
@@ -48,7 +48,7 @@ function export_gpdb() {
 }
 
 function export_gpdb_clients() {
-  BIN_FOLDER=$(pwd)/bin_gpdb
+  BIN_FOLDER=$(pwd)/gpdb_artifacts
   pushd gpdb_src/gpAux
     chmod 755 greenplum-clients*zip
     cp greenplum-clients*zip "$BIN_FOLDER"/
