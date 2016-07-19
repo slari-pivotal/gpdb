@@ -606,6 +606,8 @@ jobs:
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_src_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: gpdb_src_archive
       params:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
