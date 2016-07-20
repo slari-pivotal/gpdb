@@ -107,6 +107,8 @@ static inline DateADT date_pl_days(DateADT date, int32 days)
 }
 
 /* date.c */
+extern double date2timestamp_no_overflow(DateADT dateVal);
+
 extern Datum date_in(PG_FUNCTION_ARGS);
 extern Datum date_out(PG_FUNCTION_ARGS);
 extern Datum date_recv(PG_FUNCTION_ARGS);
