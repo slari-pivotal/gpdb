@@ -224,7 +224,7 @@ jobs:
       from: gpdb_artifacts/bin_gpdb.tar.gz
   - put: installer_rhel5_gpdb_clients
     params:
-      from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-dev-RHEL5-x86_64.zip
+      from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-1-RHEL5-x86_64.zip
   - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -248,7 +248,7 @@ jobs:
       from: gpdb_artifacts/bin_gpdb.tar.gz
   - put: installer_sles11sp4_gpdb_clients
     params:
-      from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-dev-suse11_x86_64.zip
+      from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-1-suse11_x86_64.zip
   - put: sync_tools_gpdb_sles
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
