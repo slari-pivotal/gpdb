@@ -12,5 +12,6 @@ inputs:
 outputs:
 params:
   BEHAVE_TAGS: ""
+  TEST_OS: ""
 run:
   path: gpdb_src/ci/concourse/scripts/behave_tests.bash
