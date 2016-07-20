@@ -39,7 +39,7 @@ function gen_env(){
 }
 
 function setup_gpadmin_user() {
-    ./gpdb_src/ci/concourse/scripts/setup_gpadmin_user.bash "$TEST_OS"
+    ./gpdb_src/ci/concourse/scripts/setup_gpadmin_user.bash "$1"
 }
 
 function _main() {
@@ -50,7 +50,7 @@ function _main() {
     fi
 
     install_gpdb
-    setup_gpadmin_user
+    setup_gpadmin_user "$TEST_OS"
     make_cluster
     gen_env
     run_test
