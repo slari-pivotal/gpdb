@@ -47,11 +47,11 @@ function export_gpdb() {
   popd
 }
 
-function export_gpdb_clients() {
+function export_gpdb_extensions() {
   BIN_FOLDER=$(pwd)/gpdb_artifacts
   pushd gpdb_src/gpAux
-    chmod 755 greenplum-clients*zip
-    cp greenplum-clients*zip "$BIN_FOLDER"/
+    chmod 755 greenplum-*zip
+    cp greenplum-*zip "$BIN_FOLDER"/
   popd
 }
 
@@ -74,14 +74,14 @@ function _main() {
   # Use BLD_TARGETS flag with appropriate value string to generate client, loaders
   # connectors binaries
   if [ -n "$BLD_TARGETS" ]; then
-    BLD_TARGET_OPTION="BLD_TARGETS='$BLD_TARGETS'"
+    BLD_TARGET_OPTION=("BLD_TARGETS=\"$BLD_TARGETS\"")
   else
-    BLD_TARGET_OPTION=''
+    BLD_TARGET_OPTION=("")
   fi
-  build_gpdb $BLD_TARGET_OPTION
+  build_gpdb "${BLD_TARGET_OPTION[@]}"
   unittest_check_gpdb
   export_gpdb
-  export_gpdb_clients
+  export_gpdb_extensions
 }
 
 _main "$@"

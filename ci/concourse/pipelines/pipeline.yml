@@ -199,6 +199,24 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_sles11sp4_gpdb/greenplum-clients-4.3.9.0-build-1-SLES11SP4-x86_64.zip
 
+- name: installer_rhel5_gpdb_connectivity
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_rhel5_gpdb/greenplum-connectivity-4.3.9.0-build-1-RHEL5-x86_64.zip
+
+- name: installer_sles11sp4_gpdb_connectivity
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/greenplum-connectivity-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+
 ## ======================================================================
 ## jobs
 ## ======================================================================
@@ -218,13 +236,16 @@ jobs:
     image: centos511-java7-gpdb-dev-image
     params:
       TARGET_OS: centos
-      BLD_TARGETS: clients
+      BLD_TARGETS: clients connectivity
   - put: bin_gpdb_centos
     params:
       from: gpdb_artifacts/bin_gpdb.tar.gz
   - put: installer_rhel5_gpdb_clients
     params:
       from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-1-RHEL5-x86_64.zip
+  - put: installer_rhel5_gpdb_connectivity
+    params:
+      from: gpdb_artifacts/greenplum-connectivity-4.3.9.0-build-1-RHEL5-x86_64.zip
   - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -242,13 +263,16 @@ jobs:
     privileged: true
     params:
       TARGET_OS: sles
-      BLD_TARGETS: clients
+      BLD_TARGETS: clients connectivity
   - put: bin_gpdb_sles
     params:
       from: gpdb_artifacts/bin_gpdb.tar.gz
   - put: installer_sles11sp4_gpdb_clients
     params:
       from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-1-suse11_x86_64.zip
+  - put: installer_sles11sp4_gpdb_connectivity
+    params:
+      from: gpdb_artifacts/greenplum-connectivity-4.3.9.0-build-1-suse11_x86_64.zip
   - put: sync_tools_gpdb_sles
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
