@@ -605,6 +605,12 @@ jobs:
     - get: installer_appliance_rhel5_gpdb
       passed: [gpdb_packaging_centos]
       trigger: true
+    - get: installer_rhel5_gpdb_clients
+      passed: [compile_gpdb_centos]
+    - get: installer_rhel5_gpdb_connectivity
+      passed: [compile_gpdb_centos]
+    - get: installer_rhel5_gpdb_loaders
+      passed: [compile_gpdb_centos]
   - aggregate:
     - task: gpdb_rhel5_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -636,6 +642,36 @@ jobs:
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
         FILE_TO_UPLOAD: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
         SSH_KEY: {{private-repo-key}}
+    - task: gpdb_rhel5_clients_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: installer_rhel5_gpdb_clients
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/greenplum-clients-4.3.9.0-build-1-RHEL5-x86_64.zip
+        SSH_KEY: {{private-repo-key}}
+    - task: gpdb_rhel5_connectivity_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: installer_rhel5_gpdb_connectivity
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/greenplum-connectivity-4.3.9.0-build-1-RHEL5-x86_64.zip
+        SSH_KEY: {{private-repo-key}}
+    - task: gpdb_rhel5_loaders_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: installer_rhel5_gpdb_loaders
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/greenplum-loaders-4.3.9.0-build-1-RHEL5-x86_64.zip
+        SSH_KEY: {{private-repo-key}}
 
 - name: gpdb_sync_to_dist_sles
   public: true
@@ -647,6 +683,12 @@ jobs:
     - get: installer_sles11sp4_gpdb
       passed: [gpdb_packaging_sles]
       trigger: true
+    - get: installer_sles11sp4_gpdb_clients
+      passed: [compile_gpdb_sles]
+    - get: installer_sles11sp4_gpdb_connectivity
+      passed: [compile_gpdb_sles]
+    - get: installer_sles11sp4_gpdb_loaders
+      passed: [compile_gpdb_sles]
   - task: gpdb_sles_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
@@ -657,7 +699,36 @@ jobs:
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
       FILE_TO_UPLOAD: gpdb_installer/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
       SSH_KEY: {{private-repo-key}}
-
+  - task: gpdb_sles11sp4_clients_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: installer_sles11sp4_gpdb_clients
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/greenplum-clients-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      SSH_KEY: {{private-repo-key}}
+  - task: gpdb_sles11sp4_connectivity_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: installer_sles11sp4_gpdb_connectivity
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/greenplum-connectivity-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      SSH_KEY: {{private-repo-key}}
+  - task: gpdb_sles11sp4_loaders_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: installer_sles11sp4_gpdb_loaders
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/greenplum-loaders-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      SSH_KEY: {{private-repo-key}}
 # Stage 4: Behave Tests
 
 # When creating a new job, to ensure that the test runs only when all stage 3
