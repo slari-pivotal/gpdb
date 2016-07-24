@@ -135,6 +135,8 @@ test: appendonly
 test: aocs
 test: gp_hashagg
 test: gp_dqa
+ignore: gpic
+ignore: gpic_bigtup
 test: filter
 test: gpctas
 test: gpdist

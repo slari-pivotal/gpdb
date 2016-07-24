@@ -7655,9 +7655,9 @@ static struct config_string ConfigureNamesString[] =
 	},
 
 	{
-		{"gp_interconnect_type", PGC_USERSET, GP_ARRAY_TUNING,
+		{"gp_interconnect_type", PGC_BACKEND, GP_ARRAY_TUNING,
 		 gettext_noop("Sets the protocol used for inter-node communication."),
-		 gettext_noop("Only support \"udpifc\" for now."),
+		 gettext_noop("Valid values are \"tcp\", \"udp\" and \"udpifc\"."),
 		 GUC_GPDB_ADDOPT
 		},
 		&gp_interconnect_type_str,

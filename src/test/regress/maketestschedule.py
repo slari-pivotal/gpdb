@@ -109,7 +109,7 @@ class EstimatedDurations:
                 ("resource_queue", 0.77), ("gptokencheck", 0.01), ("gpcopy", 5.64), ("sreh", 11.69),
                 ("olap_setup", 1.49), ("olap_group", 6.79), ("olap_window", 4.17), ("olap_window_seq", 3.36),
                 ("tpch500GB", 0.72), ("partition", 75.95), ("appendonly", 47.16), ("aocs", 42.76),
-                ("gp_hashagg", 0.50), ("gp_dqa", 1.29),
+                ("gp_hashagg", 0.50), ("gp_dqa", 1.29), ("gpic", 28.78), ("gpic_bigtup", 7.08),
                 ("filter", 0.47), ("gpctas", 2.18), ("gpdist", 6.81), ("matrix", 0.35),
                 ("gpdtm_plpgsql", 52.83), ("notin", 1.21), ("toast", 0.95), ("mapred", 1.75),
                 ("gpparams", 1.10), ("upg2", 6.71), ("alter_distribution_policy", 44.76), ("ereport", 4.82),
