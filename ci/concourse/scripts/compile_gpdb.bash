@@ -31,6 +31,12 @@ function build_gpdb() {
   popd
 }
 
+function build_postgis() {
+  pushd gpdb_src/gpAux/extensions/postgis-2.0.3/package
+    make INSTLOC=/usr/local/greenplum-db-devel
+  popd
+}
+
 function unittest_check_gpdb() {
   pushd gpdb_src/gpAux
     make GPROOT=/usr/local unittest-check
@@ -52,6 +58,8 @@ function export_gpdb_extensions() {
   pushd gpdb_src/gpAux
     chmod 755 greenplum-*zip
     cp greenplum-*zip "$BIN_FOLDER"/
+    chmod 755 extensions/*/package/*.gppkg
+    cp extensions/*/package/*.gppkg "$BIN_FOLDER"/
   popd
 }
 
@@ -79,6 +87,7 @@ function _main() {
     BLD_TARGET_OPTION=("")
   fi
   build_gpdb "${BLD_TARGET_OPTION[@]}"
+  build_postgis
   unittest_check_gpdb
   export_gpdb
   export_gpdb_extensions
