@@ -235,6 +235,25 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_sles11sp4_gpdb/greenplum-loaders-4.3.9.0-build-1-SLES11SP4-x86_64.zip
 
+- name: postgis_rhel5_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_rhel5_gpdb/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
+
+- name: postgis_sles11sp4_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
+
+
 ## ======================================================================
 ## jobs
 ## ======================================================================
@@ -267,6 +286,9 @@ jobs:
   - put: installer_rhel5_gpdb_loaders
     params:
       from: gpdb_artifacts/greenplum-loaders-4.3.9.0-build-1-RHEL5-x86_64.zip
+  - put: postgis_rhel5_gppkg
+    params:
+      from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
   - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -297,6 +319,9 @@ jobs:
   - put: installer_sles11sp4_gpdb_loaders
     params:
       from: gpdb_artifacts/greenplum-loaders-4.3.9.0-build-1-suse11_x86_64.zip
+  - put: postgis_sles11sp4_gppkg
+    params:
+      from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
   - put: sync_tools_gpdb_sles
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -611,6 +636,8 @@ jobs:
       passed: [compile_gpdb_centos]
     - get: installer_rhel5_gpdb_loaders
       passed: [compile_gpdb_centos]
+    - get: postgis_rhel5_gppkg
+      passed: [compile_gpdb_centos]
   - aggregate:
     - task: gpdb_rhel5_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -672,6 +699,16 @@ jobs:
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
         FILE_TO_UPLOAD: gpdb_installer/greenplum-loaders-4.3.9.0-build-1-RHEL5-x86_64.zip
         SSH_KEY: {{private-repo-key}}
+    - task: postgis_rhel5_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: postgis_rhel5_gppkg
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
 
 - name: gpdb_sync_to_dist_sles
   public: true
@@ -688,6 +725,8 @@ jobs:
     - get: installer_sles11sp4_gpdb_connectivity
       passed: [compile_gpdb_sles]
     - get: installer_sles11sp4_gpdb_loaders
+      passed: [compile_gpdb_sles]
+    - get: postgis_sles11sp4_gppkg
       passed: [compile_gpdb_sles]
   - task: gpdb_sles_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -729,6 +768,17 @@ jobs:
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
       FILE_TO_UPLOAD: gpdb_installer/greenplum-loaders-4.3.9.0-build-1-SLES11SP4-x86_64.zip
       SSH_KEY: {{private-repo-key}}
+  - task: postgis_sles11sp4_gppkg_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: postgis_sles11sp4_gppkg
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
+      SSH_KEY: {{private-repo-key}}
+
 # Stage 4: Behave Tests
 
 # When creating a new job, to ensure that the test runs only when all stage 3
