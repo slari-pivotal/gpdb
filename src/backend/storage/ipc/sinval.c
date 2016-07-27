@@ -18,6 +18,7 @@
 #include "commands/async.h"
 #include "miscadmin.h"
 #include "storage/ipc.h"
+#include "storage/proc.h"
 #include "storage/sinvaladt.h"
 #include "utils/inval.h"
 
@@ -304,10 +305,12 @@ static void
 ProcessCatchupEvent(void)
 {
 	bool		notify_enabled;
+	bool		client_wait_timeout_enabled;
 	DtxContext  saveDistributedTransactionContext;
 
-	/* Must prevent notify interrupt while I am running */
+	/* Must prevent SIGUSR2 and SIGALRM(for IdleSessionGangTimeout) interrupt while I am running */
 	notify_enabled = DisableNotifyInterrupt();
+	client_wait_timeout_enabled = DisableClientWaitTimeoutInterrupt();
 
 	/*
 	 * What we need to do here is cause ReceiveSharedInvalidMessages() to run,
@@ -345,4 +348,7 @@ ProcessCatchupEvent(void)
 
 	if (notify_enabled)
 		EnableNotifyInterrupt();
+
+	if (client_wait_timeout_enabled)
+		EnableClientWaitTimeoutInterrupt();
 }
