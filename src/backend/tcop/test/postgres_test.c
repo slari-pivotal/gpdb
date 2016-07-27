@@ -69,6 +69,7 @@ test__ProcessInterrupts__ClientConnectionLost(void **state)
 
 	will_be_called(DisableNotifyInterrupt);
 	will_be_called(DisableCatchupInterrupt);
+	will_be_called(DisableClientWaitTimeoutInterrupt);
 
 	/*
 	 * Setting all the flags so that ProcessInterrupts only goes in the if-block
