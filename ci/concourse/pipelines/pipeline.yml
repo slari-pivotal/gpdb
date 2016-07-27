@@ -75,7 +75,7 @@ resources:
     username: {{docker_username}}
     password: {{docker_password}}
 
-- name: sles11sp4-toolchain
+- name: sles11-toolchain
   type: docker-image
   source:
     repository: pivotaldata/sles11sp4-toolchain
@@ -127,14 +127,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-4.3.9.0-RHEL5-x86_64.zip
 
-- name: installer_sles11sp4_gpdb
+- name: installer_sles11_gpdb
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
+    versioned_file: installer_sles11_gpdb/greenplum-db-4.3.9.0-SLES11-x86_64.zip
 
 - name: installer_appliance_rhel5_gpdb
   type: s3
@@ -172,14 +172,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-clients-4.3.9.0-build-1-RHEL5-x86_64.zip
 
-- name: installer_sles11sp4_gpdb_rc
+- name: installer_sles11_gpdb_rc
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/greenplum-db-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+    versioned_file: installer_sles11_gpdb/greenplum-db-4.3.9.0-build-1-SLES11-x86_64.zip
 
 - name: installer_appliance_rhel5_gpdb_rc
   type: s3
@@ -190,14 +190,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-build-1-RHEL5-x86_64.zip
 
-- name: installer_sles11sp4_gpdb_clients
+- name: installer_sles11_gpdb_clients
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/greenplum-clients-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+    versioned_file: installer_sles11_gpdb/greenplum-clients-4.3.9.0-build-1-SLES11-x86_64.zip
 
 - name: installer_rhel5_gpdb_connectivity
   type: s3
@@ -208,14 +208,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-connectivity-4.3.9.0-build-1-RHEL5-x86_64.zip
 
-- name: installer_sles11sp4_gpdb_connectivity
+- name: installer_sles11_gpdb_connectivity
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/greenplum-connectivity-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+    versioned_file: installer_sles11_gpdb/greenplum-connectivity-4.3.9.0-build-1-SLES11-x86_64.zip
 
 - name: installer_rhel5_gpdb_loaders
   type: s3
@@ -226,14 +226,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-loaders-4.3.9.0-build-1-RHEL5-x86_64.zip
 
-- name: installer_sles11sp4_gpdb_loaders
+- name: installer_sles11_gpdb_loaders
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/greenplum-loaders-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+    versioned_file: installer_sles11_gpdb/greenplum-loaders-4.3.9.0-build-1-SLES11-x86_64.zip
 
 - name: postgis_rhel5_gppkg
   type: s3
@@ -244,14 +244,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
 
-- name: postgis_sles11sp4_gppkg
+- name: postgis_sles11_gppkg
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
 
 - name: ddboost_rhel5_gppkg
   type: s3
@@ -262,14 +262,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
 
-- name: ddboost_sles11sp4_gppkg
+- name: ddboost_sles11_gppkg
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-suse11-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-suse11-x86_64.gppkg
 
 - name: pgcrypto_rhel5_gppkg
   type: s3
@@ -280,14 +280,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
 
-- name: pgcrypto_sles11sp4_gppkg
+- name: pgcrypto_sles11_gppkg
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-suse11-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-suse11-x86_64.gppkg
 
 - name: plperl_rhel5_gppkg
   type: s3
@@ -296,9 +296,9 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
 
-- name: plperl_sles11sp4_gppkg
+- name: plperl_sles11_gppkg
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
@@ -314,9 +314,9 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
 
-- name: pljava_sles11sp4_gppkg
+- name: pljava_sles11_gppkg
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
@@ -332,9 +332,9 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11sp4_gpdb/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
 
-- name: plr_sles11sp4_gppkg
+- name: plr_sles11_gppkg
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
@@ -403,10 +403,10 @@ jobs:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: sles11sp4-toolchain
+    - get: sles11-toolchain
   - task: build_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: sles11sp4-toolchain
+    image: sles11-toolchain
     privileged: true
     params:
       TARGET_OS: sles
@@ -414,31 +414,31 @@ jobs:
   - put: bin_gpdb_sles
     params:
       from: gpdb_artifacts/bin_gpdb.tar.gz
-  - put: installer_sles11sp4_gpdb_clients
+  - put: installer_sles11_gpdb_clients
     params:
       from: gpdb_artifacts/greenplum-clients-4.3.9.0-build-1-suse11_x86_64.zip
-  - put: installer_sles11sp4_gpdb_connectivity
+  - put: installer_sles11_gpdb_connectivity
     params:
       from: gpdb_artifacts/greenplum-connectivity-4.3.9.0-build-1-suse11_x86_64.zip
-  - put: installer_sles11sp4_gpdb_loaders
+  - put: installer_sles11_gpdb_loaders
     params:
       from: gpdb_artifacts/greenplum-loaders-4.3.9.0-build-1-suse11_x86_64.zip
-  - put: postgis_sles11sp4_gppkg
+  - put: postgis_sles11_gppkg
     params:
       from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
-  - put: pgcrypto_sles11sp4_gppkg
+  - put: pgcrypto_sles11_gppkg
     params:
       from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-suse11-x86_64.gppkg
-  - put: ddboost_sles11sp4_gppkg
+  - put: ddboost_sles11_gppkg
     params:
       from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-suse11-x86_64.gppkg
-  - put: pljava_sles11sp4_gppkg
+  - put: pljava_sles11_gppkg
     params:
       from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
-  - put: plperl_sles11sp4_gppkg
+  - put: plperl_sles11_gppkg
     params:
       from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
-  - put: plr_sles11sp4_gppkg
+  - put: plr_sles11_gppkg
     params:
       from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-suse11-x86_64.gppkg
   - put: sync_tools_gpdb_sles
@@ -525,10 +525,10 @@ jobs:
       resource: bin_gpdb_sles
       passed: [compile_gpdb_sles]
       trigger: true
-    - get: sles11sp4-toolchain
+    - get: sles11-toolchain
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
-    image: sles11sp4-toolchain
+    image: sles11-toolchain
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
@@ -567,10 +567,10 @@ jobs:
       resource: bin_gpdb_sles
       passed: [compile_gpdb_sles]
       trigger: true
-    - get: sles11sp4-toolchain
+    - get: sles11-toolchain
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
-    image: sles11sp4-toolchain
+    image: sles11-toolchain
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
@@ -647,11 +647,11 @@ jobs:
   - task: gpdb_packaging_sles
     file: gpdb_src/ci/concourse/gpdb_packaging.yml
     params:
-      INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11sp4-gpdb.sh
-      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
-  - put: installer_sles11sp4_gpdb
+      INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11-gpdb.sh
+      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.0-SLES11-x86_64.zip
+  - put: installer_sles11_gpdb
     params:
-      file: packaged_gpdb/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
+      file: packaged_gpdb/greenplum-db-4.3.9.0-SLES11-x86_64.zip
 
 # Stage 3a: Packaging the Release Candidate (rc)
 
@@ -712,12 +712,12 @@ jobs:
     input_mapping:
       bin_gpdb: rc_bin_gpdb
     params:
-      INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11sp4-gpdb.sh
-      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11-gpdb.sh
+      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.0-build-1-SLES11-x86_64.zip
       ADD_README_INSTALL: true
-  - put: installer_sles11sp4_gpdb_rc
+  - put: installer_sles11_gpdb_rc
     params:
-      file: packaged_gpdb/greenplum-db-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      file: packaged_gpdb/greenplum-db-4.3.9.0-build-1-SLES11-x86_64.zip
 
 # Stage 3b: Packaging of source code
 - name: gpdb_src_packaging_centos
@@ -896,121 +896,121 @@ jobs:
     - get: gpdb_src
       passed: [gpdb_packaging_sles]
     - get: gpdb_src_archive
-    - get: installer_sles11sp4_gpdb
+    - get: installer_sles11_gpdb
       passed: [gpdb_packaging_sles]
       trigger: true
-    - get: installer_sles11sp4_gpdb_clients
+    - get: installer_sles11_gpdb_clients
       passed: [compile_gpdb_sles]
-    - get: installer_sles11sp4_gpdb_connectivity
+    - get: installer_sles11_gpdb_connectivity
       passed: [compile_gpdb_sles]
-    - get: installer_sles11sp4_gpdb_loaders
+    - get: installer_sles11_gpdb_loaders
       passed: [compile_gpdb_sles]
-    - get: postgis_sles11sp4_gppkg
+    - get: postgis_sles11_gppkg
       passed: [compile_gpdb_sles]
-    - get: plr_sles11sp4_gppkg
+    - get: plr_sles11_gppkg
       passed: [compile_gpdb_sles]
-    - get: pljava_sles11sp4_gppkg
+    - get: pljava_sles11_gppkg
       passed: [compile_gpdb_sles]
-    - get: plperl_sles11sp4_gppkg
+    - get: plperl_sles11_gppkg
       passed: [compile_gpdb_sles]
-    - get: ddboost_sles11sp4_gppkg
+    - get: ddboost_sles11_gppkg
       passed: [compile_gpdb_sles]
-    - get: pgcrypto_sles11sp4_gppkg
+    - get: pgcrypto_sles11_gppkg
       passed: [compile_gpdb_sles]
   - task: gpdb_sles_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: installer_sles11sp4_gpdb
+      gpdb_installer: installer_sles11_gpdb
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-      FILE_TO_UPLOAD: gpdb_installer/greenplum-db-4.3.9.0-SLES11SP4-x86_64.zip
+      FILE_TO_UPLOAD: gpdb_installer/greenplum-db-4.3.9.0-SLES11-x86_64.zip
       SSH_KEY: {{private-repo-key}}
-  - task: gpdb_sles11sp4_clients_sync_to_dist
+  - task: gpdb_sles11_clients_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: installer_sles11sp4_gpdb_clients
+      gpdb_installer: installer_sles11_gpdb_clients
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-      FILE_TO_UPLOAD: gpdb_installer/greenplum-clients-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      FILE_TO_UPLOAD: gpdb_installer/greenplum-clients-4.3.9.0-build-1-SLES11-x86_64.zip
       SSH_KEY: {{private-repo-key}}
-  - task: gpdb_sles11sp4_connectivity_sync_to_dist
+  - task: gpdb_sles11_connectivity_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: installer_sles11sp4_gpdb_connectivity
+      gpdb_installer: installer_sles11_gpdb_connectivity
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-      FILE_TO_UPLOAD: gpdb_installer/greenplum-connectivity-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      FILE_TO_UPLOAD: gpdb_installer/greenplum-connectivity-4.3.9.0-build-1-SLES11-x86_64.zip
       SSH_KEY: {{private-repo-key}}
-  - task: gpdb_sles11sp4_loaders_sync_to_dist
+  - task: gpdb_sles11_loaders_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: installer_sles11sp4_gpdb_loaders
+      gpdb_installer: installer_sles11_gpdb_loaders
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-      FILE_TO_UPLOAD: gpdb_installer/greenplum-loaders-4.3.9.0-build-1-SLES11SP4-x86_64.zip
+      FILE_TO_UPLOAD: gpdb_installer/greenplum-loaders-4.3.9.0-build-1-SLES11-x86_64.zip
       SSH_KEY: {{private-repo-key}}
-  - task: postgis_sles11sp4_gppkg_sync_to_dist
+  - task: postgis_sles11_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: postgis_sles11sp4_gppkg
+      gpdb_installer: postgis_sles11_gppkg
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
       FILE_TO_UPLOAD: gpdb_installer/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
       SSH_KEY: {{private-repo-key}}
-  - task: pljava_sles11sp4_gppkg_sync_to_dist
+  - task: pljava_sles11_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: pljava_sles11sp4_gppkg
+      gpdb_installer: pljava_sles11_gppkg
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
       FILE_TO_UPLOAD: gpdb_installer/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
       SSH_KEY: {{private-repo-key}}
-  - task: plperl_sles11sp4_gppkg_sync_to_dist
+  - task: plperl_sles11_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: plperl_sles11sp4_gppkg
+      gpdb_installer: plperl_sles11_gppkg
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
       FILE_TO_UPLOAD: gpdb_installer/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
       SSH_KEY: {{private-repo-key}}
-  - task: ddboost_sles11sp4_gppkg_sync_to_dist
+  - task: ddboost_sles11_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: ddboost_sles11sp4_gppkg
+      gpdb_installer: ddboost_sles11_gppkg
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
       FILE_TO_UPLOAD: gpdb_installer/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-suse11-x86_64.gppkg
       SSH_KEY: {{private-repo-key}}
-  - task: plr_sles11sp4_gppkg_sync_to_dist
+  - task: plr_sles11_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: plr_sles11sp4_gppkg
+      gpdb_installer: plr_sles11_gppkg
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
       FILE_TO_UPLOAD: gpdb_installer/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-suse11-x86_64.gppkg
       SSH_KEY: {{private-repo-key}}
-  - task: pgcrypto_sles11sp4_gppkg_sync_to_dist
+  - task: pgcrypto_sles11_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
     input_mapping:
-      gpdb_installer: pgcrypto_sles11sp4_gppkg
+      gpdb_installer: pgcrypto_sles11_gppkg
     params:
       REMOTE_USER: build
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
@@ -1095,7 +1095,7 @@ jobs:
 - name: manual_testing_on_pulse_sles
   public: true
   plan:
-  - get: installer_sles11sp4_gpdb
+  - get: installer_sles11_gpdb
     passed: [gpdb_sync_to_dist_sles]
   - task: ask_teams_to_kick_off_jobs
     config:
@@ -1119,7 +1119,7 @@ jobs:
 - name: push_to_pivnet_manually_sles
   public: true
   plan:
-  - get: installer_sles11sp4_gpdb_rc
+  - get: installer_sles11_gpdb_rc
     passed: [gpdb_rc_packaging_sles]
   - task: ask_PMs_to_verify
     config:
