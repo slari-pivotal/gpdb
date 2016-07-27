@@ -253,6 +253,95 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_sles11sp4_gpdb/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
 
+- name: ddboost_rhel5_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_rhel5_gpdb/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+
+- name: ddboost_sles11sp4_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-suse11-x86_64.gppkg
+
+- name: pgcrypto_rhel5_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_rhel5_gpdb/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
+
+- name: pgcrypto_sles11sp4_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-suse11-x86_64.gppkg
+
+- name: plperl_rhel5_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+
+- name: plperl_sles11sp4_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_rhel5_gpdb/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
+
+- name: pljava_rhel5_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+
+- name: pljava_sles11sp4_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_rhel5_gpdb/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
+
+- name: plr_rhel5_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_sles11sp4_gpdb/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+
+- name: plr_sles11sp4_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: installer_rhel5_gpdb/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-suse11-x86_64.gppkg
 
 ## ======================================================================
 ## jobs
@@ -289,6 +378,21 @@ jobs:
   - put: postgis_rhel5_gppkg
     params:
       from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
+  - put: pgcrypto_rhel5_gppkg
+    params:
+      from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
+  - put: ddboost_rhel5_gppkg
+    params:
+      from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+  - put: pljava_rhel5_gppkg
+    params:
+      from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+  - put: plperl_rhel5_gppkg
+    params:
+      from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+  - put: plr_rhel5_gppkg
+    params:
+      from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
   - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -322,6 +426,21 @@ jobs:
   - put: postgis_sles11sp4_gppkg
     params:
       from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
+  - put: pgcrypto_sles11sp4_gppkg
+    params:
+      from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-suse11-x86_64.gppkg
+  - put: ddboost_sles11sp4_gppkg
+    params:
+      from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-suse11-x86_64.gppkg
+  - put: pljava_sles11sp4_gppkg
+    params:
+      from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
+  - put: plperl_sles11sp4_gppkg
+    params:
+      from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
+  - put: plr_sles11sp4_gppkg
+    params:
+      from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-suse11-x86_64.gppkg
   - put: sync_tools_gpdb_sles
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -638,6 +757,16 @@ jobs:
       passed: [compile_gpdb_centos]
     - get: postgis_rhel5_gppkg
       passed: [compile_gpdb_centos]
+    - get: plr_rhel5_gppkg
+      passed: [compile_gpdb_centos]
+    - get: pljava_rhel5_gppkg
+      passed: [compile_gpdb_centos]
+    - get: plperl_rhel5_gppkg
+      passed: [compile_gpdb_centos]
+    - get: ddboost_rhel5_gppkg
+      passed: [compile_gpdb_centos]
+    - get: pgcrypto_rhel5_gppkg
+      passed: [compile_gpdb_centos]
   - aggregate:
     - task: gpdb_rhel5_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -709,6 +838,56 @@ jobs:
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
         FILE_TO_UPLOAD: gpdb_installer/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
         SSH_KEY: {{private-repo-key}}
+    - task: pljava_rhel5_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: pljava_rhel5_gppkg
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: plperl_rhel5_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: plperl_rhel5_gppkg
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: ddboost_rhel5_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: ddboost_rhel5_gppkg
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: plr_rhel5_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: plr_rhel5_gppkg
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: pgcrypto_rhel5_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        gpdb_installer: pgcrypto_rhel5_gppkg
+      params:
+        REMOTE_USER: build
+        REMOTE_HOST: artifacts.ci.eng.pivotal.io
+        REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+        FILE_TO_UPLOAD: gpdb_installer/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
 
 - name: gpdb_sync_to_dist_sles
   public: true
@@ -727,6 +906,16 @@ jobs:
     - get: installer_sles11sp4_gpdb_loaders
       passed: [compile_gpdb_sles]
     - get: postgis_sles11sp4_gppkg
+      passed: [compile_gpdb_sles]
+    - get: plr_sles11sp4_gppkg
+      passed: [compile_gpdb_sles]
+    - get: pljava_sles11sp4_gppkg
+      passed: [compile_gpdb_sles]
+    - get: plperl_sles11sp4_gppkg
+      passed: [compile_gpdb_sles]
+    - get: ddboost_sles11sp4_gppkg
+      passed: [compile_gpdb_sles]
+    - get: pgcrypto_sles11sp4_gppkg
       passed: [compile_gpdb_sles]
   - task: gpdb_sles_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -777,6 +966,56 @@ jobs:
       REMOTE_HOST: artifacts.ci.eng.pivotal.io
       REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
       FILE_TO_UPLOAD: gpdb_installer/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-suse11-x86_64.gppkg
+      SSH_KEY: {{private-repo-key}}
+  - task: pljava_sles11sp4_gppkg_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: pljava_sles11sp4_gppkg
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
+      SSH_KEY: {{private-repo-key}}
+  - task: plperl_sles11sp4_gppkg_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: plperl_sles11sp4_gppkg
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
+      SSH_KEY: {{private-repo-key}}
+  - task: ddboost_sles11sp4_gppkg_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: ddboost_sles11sp4_gppkg
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-suse11-x86_64.gppkg
+      SSH_KEY: {{private-repo-key}}
+  - task: plr_sles11sp4_gppkg_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: plr_sles11sp4_gppkg
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-suse11-x86_64.gppkg
+      SSH_KEY: {{private-repo-key}}
+  - task: pgcrypto_sles11sp4_gppkg_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      gpdb_installer: pgcrypto_sles11sp4_gppkg
+    params:
+      REMOTE_USER: build
+      REMOTE_HOST: artifacts.ci.eng.pivotal.io
+      REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
+      FILE_TO_UPLOAD: gpdb_installer/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-suse11-x86_64.gppkg
       SSH_KEY: {{private-repo-key}}
 
 # Stage 4: Behave Tests

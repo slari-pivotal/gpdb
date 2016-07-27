@@ -1,18 +1,20 @@
 #!/bin/bash -l
-
 set -exo pipefail
+
+export GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
+export GPPKGINSTLOC=$(pwd)/gpdb_artifacts
 
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
 
 function prep_env_for_centos() {
-  ln -s "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/python-2.6.2" /opt
+  ln -sf "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/python-2.6.2" /opt
   export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.39.x86_64
   export PATH=${JAVA_HOME}/bin:${PATH}
 }
 
 function prep_env_for_sles() {
-  ln -s "$(pwd)/gpdb_src/gpAux/ext/suse11_x86_64/python-2.6.2" /opt
+  ln -sf "$(pwd)/gpdb_src/gpAux/ext/suse11_x86_64/python-2.6.2" /opt
   export JAVA_HOME=/usr/lib64/jvm/java-1.6.0-openjdk-1.6.0
   export PATH=${JAVA_HOME}/bin:${PATH}
 }
@@ -31,9 +33,9 @@ function build_gpdb() {
   popd
 }
 
-function build_postgis() {
-  pushd gpdb_src/gpAux/extensions/postgis-2.0.3/package
-    make INSTLOC=/usr/local/greenplum-db-devel
+function build_gppkg() {
+  pushd gpdb_src/gpAux
+    make gppkg BLD_TARGETS="gppkg" INSTLOC=$GREENPLUM_INSTALL_DIR GPPKGINSTLOC=$GPPKGINSTLOC RELENGTOOLS=/opt/releng/tools
   popd
 }
 
@@ -45,7 +47,7 @@ function unittest_check_gpdb() {
 
 function export_gpdb() {
   TARBALL=$(pwd)/gpdb_artifacts/bin_gpdb.tar.gz
-  pushd /usr/local/greenplum-db-devel
+  pushd $GREENPLUM_INSTALL_DIR
     source greenplum_path.sh
     python -m compileall -x test .
     chmod -R 755 .
@@ -58,8 +60,7 @@ function export_gpdb_extensions() {
   pushd gpdb_src/gpAux
     chmod 755 greenplum-*zip
     cp greenplum-*zip "$BIN_FOLDER"/
-    chmod 755 extensions/*/package/*.gppkg
-    cp extensions/*/package/*.gppkg "$BIN_FOLDER"/
+    chmod 755 $GPPKGINSTLOC/*.gppkg
   popd
 }
 
@@ -87,7 +88,7 @@ function _main() {
     BLD_TARGET_OPTION=("")
   fi
   build_gpdb "${BLD_TARGET_OPTION[@]}"
-  build_postgis
+  build_gppkg
   unittest_check_gpdb
   export_gpdb
   export_gpdb_extensions
