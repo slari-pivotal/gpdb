@@ -64,7 +64,7 @@ resources:
 - name: gpdb_src
   type: git
   source:
-    branch: 4.3_STABLE
+    branch: 4.3.9.0
     private_key: {{private-repo-key}}
     uri: git@github.com:greenplum-db/gpdb4.git
 
