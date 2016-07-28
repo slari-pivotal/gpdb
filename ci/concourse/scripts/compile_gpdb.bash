@@ -3,7 +3,7 @@ set -exo pipefail
 
 GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
 export GPPKGINSTLOC
-GPPKGINSTLOC=$(pwd)/gpdb_artifacts
+GPPKGINSTLOC=$(pwd)/$OUTPUT_ARTIFACT_DIR
 
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
@@ -57,7 +57,7 @@ function unittest_check_gpdb() {
 }
 
 function export_gpdb() {
-  TARBALL=$(pwd)/gpdb_artifacts/bin_gpdb.tar.gz
+  TARBALL="$GPPKGINSTLOC"/bin_gpdb.tar.gz
   pushd $GREENPLUM_INSTALL_DIR
     source greenplum_path.sh
     python -m compileall -x test .
@@ -67,10 +67,9 @@ function export_gpdb() {
 }
 
 function export_gpdb_extensions() {
-  BIN_FOLDER=$(pwd)/gpdb_artifacts
   pushd gpdb_src/gpAux
     chmod 755 greenplum-*zip
-    cp greenplum-*zip "$BIN_FOLDER"/
+    cp greenplum-*zip "$GPPKGINSTLOC"/
     chmod 755 "$GPPKGINSTLOC"/*.gppkg
   popd
 }

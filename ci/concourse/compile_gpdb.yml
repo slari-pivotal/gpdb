@@ -16,3 +16,4 @@ run:
 params:
   TARGET_OS:
   BLD_TARGETS: clients connectivity loaders
+  OUTPUT_ARTIFACT_DIR: gpdb_artifacts
