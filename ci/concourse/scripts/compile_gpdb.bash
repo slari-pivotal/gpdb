@@ -1,8 +1,9 @@
 #!/bin/bash -l
 set -exo pipefail
 
-export GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
-export GPPKGINSTLOC=$(pwd)/gpdb_artifacts
+GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
+export GPPKGINSTLOC
+GPPKGINSTLOC=$(pwd)/gpdb_artifacts
 
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
@@ -45,7 +46,7 @@ function build_gpdb() {
 
 function build_gppkg() {
   pushd gpdb_src/gpAux
-    make gppkg BLD_TARGETS="gppkg" INSTLOC=$GREENPLUM_INSTALL_DIR GPPKGINSTLOC=$GPPKGINSTLOC RELENGTOOLS=/opt/releng/tools
+    make gppkg BLD_TARGETS="gppkg" INSTLOC="$GREENPLUM_INSTALL_DIR" GPPKGINSTLOC="$GPPKGINSTLOC" RELENGTOOLS=/opt/releng/tools
   popd
 }
 
@@ -70,7 +71,7 @@ function export_gpdb_extensions() {
   pushd gpdb_src/gpAux
     chmod 755 greenplum-*zip
     cp greenplum-*zip "$BIN_FOLDER"/
-    chmod 755 $GPPKGINSTLOC/*.gppkg
+    chmod 755 "$GPPKGINSTLOC"/*.gppkg
   popd
 }
 
