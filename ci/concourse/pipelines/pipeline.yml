@@ -363,36 +363,38 @@ jobs:
     params:
       TARGET_OS: centos
       BLD_TARGETS: clients connectivity loaders
+    output_mapping:
+      gpdb_artifacts: rhel5_artifacts
   - put: bin_gpdb_centos
     params:
-      from: gpdb_artifacts/bin_gpdb.tar.gz
+      from: rhel5_artifacts/bin_gpdb.tar.gz
   - put: installer_rhel5_gpdb_clients
     params:
-      from: gpdb_artifacts/greenplum-clients-4.3.9.1-build-1-RHEL5-x86_64.zip
+      from: rhel5_artifacts/greenplum-clients-4.3.9.1-build-1-RHEL5-x86_64.zip
   - put: installer_rhel5_gpdb_connectivity
     params:
-      from: gpdb_artifacts/greenplum-connectivity-4.3.9.1-build-1-RHEL5-x86_64.zip
+      from: rhel5_artifacts/greenplum-connectivity-4.3.9.1-build-1-RHEL5-x86_64.zip
   - put: installer_rhel5_gpdb_loaders
     params:
-      from: gpdb_artifacts/greenplum-loaders-4.3.9.1-build-1-RHEL5-x86_64.zip
+      from: rhel5_artifacts/greenplum-loaders-4.3.9.1-build-1-RHEL5-x86_64.zip
   - put: postgis_rhel5_gppkg
     params:
-      from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
+      from: rhel5_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
   - put: pgcrypto_rhel5_gppkg
     params:
-      from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
+      from: rhel5_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
   - put: ddboost_rhel5_gppkg
     params:
-      from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+      from: rhel5_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
   - put: pljava_rhel5_gppkg
     params:
-      from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+      from: rhel5_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
   - put: plperl_rhel5_gppkg
     params:
-      from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+      from: rhel5_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
   - put: plr_rhel5_gppkg
     params:
-      from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+      from: rhel5_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
   - put: sync_tools_gpdb_centos
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
@@ -411,36 +413,38 @@ jobs:
     params:
       TARGET_OS: sles
       BLD_TARGETS: clients connectivity loaders
+    output_mapping:
+      gpdb_artifacts: sles11_artifacts
   - put: bin_gpdb_sles
     params:
-      from: gpdb_artifacts/bin_gpdb.tar.gz
+      from: sles11_artifacts/bin_gpdb.tar.gz
   - put: installer_sles11_gpdb_clients
     params:
-      from: gpdb_artifacts/greenplum-clients-4.3.9.1-build-1-sles11_x86_64.zip
+      from: sles11_artifacts/greenplum-clients-4.3.9.1-build-1-sles11_x86_64.zip
   - put: installer_sles11_gpdb_connectivity
     params:
-      from: gpdb_artifacts/greenplum-connectivity-4.3.9.1-build-1-sles11_x86_64.zip
+      from: sles11_artifacts/greenplum-connectivity-4.3.9.1-build-1-sles11_x86_64.zip
   - put: installer_sles11_gpdb_loaders
     params:
-      from: gpdb_artifacts/greenplum-loaders-4.3.9.1-build-1-sles11_x86_64.zip
+      from: sles11_artifacts/greenplum-loaders-4.3.9.1-build-1-sles11_x86_64.zip
   - put: postgis_sles11_gppkg
     params:
-      from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-sles11-x86_64.gppkg
+      from: sles11_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-sles11-x86_64.gppkg
   - put: pgcrypto_sles11_gppkg
     params:
-      from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-sles11-x86_64.gppkg
+      from: sles11_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-sles11-x86_64.gppkg
   - put: ddboost_sles11_gppkg
     params:
-      from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-sles11-x86_64.gppkg
+      from: sles11_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-sles11-x86_64.gppkg
   - put: pljava_sles11_gppkg
     params:
-      from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
+      from: sles11_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
   - put: plperl_sles11_gppkg
     params:
-      from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
+      from: sles11_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
   - put: plr_sles11_gppkg
     params:
-      from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
+      from: sles11_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
   - put: sync_tools_gpdb_sles
     params:
       from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
