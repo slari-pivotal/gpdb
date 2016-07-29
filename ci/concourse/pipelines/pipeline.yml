@@ -3,23 +3,6 @@
 ## ======================================================================
 
 groups:
-- name: CentOS/RHEL
-  jobs:
-  - compile_gpdb_centos
-  - icb_orca_centos
-  - icb_planner_centos
-  - icg_orca_centos
-  - icg_planner_centos
-  - MU_check_centos
-  - gpdb_packaging_centos
-  - gpdb_rc_packaging_centos
-  - gpdb_src_packaging_centos
-  - gpdb_sync_to_dist_centos
-  - MU_backup_smoke_centos
-  - MU_backup_centos
-  - manual_testing_on_pulse_centos
-  - manual_appliance_testing_centos
-  - push_to_pivnet_manually_centos
 - name: all
   jobs:
   - compile_gpdb_centos
@@ -45,6 +28,23 @@ groups:
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
+- name: CentOS/RHEL
+  jobs:
+  - compile_gpdb_centos
+  - icb_orca_centos
+  - icb_planner_centos
+  - icg_orca_centos
+  - icg_planner_centos
+  - MU_check_centos
+  - gpdb_packaging_centos
+  - gpdb_rc_packaging_centos
+  - gpdb_src_packaging_centos
+  - gpdb_sync_to_dist_centos
+  - MU_backup_smoke_centos
+  - MU_backup_centos
+  - manual_testing_on_pulse_centos
+  - manual_appliance_testing_centos
+  - push_to_pivnet_manually_centos
 - name: SLES
   jobs:
   - compile_gpdb_sles
