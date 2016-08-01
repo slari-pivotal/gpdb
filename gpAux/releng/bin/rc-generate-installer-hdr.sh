@@ -97,9 +97,9 @@ add_platform_check() {
 		EOF_HEADER
     fi
 
-    if [ "${MPP_ARCH}" = "SuSE11-x86_64" ] ; then
+    if [ "${MPP_ARCH}" = "sles11-x86_64" ] ; then
 		cat <<-EOF_HEADER
-			platform="SuSE"
+			platform="sles"
 			arch=x86_64
 			if [ -f /etc/SuSE-release ]; then
 			    if [ \`uname -m\` != "\${arch}" ] ; then

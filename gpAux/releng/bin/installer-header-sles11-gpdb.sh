@@ -42,7 +42,7 @@ Error: GNU tar is needed to extract this installer.
 EOF
     exit 1
 fi
-platform="SuSE"
+platform="sles"
 arch=x86_64
 if [ -f /etc/SuSE-release ]; then
     if [ `uname -m` != "${arch}" ] ; then

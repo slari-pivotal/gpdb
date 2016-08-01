@@ -157,7 +157,7 @@ def getOs():
     dist=None
     fdesc = None
     RHId = "/etc/redhat-release"
-    SuSEId = "/etc/SuSE-release"
+    slesId = "/etc/SuSE-release"
     try: 
         fdesc = open(RHId)
         for line in fdesc: 
@@ -172,11 +172,11 @@ def getOs():
         if fdesc :
             fdesc.close()
     try: 
-        fdesc = open(SuSEId)
+        fdesc = open(slesId)
         for line in fdesc: 
             line = line.rstrip()   
             if re.match('SUSE', line):
-                dist = 'SuSE' 
+                dist = 'sles'
     except IOError:
         pass
     finally:

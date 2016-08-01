@@ -70,7 +70,7 @@ ifeq "$(BLD_ARCH)" "rhel5_x86_64"
 LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib64
 endif
 
-ifeq "$(BLD_ARCH)" "suse11_x86_64"
+ifeq "$(BLD_ARCH)" "sles11_x86_64"
 LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib64
 endif
 

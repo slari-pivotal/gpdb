@@ -25,8 +25,8 @@ def get_os():
     os_string = ''
     if dist.lower() == 'redhat':
         os_string += 'rhel'
-    elif dist.lower() == 'suse':
-        os_string += 'suse'
+    elif dist.lower() == 'sles':
+        os_string += 'sles'
 
     os_string += major_release
     

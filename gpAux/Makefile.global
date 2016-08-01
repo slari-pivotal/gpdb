@@ -7,8 +7,8 @@ export BLD_ARCH:=$(shell $(BLD_TOP)/releng/set_bld_arch.sh)
 endif
 
 # map builds on OpenSUSE to look like SUSE enterprise 11, for now
-ifeq "$(BLD_ARCH)" "suse11.4_x86_64"
-export BLD_ARCH=suse11_x86_64
+ifeq "$(BLD_ARCH)" "sles11.4_x86_64"
+export BLD_ARCH=sles11_x86_64
 endif
 
 # include thirdparty infrastructure which depends on WHERE_THE...
@@ -90,7 +90,7 @@ sol10_x86_64_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 sol10_x86_32_PYTHON=/opt/python32-2.5.1
 sol10_sparc_64_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 sol10_sparc_32_PYTHON=/opt/python32-2.5.1
-suse11_x86_64_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
+sles11_x86_64_PYTHON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 BLD_PYTHON=$($(BLD_ARCH)_PYTHON)
 
 # perfmon version of python since at some point
@@ -105,7 +105,7 @@ sol10_x86_64_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 sol10_x86_32_PYTHON_PERFMON=/opt/python32-2.5.1
 sol10_sparc_64_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 sol10_sparc_32_PYTHON_PERFMON=/opt/python32-2.5.1
-suse11_x86_64_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
+sles11_x86_64_PYTHON_PERFMON=$(BLD_THIRDPARTY_DIR)/python-2.6.2
 BLD_PYTHON_PERFMON=$($(BLD_ARCH)_PYTHON_PERFMON)
 
 # if PYTHON was specified above, use it for the build
@@ -151,7 +151,7 @@ sol10_sparc_32_BLD_CFLAGS=-m32
 sol10_sparc_BLD_CFLAGS=-m64 -mcpu=v9
 sol10_x86_64_BLD_CFLAGS=-m64
 sol10_x86_32_BLD_CFLAGS=-m32
-suse11_x86_64_BLD_CFLAGS=-m64 -msse4.2 -DSUSE11
+sles11_x86_64_BLD_CFLAGS=-m64 -msse4.2 -DSLES11
 win64_BLD_CFLAGS=-m64
 win32_BLD_CFLAGS=-m32
 aix5_ppc_64_BLD_CFLAGS=-maix64

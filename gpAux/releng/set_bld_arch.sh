@@ -19,7 +19,7 @@ case "`uname -s`" in
     if [ -f /etc/SuSE-release ]; then
         case "`cat /etc/SuSE-release`" in
             *)
-            BLD_ARCH_HOST="suse`head -1 /etc/SuSE-release | sed -e 's/SUSE Linux Enterprise Server/SuSE/' | awk '{print $2}'`_`uname -p | sed -e s/i686/x86_32/`"
+            BLD_ARCH_HOST="sles`head -1 /etc/SuSE-release | sed -e 's/SUSE Linux Enterprise Server/firsttoken/' | awk '{print $2}'`_`uname -p | sed -e s/i686/x86_32/`"
             ;;
         esac
     fi
