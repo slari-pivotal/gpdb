@@ -26,8 +26,18 @@ function make_sync_tools() {
   popd
 }
 
+function set_gcc() {
+  if [ "$TARGET_OS" == "centos" ]; then
+    # If centos 6 or above, use system defaults. Else source gcc environment to set gcc to 4.4.2
+    if grep -q "release 5" /etc/redhat-release; then
+      source /opt/gcc_env.sh
+    fi
+  else
+    source /opt/gcc_env.sh
+  fi
+}
+
 function build_gpdb() {
-  source /opt/gcc_env.sh
   pushd gpdb_src/gpAux
     make "$1" GPROOT=/usr/local dist
   popd
@@ -87,6 +97,7 @@ function _main() {
   else
     BLD_TARGET_OPTION=("")
   fi
+  set_gcc
   build_gpdb "${BLD_TARGET_OPTION[@]}"
   build_gppkg
   unittest_check_gpdb

@@ -1386,11 +1386,11 @@ gccVersionCheck :
 
 ## ----------------------------------------------------------------------
 
-# ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 suse11_x86_64 suse10_x86_64))
-# GPPKG_SOURCES = \
-# 	../src/pl/plperl \
-# 	$(NULL)
-# else
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64))
+GPPKG_SOURCES = \
+	../src/pl/plperl \
+	$(NULL)
+else
 # Removed filtering logic for building gppkg as on suse11. It was only building
 # pl/perl package and essentially since gpdb-server is now being built for suse11
 # we should build the gppkg for suse11.
@@ -1416,7 +1416,7 @@ GPPKG_SOURCES = \
 	ifneq ($(wildcard ../contrib/pg_osm),)
 		GPPKG_SOURCES := ../contrib/pg_osm $(GPPKG_SOURCES)
 	endif
-# endif
+endif
 
 ## ----------------------------------------------------------------------
 
