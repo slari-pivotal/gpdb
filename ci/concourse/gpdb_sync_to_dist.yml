@@ -8,12 +8,9 @@ image_resource:
     email: releng@pivotal.io
 inputs:
   - name: gpdb_src
-  - name: gpdb_src_archive
-  - name: gpdb_installer
+  - name: artifact_to_upload
 run:
   path: gpdb_src/ci/concourse/scripts/gpdb_sync_to_dist.bash
 params:
-  REMOTE_USER: user
-  REMOTE_HOST: fully.qualified.hostname
-  REMOTE_DIRECTORY: /path/to/directory/
+  SSH_KEY: ssh-key-goes-here
   FILE_TO_UPLOAD: component_os_gpdb/greenplum-db-VERSION-OS-x86_64.zip
