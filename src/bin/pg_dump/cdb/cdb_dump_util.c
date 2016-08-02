@@ -426,6 +426,7 @@ MakeString(const char *fmt,...)
 
 		nBytes *= 2;
 		pszNew = (char *) realloc(pszRtn, nBytes);
+
 		if (pszNew == NULL)
 		{
 			free(pszRtn);
