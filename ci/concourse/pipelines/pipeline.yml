@@ -368,13 +368,13 @@ jobs:
         from: gpdb_artifacts/bin_gpdb.tar.gz
     - put: installer_rhel5_gpdb_clients
       params:
-        from: gpdb_artifacts/greenplum-clients-4.3.9.1-build-1-rhel5-x86_64.zip
+        from: gpdb_artifacts/greenplum-clients-4.3.9.1-build-1-RHEL5-x86_64.zip
     - put: installer_rhel5_gpdb_connectivity
       params:
-        from: gpdb_artifacts/greenplum-connectivity-4.3.9.1-build-1-rhel5-x86_64.zip
+        from: gpdb_artifacts/greenplum-connectivity-4.3.9.1-build-1-RHEL5-x86_64.zip
     - put: installer_rhel5_gpdb_loaders
       params:
-        from: gpdb_artifacts/greenplum-loaders-4.3.9.1-build-1-rhel5-x86_64.zip
+        from: gpdb_artifacts/greenplum-loaders-4.3.9.1-build-1-RHEL5-x86_64.zip
     - put: postgis_rhel5_gppkg
       params:
         from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
