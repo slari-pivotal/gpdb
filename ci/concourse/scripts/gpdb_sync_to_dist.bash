@@ -4,7 +4,7 @@ set -euo pipefail
 
 REMOTE_USER="build"
 REMOTE_HOST="artifacts.ci.eng.pivotal.io"
-REMOTE_DIRECTORY="/data/dist/GPDB/127285279_pipeline_refactor_builds"
+REMOTE_DIRECTORY="/data/dist/GPDB/builds_from_concourse"
 
 function echo_paths() {
   echo "Target remote directory: $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIRECTORY"
