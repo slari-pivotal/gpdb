@@ -151,7 +151,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: gpdb_src_archive/greenplum-db-4.3.9.1-RHEL5-x86_64_src.tar.gz
+    versioned_file: gpdb_src_archive/greenplum-db-4.3.9.1-src.tar.gz
 
 - name: installer_rhel5_gpdb_rc
   type: s3
@@ -738,10 +738,10 @@ jobs:
   - task: gpdb_src_packaging
     file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
     params:
-      GPDB_SRC_TAR_GZ: gpdb_src_archive/greenplum-db-4.3.9.1-RHEL5-x86_64_src.tar.gz
+      GPDB_SRC_TAR_GZ: gpdb_src_archive/greenplum-db-4.3.9.1-src.tar.gz
   - put: gpdb_src_archive
     params:
-      file: gpdb_src_archive/greenplum-db-4.3.9.1-RHEL5-x86_64_src.tar.gz
+      file: gpdb_src_archive/greenplum-db-4.3.9.1-src.tar.gz
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
 - name: gpdb_sync_to_dist
@@ -803,7 +803,7 @@ jobs:
       input_mapping:
         artifact_to_upload: gpdb_src_archive
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-RHEL5-x86_64_src.tar.gz
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-src.tar.gz
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
