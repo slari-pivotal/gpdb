@@ -20,6 +20,7 @@
 #include "commands/explain.h"
 #include "commands/prepare.h"
 #include "commands/trigger.h"
+#include "commands/queue.h"
 #include "executor/instrument.h"
 #include "nodes/pg_list.h"
 #include "nodes/print.h"
@@ -460,6 +461,17 @@ ExplainOnePlan_internal(PlannedStmt *plannedstmt,
 			                    ActiveSnapshot, InvalidSnapshot,
 								None_Receiver, params,
 								stmt->analyze);
+
+	if (gp_enable_gpperfmon && Gp_role == GP_ROLE_DISPATCH)
+	{
+		Assert(queryString);
+		gpmon_qlog_query_submit(queryDesc->gpmon_pkt);
+		gpmon_qlog_query_text(queryDesc->gpmon_pkt,
+				queryString,
+				application_name,
+				GetResqueueName(GetResQueueId()),
+				GetResqueuePriority(GetResQueueId()));
+	}
 
     /*
      * Start timing.
