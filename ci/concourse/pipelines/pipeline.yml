@@ -19,9 +19,7 @@ groups:
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging
   - gpdb_rc_packaging_sles
-  - gpdb_sync_to_dist_centos
-  - gpdb_sync_to_dist_sles
-  - gpdb_src_sync_to_dist
+  - gpdb_sync_to_dist
   - MU_backup_smoke_centos
   - MU_backup_centos
   - manual_testing_on_pulse_centos
@@ -40,8 +38,7 @@ groups:
   - gpdb_packaging_centos
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging
-  - gpdb_sync_to_dist_centos
-  - gpdb_src_sync_to_dist
+  - gpdb_sync_to_dist
   - MU_backup_smoke_centos
   - MU_backup_centos
   - manual_testing_on_pulse_centos
@@ -54,8 +51,7 @@ groups:
   - icg_planner_sles
   - gpdb_packaging_sles
   - gpdb_rc_packaging_sles
-  - gpdb_sync_to_dist_sles
-  - gpdb_src_sync_to_dist
+  - gpdb_sync_to_dist
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_sles
 
@@ -366,39 +362,40 @@ jobs:
     params:
       TARGET_OS: centos
       BLD_TARGETS: clients connectivity loaders
-  - put: bin_gpdb_centos
-    params:
-      from: gpdb_artifacts/bin_gpdb.tar.gz
-  - put: installer_rhel5_gpdb_clients
-    params:
-      from: gpdb_artifacts/greenplum-clients-4.3.9.1-build-1-RHEL5-x86_64.zip
-  - put: installer_rhel5_gpdb_connectivity
-    params:
-      from: gpdb_artifacts/greenplum-connectivity-4.3.9.1-build-1-RHEL5-x86_64.zip
-  - put: installer_rhel5_gpdb_loaders
-    params:
-      from: gpdb_artifacts/greenplum-loaders-4.3.9.1-build-1-RHEL5-x86_64.zip
-  - put: postgis_rhel5_gppkg
-    params:
-      from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
-  - put: pgcrypto_rhel5_gppkg
-    params:
-      from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
-  - put: ddboost_rhel5_gppkg
-    params:
-      from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
-  - put: pljava_rhel5_gppkg
-    params:
-      from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
-  - put: plperl_rhel5_gppkg
-    params:
-      from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
-  - put: plr_rhel5_gppkg
-    params:
-      from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
-  - put: sync_tools_gpdb_centos
-    params:
-      from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+  - aggregate:
+    - put: bin_gpdb_centos
+      params:
+        from: gpdb_artifacts/bin_gpdb.tar.gz
+    - put: installer_rhel5_gpdb_clients
+      params:
+        from: gpdb_artifacts/greenplum-clients-4.3.9.1-build-1-RHEL5-x86_64.zip
+    - put: installer_rhel5_gpdb_connectivity
+      params:
+        from: gpdb_artifacts/greenplum-connectivity-4.3.9.1-build-1-RHEL5-x86_64.zip
+    - put: installer_rhel5_gpdb_loaders
+      params:
+        from: gpdb_artifacts/greenplum-loaders-4.3.9.1-build-1-RHEL5-x86_64.zip
+    - put: postgis_rhel5_gppkg
+      params:
+        from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
+    - put: pgcrypto_rhel5_gppkg
+      params:
+        from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
+    - put: ddboost_rhel5_gppkg
+      params:
+        from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+    - put: pljava_rhel5_gppkg
+      params:
+        from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+    - put: plperl_rhel5_gppkg
+      params:
+        from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+    - put: plr_rhel5_gppkg
+      params:
+        from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+    - put: sync_tools_gpdb_centos
+      params:
+        from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
 
 - name: compile_gpdb_sles
   public: true
@@ -414,39 +411,40 @@ jobs:
     params:
       TARGET_OS: sles
       BLD_TARGETS: clients connectivity loaders
-  - put: bin_gpdb_sles
-    params:
-      from: gpdb_artifacts/bin_gpdb.tar.gz
-  - put: installer_sles11_gpdb_clients
-    params:
-      from: gpdb_artifacts/greenplum-clients-4.3.9.1-build-1-sles11_x86_64.zip
-  - put: installer_sles11_gpdb_connectivity
-    params:
-      from: gpdb_artifacts/greenplum-connectivity-4.3.9.1-build-1-sles11_x86_64.zip
-  - put: installer_sles11_gpdb_loaders
-    params:
-      from: gpdb_artifacts/greenplum-loaders-4.3.9.1-build-1-sles11_x86_64.zip
-  - put: postgis_sles11_gppkg
-    params:
-      from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-sles11-x86_64.gppkg
-  - put: pgcrypto_sles11_gppkg
-    params:
-      from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-sles11-x86_64.gppkg
-  - put: ddboost_sles11_gppkg
-    params:
-      from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-sles11-x86_64.gppkg
-  - put: pljava_sles11_gppkg
-    params:
-      from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
-  - put: plperl_sles11_gppkg
-    params:
-      from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
-  - put: plr_sles11_gppkg
-    params:
-      from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
-  - put: sync_tools_gpdb_sles
-    params:
-      from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+  - aggregate:
+    - put: bin_gpdb_sles
+      params:
+        from: gpdb_artifacts/bin_gpdb.tar.gz
+    - put: installer_sles11_gpdb_clients
+      params:
+        from: gpdb_artifacts/greenplum-clients-4.3.9.1-build-1-sles11_x86_64.zip
+    - put: installer_sles11_gpdb_connectivity
+      params:
+        from: gpdb_artifacts/greenplum-connectivity-4.3.9.1-build-1-sles11_x86_64.zip
+    - put: installer_sles11_gpdb_loaders
+      params:
+        from: gpdb_artifacts/greenplum-loaders-4.3.9.1-build-1-sles11_x86_64.zip
+    - put: postgis_sles11_gppkg
+      params:
+        from: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-sles11-x86_64.gppkg
+    - put: pgcrypto_sles11_gppkg
+      params:
+        from: gpdb_artifacts/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-sles11-x86_64.gppkg
+    - put: ddboost_sles11_gppkg
+      params:
+        from: gpdb_artifacts/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-sles11-x86_64.gppkg
+    - put: pljava_sles11_gppkg
+      params:
+        from: gpdb_artifacts/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
+    - put: plperl_sles11_gppkg
+      params:
+        from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
+    - put: plr_sles11_gppkg
+      params:
+        from: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
+    - put: sync_tools_gpdb_sles
+      params:
+        from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
 
 # Stage 2: Installcheck and Python Unit Tests
 
@@ -745,29 +743,16 @@ jobs:
     params:
       file: gpdb_src_archive/greenplum-db-4.3.9.1-RHEL5-x86_64_src.tar.gz
 
-- name: gpdb_src_sync_to_dist
+# Stage 3c: Sync packages to dist.eng.pivotal.io
+- name: gpdb_sync_to_dist
   public: true
+  serial: true
   plan:
   - aggregate:
     - get: gpdb_src
     - get: gpdb_src_archive
       passed: [gpdb_src_packaging]
       trigger: true
-  - task: gpdb_src_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: gpdb_src_archive
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-RHEL5-x86_64_src.tar.gz
-      SSH_KEY: {{private-repo-key}}
-
-# Stage 3c: Sync packages to dist.eng.pivotal.io
-- name: gpdb_sync_to_dist_centos
-  public: true
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      passed: [gpdb_packaging_centos]
     - get: installer_rhel5_gpdb
       passed: [gpdb_packaging_centos]
     - get: installer_appliance_rhel5_gpdb
@@ -791,7 +776,35 @@ jobs:
       passed: [compile_gpdb_centos]
     - get: pgcrypto_rhel5_gppkg
       passed: [compile_gpdb_centos]
+    - get: installer_sles11_gpdb
+      passed: [gpdb_packaging_sles]
+      trigger: true
+    - get: installer_sles11_gpdb_clients
+      passed: [compile_gpdb_sles]
+    - get: installer_sles11_gpdb_connectivity
+      passed: [compile_gpdb_sles]
+    - get: installer_sles11_gpdb_loaders
+      passed: [compile_gpdb_sles]
+    - get: postgis_sles11_gppkg
+      passed: [compile_gpdb_sles]
+    - get: plr_sles11_gppkg
+      passed: [compile_gpdb_sles]
+    - get: pljava_sles11_gppkg
+      passed: [compile_gpdb_sles]
+    - get: plperl_sles11_gppkg
+      passed: [compile_gpdb_sles]
+    - get: ddboost_sles11_gppkg
+      passed: [compile_gpdb_sles]
+    - get: pgcrypto_sles11_gppkg
+      passed: [compile_gpdb_sles]
   - aggregate:
+    - task: gpdb_src_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: gpdb_src_archive
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-RHEL5-x86_64_src.tar.gz
+        SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       input_mapping:
@@ -869,104 +882,76 @@ jobs:
       params:
         FILE_TO_UPLOAD: artifact_to_upload/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
         SSH_KEY: {{private-repo-key}}
-
-- name: gpdb_sync_to_dist_sles
-  public: true
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      passed: [gpdb_packaging_sles]
-    - get: installer_sles11_gpdb
-      passed: [gpdb_packaging_sles]
-      trigger: true
-    - get: installer_sles11_gpdb_clients
-      passed: [compile_gpdb_sles]
-    - get: installer_sles11_gpdb_connectivity
-      passed: [compile_gpdb_sles]
-    - get: installer_sles11_gpdb_loaders
-      passed: [compile_gpdb_sles]
-    - get: postgis_sles11_gppkg
-      passed: [compile_gpdb_sles]
-    - get: plr_sles11_gppkg
-      passed: [compile_gpdb_sles]
-    - get: pljava_sles11_gppkg
-      passed: [compile_gpdb_sles]
-    - get: plperl_sles11_gppkg
-      passed: [compile_gpdb_sles]
-    - get: ddboost_sles11_gppkg
-      passed: [compile_gpdb_sles]
-    - get: pgcrypto_sles11_gppkg
-      passed: [compile_gpdb_sles]
-  - task: gpdb_sles_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: installer_sles11_gpdb
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-SLES11-x86_64.zip
-      SSH_KEY: {{private-repo-key}}
-  - task: gpdb_sles11_clients_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: installer_sles11_gpdb_clients
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1-build-1-SLES11-x86_64.zip
-      SSH_KEY: {{private-repo-key}}
-  - task: gpdb_sles11_connectivity_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: installer_sles11_gpdb_connectivity
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.9.1-build-1-SLES11-x86_64.zip
-      SSH_KEY: {{private-repo-key}}
-  - task: gpdb_sles11_loaders_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: installer_sles11_gpdb_loaders
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.9.1-build-1-SLES11-x86_64.zip
-      SSH_KEY: {{private-repo-key}}
-  - task: postgis_sles11_gppkg_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: postgis_sles11_gppkg
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-sles11-x86_64.gppkg
-      SSH_KEY: {{private-repo-key}}
-  - task: pljava_sles11_gppkg_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: pljava_sles11_gppkg
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
-      SSH_KEY: {{private-repo-key}}
-  - task: plperl_sles11_gppkg_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: plperl_sles11_gppkg
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
-      SSH_KEY: {{private-repo-key}}
-  - task: ddboost_sles11_gppkg_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: ddboost_sles11_gppkg
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-sles11-x86_64.gppkg
-      SSH_KEY: {{private-repo-key}}
-  - task: plr_sles11_gppkg_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: plr_sles11_gppkg
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
-      SSH_KEY: {{private-repo-key}}
-  - task: pgcrypto_sles11_gppkg_sync_to_dist
-    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-    input_mapping:
-      artifact_to_upload: pgcrypto_sles11_gppkg
-    params:
-      FILE_TO_UPLOAD: artifact_to_upload/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-sles11-x86_64.gppkg
-      SSH_KEY: {{private-repo-key}}
+    - task: gpdb_sles_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: installer_sles11_gpdb
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-sles11-x86_64.zip
+        SSH_KEY: {{private-repo-key}}
+    - task: gpdb_sles11_clients_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: installer_sles11_gpdb_clients
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1-build-1-sles11-x86_64.zip
+        SSH_KEY: {{private-repo-key}}
+    - task: gpdb_sles11_connectivity_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: installer_sles11_gpdb_connectivity
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.9.1-build-1-sles11-x86_64.zip
+        SSH_KEY: {{private-repo-key}}
+    - task: gpdb_sles11_loaders_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: installer_sles11_gpdb_loaders
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.9.1-build-1-sles11-x86_64.zip
+        SSH_KEY: {{private-repo-key}}
+    - task: postgis_sles11_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: postgis_sles11_gppkg
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-sles11-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: pljava_sles11_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: pljava_sles11_gppkg
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: plperl_sles11_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: plperl_sles11_gppkg
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-sles11-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: ddboost_sles11_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: ddboost_sles11_gppkg
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-sles11-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: plr_sles11_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: plr_sles11_gppkg
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
+    - task: pgcrypto_sles11_gppkg_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: pgcrypto_sles11_gppkg
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-sles11-x86_64.gppkg
+        SSH_KEY: {{private-repo-key}}
 
 # Stage 4: Behave Tests
 
@@ -1024,7 +1009,7 @@ jobs:
   public: true
   plan:
   - get: installer_rhel5_gpdb
-    passed: [gpdb_sync_to_dist_centos]
+    passed: [gpdb_sync_to_dist]
   - task: ask_teams_to_kick_off_jobs
     config:
       platform: linux
@@ -1035,7 +1020,7 @@ jobs:
   public: true
   plan:
   - get: installer_appliance_rhel5_gpdb
-    passed: [gpdb_sync_to_dist_centos]
+    passed: [gpdb_sync_to_dist]
   - task: ask_PMs_to_verify
     config:
       platform: linux
@@ -1046,7 +1031,7 @@ jobs:
   public: true
   plan:
   - get: installer_sles11_gpdb
-    passed: [gpdb_sync_to_dist_sles]
+    passed: [gpdb_sync_to_dist]
   - task: ask_teams_to_kick_off_jobs
     config:
       platform: linux
