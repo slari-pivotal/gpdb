@@ -798,6 +798,7 @@ bool		optimizer_enable_derive_stats_all_groups;
 bool		optimizer_explain_show_status;
 bool		optimizer_prefer_scalar_dqa_multistage_agg;
 bool 		optimizer_parallel_union;
+bool		optimizer_array_constraints;
 
 /* Security */
 bool		gp_reject_internal_tcp_conn = true;
@@ -4486,6 +4487,16 @@ static struct config_bool ConfigureNamesBool[] =
 			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
 		},
 		&optimizer_parallel_union,
+		false, NULL, NULL
+	},
+
+	{
+		{"optimizer_array_constraints", PGC_USERSET, DEVELOPER_OPTIONS,
+			gettext_noop("Allows the optimizer constraint framework to derive array constraints."),
+			NULL,
+			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+		},
+		&optimizer_array_constraints,
 		false, NULL, NULL
 	},
 

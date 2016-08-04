@@ -357,6 +357,13 @@ CConfigParamMapping::SConfigMappingElem CConfigParamMapping::m_elem[] =
 		&optimizer_parallel_union,
 		false, // m_fNegate
 		GPOS_WSZ_LIT("Enable parallel execution for UNION/UNION ALL queries.")
+		},
+
+		{
+		EopttraceArrayConstraints,
+		&optimizer_array_constraints,
+		false, // m_fNegate
+		GPOS_WSZ_LIT("Allows the optimizer constraint framework to derive array constraints.")
 		}
 };
 
