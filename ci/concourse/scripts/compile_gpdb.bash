@@ -2,8 +2,8 @@
 set -exo pipefail
 
 GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
-export GPPKGINSTLOC
-GPPKGINSTLOC=$(pwd)/$OUTPUT_ARTIFACT_DIR
+export GPDB_ARTIFACTS_DIR
+GPDB_ARTIFACTS_DIR=$(pwd)/$OUTPUT_ARTIFACT_DIR
 
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
@@ -40,24 +40,29 @@ function set_gcc() {
 
 function build_gpdb() {
   pushd gpdb_src/gpAux
-    make "$1" GPROOT=/usr/local dist
+    if [ -n "$1" ]; then
+      make "$1" GPROOT=/usr/local dist
+    else
+      make GPROOT=/usr/local dist
+    fi
   popd
 }
 
 function build_gppkg() {
   pushd gpdb_src/gpAux
-    make gppkg BLD_TARGETS="gppkg" INSTLOC="$GREENPLUM_INSTALL_DIR" GPPKGINSTLOC="$GPPKGINSTLOC" RELENGTOOLS=/opt/releng/tools
+    make gppkg BLD_TARGETS="gppkg" INSTLOC="$GREENPLUM_INSTALL_DIR" GPPKGINSTLOC="$GPDB_ARTIFACTS_DIR" RELENGTOOLS=/opt/releng/tools
   popd
 }
 
 function unittest_check_gpdb() {
   pushd gpdb_src/gpAux
+    source $GREENPLUM_INSTALL_DIR/greenplum_path.sh
     make GPROOT=/usr/local unittest-check
   popd
 }
 
 function export_gpdb() {
-  TARBALL="$GPPKGINSTLOC"/bin_gpdb.tar.gz
+  TARBALL="$GPDB_ARTIFACTS_DIR"/bin_gpdb.tar.gz
   pushd $GREENPLUM_INSTALL_DIR
     source greenplum_path.sh
     python -m compileall -x test .
@@ -68,9 +73,11 @@ function export_gpdb() {
 
 function export_gpdb_extensions() {
   pushd gpdb_src/gpAux
-    chmod 755 greenplum-*zip
-    cp greenplum-*zip "$GPPKGINSTLOC"/
-    chmod 755 "$GPPKGINSTLOC"/*.gppkg
+    if ls greenplum-*zip 1>/dev/null 2>&1; then
+      chmod 755 greenplum-*zip
+      cp greenplum-*zip "$GPDB_ARTIFACTS_DIR"/
+    fi
+    chmod 755 "$GPDB_ARTIFACTS_DIR"/*.gppkg
   popd
 }
 

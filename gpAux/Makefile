@@ -1136,19 +1136,19 @@ copy-rsa-libs:
 		cp -fp $(BLD_THIRDPARTY_LIB_DIR)/libccme_* $(INSTLOC)/lib/; \
 	fi
 	# Copy rsa lockbox libs - supported only on rhel
-ifeq "$(BLD_ARCH)" "rhel5_x86_64"
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 rhel5_x86_64))
 	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/rsa_csp $(INSTLOC)/lib/;
 endif
 
 copy-nbu-libs:
 	#Copy NetBackup libs
-ifeq "$(BLD_ARCH)" "rhel5_x86_64"
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 rhel5_x86_64))
 	rm -f $(INSTLOC)/lib/libxbsa64.so;
 	rm -f $(INSTLOC)/lib/libnbclientcST.so;
 	rm -f $(INSTLOC)/lib/libnbbasecST.so;
 	rm -f $(INSTLOC)/lib/libvxcPBXST.so;
-	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/../Netbackup/nbu71 $(INSTLOC)/lib/;
-	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/../Netbackup/nbu75 $(INSTLOC)/lib/;
+	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/../Netbackup/nbu71/lib/* $(INSTLOC)/lib/;
+	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/../Netbackup/nbu75/lib/* $(INSTLOC)/lib/;
 endif
 
 copylibs : thirdparty-dist copy-rsa-libs copy-nbu-libs
