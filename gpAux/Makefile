@@ -1136,19 +1136,19 @@ copy-rsa-libs:
 		cp -fp $(BLD_THIRDPARTY_LIB_DIR)/libccme_* $(INSTLOC)/lib/; \
 	fi
 	# Copy rsa lockbox libs - supported only on rhel
-ifeq "$(BLD_ARCH)" "rhel5_x86_64"
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 rhel5_x86_64))
 	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/rsa_csp $(INSTLOC)/lib/;
 endif
 
 copy-nbu-libs:
 	#Copy NetBackup libs
-ifeq "$(BLD_ARCH)" "rhel5_x86_64"
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 rhel5_x86_64))
 	rm -f $(INSTLOC)/lib/libxbsa64.so;
 	rm -f $(INSTLOC)/lib/libnbclientcST.so;
 	rm -f $(INSTLOC)/lib/libnbbasecST.so;
 	rm -f $(INSTLOC)/lib/libvxcPBXST.so;
-	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/../Netbackup/nbu71 $(INSTLOC)/lib/;
-	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/../Netbackup/nbu75 $(INSTLOC)/lib/;
+	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/../Netbackup/nbu71/lib/* $(INSTLOC)/lib/;
+	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/../Netbackup/nbu75/lib/* $(INSTLOC)/lib/;
 endif
 
 copylibs : thirdparty-dist copy-rsa-libs copy-nbu-libs
@@ -1386,16 +1386,11 @@ gccVersionCheck :
 
 ## ----------------------------------------------------------------------
 
-# ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 suse11_x86_64 suse10_x86_64))
-# GPPKG_SOURCES = \
-# 	../src/pl/plperl \
-# 	$(NULL)
-# else
-# Removed filtering logic for building gppkg as on suse11. It was only building
-# pl/perl package and essentially since gpdb-server is now being built for suse11
-# we should build the gppkg for suse11.
-# As of now we build for centos5 / rhel5 and suse 11
-# TODO: As we build for centos6 we can add filtering logic if necessary
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64))
+GPPKG_SOURCES = \
+	../src/pl/plperl \
+	$(NULL)
+else
 GPPKG_SOURCES = \
 	../contrib/pgcrypto \
 	../src/pl/plperl \
@@ -1416,7 +1411,7 @@ GPPKG_SOURCES = \
 	ifneq ($(wildcard ../contrib/pg_osm),)
 		GPPKG_SOURCES := ../contrib/pg_osm $(GPPKG_SOURCES)
 	endif
-# endif
+endif
 
 ## ----------------------------------------------------------------------
 

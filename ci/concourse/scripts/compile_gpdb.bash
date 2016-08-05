@@ -1,8 +1,9 @@
 #!/bin/bash -l
 set -exo pipefail
 
-export GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
-export GPPKGINSTLOC=$(pwd)/gpdb_artifacts
+GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
+export GPDB_ARTIFACTS_DIR
+GPDB_ARTIFACTS_DIR=$(pwd)/$OUTPUT_ARTIFACT_DIR
 
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
@@ -26,27 +27,42 @@ function make_sync_tools() {
   popd
 }
 
+function set_gcc() {
+  if [ "$TARGET_OS" == "centos" ]; then
+    # If centos 6 or above, use system defaults. Else source gcc environment to set gcc to 4.4.2
+    if grep -q "release 5" /etc/redhat-release; then
+      source /opt/gcc_env.sh
+    fi
+  else
+    source /opt/gcc_env.sh
+  fi
+}
+
 function build_gpdb() {
-  source /opt/gcc_env.sh
   pushd gpdb_src/gpAux
-    make "$1" GPROOT=/usr/local dist
+    if [ -n "$1" ]; then
+      make "$1" GPROOT=/usr/local dist
+    else
+      make GPROOT=/usr/local dist
+    fi
   popd
 }
 
 function build_gppkg() {
   pushd gpdb_src/gpAux
-    make gppkg BLD_TARGETS="gppkg" INSTLOC=$GREENPLUM_INSTALL_DIR GPPKGINSTLOC=$GPPKGINSTLOC RELENGTOOLS=/opt/releng/tools
+    make gppkg BLD_TARGETS="gppkg" INSTLOC="$GREENPLUM_INSTALL_DIR" GPPKGINSTLOC="$GPDB_ARTIFACTS_DIR" RELENGTOOLS=/opt/releng/tools
   popd
 }
 
 function unittest_check_gpdb() {
   pushd gpdb_src/gpAux
+    source $GREENPLUM_INSTALL_DIR/greenplum_path.sh
     make GPROOT=/usr/local unittest-check
   popd
 }
 
 function export_gpdb() {
-  TARBALL=$(pwd)/gpdb_artifacts/bin_gpdb.tar.gz
+  TARBALL="$GPDB_ARTIFACTS_DIR"/bin_gpdb.tar.gz
   pushd $GREENPLUM_INSTALL_DIR
     source greenplum_path.sh
     python -m compileall -x test .
@@ -58,9 +74,11 @@ function export_gpdb() {
 function export_gpdb_extensions() {
   BIN_FOLDER=$(pwd)/gpdb_artifacts
   pushd gpdb_src/gpAux
-    chmod 755 greenplum-*zip
-    cp greenplum-*zip "$BIN_FOLDER"/
-    chmod 755 $GPPKGINSTLOC/*.gppkg
+    if ls greenplum-*zip 1>/dev/null 2>&1; then
+      chmod 755 greenplum-*zip
+      cp greenplum-*zip "$GPDB_ARTIFACTS_DIR"/
+    fi
+    chmod 755 "$GPDB_ARTIFACTS_DIR"/*.gppkg
   popd
 }
 
@@ -87,6 +105,7 @@ function _main() {
   else
     BLD_TARGET_OPTION=("")
   fi
+  set_gcc
   build_gpdb "${BLD_TARGET_OPTION[@]}"
   build_gppkg
   unittest_check_gpdb
