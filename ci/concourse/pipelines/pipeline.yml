@@ -307,7 +307,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11_gpdb/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: installer_rhel5_gpdb/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: plperl_rhel6_gppkg
   type: s3
@@ -325,7 +325,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_rhel5_gpdb/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
 
 - name: pljava_rhel5_gppkg
   type: s3
@@ -334,7 +334,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11_gpdb/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: installer_rhel5_gpdb/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: pljava_sles11_gppkg
   type: s3
@@ -343,7 +343,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_rhel5_gpdb/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-suse11-x86_64.gppkg
 
 - name: plr_rhel5_gppkg
   type: s3
@@ -352,7 +352,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_sles11_gpdb/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: installer_rhel5_gpdb/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: plr_sles11_gppkg
   type: s3
@@ -361,7 +361,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: installer_rhel5_gpdb/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-suse11-x86_64.gppkg
+    versioned_file: installer_sles11_gpdb/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-suse11-x86_64.gppkg
 
 ## ======================================================================
 ## jobs
