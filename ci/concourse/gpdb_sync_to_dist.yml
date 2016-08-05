@@ -13,4 +13,5 @@ run:
   path: gpdb_src/ci/concourse/scripts/gpdb_sync_to_dist.bash
 params:
   SSH_KEY: ssh-key-goes-here
+  BUCKET_NAME: yes-we-use-aws-terminology-for-dist
   FILE_TO_UPLOAD: component_os_gpdb/greenplum-db-VERSION-OS-x86_64.zip
