@@ -3347,6 +3347,9 @@ setNewRelfilenodeCommon(Relation relation, Oid newrelfilenode)
 	cqContext	cqc;
 	cqContext  *pcqCtx;
 
+	ItemPointerData		persistentTid;
+	int64				persistentSerialNum;
+
 	/*
 	 * Find the pg_class tuple for the given relation.	This is not used
 	 * during bootstrap, so okay to use heap_update always.
@@ -3403,8 +3406,8 @@ setNewRelfilenodeCommon(Relation relation, Oid newrelfilenode)
 											NameStr(relation->rd_rel->relname),
 											/* doJustInTimeDirCreate */ true,
 											/* bufferPoolBulkLoad */ false,
-											&relation->rd_segfile0_relationnodeinfo.persistentTid,
-											&relation->rd_segfile0_relationnodeinfo.persistentSerialNum);
+											&persistentTid,
+											&persistentSerialNum);
 		smgrclose(srel);
 	}
 	else
@@ -3414,13 +3417,13 @@ setNewRelfilenodeCommon(Relation relation, Oid newrelfilenode)
 											/* segmentFileNum */ 0,
 											NameStr(relation->rd_rel->relname),
 											/* doJustInTimeDirCreate */ true,
-											&relation->rd_segfile0_relationnodeinfo.persistentTid,
-											&relation->rd_segfile0_relationnodeinfo.persistentSerialNum);
+											&persistentTid,
+											&persistentSerialNum);
 	}
 
 	if (Debug_check_for_invalid_persistent_tid &&
 		!Persistent_BeforePersistenceWork() &&
-		PersistentStore_IsZeroTid(&relation->rd_segfile0_relationnodeinfo.persistentTid))
+		PersistentStore_IsZeroTid(&persistentTid))
 	{	
 		elog(ERROR, 
 			 "setNewRelfilenodeCommon has invalid TID (0,0) for relation %u/%u/%u '%s', serial number " INT64_FORMAT,
@@ -3428,18 +3431,16 @@ setNewRelfilenodeCommon(Relation relation, Oid newrelfilenode)
 			 newrnode.dbNode,
 			 newrnode.relNode,
 			 NameStr(relation->rd_rel->relname),
-			 relation->rd_segfile0_relationnodeinfo.persistentSerialNum);
+			 persistentSerialNum);
 	}
 
-	relation->rd_segfile0_relationnodeinfo.isPresent = true;
-	
 	if (Debug_persistent_print)
 		elog(Persistent_DebugPrintLevel(), 
 			 "setNewRelfilenodeCommon: NEW '%s', Append-Only '%s', persistent TID %s and serial number " INT64_FORMAT,
 			 relpath(newrnode),
 			 (isAppendOnly ? "true" : "false"),
-			 ItemPointerToString(&relation->rd_segfile0_relationnodeinfo.persistentTid),
-			 relation->rd_segfile0_relationnodeinfo.persistentSerialNum);
+			 ItemPointerToString(&persistentTid),
+			 persistentSerialNum);
 
 	/* Update GETSTRUCT fields of the pg_class row */
 	rd_rel->relfilenode = newrelfilenode;
@@ -3462,8 +3463,8 @@ setNewRelfilenodeCommon(Relation relation, Oid newrelfilenode)
 						newrelfilenode,
 						/* segmentFileNum */ 0,
 						/* updateIndex */ !is_gp_relation_node_index,
-						&relation->rd_segfile0_relationnodeinfo.persistentTid,
-						relation->rd_segfile0_relationnodeinfo.persistentSerialNum);
+						&persistentTid,
+						persistentSerialNum);
 
 	caql_update_current(pcqCtx, tuple);
 	/* and Update indexes (implicit) */

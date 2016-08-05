@@ -77,6 +77,7 @@ test: qp_dpe qp_subquery qp_functions_idf qp_resource_queue
 test: olap_setup
 test: qp_olap_group
 test: qp_targeted_dispatch
+test: validate_pt_info_relcache
 
 # Tests for "compaction", i.e. VACUUM, of updatable append-only tables
 test: uao_compaction/full uao_compaction/outdated_partialindex uao_compaction/drop_column_update uao_compaction/eof_truncate uao_compaction/basic uao_compaction/outdatedindex uao_compaction/update_toast uao_compaction/outdatedindex_abort uao_compaction/delete_toast uao_compaction/alter_table_analyze uao_compaction/full_eof_truncate uao_compaction/full_threshold
