@@ -834,7 +834,7 @@ jobs:
         REMOTE_USER: build
         REMOTE_HOST: artifacts.ci.eng.pivotal.io
         REMOTE_DIRECTORY: /data/dist/GPDB/builds_from_concourse
-        FILE_TO_UPLOAD: gpdb_src_archive/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
+        FILE_TO_UPLOAD: gpdb_installer/greenplum-db-4.3.9.0-RHEL5-x86_64_src.tar.gz
         SSH_KEY: {{private-repo-key}}
     - task: gpdb_rhel5_clients_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
