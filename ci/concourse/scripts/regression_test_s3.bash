@@ -7,7 +7,11 @@ function gen_env(){
 	source /opt/gcc_env.sh
 	ln -s "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/python-2.6.2" /opt
 	source /home/gpadmin/greenplum-db-devel/greenplum_path.sh
+	
+	export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+	export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 
+	s3cmd del -r s3://s3test.pivotal.io/regress/s3write/
 	sh /home/gpadmin/setup_db.sh
 	cd "\${1}/gpdb_src/gpAux/extensions/gps3ext"
 	make -B install
@@ -38,7 +42,6 @@ function _main() {
 	echo -n "$s3conf" >/home/gpadmin/s3.b64
 	base64 -d /home/gpadmin/s3.b64 >/home/gpadmin/s3.conf
 	chown gpadmin:gpadmin /home/gpadmin/s3.conf
-	cat /home/gpadmin/s3.conf
 
 	su - gpadmin -c "bash /home/gpadmin/run_make.sh $(pwd)"
 }
