@@ -3972,8 +3972,7 @@ intorel_receive(TupleTableSlot *slot, DestReceiver *self)
 		AOTupleId	aoTupleId;
 
 		if (myState->ao_insertDesc == NULL)
-			myState->ao_insertDesc = appendonly_insert_init(into_rel, SnapshotNow,
-															RESERVED_SEGNO, false);
+			myState->ao_insertDesc = appendonly_insert_init(into_rel, RESERVED_SEGNO, false);
 
 		appendonly_insert(myState->ao_insertDesc, tuple, &tupleOid, &aoTupleId);
 		pfree(tuple);

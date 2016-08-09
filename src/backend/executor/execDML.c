@@ -497,7 +497,6 @@ ExecInsert(TupleTableSlot *slot,
 
 			resultRelInfo->ri_aoInsertDesc =
 				appendonly_insert_init(resultRelationDesc,
-									   ActiveSnapshot,
 									   resultRelInfo->ri_aosegno,
 									   false);
 

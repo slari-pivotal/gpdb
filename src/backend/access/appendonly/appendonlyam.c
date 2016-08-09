@@ -2582,7 +2582,7 @@ appendonly_update_init(Relation rel, Snapshot appendOnlyMetaDataSnapshot, int se
 	 */
 	AppendOnlyUpdateDesc aoUpdateDesc  = (AppendOnlyUpdateDesc) palloc0(sizeof(AppendOnlyUpdateDescData));
 
-	aoUpdateDesc->aoInsertDesc = appendonly_insert_init(rel, appendOnlyMetaDataSnapshot, segno, true);
+	aoUpdateDesc->aoInsertDesc = appendonly_insert_init(rel, segno, true);
 
 	AppendOnlyVisimap_Init(&aoUpdateDesc->visibilityMap,
 			aoUpdateDesc->aoInsertDesc->aoEntry->visimaprelid,
@@ -2659,7 +2659,7 @@ HTSU_Result appendonly_update(AppendOnlyUpdateDesc aoUpdateDesc,
  * append only tables.
  */
 AppendOnlyInsertDesc
-appendonly_insert_init(Relation rel, Snapshot appendOnlyMetaDataSnapshot, int segno, bool update_mode)
+appendonly_insert_init(Relation rel, int segno, bool update_mode)
 {
 	AppendOnlyInsertDesc 	aoInsertDesc;
 	AppendOnlyEntry				*aoentry;
@@ -2676,7 +2676,7 @@ appendonly_insert_init(Relation rel, Snapshot appendOnlyMetaDataSnapshot, int se
 	/*
 	 * Get the pg_appendonly information for this table
 	 */
-	aoentry = GetAppendOnlyEntry(RelationGetRelid(rel), appendOnlyMetaDataSnapshot);
+	aoentry = GetAppendOnlyEntry(RelationGetRelid(rel), SnapshotNow);
 	Assert(aoentry->majorversion == 1 && aoentry->minorversion == 1);
 
 	/*
@@ -2689,7 +2689,7 @@ appendonly_insert_init(Relation rel, Snapshot appendOnlyMetaDataSnapshot, int se
 	 * Writers uses this since they have exclusive access to the lock acquired with
 	 * LockRelationAppendOnlySegmentFile for the segment-file.
 	 */
-	aoInsertDesc->appendOnlyMetaDataSnapshot = appendOnlyMetaDataSnapshot;		
+	aoInsertDesc->appendOnlyMetaDataSnapshot = SnapshotNow;
 
 	aoInsertDesc->mt_bind = create_memtuple_binding(RelationGetDescr(rel));
 
