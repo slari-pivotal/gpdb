@@ -9,7 +9,8 @@ function gen_env(){
 	source /home/gpadmin/greenplum-db-devel/greenplum_path.sh
 
 	cd "\${1}/gpdb_src/gpAux/extensions/gps3ext"
-	make
+	make -B
+	make -B gpcheckcloud
 	EOF
 
 	chown -R gpadmin:gpadmin $(pwd)
@@ -24,13 +25,14 @@ function _main() {
 
 	echo -n "$EC2_PRIVATE_KEY" >/home/gpadmin/key.b64
 	base64 -d /home/gpadmin/key.b64 >/home/gpadmin/key
-	
+
 	chmod 600 /home/gpadmin/key
 	cd gpdb_src/gpAux/extensions/gps3ext
 
-	scp -i /home/gpadmin/key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null gps3ext.so gpadmin@$EC2_IP:/home/gpadmin/greenplum-db/lib/postgresql/
+	scp -i /home/gpadmin/key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null gps3ext.so gpadmin@$EC2_INSTANCE_IP:/home/gpadmin/greenplum-db/lib/postgresql/
+	scp -i /home/gpadmin/key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null bin/gpcheckcloud/gpcheckcloud gpadmin@$EC2_INSTANCE_IP:/home/gpadmin/greenplum-db/bin/
 
-	ssh -i /home/gpadmin/key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null gpadmin@$EC2_IP "source /home/gpadmin/greenplum-db-data/env/env.sh; source /home/gpadmin/greenplum-db/greenplum_path.sh; gpstop -arf"
+	ssh -i /home/gpadmin/key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null gpadmin@$EC2_INSTANCE_IP "source /home/gpadmin/greenplum-db-data/env/env.sh; source /home/gpadmin/greenplum-db/greenplum_path.sh; gpstop -ar"
 }
 
 _main "$@"

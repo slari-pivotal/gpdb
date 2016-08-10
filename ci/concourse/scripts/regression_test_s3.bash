@@ -15,11 +15,15 @@ function gen_env(){
 	sh /home/gpadmin/setup_db.sh
 	cd "\${1}/gpdb_src/gpAux/extensions/gps3ext"
 	make -B install
+	source /home/gpadmin/greenplum-db-data/env/env.sh
+	gpstop -ar
 
 	cd regress
 	# Replace path to use compiled pg_regress which exists in docker image
 	sed -i -e 's/\$(shell .*/\/home\/gpadmin\/workspace\/gpdb4/g' Makefile
 	make installcheck
+	[ -s regression.diffs ] && cat regression.diffs && exit 1
+	exit 0
 	EOF
 
 	chown -R gpadmin:gpadmin $(pwd)

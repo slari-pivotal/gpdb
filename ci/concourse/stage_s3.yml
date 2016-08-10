@@ -12,4 +12,4 @@ run:
   path: gpdb_src/ci/concourse/scripts/stage_s3.bash
 params:
   EC2_PRIVATE_KEY:
-  EC2_IP:
+  EC2_INSTANCE_IP:
