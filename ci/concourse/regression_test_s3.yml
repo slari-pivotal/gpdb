@@ -12,5 +12,3 @@ run:
   path: gpdb_src/ci/concourse/scripts/regression_test_s3.bash
 params:
   s3conf:
-  AWS_ACCESS_KEY_ID:
-  AWS_SECRET_ACCESS_KEY:

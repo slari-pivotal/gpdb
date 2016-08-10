@@ -8,10 +8,6 @@ function gen_env(){
 	ln -s "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/python-2.6.2" /opt
 	source /home/gpadmin/greenplum-db-devel/greenplum_path.sh
 	
-	export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-	export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-
-	s3cmd del -r s3://s3test.pivotal.io/regress/s3write/
 	sh /home/gpadmin/setup_db.sh
 	cd "\${1}/gpdb_src/gpAux/extensions/gps3ext"
 	make -B install
@@ -19,9 +15,7 @@ function gen_env(){
 	gpstop -ar
 
 	cd regress
-	# Replace path to use compiled pg_regress which exists in docker image
-	sed -i -e 's/\$(shell .*/\/home\/gpadmin\/workspace\/gpdb4/g' Makefile
-	make installcheck
+	make installcheck top_builddir=/home/gpadmin/workspace/gpdb4
 	[ -s regression.diffs ] && cat regression.diffs && exit 1
 	exit 0
 	EOF
