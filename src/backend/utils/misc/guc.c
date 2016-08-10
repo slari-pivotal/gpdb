@@ -390,6 +390,7 @@ bool		gp_startup_integrity_checks = true;
 bool		gp_change_tracking = true;
 bool		gp_persistent_skip_free_list = false;
 bool		gp_persistent_repair_global_sequence = false;
+bool		gp_validate_pt_info_relcache = false;
 bool 		Debug_print_xlog_relation_change_info = false;
 bool 		Debug_print_xlog_relation_change_info_skip_issues_only = false;
 bool 		Debug_print_xlog_relation_change_info_backtrace_skip_issues = false;
@@ -3392,7 +3393,17 @@ static struct config_bool ConfigureNamesBool[] =
 		&gp_persistent_repair_global_sequence,
 		false, NULL, NULL
 	},
-		
+
+	{
+		{"gp_validate_pt_info_relcache", PGC_SUSET, DEVELOPER_OPTIONS,
+			gettext_noop("Validate persistent TID and serial number in relcache entry."),
+			NULL,
+			GUC_SUPERUSER_ONLY | GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+		},
+		&gp_validate_pt_info_relcache,
+		false, NULL, NULL
+	},
+
 	{
 		{"filerep_crc_on", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("enable adler 32 crc in filerep"),
