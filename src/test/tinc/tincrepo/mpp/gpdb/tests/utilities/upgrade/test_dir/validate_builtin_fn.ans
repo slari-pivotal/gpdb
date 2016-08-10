@@ -1,0 +1,12 @@
+SELECT gp_update_ao_master_stats('aotab') ORDER BY 1;
+ gp_update_ao_master_stats 
+---------------------------
+                        10
+(1 row)
+
+SELECT * FROM get_ao_compression_ratio('aotab');
+ get_ao_compression_ratio 
+--------------------------
+                        1
+(1 row)
+

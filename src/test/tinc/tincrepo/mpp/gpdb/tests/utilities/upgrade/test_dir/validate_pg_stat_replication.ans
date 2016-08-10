@@ -1,0 +1,4 @@
+select count(*) from pg_catalog.pg_stat_replication;
+ERROR:  relation "pg_catalog.pg_stat_replication" does not exist
+LINE 1: select count(*) from pg_catalog.pg_stat_replication;
+                             ^

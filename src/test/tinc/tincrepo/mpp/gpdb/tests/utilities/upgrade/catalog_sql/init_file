@@ -1,0 +1,24 @@
+-- start_matchsubs
+
+m/ERROR:  relation with OID \d+ does not exist/
+s/ERROR:  relation with OID \d+ does not exist/ERROR:  relation with OID xxxxx does not exist/ 
+
+m/pg_aoseg_\d+/
+s/pg_aoseg_\d+/pg_aoseg_XXXXX/g
+
+m/pg_aocsseg_\d+/
+s/pg_aocsseg_\d+/pg_aocsseg_XXXXX/g
+
+m/pg_bm_\d+_index/
+s/pg_bm_\d+_index/pg_bm_XXXXX_index/g
+
+m/pg_aovisimap_\d+/
+s/pg_aovisimap_\d+/pg_aovisimap_XXXXX/g
+
+m/pg_aoblkdir_\d+/
+s/pg_aoblkdir_\d+/pg_aoblkdir_XXXXX/g
+
+-- end_matchsubs
+
+
+

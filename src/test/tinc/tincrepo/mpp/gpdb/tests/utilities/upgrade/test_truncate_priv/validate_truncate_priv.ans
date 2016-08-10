@@ -1,0 +1,4 @@
+set role truncate_priv;
+SET
+truncate truncate_priv_test;
+TRUNCATE TABLE

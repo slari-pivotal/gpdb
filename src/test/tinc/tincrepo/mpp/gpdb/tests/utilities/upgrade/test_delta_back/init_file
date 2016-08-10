@@ -1,0 +1,18 @@
+-- start_matchsubs
+-- m/.*ERROR:  Bad datum stream Dense block version.*/
+-- s/.*ERROR:  Bad datum stream Dense block version.*/ERROR:  Bad datum stream Dense block version or Bad append-only storage header/
+
+-- m/.*Append-Only storage Small Content header.*/
+-- s/.*Append-Only storage Small Content header.*/Append-Only storage Content header/
+
+-- m/.*Scan of Append-Only Column-Oriented relation.*/
+-- s/.*Scan of Append-Only Column-Oriented relation.*/Scan of Append-Only Column-Oriented relation/
+
+-- m/.*ERROR:  Bad append-only storage header.  Header check error.*/
+-- s/.*ERROR:  Bad append-only storage header.  Header check error.*/ERROR:  Bad datum stream Dense block version or Bad append-only storage header/
+
+-- m/.*Append-Only storage header kind 0 unknown.*/
+-- s/.*Append-Only storage header kind 0 unknown.*/Append-Only storage Content header/
+
+-- end_matchsubs
+

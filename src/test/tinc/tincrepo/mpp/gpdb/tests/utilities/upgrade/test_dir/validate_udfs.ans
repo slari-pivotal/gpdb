@@ -1,0 +1,60 @@
+SELECT udf_nosql_vol(1);
+ udf_nosql_vol 
+---------------
+             2
+(1 row)
+
+SELECT udf_nosql_vol(0);
+ udf_nosql_vol 
+---------------
+             1
+(1 row)
+
+SELECT udf_nosql_vol(NULL);
+ udf_nosql_vol 
+---------------
+              
+(1 row)
+
+SELECT udf_nosql_vol(-1);
+ udf_nosql_vol 
+---------------
+             0
+(1 row)
+
+SELECT udf_sql_int_vol(1);
+ udf_sql_int_vol 
+-----------------
+               2
+(1 row)
+
+SELECT udf_sql_int_vol(0);
+ udf_sql_int_vol 
+-----------------
+               1
+(1 row)
+
+SELECT udf_sql_int_vol(NULL);
+ udf_sql_int_vol 
+-----------------
+                
+(1 row)
+
+SELECT udf_sql_int_vol(-1);
+ udf_sql_int_vol 
+-----------------
+               0
+(1 row)
+
+SELECT udf_read_int_vol(1);
+ udf_read_int_vol 
+------------------
+                2
+(1 row)
+
+SELECT udf_read_int_vol(0);
+ udf_read_int_vol 
+------------------
+                 
+(1 row)
+

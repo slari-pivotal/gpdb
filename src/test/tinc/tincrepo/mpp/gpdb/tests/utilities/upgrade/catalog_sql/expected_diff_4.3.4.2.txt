@@ -1,0 +1,310 @@
+validate_pg_rewrite.diff:||:-information_schema|role_table_grants|-1|_RETURN|1|t|SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor, (g_grantee.rolname)::information_schema.sql_identifier AS grantee, (current_database())::information_schema.sql_identifier AS table_catalog, (nc.nspname)::information_schema.sql_identifier AS table_schema, (c.relname)::information_schema.sql_identifier AS table_name, (pr.type)::information_schema.character_data AS privilege_type, (CASE WHEN aclcontains(c.relacl, makeaclitem(g_grantee.oid, u_grantor.oid, pr.type, true)) THEN 'YES'::text ELSE 'NO'::text END)::information_schema.character_data AS is_grantable, ('NO'::character varying)::information_schema.character_data AS with_hierarchy FROM pg_class c, pg_namespace nc, pg_authid u_grantor, pg_authid g_grantee, (((((SELECT 'SELECT' UNION ALL SELECT 'DELETE') UNION ALL SELECT 'INSERT') UNION ALL SELECT 'UPDATE') UNION ALL SELECT 'REFERENCES') UNION ALL SELECT 'TRIGGER') pr(type) WHERE ((((c.relnamespace = nc.oid) AND (c.relkind = ANY (ARRAY['r'::"char", 'v'::"char"]))) AND aclcontains(c.relacl, makeaclitem(g_grantee.oid, u_grantor.oid, pr.type, false))) AND ((u_grantor.rolname IN (SELECT enabled_roles.role_name FROM information_schema.enabled_roles)) OR (g_grantee.rolname IN (SELECT enabled_roles.role_name FROM information_schema.enabled_roles))));
+validate_pg_rewrite.diff:||:-information_schema|table_constraints|-1|_RETURN|1|t|SELECT (current_database())::information_schema.sql_identifier AS constraint_catalog, (nc.nspname)::information_schema.sql_identifier AS constraint_schema, (c.conname)::information_schema.sql_identifier AS constraint_name, (current_database())::information_schema.sql_identifier AS table_catalog, (nr.nspname)::information_schema.sql_identifier AS table_schema, (r.relname)::information_schema.sql_identifier AS table_name, (CASE c.contype WHEN 'c'::"char" THEN 'CHECK'::text WHEN 'f'::"char" THEN 'FOREIGN KEY'::text WHEN 'p'::"char" THEN 'PRIMARY KEY'::text WHEN 'u'::"char" THEN 'UNIQUE'::text ELSE NULL::text END)::information_schema.character_data AS constraint_type, (CASE WHEN c.condeferrable THEN 'YES'::text ELSE 'NO'::text END)::information_schema.character_data AS is_deferrable, (CASE WHEN c.condeferred THEN 'YES'::text ELSE 'NO'::text END)::information_schema.character_data AS initially_deferred FROM pg_namespace nc, pg_namespace nr, pg_constraint c, pg_class r WHERE ((((((nc.oid = c.connamespace) AND (nr.oid = r.relnamespace)) AND (c.conrelid = r.oid)) AND (r.relkind = 'r'::"char")) AND (NOT pg_is_other_temp_schema(nr.oid))) AND (((((pg_has_role(r.relowner, 'USAGE'::text) OR has_table_privilege(r.oid, 'INSERT'::text)) OR has_table_privilege(r.oid, 'UPDATE'::text)) OR has_table_privilege(r.oid, 'DELETE'::text)) OR has_table_privilege(r.oid, 'REFERENCES'::text)) OR has_table_privilege(r.oid, 'TRIGGER'::text))) UNION SELECT (current_database())::information_schema.sql_identifier AS constraint_catalog, (nr.nspname)::information_schema.sql_identifier AS constraint_schema, (((((((nr.oid)::text||'_'::text)||(r.oid)::text)||'_'::text)||(a.attnum)::text)||'_not_null'::text))::information_schema.sql_identifier AS constraint_name, (current_database())::information_schema.sql_identifier AS table_catalog, (nr.nspname)::information_schema.sql_identifier AS table_schema, (r.relname)::information_schema.sql_identifier AS table_name, ('CHECK'::character varying)::information_schema.character_data AS constraint_type, ('NO'::character varying)::information_schema.character_data AS is_deferrable, ('NO'::character varying)::information_schema.character_data AS initially_deferred FROM pg_namespace nr, pg_class r, pg_attribute a WHERE ((((((((nr.oid = r.relnamespace) AND (r.oid = a.attrelid)) AND a.attnotnull) AND (a.attnum > 0)) AND (NOT a.attisdropped)) AND (r.relkind = 'r'::"char")) AND (NOT pg_is_other_temp_schema(nr.oid))) AND (((((pg_has_role(r.relowner, 'USAGE'::text) OR has_table_privilege(r.oid, 'INSERT'::text)) OR has_table_privilege(r.oid, 'UPDATE'::text)) OR has_table_privilege(r.oid, 'DELETE'::text)) OR has_table_privilege(r.oid, 'REFERENCES'::text)) OR has_table_privilege(r.oid, 'TRIGGER'::text)));
+validate_pg_rewrite.diff:||:-information_schema|table_privileges|-1|_RETURN|1|t|SELECT (u_grantor.rolname)::information_schema.sql_identifier AS grantor, (grantee.rolname)::information_schema.sql_identifier AS grantee, (current_database())::information_schema.sql_identifier AS table_catalog, (nc.nspname)::information_schema.sql_identifier AS table_schema, (c.relname)::information_schema.sql_identifier AS table_name, (pr.type)::information_schema.character_data AS privilege_type, (CASE WHEN aclcontains(c.relacl, makeaclitem(grantee.oid, u_grantor.oid, pr.type, true)) THEN 'YES'::text ELSE 'NO'::text END)::information_schema.character_data AS is_grantable, ('NO'::character varying)::information_schema.character_data AS with_hierarchy FROM pg_class c, pg_namespace nc, pg_authid u_grantor, (SELECT pg_authid.oid, pg_authid.rolname FROM pg_authid UNION ALL SELECT (0)::oid AS oid, 'PUBLIC') grantee(oid, rolname), (((((SELECT 'SELECT' UNION ALL SELECT 'DELETE') UNION ALL SELECT 'INSERT') UNION ALL SELECT 'UPDATE') UNION ALL SELECT 'REFERENCES') UNION ALL SELECT 'TRIGGER') pr(type) WHERE ((((c.relnamespace = nc.oid) AND (c.relkind = ANY (ARRAY['r'::"char", 'v'::"char"]))) AND aclcontains(c.relacl, makeaclitem(grantee.oid, u_grantor.oid, pr.type, false))) AND ((pg_has_role(u_grantor.oid, 'USAGE'::text) OR pg_has_role(grantee.oid, 'USAGE'::text)) OR (grantee.rolname = 'PUBLIC'::name)));
+validate_pg_rewrite.diff:||:-information_schema|tables|-1|_RETURN|1|t|SELECT (current_database())::information_schema.sql_identifier AS table_catalog, (nc.nspname)::information_schema.sql_identifier AS table_schema, (c.relname)::information_schema.sql_identifier AS table_name, (CASE WHEN (nc.oid = pg_my_temp_schema()) THEN 'LOCAL TEMPORARY'::text WHEN (c.relkind = 'r'::"char") THEN 'BASE TABLE'::text WHEN (c.relkind = 'v'::"char") THEN 'VIEW'::text ELSE NULL::text END)::information_schema.character_data AS table_type, (NULL::character varying)::information_schema.sql_identifier AS self_referencing_column_name, (NULL::character varying)::information_schema.character_data AS reference_generation, (NULL::character varying)::information_schema.sql_identifier AS user_defined_type_catalog, (NULL::character varying)::information_schema.sql_identifier AS user_defined_type_schema, (NULL::character varying)::information_schema.sql_identifier AS user_defined_type_name, (CASE WHEN ((((c.relkind <> 'r'::"char") OR ((nc.nspname = 'pg_catalog'::name) AND ((c.relname ~~ 'gp_persistent_%'::text) OR (c.relname = 'gp_global_sequence'::name)))) OR (c.relstorage = 'f'::"char")) OR ((c.relstorage = 'x'::"char") AND (x.writable = false))) THEN 'NO'::text ELSE 'YES'::text END)::information_schema.character_data AS is_insertable_into, ('NO'::character varying)::information_schema.character_data AS is_typed, (CASE WHEN (nc.oid = pg_my_temp_schema()) THEN 'PRESERVE'::text ELSE NULL::text END)::information_schema.character_data AS commit_action FROM (pg_class c LEFT JOIN pg_exttable x ON ((c.oid = x.reloid))), pg_namespace nc WHERE ((((c.relnamespace = nc.oid) AND (c.relkind = ANY (ARRAY['r'::"char", 'v'::"char"]))) AND (NOT pg_is_other_temp_schema(nc.oid))) AND ((((((pg_has_role(c.relowner, 'USAGE'::text) OR has_table_privilege(c.oid, 'SELECT'::text)) OR has_table_privilege(c.oid, 'INSERT'::text)) OR has_table_privilege(c.oid, 'UPDATE'::text)) OR has_table_privilege(c.oid, 'DELETE'::text)) OR has_table_privilege(c.oid, 'REFERENCES'::text)) OR has_table_privilege(c.oid, 'TRIGGER'::text)));
+validate_pg_rewrite.diff:||:-information_schema|triggers|-1|_RETURN|1|t|SELECT (current_database())::information_schema.sql_identifier AS trigger_catalog, (n.nspname)::information_schema.sql_identifier AS trigger_schema, (t.tgname)::information_schema.sql_identifier AS trigger_name, (em.text)::information_schema.character_data AS event_manipulation, (current_database())::information_schema.sql_identifier AS event_object_catalog, (n.nspname)::information_schema.sql_identifier AS event_object_schema, (c.relname)::information_schema.sql_identifier AS event_object_table, (NULL::integer)::information_schema.cardinal_number AS action_order, (NULL::character varying)::information_schema.character_data AS action_condition, ("substring"(pg_get_triggerdef(t.oid), ("position"("substring"(pg_get_triggerdef(t.oid), 48), 'EXECUTE PROCEDURE'::text) + 47)))::information_schema.character_data AS action_statement, (CASE WHEN (((t.tgtype)::integer & 1) = 1) THEN 'ROW'::text ELSE 'STATEMENT'::text END)::information_schema.character_data AS action_orientation, (CASE WHEN (((t.tgtype)::integer & 2) = 2) THEN 'BEFORE'::text ELSE 'AFTER'::text END)::information_schema.character_data AS condition_timing, (NULL::character varying)::information_schema.sql_identifier AS condition_reference_old_table, (NULL::character varying)::information_schema.sql_identifier AS condition_reference_new_table, (NULL::character varying)::information_schema.sql_identifier AS condition_reference_old_row, (NULL::character varying)::information_schema.sql_identifier AS condition_reference_new_row, (NULL::timestamp with time zone)::information_schema.time_stamp AS created FROM pg_namespace n, pg_class c, pg_trigger t, ((SELECT 4, 'INSERT' UNION ALL SELECT 8, 'DELETE') UNION ALL SELECT 16, 'UPDATE') em(num, text) WHERE ((((((n.oid = c.relnamespace) AND (c.oid = t.tgrelid)) AND (((t.tgtype)::integer & em.num) <> 0)) AND (NOT t.tgisconstraint)) AND (NOT pg_is_other_temp_schema(n.oid))) AND (((((pg_has_role(c.relowner, 'USAGE'::text) OR has_table_privilege(c.oid, 'INSERT'::text)) OR has_table_privilege(c.oid, 'UPDATE'::text)) OR has_table_privilege(c.oid, 'DELETE'::text)) OR has_table_privilege(c.oid, 'REFERENCES'::text)) OR has_table_privilege(c.oid, 'TRIGGER'::text)));
+validate_pg_rewrite.diff:||:-information_schema|views|-1|_RETURN|1|t|SELECT (current_database())::information_schema.sql_identifier AS table_catalog, (nc.nspname)::information_schema.sql_identifier AS table_schema, (c.relname)::information_schema.sql_identifier AS table_name, (CASE WHEN pg_has_role(c.relowner, 'USAGE'::text) THEN pg_get_viewdef(c.oid) ELSE NULL::text END)::information_schema.character_data AS view_definition, ('NONE'::character varying)::information_schema.character_data AS check_option, (CASE WHEN ((EXISTS (SELECT 1 FROM pg_rewrite WHERE (((pg_rewrite.ev_class = c.oid) AND (pg_rewrite.ev_type = '2'::"char")) AND pg_rewrite.is_instead))) AND (EXISTS (SELECT 1 FROM pg_rewrite WHERE (((pg_rewrite.ev_class = c.oid) AND (pg_rewrite.ev_type = '4'::"char")) AND pg_rewrite.is_instead)))) THEN 'YES'::text ELSE 'NO'::text END)::information_schema.character_data AS is_updatable, (CASE WHEN (EXISTS (SELECT 1 FROM pg_rewrite WHERE (((pg_rewrite.ev_class = c.oid) AND (pg_rewrite.ev_type = '3'::"char")) AND pg_rewrite.is_instead))) THEN 'YES'::text ELSE 'NO'::text END)::information_schema.character_data AS is_insertable_into FROM pg_namespace nc, pg_class c WHERE ((((c.relnamespace = nc.oid) AND (c.relkind = 'v'::"char")) AND (NOT pg_is_other_temp_schema(nc.oid))) AND ((((((pg_has_role(c.relowner, 'USAGE'::text) OR has_table_privilege(c.oid, 'SELECT'::text)) OR has_table_privilege(c.oid, 'INSERT'::text)) OR has_table_privilege(c.oid, 'UPDATE'::text)) OR has_table_privilege(c.oid, 'DELETE'::text)) OR has_table_privilege(c.oid, 'REFERENCES'::text)) OR has_table_privilege(c.oid, 'TRIGGER'::text)));
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||0|int4_ops
+validate_pg_index_4.3.4.2.diff:||:-pg_aoseg|pg_aovisimap_XXXXX_index|pg_aoseg|pg_aovisimap_XXXXX|2|t|f|f|t|1 2|||1|int8_ops
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_class.diff:||:-pg_aoseg|pg_aovisimap_XXXXX|pg_aovisimap_XXXXX|||t|f|m|h|3|0|0|0|0|f|f|f|f|
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p1_2_prt_3|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p1_2_prt_4|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p1_2_prt_5|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p1_2_prt_6|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p1_2_prt_df_sp|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p1_2_prt_splita_1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p1_2_prt_splitb_1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p2_2_prt_2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p2_2_prt_3|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p2_2_prt_4|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p2_2_prt_5|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p2_2_prt_6|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p2_2_prt_df_sp|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1_1_prt_p2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_1_2_prt_df_sp|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_1_2_prt_sp1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_1_2_prt_sp2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_2_2_prt_df_sp|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_2_2_prt_sp1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_2_2_prt_sp2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_3_2_prt_df_sp|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_3_2_prt_sp1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_3_2_prt_sp2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_3|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_4_2_prt_df_sp|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_4_2_prt_sp1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_4_2_prt_sp2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_4|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_5_2_prt_df_sp|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_5_2_prt_sp1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_5_2_prt_sp2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2_1_prt_5|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_part_2|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_quicklz_crtb_uncompr|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_quicklz_crtb|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_quicklz_with_ctas|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_quicklz_with|32768|0|1|1|1|f|quicklz|t
+validate_pg_appendonly.diff:||:-public|co_compr_rle_type_crtb_uncompr|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_rle_type_crtb|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_type_tb|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_zlib_crtb_uncompr|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_zlib_crtb|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_zlib_with_ctas|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|co_compr_zlib_with|32768|0|1|1|1|f|zlib|t
+validate_pg_appendonly.diff:||:-public|exch_part2_compr_1|32768|0|0|1|1|f||t
+validate_pg_appendonly.diff:||:-public|exch_part2_compr_2|32768|0|0|1|1|f||t
