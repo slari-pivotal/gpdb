@@ -201,6 +201,24 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: installer_rhel5_gpdb/greenplum-db-appliance-4.3.9.0-build-1-RHEL5-x86_64.zip
 
+- name: qautils_rhel5_tarball
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: deliverables/QAUtils-RHEL5-x86_64.tar.gz
+
+- name: qautils_sles11_tarball
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: deliverables/QAUtils-SLES11-x86_64.tar.gz
+
 - name: installer_sles11_gpdb_clients
   type: s3
   source:
@@ -703,8 +721,10 @@ jobs:
       resource: bin_gpdb_centos
       passed: *Stage2JobsCentos
       trigger: true
-  - task: remove_files_for_rc
-    file: gpdb_src/ci/concourse/remove_files_for_rc.yml
+  - task: separate_qautils_files_for_rc
+    file: gpdb_src/ci/concourse/separate_qautils_files_for_rc.yml
+    params:
+      QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-RHEL5-x86_64.tar.gz
   - aggregate:
     - task: gpdb_rc_packaging_centos
       file: gpdb_src/ci/concourse/gpdb_packaging.yml
@@ -732,6 +752,9 @@ jobs:
     - put: installer_appliance_rhel5_gpdb_rc
       params:
         file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.9.0-build-1-RHEL5-x86_64.zip
+    - put: qautils_rhel5_tarball
+      params:
+        file: rc_bin_gpdb/QAUtils-RHEL5-x86_64.tar.gz
 
 - name: gpdb_rc_packaging_sles
   public: true
@@ -743,8 +766,10 @@ jobs:
       resource: bin_gpdb_sles
       passed: *Stage2JobsSles
       trigger: true
-  - task: remove_files_for_rc
-    file: gpdb_src/ci/concourse/remove_files_for_rc.yml
+  - task: separate_qautils_files_for_rc
+    file: gpdb_src/ci/concourse/separate_qautils_files_for_rc.yml
+    params:
+      QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-SLES11-x86_64.tar.gz
   - task: gpdb_rc_packaging_sles
     file: gpdb_src/ci/concourse/gpdb_packaging.yml
     input_mapping:
@@ -756,6 +781,9 @@ jobs:
   - put: installer_sles11_gpdb_rc
     params:
       file: packaged_gpdb/greenplum-db-4.3.9.0-build-1-SLES11-x86_64.zip
+  - put: qautils_sles11_tarball
+    params:
+      file: rc_bin_gpdb/QAUtils-SLES11-x86_64.tar.gz
 
 # Stage 3b: Packaging of source code
 - name: gpdb_src_packaging_centos
