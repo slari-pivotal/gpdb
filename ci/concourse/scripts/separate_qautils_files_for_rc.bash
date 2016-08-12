@@ -12,10 +12,14 @@ main() {
   tar zxf "$INPUT_TARBALL" -C "$INTERMEDIATE_PLACE"
 
   pushd "$INTERMEDIATE_PLACE"
-    echo "Move files listed in $QAUTILS_FILES"
+    echo "Move files listed in $ABS_QAUTILS_FILES"
     while read file; do
-      echo "Moving $file"
-      mv "$file" "$QAUTILS_DIR"
+      if [ -f "$file" ]; then
+	echo "Moving $files to directory $QAUTILS_DIR"
+	mv "$file" "$QAUTILS_DIR"
+      else
+	echo "File $file does not exists, skipping moving it"
+      fi
     done < "$ABS_QAUTILS_FILES"
     tar czf "$ABS_PATH_OUTPUT_TARBALL" *
   popd
