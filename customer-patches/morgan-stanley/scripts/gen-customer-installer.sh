@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 ## ----------------------------------------------------------------------
 
@@ -19,13 +20,10 @@ extract_std_gppkg(){
     echo "GPPKG extraction: ${GPPKG}"
     echo "----------------------------------------------------------------------"
     echo ""
-
-    rm -f ${GPPKG}
-
-    wget --no-check-certificate ${GPPKG_URL}
-    if [ $? != 0 ]; then
-        echo "FATAL: wget retrieval failed."
-        exit 1
+    pwd
+    if [ ! -f $1 ]; then
+      echo "File does not exists"
+      exit 1
     fi
 
     tar tvf ${GPPKG} *.rpm | grep deps > /dev/null
@@ -33,7 +31,7 @@ extract_std_gppkg(){
         DEPS=true
     fi
 
-    BASE_RPM=$( tar tvf ${GPPKG} *.rpm | grep -v deps | awk '{print $6}' )
+    BASE_RPM=$( tar tvf ${GPPKG} *.rpm | grep -v deps | awk '{print $NF}' )
 
     tar xf ${GPPKG} ${BASE_RPM}
     if [ $? != 0 ]; then
@@ -62,21 +60,22 @@ extract_std_gppkg(){
 
 ## ======================================================================
 
-RELEASE=4.3.8.2MS26
+RELEASE=4.3.9.0
+BASE_DIR="../../../gpdb_artifacts"
 
-GPDB_INSTALLER_URL=${GPDB_INSTALLER_URL:=http://gpdb:gpreleng@build-prod.dh.greenplum.com/internal-builds/greenplum-db/rc/${RELEASE}-build-1/archive/greenplum-db-${RELEASE}-build-1-RHEL5-x86_64.zip}
-CONN_INSTALLER_URL=${CONN_INSTALLER_URL:=http://gpdb:gpreleng@build-prod.dh.greenplum.com/internal-builds/greenplum-db/rc/${RELEASE}-build-1/archive/greenplum-connectivity-${RELEASE}-build-1-RHEL5-x86_64.zip}
-CLIENTS_INSTALLER_URL=${CLIENTS_INSTALLER_URL:=http://gpdb:gpreleng@build-prod.dh.greenplum.com/internal-builds/greenplum-db/rc/${RELEASE}-build-1/archive/greenplum-clients-${RELEASE}-build-1-RHEL5-x86_64.zip}
-LOADERS_INSTALLER_URL=${LOADERS_INSTALLER_URL:=http://gpdb:gpreleng@build-prod.dh.greenplum.com/internal-builds/greenplum-db/rc/${RELEASE}-build-1/archive/greenplum-loaders-${RELEASE}-build-1-RHEL5-x86_64.zip}
-QAUTILS_URL=${QAUTILS_URL:=http://gpdb:gpreleng@build-prod.dh.greenplum.com/internal-builds/greenplum-db/rc/${RELEASE}-build-1/qautils/QAUtils-RHEL5-x86_64.tar.gz}
+GPDB_INSTALLER_URL=${GPDB_INSTALLER_URL:=${BASE_DIR}/gpdbserver/greenplum-db-${RELEASE}-build-1-RHEL5-x86_64.zip}
+CONN_INSTALLER_URL=${CONN_INSTALLER_URL:=$BASE_DIR}/connectivity/greenplum-connectivity-${RELEASE}-build-1-RHEL5-x86_64.zip}
+CLIENTS_INSTALLER_URL=${CLIENTS_INSTALLER_URL:=${BASE_DIR}/clients/greenplum-clients-${RELEASE}-build-1-RHEL5-x86_64.zip}
+LOADERS_INSTALLER_URL=${LOADERS_INSTALLER_URL:=${BASE_DIR}/loaders/greenplum-loaders-${RELEASE}-build-1-RHEL5-x86_64.zip}
+QAUTILS_URL=${QAUTILS_URL:=${BASE_DIR}/qautils/QAUtils-RHEL5-x86_64.tar.gz}
 
-PGCRYPTO_GPPKG_URL=${PGCRYPTO_GPPKG_URL:=http://build-prod.dh.greenplum.com/releases/greenplum-db/gppkg/pgcrypto/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg}
+PGCRYPTO_GPPKG_URL=${PGCRYPTO_GPPKG_URL:=${BASE_DIR}/pgcrypto/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg}
 
-PLR_GPPKG_URL=${PLR_GPPKG_URL:=http://build-prod.dh.greenplum.com/releases/greenplum-db/gppkg/plr/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg}
+PLR_GPPKG_URL=${PLR_GPPKG_URL:=${BASE_DIR}/plr/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg}
 ##PLJAVA_GPPKG_URL=${PLJAVA_GPPKG_URL:=http://build-prod.dh.greenplum.com/releases/greenplum-db/gppkg/pljava/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg}
-PLJAVA_GPPKG_URL=${PLJAVA_GPPKG_URL:=http://gpdb:gpreleng@build-prod.dh.greenplum.com/internal-builds/greenplum-db/rc/4.3.7.0-build-1//pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg}
+PLJAVA_GPPKG_URL=${PLJAVA_GPPKG_URL:=${BASE_DIR}/pljava/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg}
 
-MADLIB_GPPKG_URL=${MADLIB_GPPKG_URL:=http://build-prod.dh.greenplum.com/releases/greenplum-db/gppkg/madlib/madlib-ossv1.7.1_pv1.9.3_gpdb4.3orca-rhel5-x86_64.gppkg}
+MADLIB_GPPKG_URL=${MADLIB_GPPKG_URL:=${BASE_DIR}/madlib/madlib-ossv1.7.1_pv1.9.3_gpdb4.3orca-rhel5-x86_64.gppkg}
 JDBC_DRIVER_URL=${JDBC_DRIVER_URL:=http://build-prod.dh.greenplum.com/releases/greenplum-db/datadirect/greenplum_jdbc_5.1.1.zip}
 GPSUPPORT_URL=${GPSUPPORT_URL:=http://build-prod.dh.greenplum.com/releases/greenplum-db/gpsupport/1.2.0.0/gpsupport-1.2.0.0.gz}
 
@@ -102,11 +101,10 @@ TIMESTAMP ..... : $(date)
 ======================================================================
 EOF
 
-rm -rf build
-mkdir build
+mkdir -p build
 cd build
 
-mkdir ${GPDB_INSTALLDIR} ${CLIENTS_INSTALLDIR}
+mkdir -p ${GPDB_INSTALLDIR} ${CLIENTS_INSTALLDIR}
 
 ## ----------------------------------------------------------------------
 ## Retrieve and Extract GPDB installer
@@ -118,9 +116,6 @@ echo "Retrieve installer: $( basename ${GPDB_INSTALLER_URL} )"
 echo "----------------------------------------------------------------------"
 echo ""
 
-rm -f $( basename ${GPDB_INSTALLER_URL} ) $( basename ${GPDB_INSTALLER_URL} .zip ).bin
-
-wget -nv ${GPDB_INSTALLER_URL}
 GPDB_BIN=$( basename ${GPDB_INSTALLER_URL} .zip ).bin
 unzip $( basename ${GPDB_INSTALLER_URL} ) ${GPDB_BIN}
 cp $( basename ${GPDB_INSTALLER_URL} ) $( basename ${GPDB_INSTALLER_URL} ).orig
@@ -130,7 +125,7 @@ SKIP=$(awk '/^__END_HEADER__/ {print NR + 1; exit 0; }'  ${GPDB_BIN})
 head -$( expr ${SKIP} - 1 ) ${GPDB_BIN} > header-gpdb.txt
 
 ## Extract installer payload (compressed tarball)
-tail -n +${SKIP} ${GPDB_BIN} | tar zxf - -C ${GPDB_INSTALLDIR}
+tail -n +${SKIP} ${GPDB_BIN} | tar zvxf - -C ${GPDB_INSTALLDIR}
 
 ## Save original installer
 mv ${GPDB_BIN} ${GPDB_BIN}.orig
@@ -165,13 +160,13 @@ echo 'export LD_LIBRARY_PATH=$GPHOME/ext/R-3.1.0/lib64/R/lib:$JAVA_HOME/lib/amd6
 echo ""
 echo "Include Alpine"
 
-rsync -auv --exclude=src ../alpine ${GPDB_INSTALLDIR}/ext
+rsync -auv --exclude=src ../../alpine ${GPDB_INSTALLDIR}/ext
 cp -v ${GPDB_INSTALLDIR}/ext/alpine/sharedLib/4.3.5/alpine_miner.centos_64bit.so ${GPDB_INSTALLDIR}/lib/postgresql/alpine_miner.so
 
 chmod 755 ${GPDB_INSTALLDIR}/lib/postgresql/alpine_miner.so ${GPDB_INSTALLDIR}/ext/alpine/sharedLib/4.3.5/alpine_miner.centos_64bit.so
 
 pushd ${GPDB_INSTALLDIR}/ext/alpine/sharedLib/4.3.5
-ln -s alpine_miner.centos_64bit.so alpine_miner.so
+ln -sf alpine_miner.centos_64bit.so alpine_miner.so
 popd
 
 ## ----------------------------------------------------------------------
@@ -284,28 +279,6 @@ fi
 
 mkdir -p ${GPDB_INSTALLDIR}/drivers/jdbc/$( basename ${JDBC_DRIVER_URL} .zip )
 mv greenplum.jar ${GPDB_INSTALLDIR}/drivers/jdbc/$( basename ${JDBC_DRIVER_URL} .zip )
-
-## ----------------------------------------------------------------------
-## If any, apply patches
-## ----------------------------------------------------------------------
-
-pushd ${GPDB_INSTALLDIR} > /dev/null
-
-echo ""
-echo "----------------------------------------------------------------------"
-echo "Applying patche(s)"
-echo "----------------------------------------------------------------------"
-echo ""
-
-for patch in ../../patches/GPDB-patch*; do
-    patch --backup -p1 < ${patch}
-    if [ $? != 0 ]; then
-        echo "FATAL: patch failed to be applied (${patch})"
-        exit 1
-    fi
-done
-
-popd > /dev/null
 
 ## ----------------------------------------------------------------------
 ## Update KRB5
@@ -506,28 +479,6 @@ echo "----------------------------------------------------------------------"
 
 pushd ${CLIENTS_INSTALLDIR} > /dev/null
 tar zxf ../$( basename ${QAUTILS_URL} ) bin/gpcheckmirrorseg.pl
-popd > /dev/null
-
-## ----------------------------------------------------------------------
-## If any, apply patches
-## ----------------------------------------------------------------------
-
-pushd ${CLIENTS_INSTALLDIR} > /dev/null
-
-echo ""
-echo "----------------------------------------------------------------------"
-echo "Applying patche(s)"
-echo "----------------------------------------------------------------------"
-echo ""
-
-for patch in ../../patches/CLIENTS-patch*; do
-    patch --backup -p1 < ${patch}
-    if [ $? != 0 ]; then
-        echo "FATAL: patch failed to be applied (${patch})"
-        exit 1
-    fi
-done
-
 popd > /dev/null
 
 ## ----------------------------------------------------------------------
