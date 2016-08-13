@@ -15,8 +15,10 @@ main() {
     echo "Move files listed in $ABS_QAUTILS_FILES"
     while read file; do
       if [ -f "$file" ]; then
-	echo "Moving $file to directory $QAUTILS_DIR"
-	mv "$file" "$QAUTILS_DIR"
+	TARGET_QAUTILS_DIR="$QAUTILS_DIR"/`dirname $file`
+	echo "Moving $file to directory $TARGET_QAUTILS_DIR"
+	mkdir -p "$TARGET_QAUTILS_DIR"
+	mv "$file" "$TARGET_QAUTILS_DIR"
       else
 	echo "File $file does not exists, skipping moving it"
       fi
