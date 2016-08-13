@@ -1,0 +1,145 @@
+********************************************************************************
+You must read and accept the Alpine Miner license agreement before installing
+********************************************************************************
+	ALPINE MINER(TM) SOFTWARE
+
+ACCEPTANCE OF THIS LICENSE AGREEMENT MEANS THAT YOU, OR THE ENTITY THAT YOU
+REPRESENT, ARE UNCONDITIONALLY CONSENTING TO BE BOUND BY, AND ARE BECOMING A
+PARTY TO, THE LICENSE AGREEMENT CONSISTING OF THIS PARAGRAPH AND THE
+FOLLOWING TERMS (THE "AGREEMENT") WITH RESPECT TO THE APPLICABLE Alpine
+PRODUCT. DOWNLOAD AND USE OF THE PRODUCT IS CONDITIONED ON ASSENT TO AND
+COMPLIANCE WITH THE TERMS OF THIS AGREEMENT TO THE EXCLUSION OF ALL OTHER
+TERMS. IF THESE TERMS ARE CONSIDERED AN OFFER, ACCEPTANCE IS EXPRESSLY
+LIMITED TO THESE TERMS. IF YOU AND THE ENITITY YOU REPRESENT, IF ANY, DOES
+NOT UNCONDITIONALLY AGREE TO THE FOREGOING THEN DO NOT ACCEPT THE LICENSE
+AGREEMENTU CONTINUE TO ACCEEPT THE LICENSE AGREEMENT IN ORDER TO DOWNLOAD
+THE PRODUCT THEN YOU ARE REPRESENTING AND WARRANTING THAT YOU ARE AUTHORIZED
+TO BIND THE ENITITY YOU REPRESENT, IF ANY.
+Export Representations and Covenants
+You represent, warrant and agree that you
+Are not a citizen, national or resident of, and are not under the control
+of, the government of any of the following: Cuba, Iran, Sudan, Libya, North
+Korea, Syria, nor any other country to which the United States has
+prohibited export.
+Will not download or otherwise export or re-export the Programs or any
+product thereof, directly or indirectly, to the above referenced countries
+or to citizens, nationals or residents of those countries.
+
+Are not listed on the United States Department of Treasury lists of
+Specially Designated Nationals, Specially Designated Terrorists or Specially
+Designated Narcotic Traffickers, nor are you listed on the United States
+Department of Commerce Table of Denial Orders.
+
+Will not allow access to or download or otherwise export or re-export the
+Programs, directly or indirectly, to any persons on any of the above
+referenced lists.
+
+Will not use the Programs for, and will not allow the Programs to be used
+for, any purposes prohibited by United States or other law, including,
+without limitation, for the development, design, manufacture or production
+of nuclear, chemical or biological weapons of mass destruction.
+
+Alpine License Agreement
+ "We," "us," and "our" refers to Alpine, for and on behalf of itself and
+its subsidiaries.  "You" and "your" refers to the individual or entity the
+downloading individual represents that wishes to use the Product from
+Alpine.  "Product" refers to the Alpine software product you wish to
+download and use and Product documentation.  "License" refers to your right
+to use the Product under the terms of this agreement.
+ 
+We are willing to license the Product to you only upon the condition that
+you accept all of the terms contained in this agreement.
+
+Trial Period  
+The licenses granted in this Agreement and your use of the Software Package 
+is strictly limited to a trial period of ninety (90) days from the date 
+the Software Package was first down loaded from Alpine or its authorized 
+distributor (the “Trial Period”).  Please contact Alpine (www.alpine-miner.com)
+ to enter into a services or subscription agreement with Alpine to use 
+ the Software Package after the expiration of the Trial Period or to 
+ obtain support, maintenance and updates.  
+ 
+License Grant
+We grant you a non-exclusive, non-transferable limited license to use the
+Product only for the purpose of general evaluation and prototype development
+strictly in accordance with our end user documentation, and not for any
+other purpose.  If you use the application you develop under this license
+for any internal data processing or for any commercial or production
+purposes, or you want to use the Product for any purpose other than as
+permitted under this agreement, you must contact us, or a Alpine
+reseller, to obtain the appropriate license.  We may audit your use of the
+Product. 
+ 
+Ownership / Restrictions
+We retain all ownership and intellectual property rights in the Product.
+You may install and use the Application on no more than one (1) computer at a time.  
+You agree not to discuss the results of any benchmark tests, algorithms, interface or 
+any operational aspect of the Application without the prior written consent of Alpine.  
+You may make one (1) copy of the Application for backup purposes, but hereby agree 
+to delete the backup at the expiration of the Trial Period.
+
+ 
+You are not licensed to, and you agree not to:
+
+- use the Product for your own internal data processing or for any
+commercial or production purposes, or use the Product for any purpose except
+for general evaluation and prototype development;
+- use any application you develop with the Product for any internal data
+processing or commercial or production purposes without securing an
+appropriate license from us;
+- continue to develop your application after you have used it for any
+internal data processing, commercial or production purpose without securing
+an appropriate license from us;
+- remove or modify any Product markings or any notice of our proprietary
+rights; 
+- make the Product available in any manner to any third party;
+- use the Product to provide third party training;
+- assign this agreement or give or transfer the Product or an interest in
+them to another individual or entity;
+- cause or permit reverse engineering (unless required by law for
+interoperability), disassembly or decompilation or modification of the
+Product; 
+- disclose results of any Product benchmark tests without our prior consent;
+- use any Alpine name, trademark or logo; or
+- disclose the Product or any information or algorithms or interfaces or
+operational aspect relating thereto or embodied therein or to use the
+foregoing except as expressly licensed above.
+
+Support
+Our technical support organization may at it discretion use reasonable
+endeavours to provide technical support, phone support, or updates to you
+for the Product licensed under this agreement.
+
+Restrictions
+Licensee shall not decompile, disassemble or otherwise reverse
+engineer the Software.
+ 
+Term and Termination
+You may terminate this agreement and your license by destroying all copies
+of the Product. We have the right to terminate your right to use the Product
+if you fail to comply with any of the terms of this agreement, in which case
+you shall destroy all copies of the Product.  In any case your license will
+terminate 30 days after the download. All your obligations will survive
+termination. 
+
+Export
+You agree that U.S. export control laws and other applicable export and
+import laws govern your use of the Product, including technical data. You
+agree that neither the Product nor any direct product thereof will be
+exported, directly, or indirectly, in violation of these laws, or will be
+used for any purpose prohibited by these laws including, without limitation,
+nuclear, chemical, or biological weapons proliferation.
+
+Open Source Utility Jar
+This commercial product includes software developed at the
+-	Apache Software Foundation  (http://www.apache.org/)
+-	Eclipse Foundation Software (http://www.eclipse.org/)
+
+This software also incorporates JFreeChart, (C)opyright 2000-2011 by 
+Object Refinery Limited and Contributors.
+
+
+********************************************************************************
+        Do you accept the Alpine Miner license agreement? [yes | no]
+********************************************************************************
+
