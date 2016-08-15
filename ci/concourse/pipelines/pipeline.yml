@@ -1056,6 +1056,7 @@ jobs:
       artifact_to_upload: plperl_rhel6_gppkg
     params:
       FILE_TO_UPLOAD: artifact_to_upload/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
+      BUCKET_NAME: {{bucket-name}}
       SSH_KEY: {{dist-ssh-key}}
 # Stage 4: Behave Tests
 
