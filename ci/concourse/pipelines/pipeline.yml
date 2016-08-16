@@ -500,7 +500,7 @@ jobs:
       BLD_TARGETS: ""
   - put: plperl_rhel6_gppkg
     params:
-      from: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
+      file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
 
 # Stage 2: Installcheck and Python Unit Tests
 
