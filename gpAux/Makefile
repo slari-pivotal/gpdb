@@ -139,7 +139,7 @@ SERVER_PLATFORMS=rhel5_x86_32 rhel5_x86_64 sles11_x86_64 linux_x86_64 osx106_x86
 ## Support gppkg platforms
 ##
 
-GPPKG_PLATFORMS=rhel5_x86_64 rhel6_x86_64 sles11_x86_64
+GPPKG_PLATFORMS=rhel5_x86_64 rhel6_x86_64 rhel7_x86_64 sles11_x86_64
 
 #---------------------------------------------------------------------
 # Compiler options
@@ -181,6 +181,7 @@ win32_CONFIGFLAGS=--with-gssapi --without-libcurl
 rhel5_x86_32_CONFIGFLAGS=--host=i686-pc-linux-gnu --enable-snmp --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml
 rhel5_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml
 rhel6_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml
+rhel7_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml
 sol10_x86_64_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml
 sol_x86_64_CONFIGFLAGS=--without-libcurl
 sles11_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost ${ORCA_CONFIG} --with-libxml
@@ -678,6 +679,7 @@ sol10_sparc_64_MPP_ARCH=SOL10-sparc_64
 sol10_sparc_32_MPP_ARCH=SOL10-sparc_32
 rhel5_x86_64_MPP_ARCH=RHEL5-x86_64
 rhel6_x86_64_MPP_ARCH=RHEL6-x86_64
+rhel7_x86_64_MPP_ARCH=RHEL7-x86_64
 osx106_x86_MPP_ARCH=OSX-i386
 ifneq "$($(BLD_ARCH)_MPP_ARCH)" ""
 export MPP_ARCH=$($(BLD_ARCH)_MPP_ARCH)
@@ -1136,13 +1138,13 @@ copy-rsa-libs:
 		cp -fp $(BLD_THIRDPARTY_LIB_DIR)/libccme_* $(INSTLOC)/lib/; \
 	fi
 	# Copy rsa lockbox libs - supported only on rhel
-ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 rhel5_x86_64))
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel7_x86_64 rhel6_x86_64 rhel5_x86_64))
 	cp -fpr $(BLD_THIRDPARTY_LIB_DIR)/rsa_csp $(INSTLOC)/lib/;
 endif
 
 copy-nbu-libs:
 	#Copy NetBackup libs
-ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 rhel5_x86_64))
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel7_x86_64 rhel6_x86_64 rhel5_x86_64))
 	rm -f $(INSTLOC)/lib/libxbsa64.so;
 	rm -f $(INSTLOC)/lib/libnbclientcST.so;
 	rm -f $(INSTLOC)/lib/libnbbasecST.so;
@@ -1386,7 +1388,7 @@ gccVersionCheck :
 
 ## ----------------------------------------------------------------------
 
-ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64))
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 rhel7_x86_64))
 GPPKG_SOURCES = \
 	../src/pl/plperl \
 	$(NULL)
@@ -1446,7 +1448,7 @@ else
 endif
 endif
 
-ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 sles11_x86_64))
+ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel6_x86_64 sles11_x86_64 rhel7_x86_64))
 GPPKG_ROOT_DIR = \
 	../src/pl/plperl \
 	$(NULL)

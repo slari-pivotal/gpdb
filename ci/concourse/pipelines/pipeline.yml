@@ -7,6 +7,7 @@ groups:
   jobs:
   - compile_gpdb_centos
   - compile_gpdb_centos6
+  - compile_gpdb_centos7
   - compile_gpdb_sles
   - icb_orca_centos
   - icb_planner_centos
@@ -21,6 +22,7 @@ groups:
   - gpdb_src_packaging
   - gpdb_rc_packaging_sles
   - gpdb_sync_to_dist_centos6
+  - gpdb_sync_to_dist_centos7
   - gpdb_sync_to_dist
   - MU_backup_smoke_centos
   - MU_backup_centos
@@ -33,6 +35,7 @@ groups:
   jobs:
   - compile_gpdb_centos
   - compile_gpdb_centos6
+  - compile_gpdb_centos7
   - icb_orca_centos
   - icb_planner_centos
   - icg_orca_centos
@@ -41,6 +44,7 @@ groups:
   - gpdb_packaging_centos
   - gpdb_rc_packaging_centos
   - gpdb_sync_to_dist_centos6
+  - gpdb_sync_to_dist_centos7
   - gpdb_src_packaging
   - gpdb_sync_to_dist
   - MU_backup_smoke_centos
@@ -82,6 +86,13 @@ resources:
   type: docker-image
   source:
     repository: pivotaldata/centos67-java7-gpdb-dev-image
+    username: {{docker_username}}
+    password: {{docker_password}}
+
+- name: centos72-java7-gpdb-dev-image
+  type: docker-image
+  source:
+    repository: pivotaldata/centos72-java7-gpdb-dev-image
     username: {{docker_username}}
     password: {{docker_password}}
 
@@ -335,6 +346,15 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
 
+- name: plperl_rhel7_gppkg
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: deliverables/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel7-x86_64.gppkg
+
 - name: plperl_sles11_gppkg
   type: s3
   source:
@@ -399,6 +419,7 @@ jobs:
     image: centos511-java7-gpdb-dev-image
     params:
       TARGET_OS: centos
+      TARGET_OS_VERSION: 5
       BLD_TARGETS: clients connectivity loaders
   - aggregate:
     - put: bin_gpdb_centos
@@ -448,6 +469,7 @@ jobs:
     privileged: true
     params:
       TARGET_OS: sles
+      TARGET_OS_VERSION: 11
       BLD_TARGETS: clients connectivity loaders
   - aggregate:
     - put: bin_gpdb_sles
@@ -497,10 +519,30 @@ jobs:
     image: centos67-java7-gpdb-dev-image
     params:
       TARGET_OS: centos
+      TARGET_OS_VERSION: 6
       BLD_TARGETS: ""
   - put: plperl_rhel6_gppkg
     params:
       file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
+
+# Compile gpdb and plperl on centos7
+- name: compile_gpdb_centos7
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      trigger: true
+    - get: centos72-java7-gpdb-dev-image
+  - task: compile_gpdb
+    file: gpdb_src/ci/concourse/compile_gpdb.yml
+    image: centos72-java7-gpdb-dev-image
+    params:
+      TARGET_OS: centos
+      TARGET_OS_VERSION: 7
+      BLD_TARGETS: ""
+  - put: plperl_rhel7_gppkg
+    params:
+      file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel7-x86_64.gppkg
 
 # Stage 2: Installcheck and Python Unit Tests
 
@@ -1058,6 +1100,25 @@ jobs:
       FILE_TO_UPLOAD: artifact_to_upload/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
       BUCKET_NAME: {{bucket-name}}
       SSH_KEY: {{dist-ssh-key}}
+
+- name: gpdb_sync_to_dist_centos7
+  public: true
+  plan:
+  - aggregate:
+    - get: plperl_rhel7_gppkg
+      passed: [compile_gpdb_centos7]
+      trigger: true
+    - get: gpdb_src
+      passed: [compile_gpdb_centos7]
+  - task: plperl_rhel7_gppkg_sync_to_dist
+    file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    input_mapping:
+      artifact_to_upload: plperl_rhel7_gppkg
+    params:
+      FILE_TO_UPLOAD: artifact_to_upload/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel7-x86_64.gppkg
+      BUCKET_NAME: {{bucket-name}}
+      SSH_KEY: {{dist-ssh-key}}
+
 # Stage 4: Behave Tests
 
 # When creating a new job, to ensure that the test runs only when all stage 3

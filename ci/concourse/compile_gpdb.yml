@@ -15,5 +15,6 @@ run:
   path: gpdb_src/ci/concourse/scripts/compile_gpdb.bash
 params:
   TARGET_OS:
+  TARGET_OS_VERSION:
   BLD_TARGETS: clients connectivity loaders
   OUTPUT_ARTIFACT_DIR: gpdb_artifacts

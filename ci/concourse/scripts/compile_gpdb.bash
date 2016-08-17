@@ -9,8 +9,33 @@ CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
 
 function prep_env_for_centos() {
-  ln -sf "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/python-2.6.2" /opt
-  export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.39.x86_64
+  case "$TARGET_OS_VERSION" in
+    5)
+      BLDARCH=rhel5_x86_64
+      export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.39.x86_64
+      source /opt/gcc_env.sh
+      ;;
+
+    6)
+      BLDARCH=rhel6_x86_64
+      export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.39.x86_64
+      ;;
+
+    7)
+      BLDARCH=rhel7_x86_64
+      alternatives --set java /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64/jre/bin/java
+      export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64
+      ln -sf /usr/bin/xsubpp /usr/share/perl5/ExtUtils/xsubpp
+      source /opt/gcc_env.sh
+      ;;
+
+    *)
+    echo "TARGET_OS_VERSION not set or recognized for Centos/RHEL"
+    exit 1
+    ;;
+  esac
+
+  ln -sf /$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/python-2.6.2 /opt/python-2.6.2
   export PATH=${JAVA_HOME}/bin:${PATH}
 }
 
@@ -18,6 +43,7 @@ function prep_env_for_sles() {
   ln -sf "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/python-2.6.2" /opt
   export JAVA_HOME=/usr/lib64/jvm/java-1.6.0-openjdk-1.6.0
   export PATH=${JAVA_HOME}/bin:${PATH}
+  source /opt/gcc_env.sh
 }
 
 function generate_build_number() {
@@ -37,16 +63,6 @@ function make_sync_tools() {
   popd
 }
 
-function set_gcc() {
-  if [ "$TARGET_OS" == "centos" ]; then
-    # If centos 6 or above, use system defaults. Else source gcc environment to set gcc to 4.4.2
-    if grep -q "release 5" /etc/redhat-release; then
-      source /opt/gcc_env.sh
-    fi
-  else
-    source /opt/gcc_env.sh
-  fi
-}
 
 function build_gpdb() {
   pushd gpdb_src/gpAux
@@ -115,7 +131,6 @@ function _main() {
   else
     BLD_TARGET_OPTION=("")
   fi
-  set_gcc
   build_gpdb "${BLD_TARGET_OPTION[@]}"
   build_gppkg
   unittest_check_gpdb
