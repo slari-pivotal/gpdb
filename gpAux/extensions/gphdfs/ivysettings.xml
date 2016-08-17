@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivysettings>
-  <property name="repo.host" value="repo.pivotal.io" override="false"/>
-  <property name="repo.realm" value="Artifactory Realm" override="false"/>
-  <property name="repo.user" value="build_readonly"  override="false"/>
-  <property name="repo.pass" value="7wdLJRV4HW2q"  override="false"/>
-  <credentials host="${repo.host}" realm="${repo.realm}" username="${repo.user}" passwd="${repo.pass}"/>
-
   <!-- ====================================================================== -->
 
   <settings defaultResolver="default" />

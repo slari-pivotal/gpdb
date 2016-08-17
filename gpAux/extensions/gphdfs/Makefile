@@ -22,6 +22,11 @@ JAR_FILES = dist/gphd-1.0-gnet-1.0.0.1.jar \
 
 JAVADOC_TARS = gnet-1.1-javadoc.tar gnet-1.0-javadoc.tar
 
+IVY_HTTPAUTH = -Divyrepo.host=$(IVYREPO_HOST) \
+	-Divyrepo.realm="$(IVYREPO_REALM)" \
+	-Divyrepo.user=$(IVYREPO_USER) \
+	-Divyrepo.passwd=$(IVYREPO_PASSWD)
+
 all: $(JAR_FILES) unittest $(JAVADOC_TARS)
 
 dist/gphd-1.0-gnet-1.0.0.1.jar:
@@ -30,7 +35,8 @@ dist/gphd-1.0-gnet-1.0.0.1.jar:
                 -Dname=hadoop-core \
                 -Drevision=0.20.1-gphdce-1.0.0.0 \
                 -Dgphdgnet.version=gphd-1.0-gnet-1.0.0.1 \
-                -Dgpgnet.src=1.0
+                -Dgpgnet.src=1.0 \
+                $(IVY_HTTPAUTH)
 
 dist/gphd-1.1-gnet-1.1.0.0.jar:
 	$(ANT) clean
@@ -38,7 +44,8 @@ dist/gphd-1.1-gnet-1.1.0.0.jar:
                 -Dname=hadoop-core \
                 -Drevision=0.20.205.0-gphd-1.1.0.0 \
                 -Dgphdgnet.version=gphd-1.1-gnet-1.1.0.0 \
-                -Dgpgnet.src=1.1
+                -Dgpgnet.src=1.1 \
+                $(IVY_HTTPAUTH)
 
 dist/gpmr-1.0-gnet-1.0.0.1.jar:
 	$(ANT) clean
@@ -46,7 +53,8 @@ dist/gpmr-1.0-gnet-1.0.0.1.jar:
                 -Dname=hadoop-core \
                 -Drevision=0.20.2 \
                 -Dgphdgnet.version=gpmr-1.0-gnet-1.0.0.1 \
-                -Dgpgnet.src=1.0
+                -Dgpgnet.src=1.0 \
+                $(IVY_HTTPAUTH)
 
 #gpmr-1.2 uses hadoop-core-2.0.0-mr1-cdh4.1.2.jar to build, the same as cdh4.1
 dist/gpmr-1.2-gnet-1.0.0.1.jar:
@@ -57,7 +65,8 @@ dist/gpmr-1.2-gnet-1.0.0.1.jar:
                 -Dhadoop-common.revision=2.0.0-cdh4.1.2 \
                 -Dgphdgnet.version=gpmr-1.2-gnet-1.0.0.1 \
                 -Dgpgnet.src=1.2 \
-                -Dgpgnet.configuration=hadoop2
+                -Dgpgnet.configuration=hadoop2 \
+                $(IVY_HTTPAUTH)
 
 dist/cdh3u2-gnet-1.1.0.0.jar:
 	$(ANT) clean
@@ -65,7 +74,8 @@ dist/cdh3u2-gnet-1.1.0.0.jar:
                 -Dname=hadoop-core \
                 -Drevision=0.20.2-cdh3u2 \
                 -Dgphdgnet.version=cdh3u2-gnet-1.1.0.0 \
-                -Dgpgnet.src=1.1
+                -Dgpgnet.src=1.1 \
+                $(IVY_HTTPAUTH)
 
 dist/gphd-1.2-gnet-1.1.0.0.jar:
 	$(ANT) clean
@@ -73,7 +83,8 @@ dist/gphd-1.2-gnet-1.1.0.0.jar:
                 -Dname=hadoop-core \
                 -Drevision=1.0.3-gphd-1.2.0.0 \
                 -Dgphdgnet.version=gphd-1.2-gnet-1.1.0.0 \
-                -Dgpgnet.src=1.1
+                -Dgpgnet.src=1.1 \
+                $(IVY_HTTPAUTH)
 
 dist/cdh4.1-gnet-1.2.0.0.jar:
 	$(ANT) clean
@@ -83,7 +94,8 @@ dist/cdh4.1-gnet-1.2.0.0.jar:
                 -Dhadoop-common.revision=2.0.0-cdh4.1.2 \
                 -Dgphdgnet.version=cdh4.1-gnet-1.2.0.0 \
                 -Dgpgnet.src=1.2 \
-                -Dgpgnet.configuration=hadoop2
+                -Dgpgnet.configuration=hadoop2 \
+                $(IVY_HTTPAUTH)
 
 dist/gphd-2.0.2-gnet-1.2.0.0.jar:
 	$(ANT) clean
@@ -93,7 +105,8 @@ dist/gphd-2.0.2-gnet-1.2.0.0.jar:
                 -Dhadoop-common.revision=2.0.2-alpha-gphd-2.0.1.0 \
                 -Dgphdgnet.version=gphd-2.0.2-gnet-1.2.0.0 \
                 -Dgpgnet.src=1.2 \
-                -Dgpgnet.configuration=hadoop2
+                -Dgpgnet.configuration=hadoop2 \
+                $(IVY_HTTPAUTH)
 
 unittest: $(JAR_FILES)
 	$(ANT) clean
@@ -103,14 +116,16 @@ unittest: $(JAR_FILES)
                 -Dhadoop-common.revision=2.0.0-cdh4.1.2 \
                 -Dgphdgnet.version=cdh4.1-gnet-1.2.0.0 \
                 -Dgpgnet.src=1.2 \
-                -Dgpgnet.configuration=ut
+                -Dgpgnet.configuration=ut \
+                $(IVY_HTTPAUTH)
 
 gnet-1.1-javadoc.tar: $(JAR_FILES)
 	$(ANT) javadoc -Dorg=apache \
                    -Dname=hadoop-core \
                    -Drevision=0.20.205.0-gphd-1.1.0.0 \
                    -Dgphdgnet.version=gnet-1.1 \
-                   -Dgpgnet.src=1.1
+                   -Dgpgnet.src=1.1 \
+                   $(IVY_HTTPAUTH)
 	$(TAR) -cf gnet-1.1-javadoc.tar gnet-1.1-javadoc
 
 gnet-1.0-javadoc.tar:  $(JAR_FILES)
@@ -118,7 +133,8 @@ gnet-1.0-javadoc.tar:  $(JAR_FILES)
                    -Dname=hadoop-core \
                    -Drevision=0.20.2 \
                    -Dgphdgnet.version=gnet-1.0 \
-                   -Dgpgnet.src=1.0
+                   -Dgpgnet.src=1.0 \
+                   $(IVY_HTTPAUTH)
 	$(TAR) -cf gnet-1.0-javadoc.tar gnet-1.0-javadoc
 
 install-jars: $(JAR_FILES)
