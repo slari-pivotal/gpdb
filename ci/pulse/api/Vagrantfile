@@ -1,0 +1,28 @@
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "docker" do |d|
+    d.vagrant_vagrantfile = 'docker-host.Vagrantfile'
+  end
+
+  config.vm.define "pulse-volume" do |v|
+    v.vm.provider "docker" do |d|
+      d.name = "pulse-volume"
+      d.cmd = ["/bin/true"]
+      d.build_dir = "pulse-volume"
+      d.remains_running = false
+    end
+  end
+  config.vm.define "pulse" do |v|
+    v.vm.provider "docker" do |d|
+      d.build_dir = "pulse"
+      d.create_args = %w(
+        --volumes-from
+        pulse-volume
+      )
+      d.ports = [
+        "8080:8080",
+      ]
+    end
+  end
+end
