@@ -884,6 +884,8 @@ jobs:
       passed: [compile_gpdb_centos]
     - get: pgcrypto_rhel5_gppkg
       passed: [compile_gpdb_centos]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_rc_packaging_centos]
     - get: installer_sles11_gpdb
       passed: [gpdb_packaging_sles]
       trigger: true
@@ -905,6 +907,8 @@ jobs:
       passed: [compile_gpdb_sles]
     - get: pgcrypto_sles11_gppkg
       passed: [compile_gpdb_sles]
+    - get: qautils_sles11_tarball
+      passed: [gpdb_rc_packaging_sles]
   - aggregate:
     - task: gpdb_src_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -1002,6 +1006,14 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
+    - task: qautils_rhel5_tarball_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: qautils_rhel5_tarball
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/QAUtils-RHEL5-x86_64.tar.gz
+        BUCKET_NAME: {{bucket-name}}
+        SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       input_mapping:
@@ -1080,6 +1092,14 @@ jobs:
         artifact_to_upload: pgcrypto_sles11_gppkg
       params:
         FILE_TO_UPLOAD: artifact_to_upload/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-sles11-x86_64.gppkg
+        BUCKET_NAME: {{bucket-name}}
+        SSH_KEY: {{dist-ssh-key}}
+    - task: qautils_sles11_tarball_sync_to_dist
+      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      input_mapping:
+        artifact_to_upload: qautils_sles11_tarball
+      params:
+        FILE_TO_UPLOAD: artifact_to_upload/QAUtils-SLES11-x86_64.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
 
