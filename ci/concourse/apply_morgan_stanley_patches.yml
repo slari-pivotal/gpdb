@@ -1,0 +1,27 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: pivotaldata/centos511-java7-gpdb-dev-image
+    username: gpdb
+    password: a7vBWDg3mlMv
+    email: releng@pivotal.io
+inputs:
+  - name: gpdb_src
+  - name: qautils_rhel5_tarball
+  - name: installer_rhel5_gpdb_rc
+  - name: installer_rhel5_gpdb_clients
+  - name: installer_rhel5_gpdb_connectivity
+  - name: installer_rhel5_gpdb_loaders
+  - name: pgcrypto_rhel5_gppkg
+  - name: plr_rhel5_gppkg
+  - name: pljava_rhel5_gppkg
+  - name: madlib_rhel5_gppkg
+  - name: mit_krb5_rhel62_tarball
+  - name: greenplum_jdbc_zip
+  - name: gpsupport_package
+run:
+  path: gpdb_src/customer-patches/morgan-stanley/scripts/gen-customer-installer.sh
+outputs:
+  - name: ms_installer_rhel5_gpdb_rc
+  - name: ms_installer_rhel5_gpdb_bundled_clients
