@@ -946,47 +946,41 @@ cdbdisp_returnResults(CdbDispatchResults *primaryResults,
 					  StringInfo errmsgbuf,
 					  int *numresults)
 {
-	CdbDispatchResults *gangResults;
 	CdbDispatchResult *dispatchResult;
 	PGresult  **resultSets = NULL;
-	int			nslots;
+	int			nslots = 1;
 	int			nresults = 0;
 	int			i;
-	int			totalResultCount=0;
 
 	/*
 	 * Allocate result set ptr array. Make room for one PGresult ptr per
-	 * primary segment db, plus a null terminator slot after the
-	 * last entry. The caller must PQclear() each PGresult and free() the
-	 * array.
+	 * result, plus a null terminator slot after the last entry.
+	 * The caller must PQclear() each PGresult and free() the array.
 	 */
-	nslots = 2 * largestGangsize() + 1;
-	resultSets = (struct pg_result **)calloc(nslots, sizeof(*resultSets));
+	Assert (primaryResults != NULL);
 
+	for (i = 0; i < primaryResults->resultCount; ++i)
+		nslots += cdbdisp_numPGresult(&primaryResults->resultArray[i]);
+
+	resultSets = (struct pg_result **)calloc(nslots, sizeof(*resultSets));
 	if (!resultSets)
 		ereport(ERROR, (errcode(ERRCODE_OUT_OF_MEMORY),
 						errmsg("cdbdisp_returnResults failed: out of memory")));
 
 	/* Collect results from primary gang. */
-	gangResults = primaryResults;
-	if (gangResults)
+	for (i = 0; i < primaryResults->resultCount; ++i)
 	{
-		totalResultCount = gangResults->resultCount;
+		dispatchResult = &primaryResults->resultArray[i];
 
-		for (i = 0; i < gangResults->resultCount; ++i)
-		{
-			dispatchResult = &gangResults->resultArray[i];
+		/* Append error messages to caller's buffer. */
+		cdbdisp_dumpDispatchResult(dispatchResult, false, errmsgbuf);
 
-			/* Append error messages to caller's buffer. */
-			cdbdisp_dumpDispatchResult(dispatchResult, false, errmsgbuf);
-
-			/* Take ownership of this QE's PGresult object(s). */
-			nresults += cdbdisp_snatchPGresults(dispatchResult,
-												resultSets + nresults,
-												nslots - nresults - 1);
-		}
-		cdbdisp_destroyDispatchResults(gangResults);
+		/* Take ownership of this QE's PGresult object(s). */
+		nresults += cdbdisp_snatchPGresults(dispatchResult,
+											resultSets + nresults,
+											nslots - nresults - 1);
 	}
+	cdbdisp_destroyDispatchResults(primaryResults);
 
 	/* Put a stopper at the end of the array. */
 	Assert(nresults < nslots);
@@ -994,7 +988,7 @@ cdbdisp_returnResults(CdbDispatchResults *primaryResults,
 
 	/* If our caller is interested, tell them how many sets we're returning. */
 	if (numresults != NULL)
-		*numresults = totalResultCount;
+		*numresults = nresults;
 
 	return resultSets;
 }
