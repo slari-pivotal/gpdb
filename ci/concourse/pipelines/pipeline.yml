@@ -471,6 +471,10 @@ jobs:
       TARGET_OS: centos
       TARGET_OS_VERSION: 5
       BLD_TARGETS: clients connectivity loaders
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
   - aggregate:
     - put: bin_gpdb_centos
       params:
@@ -527,6 +531,10 @@ jobs:
     image: sles11-toolchain
     privileged: true
     params:
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
       TARGET_OS: sles
       TARGET_OS_VERSION: 11
       BLD_TARGETS: clients connectivity loaders
@@ -586,6 +594,10 @@ jobs:
     file: gpdb_src/ci/concourse/compile_gpdb.yml
     image: centos67-java7-gpdb-dev-image
     params:
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
       TARGET_OS: centos
       TARGET_OS_VERSION: 6
       BLD_TARGETS: ""
@@ -605,6 +617,10 @@ jobs:
     file: gpdb_src/ci/concourse/compile_gpdb.yml
     image: centos72-java7-gpdb-dev-image
     params:
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
       TARGET_OS: centos
       TARGET_OS_VERSION: 7
       BLD_TARGETS: ""
