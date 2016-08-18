@@ -37,6 +37,7 @@
 #include "commands/copy.h"
 #include "commands/tablecmds.h"
 #include "commands/trigger.h"
+#include "commands/queue.h"
 #include "executor/executor.h"
 #include "executor/execDML.h"
 #include "libpq/libpq.h"
@@ -53,6 +54,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
+#include "utils/resscheduler.h"
 #include "utils/builtins.h"
 
 #include "cdb/cdbvars.h"
@@ -1318,6 +1320,17 @@ DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate)
 		cstate->queryDesc = CreateQueryDesc(plannedstmt, queryString,
 											ActiveSnapshot, InvalidSnapshot,
 											dest, NULL, false);
+
+		if (gp_enable_gpperfmon && Gp_role == GP_ROLE_DISPATCH)
+		{
+			Assert(queryString);
+			gpmon_qlog_query_submit(cstate->queryDesc->gpmon_pkt);
+			gpmon_qlog_query_text(cstate->queryDesc->gpmon_pkt,
+					queryString,
+					application_name,
+					GetResqueueName(GetResQueueId()),
+					GetResqueuePriority(GetResQueueId()));
+		}
 
 		/*
 		 * Call ExecutorStart to prepare the plan for execution.
