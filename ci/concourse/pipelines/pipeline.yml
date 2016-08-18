@@ -861,13 +861,13 @@ jobs:
     - get: gpdb_src_archive
       passed: [gpdb_src_packaging]
       trigger: true
-    - get: installer_rhel5_gpdb
-      passed: [gpdb_packaging_centos]
+    # - get: installer_rhel5_gpdb
+    #   passed: [gpdb_packaging_centos]
     - get: installer_rhel5_gpdb_rc
       passed: [gpdb_rc_packaging_centos]
-    - get: installer_appliance_rhel5_gpdb
-      passed: [gpdb_packaging_centos]
-      trigger: true
+    # - get: installer_appliance_rhel5_gpdb
+    #   passed: [gpdb_packaging_centos]
+    #   trigger: true
     - get: installer_appliance_rhel5_gpdb_rc
       passed: [gpdb_rc_packaging_centos]
       trigger: true
@@ -891,9 +891,9 @@ jobs:
       passed: [compile_gpdb_centos]
     - get: qautils_rhel5_tarball
       passed: [gpdb_rc_packaging_centos]
-    - get: installer_sles11_gpdb
-      passed: [gpdb_packaging_sles]
-      trigger: true
+    # - get: installer_sles11_gpdb
+    #   passed: [gpdb_packaging_sles]
+    #   trigger: true
     - get: installer_sles11_gpdb_rc
       passed: [gpdb_rc_packaging_sles]
       trigger: true
@@ -926,14 +926,14 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-src.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_rhel5_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-      input_mapping:
-        artifact_to_upload: installer_rhel5_gpdb
-      params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-rhel5-x86_64.zip
-        BUCKET_NAME: {{bucket-name}}
-        SSH_KEY: {{dist-ssh-key}}
+    # - task: gpdb_rhel5_sync_to_dist
+    #   file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    #   input_mapping:
+    #     artifact_to_upload: installer_rhel5_gpdb
+    #   params:
+    #     FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-rhel5-x86_64.zip
+    #     BUCKET_NAME: {{bucket-name}}
+    #     SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_sync_to_dist_rc
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       input_mapping:
@@ -942,14 +942,14 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_rhel5_appliance_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-      input_mapping:
-        artifact_to_upload: installer_appliance_rhel5_gpdb
-      params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.9.1-rhel5-x86_64.zip
-        BUCKET_NAME: {{bucket-name}}
-        SSH_KEY: {{dist-ssh-key}}
+    # - task: gpdb_rhel5_appliance_sync_to_dist
+    #   file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    #   input_mapping:
+    #     artifact_to_upload: installer_appliance_rhel5_gpdb
+    #   params:
+    #     FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.9.1-rhel5-x86_64.zip
+    #     BUCKET_NAME: {{bucket-name}}
+    #     SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist_rc
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       input_mapping:
@@ -1038,14 +1038,14 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/QAUtils-RHEL5-x86_64.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_sles_sync_to_dist
-      file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
-      input_mapping:
-        artifact_to_upload: installer_sles11_gpdb
-      params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-sles11-x86_64.zip
-        BUCKET_NAME: {{bucket-name}}
-        SSH_KEY: {{dist-ssh-key}}
+    # - task: gpdb_sles_sync_to_dist
+    #   file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    #   input_mapping:
+    #     artifact_to_upload: installer_sles11_gpdb
+    #   params:
+    #     FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1-sles11-x86_64.zip
+    #     BUCKET_NAME: {{bucket-name}}
+    #     SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles_sync_to_dist_rc
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       input_mapping:
@@ -1226,7 +1226,7 @@ jobs:
 - name: manual_testing_on_pulse_centos
   public: true
   plan:
-  - get: installer_rhel5_gpdb
+  - get: installer_rhel5_gpdb_rc
     passed: [gpdb_sync_to_dist]
   - task: ask_teams_to_kick_off_jobs
     config:
@@ -1237,7 +1237,7 @@ jobs:
 - name: manual_appliance_testing_centos
   public: true
   plan:
-  - get: installer_appliance_rhel5_gpdb
+  - get: installer_appliance_rhel5_gpdb_rc
     passed: [gpdb_sync_to_dist]
   - task: ask_PMs_to_verify
     config:
@@ -1248,7 +1248,7 @@ jobs:
 - name: manual_testing_on_pulse_sles
   public: true
   plan:
-  - get: installer_sles11_gpdb
+  - get: installer_sles11_gpdb_rc
     passed: [gpdb_sync_to_dist]
   - task: ask_teams_to_kick_off_jobs
     config:
