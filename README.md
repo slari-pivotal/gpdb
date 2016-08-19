@@ -33,6 +33,13 @@ export MACOSX_DEPLOYMENT_TARGET=10.9;
 
 # ensure `make sync_tools` can install under /opt
 sudo chown -R $USERNAME:admin /opt
+
+# HTTP auth parameters for ivy to download dependent artifacts
+export IVYREPO_HOST=
+# If the realm has white space, enclose the value in double quotes
+export IVYREPO_REALM=
+export IVYREPO_USER=
+export IVYREPO_PASSWD=
 ```
 
 Add following lines to `/etc/sysctl.conf` file (create one if it isn’t there)
