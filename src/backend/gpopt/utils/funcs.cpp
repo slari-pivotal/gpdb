@@ -801,6 +801,9 @@ static int extractFrozenQueryPlanAndExecute(char *pcQuery)
 			NULL /*paramLI*/,
 			false);
 
+	// Do not record gpperfmon information about internal queries
+	pqueryDesc->gpmon_pkt = NULL;
+
 	elog(NOTICE, "Executing thawed plan...");
 
 	ExecutorStart(pqueryDesc, 0);
@@ -847,6 +850,9 @@ static int extractFrozenPlanAndExecute(char *pcSerializedPS)
 			NULL /*paramLI*/,
 			false);
 
+	// Do not record gpperfmon information about internal queries
+	pqueryDesc->gpmon_pkt = NULL;
+
 	elog(NOTICE, "Executing thawed plan...");
 
 	ExecutorStart(pqueryDesc, 0);
@@ -875,6 +881,9 @@ static int executeXMLPlan(char *szXml)
 			pdest,
 			NULL /*paramLI*/,
 			false);
+
+	// Do not record gpperfmon information about internal queries
+	pqueryDesc->gpmon_pkt = NULL;
 
 	elog(NOTICE, "Executing thawed plan...");
 
