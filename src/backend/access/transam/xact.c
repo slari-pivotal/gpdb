@@ -6323,6 +6323,8 @@ CommitSubTransaction(void)
 	AtSubCommit_Portals(s->subTransactionId,
 						s->parent->subTransactionId,
 						s->parent->curTransactionOwner);
+	AtEOXact_ExtTables(true);
+	AtEOXact_ResetDataSourceCtx();
 	AtEOSubXact_LargeObject(true, s->subTransactionId,
 							s->parent->subTransactionId);
 	AtSubCommit_Notify();
@@ -6451,6 +6453,8 @@ AbortSubTransaction(void)
 		AtSubAbort_Portals(s->subTransactionId,
 						   s->parent->subTransactionId,
 						   s->parent->curTransactionOwner);
+		AtEOXact_ExtTables(false);
+		AtEOXact_ResetDataSourceCtx();
 		AtEOSubXact_LargeObject(false, s->subTransactionId,
 								s->parent->subTransactionId);
 		AtSubAbort_Notify();
