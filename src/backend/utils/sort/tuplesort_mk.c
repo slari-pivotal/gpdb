@@ -191,8 +191,8 @@ typedef struct TupsortMergeReadCtxt
     int cnt;
     int cur;
 
-    int mem_allowed;
-    int mem_used;
+    int64 mem_allowed;
+    int64 mem_used;
 } TupsortMergeReadCtxt;
 
 /*
@@ -204,7 +204,7 @@ struct Tuplesortstate_mk
     int		nKeys;		/* number of columns in sort key */
     bool		randomAccess;	/* did caller request random access? */
 
-    long 		memAllowed;
+    int64 		memAllowed;
 
     int		maxTapes;	/* number of tapes (Knuth's T) */
     int		tapeRange;	/* maxTapes-1 (Knuth's P) */
@@ -2166,7 +2166,7 @@ beginmerge(Tuplesortstate_mk *state)
     int			srcTape;
     int 		totalSlots;
     int			slotsPerTape;
-    long		spacePerTape;
+    int64		spacePerTape;
 
     int i;
 
