@@ -234,6 +234,7 @@ jobs:
     image: centos511-java7-gpdb-dev-image
     params:
       TARGET_OS: centos
+      TARGET_OS_VERSION: 5
       BLD_TARGETS: clients connectivity loaders
   - aggregate:
     - put: bin_gpdb_centos
