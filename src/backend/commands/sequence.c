@@ -600,8 +600,7 @@ DefineSequence(CreateSeqStmt *seq)
 		newseq->log_cnt = 0;
 
 		xlrec.node = rel->rd_node;
-		xlrec.persistentTid = rel->rd_segfile0_relationnodeinfo.persistentTid;
-		xlrec.persistentSerialNum = rel->rd_segfile0_relationnodeinfo.persistentSerialNum;
+		RelationGetPTInfo(rel, &xlrec.persistentTid, &xlrec.persistentSerialNum);
 
 		rdata[0].data = (char *) &xlrec;
 		rdata[0].len = sizeof(xl_seq_rec);
@@ -727,8 +726,7 @@ AlterSequence(AlterSeqStmt *stmt)
 		XLogRecData rdata[2];
 
 		xlrec.node = seqrel->rd_node;
-		xlrec.persistentTid = seqrel->rd_segfile0_relationnodeinfo.persistentTid;
-		xlrec.persistentSerialNum = seqrel->rd_segfile0_relationnodeinfo.persistentSerialNum;
+		RelationGetPTInfo(seqrel, &xlrec.persistentTid, &xlrec.persistentSerialNum);
 
 		rdata[0].data = (char *) &xlrec;
 		rdata[0].len = sizeof(xl_seq_rec);
@@ -1048,8 +1046,7 @@ cdb_sequence_nextval(Relation   seqrel,
 		XLogRecData rdata[2];
 
 		xlrec.node = seqrel->rd_node;
-		xlrec.persistentTid = seqrel->rd_segfile0_relationnodeinfo.persistentTid;
-		xlrec.persistentSerialNum = seqrel->rd_segfile0_relationnodeinfo.persistentSerialNum;
+		RelationGetPTInfo(seqrel, &xlrec.persistentTid, &xlrec.persistentSerialNum);
 
 		rdata[0].data = (char *) &xlrec;
 		rdata[0].len = sizeof(xl_seq_rec);
@@ -1273,8 +1270,7 @@ do_setval(Oid relid, int64 next, bool iscalled)
 		Page		page = BufferGetPage(buf);
 
 		xlrec.node = seqrel->rd_node;
-		xlrec.persistentTid = seqrel->rd_segfile0_relationnodeinfo.persistentTid;
-		xlrec.persistentSerialNum = seqrel->rd_segfile0_relationnodeinfo.persistentSerialNum;
+		RelationGetPTInfo(seqrel, &xlrec.persistentTid, &xlrec.persistentSerialNum);
 
 		rdata[0].data = (char *) &xlrec;
 		rdata[0].len = sizeof(xl_seq_rec);

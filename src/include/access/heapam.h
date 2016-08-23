@@ -175,8 +175,7 @@ inline static void xl_heaptid_set(
 	ItemPointer tid)
 {
 	heaptid->node = rel->rd_node;
-	heaptid->persistentTid = rel->rd_segfile0_relationnodeinfo.persistentTid;
-	heaptid->persistentSerialNum = rel->rd_segfile0_relationnodeinfo.persistentSerialNum;
+	RelationGetPTInfo(rel, &heaptid->persistentTid, &heaptid->persistentSerialNum);
 	heaptid->tid = *tid;
 }
 
@@ -186,8 +185,7 @@ inline static void xl_heapnode_set(
 	Relation rel)
 {
 	heapnode->node = rel->rd_node;
-	heapnode->persistentTid = rel->rd_segfile0_relationnodeinfo.persistentTid;
-	heapnode->persistentSerialNum = rel->rd_segfile0_relationnodeinfo.persistentSerialNum;
+	RelationGetPTInfo(rel, &heapnode->persistentTid, &heapnode->persistentSerialNum);
 }
 
 extern Relation relation_open(Oid relationId, LOCKMODE lockmode);

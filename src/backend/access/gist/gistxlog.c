@@ -20,7 +20,6 @@
 #include "utils/guc.h"
 #include "cdb/cdbfilerepprimary.h"
 
-
 typedef struct
 {
 	gistxlogPageUpdate *data;
@@ -930,8 +929,7 @@ formSplitRdata(Relation r, BlockNumber blkno, bool page_is_leaf,
 	RelationFetchGpRelationNodeForXLog(r);
 	
 	xlrec->node = r->rd_node;
-	xlrec->persistentTid = r->rd_segfile0_relationnodeinfo.persistentTid;
-	xlrec->persistentSerialNum = r->rd_segfile0_relationnodeinfo.persistentSerialNum;
+	RelationGetPTInfo(r, &xlrec->persistentTid, &xlrec->persistentSerialNum);
 	xlrec->origblkno = blkno;
 	xlrec->origleaf = page_is_leaf;
 	xlrec->npage = (uint16) npage;
@@ -993,8 +991,7 @@ formUpdateRdata(Relation r, Buffer buffer,
 	RelationFetchGpRelationNodeForXLog(r);
 
 	xlrec->node = r->rd_node;
-	xlrec->persistentTid = r->rd_segfile0_relationnodeinfo.persistentTid;
-	xlrec->persistentSerialNum = r->rd_segfile0_relationnodeinfo.persistentSerialNum;
+	RelationGetPTInfo(r, &xlrec->persistentTid, &xlrec->persistentSerialNum);
 	xlrec->blkno = BufferGetBlockNumber(buffer);
 	xlrec->ntodelete = ntodelete;
 
@@ -1048,8 +1045,7 @@ formCreateRData(Relation r)
 	RelationFetchGpRelationNodeForXLog(r);
 
 	xlrec->node = r->rd_node;
-	xlrec->persistentTid = r->rd_segfile0_relationnodeinfo.persistentTid;
-	xlrec->persistentSerialNum = r->rd_segfile0_relationnodeinfo.persistentSerialNum;
+	RelationGetPTInfo(r, &xlrec->persistentTid, &xlrec->persistentSerialNum);
 
 	rdata[0].data = (char *) xlrec;
 	rdata[0].len = sizeof(gistxlogCreateIndex);
