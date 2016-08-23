@@ -63,10 +63,10 @@ RELEASE=4.3.9.0MS27
 BASE_DIR=`pwd`
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-GPDB_INSTALLER_FILE=${GPDB_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_rc/greenplum-db-${RELEASE}-build-1-RHEL5-x86_64.zip}
-CONN_INSTALLER_FILE=${CONN_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_connectivity/greenplum-connectivity-${RELEASE}-build-1-RHEL5-x86_64.zip}
-CLIENTS_INSTALLER_FILE=${CLIENTS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_clients/greenplum-clients-${RELEASE}-build-1-RHEL5-x86_64.zip}
-LOADERS_INSTALLER_FILE=${LOADERS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_loaders/greenplum-loaders-${RELEASE}-build-1-RHEL5-x86_64.zip}
+GPDB_INSTALLER_FILE=${GPDB_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_rc/greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip}
+CONN_INSTALLER_FILE=${CONN_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_connectivity/greenplum-connectivity-${RELEASE}-build-1-rhel5-x86_64.zip}
+CLIENTS_INSTALLER_FILE=${CLIENTS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_clients/greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip}
+LOADERS_INSTALLER_FILE=${LOADERS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_loaders/greenplum-loaders-${RELEASE}-build-1-rhel5-x86_64.zip}
 
 PGCRYPTO_GPPKG_FILE=${PGCRYPTO_GPPKG_FILE:=${BASE_DIR}/pgcrypto_rhel5_gppkg/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg}
 PLR_GPPKG_FILE=${PLR_GPPKG_FILE:=${BASE_DIR}/plr_rhel5_gppkg/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg}
@@ -75,7 +75,7 @@ MADLIB_GPPKG_FILE=${MADLIB_GPPKG_FILE:=${BASE_DIR}/madlib_rhel5_gppkg/madlib-oss
 
 JDBC_DRIVER_FILE=${JDBC_DRIVER_FILE:=${BASE_DIR}/greenplum_jdbc_zip/greenplum_jdbc_5.1.1.zip}
 GPSUPPORT_FILE=${GPSUPPORT_FILE:=${BASE_DIR}/gpsupport_package/gpsupport-1.2.0.0.gz}
-QAUTILS_FILE=${QAUTILS_FILE:=${BASE_DIR}/qautils_rhel5_tarball/QAUtils-RHEL5-x86_64.tar.gz}
+QAUTILS_FILE=${QAUTILS_FILE:=${BASE_DIR}/qautils_rhel5_tarball/QAUtils-rhel5-x86_64.tar.gz}
 
 cat <<-EOF
 ======================================================================
