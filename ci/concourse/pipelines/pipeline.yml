@@ -223,7 +223,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/QAUtils-RHEL5-x86_64.tar.gz
+    versioned_file: deliverables/QAUtils-rhel5-x86_64.tar.gz
 
 - name: qautils_sles11_tarball
   type: s3
@@ -232,7 +232,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/QAUtils-SLES11-x86_64.tar.gz
+    versioned_file: deliverables/QAUtils-sles11-x86_64.tar.gz
 
 - name: installer_sles11_gpdb_clients
   type: s3
@@ -782,7 +782,7 @@ jobs:
   - task: separate_qautils_files_for_rc
     file: gpdb_src/ci/concourse/separate_qautils_files_for_rc.yml
     params:
-      QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-RHEL5-x86_64.tar.gz
+      QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
   - aggregate:
     - task: gpdb_rc_packaging_centos
       file: gpdb_src/ci/concourse/gpdb_packaging.yml
@@ -818,7 +818,7 @@ jobs:
         file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.9.1-build-1-rhel5-x86_64.zip.md5
     - put: qautils_rhel5_tarball
       params:
-        file: rc_bin_gpdb/QAUtils-RHEL5-x86_64.tar.gz
+        file: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
 
 - name: gpdb_rc_packaging_sles
   public: true
@@ -835,7 +835,7 @@ jobs:
   - task: separate_qautils_files_for_rc
     file: gpdb_src/ci/concourse/separate_qautils_files_for_rc.yml
     params:
-      QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-SLES11-x86_64.tar.gz
+      QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-sles11-x86_64.tar.gz
   - task: gpdb_rc_packaging_sles
     file: gpdb_src/ci/concourse/gpdb_packaging.yml
     input_mapping:
@@ -852,7 +852,7 @@ jobs:
       file: packaged_gpdb/greenplum-db-4.3.9.1-build-1-sles11-x86_64.zip.md5
   - put: qautils_sles11_tarball
     params:
-      file: rc_bin_gpdb/QAUtils-SLES11-x86_64.tar.gz
+      file: rc_bin_gpdb/QAUtils-sles11-x86_64.tar.gz
 
 # Stage 3b: Packaging of source code
 - name: gpdb_src_packaging
@@ -1095,7 +1095,7 @@ jobs:
       input_mapping:
         artifact_to_upload: qautils_rhel5_tarball
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/QAUtils-RHEL5-x86_64.tar.gz
+        FILE_TO_UPLOAD: artifact_to_upload/QAUtils-rhel5-x86_64.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles_sync_to_dist_rc
@@ -1215,7 +1215,7 @@ jobs:
       input_mapping:
         artifact_to_upload: qautils_sles11_tarball
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/QAUtils-SLES11-x86_64.tar.gz
+        FILE_TO_UPLOAD: artifact_to_upload/QAUtils-sles11-x86_64.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
 
