@@ -410,6 +410,7 @@ class GpInjectFaultProgram:
 			      "runaway_cleanup (inject fault before starting the cleanup for a runaway query), " \
                   "opt_task_allocate_string_buffer (inject fault while allocating string buffer), " \
                   "opt_relcache_translator_catalog_access (inject fault while translating relcache entries), " \
+			      "external_insert_finish (inject fault at the end of external insert), " \
 			      "all (affects all faults injected, used for 'status' and 'reset'), ") 
         addTo.add_option("-c", "--ddl_statement", dest="ddlStatement", type="string",
                          metavar="ddlStatement",

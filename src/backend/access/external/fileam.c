@@ -56,6 +56,7 @@
 #include "utils/uri.h"
 #include "utils/guc.h"
 #include "utils/builtins.h"
+#include "utils/faultinjector.h"
 
 #include "cdb/cdbsreh.h"
 #include "cdb/cdbtm.h"
@@ -712,7 +713,9 @@ external_insert(ExternalInsertDesc extInsertDesc, HeapTuple instup)
 void
 external_insert_finish(ExternalInsertDesc extInsertDesc)
 {
-
+#ifdef FAULT_INJECTOR
+	SIMPLE_FAULT_INJECTOR(ExternalInsertFinish);
+#endif
 	/*
 	 * Close the external source
 	 */

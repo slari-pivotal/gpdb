@@ -545,6 +545,30 @@ create writable external table auth_ext_test9(a int) location ('gphdfs://host:80
 create external table auth_ext_test9(a int) location ('gphdfs://host:8000/file') format 'text';           -- fail
 RESET SESSION AUTHORIZATION;
 
+--
+-- test external data source is freed at the end of sub-transaction 
+--
+-- start_ignore
+select * from exttab1_gpfdist_status;
+select * from exttab1_gpfdist_start;
+select * from exttab1_gpfdist_status;
+DROP EXTERNAL TABLE IF EXISTS subtrans_w_ext;
+CREATE WRITABLE EXTERNAL TABLE subtrans_w_ext(a int, b int, c int)
+LOCATION('gpfdist://@hostname@:7070/subtrans_w_ext.data') FORMAT 'csv';
+\!gpfaultinjector -f external_insert_finish -y reset --seg_dbid 2
+\!gpfaultinjector -f external_insert_finish -y error --seg_dbid 2
+-- end_ignore
+
+BEGIN;
+SAVEPOINT s1;
+INSERT INTO subtrans_w_ext SELECT i, i, i from generate_series(1,100) i;
+ROLLBACK TO s1;
+-- start_ignore
+select * from exttab1_gpfdist_status;
+select * from exttab1_gpfdist_stop;
+select * from exttab1_gpfdist_status;
+-- end_ignore
+ABORT;
 
 drop external table auth_ext_test1;
 drop external table auth_ext_test2;

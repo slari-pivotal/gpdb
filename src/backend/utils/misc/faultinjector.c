@@ -311,6 +311,8 @@ FaultInjectorIdentifierEnumToString[] = {
 		/* inject fault while allocating string buffer */
 	_("opt_relcache_translator_catalog_access"),
 		/* inject fault while translating relcache entries */
+	_("external_insert_finish"),
+		/* inject fault at the end of external insert */
 	_("not recognized"),
 };
 
