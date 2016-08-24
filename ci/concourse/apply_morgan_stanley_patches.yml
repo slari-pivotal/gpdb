@@ -20,6 +20,7 @@ inputs:
   - name: mit_krb5_rhel62_tarball
   - name: greenplum_jdbc_zip
   - name: gpsupport_package
+  - name: gpmt_binary
 run:
   path: gpdb_src/customer-patches/morgan-stanley/scripts/gen-customer-installer.sh
 outputs:
