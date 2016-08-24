@@ -528,10 +528,10 @@ echo "---------------------------------------------------------------------"
 echo ""
 
 mkdir -p $BASE_DIR/ms_installer_rhel5_gpdb_rc $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients
-cp greenplum-db-${RELEASE}-build-1-RHEL5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_rc/
-cp greenplum-db-${RELEASE}-build-1-RHEL5-x86_64.zip.md5 $BASE_DIR/ms_installer_rhel5_gpdb_rc/
-cp greenplum-clients-${RELEASE}-build-1-RHEL5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
-cp greenplum-clients-${RELEASE}-build-1-RHEL5-x86_64.zip.md5 $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
+cp greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_rc/
+cp greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip.md5 $BASE_DIR/ms_installer_rhel5_gpdb_rc/
+cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
+cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip.md5 $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
 
 echo ""
 echo "---------------------------------------------------------------------"
