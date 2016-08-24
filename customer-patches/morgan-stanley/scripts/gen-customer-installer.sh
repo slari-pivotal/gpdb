@@ -59,7 +59,7 @@ extract_std_gppkg(){
 
 ## ======================================================================
 
-RELEASE=4.3.9.0MS27
+RELEASE=4.3.9.1MS28
 BASE_DIR=`pwd`
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -75,6 +75,7 @@ MADLIB_GPPKG_FILE=${MADLIB_GPPKG_FILE:=${BASE_DIR}/madlib_rhel5_gppkg/madlib-oss
 
 JDBC_DRIVER_FILE=${JDBC_DRIVER_FILE:=${BASE_DIR}/greenplum_jdbc_zip/greenplum_jdbc_5.1.1.zip}
 GPSUPPORT_FILE=${GPSUPPORT_FILE:=${BASE_DIR}/gpsupport_package/gpsupport-1.2.0.0.gz}
+GPMT_FILE=${GPMT_FILE:=${BASE_DIR}/gpmt_binary/gpmt.gz}
 QAUTILS_FILE=${QAUTILS_FILE:=${BASE_DIR}/qautils_rhel5_tarball/QAUtils-rhel5-x86_64.tar.gz}
 
 cat <<-EOF
@@ -452,6 +453,19 @@ echo "----------------------------------------------------------------------"
 cp ${GPSUPPORT_FILE} ${CLIENTS_INSTALLDIR}/bin/gpsupport.gz
 gunzip ${CLIENTS_INSTALLDIR}/bin/gpsupport.gz
 chmod a+x ${CLIENTS_INSTALLDIR}/bin/gpsupport
+
+## ----------------------------------------------------------------------
+## Process gpmt
+## ----------------------------------------------------------------------
+
+echo ""
+echo "----------------------------------------------------------------------"
+echo "GPMT retrieval: $( basename ${GPMT_FILE} )"
+echo "----------------------------------------------------------------------"
+
+cp ${GPMT_FILE} ${CLIENTS_INSTALLDIR}/bin/gpmt.gz
+gunzip ${CLIENTS_INSTALLDIR}/bin/gpmt.gz
+chmod a+x ${CLIENTS_INSTALLDIR}/bin/gpmt
 
 ## ----------------------------------------------------------------------
 ## Process gpcheckmirrorseg.pl
