@@ -764,3 +764,20 @@ select id from tbl_25484 where 3 = (select 3 where 3 = (select num));
 drop table tbl_25484;
 reset optimizer_segments;
 reset optimizer_nestloop_factor;
+
+--
+-- Test case for when there is case clause in join filter
+--
+
+drop table if exists t_case_subquery1;
+create table t_case_subquery1 (a int, b int, c text);
+insert into t_case_subquery1 values(1, 5, NULL), (1, 2, NULL);
+
+select t1.* from t_case_subquery1 t1 where t1.b = (
+  select max(b) from t_case_subquery1 t2 where t1.a = t2.a and t2.b < 5 and
+    case
+    when t1.c is not null and t2.c is not null
+    then t1.c = t2.c
+    end
+);
+drop table if exists t_case_subquery1;

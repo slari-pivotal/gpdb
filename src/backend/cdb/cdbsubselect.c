@@ -531,7 +531,7 @@ SubqueryToJoinWalker(Node *node, ConvertSubqueryToJoinContext *context)
 	/**
 	 * If this is a correlated opexpression, we'd need to look inside.
 	 */
-	if (contain_vars_of_level_or_above(node, 1) && IsA(node, OpExpr))
+	else if (contain_vars_of_level_or_above(node, 1) && IsA(node, OpExpr))
 	{
 		OpExpr *opexp = (OpExpr *) node;
 
@@ -579,6 +579,11 @@ SubqueryToJoinWalker(Node *node, ConvertSubqueryToJoinContext *context)
 		/**
 		 * Correlated join expression contains incompatible operators. Not safe to convert.
 		 */
+		context->safeToConvert = false;
+	}
+	else if (contain_vars_of_level_or_above(node, 1))
+	{
+		/* This is a correlated expression, but we don't know how to deal with it. Give up. */
 		context->safeToConvert = false;
 	}
 
