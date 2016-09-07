@@ -71,7 +71,7 @@ override CFLAGS += -I$(top_builddir)/gpAux/ext/$(BLD_ARCH)/include/rsa_csp -I$(t
 endif
 
 ifeq ($(enable_netbackup), yes)
-NETBACKUPLIB75 += -L$(top_srcdir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu75/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
+NETBACKUPLIB75 += -L$(top_srcdir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu75/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST -Wl,-rpath,'$(top_srcdir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu75/lib'
 NETBACKUPLIB71 += -L$(top_srcdir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu71/lib -lxbsa64 -lnbclientcST -lnbbasecST -lvxcPBXST
 GPBSALIB += -L$(top_builddir)/src/bin/pg_dump/cdb -lgpbsa -Wl,-rpath-link,'$(top_srcdir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu75/lib'
 override CFLAGS += -I$(top_srcdir)/gpAux/ext/$(BLD_ARCH)/Netbackup/nbu75/include
