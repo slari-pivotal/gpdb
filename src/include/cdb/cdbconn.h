@@ -85,4 +85,8 @@ bool
 cdbconn_setSliceIndex(SegmentDatabaseDescriptor    *segdbDesc,
                       int                           sliceIndex);
 
+/* Read result from connection and discard it. */
+bool
+cdbconn_discardResults(SegmentDatabaseDescriptor *segdbDesc,
+					   int retryCount);
 #endif   /* CDBCONN_H */

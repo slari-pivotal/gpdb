@@ -1976,6 +1976,9 @@ cleanupGang(Gang *gp)
 {
 	int			i;
 
+	if (gp->noReuse)
+		return false;
+
 	if (gp == NULL)
 		return true;
 
@@ -1983,12 +1986,6 @@ cleanupGang(Gang *gp)
 	{
 		elog(LOG, "cleanupGang: cleaning gang id %d type %d size %d, was used for portal: %s", gp->gang_id, gp->type, gp->size, (gp->portal_name ? gp->portal_name : "(unnamed)"));
 	}
-
-	/* disassociate this gang with any portal that it may have belonged to */
-	if (gp->portal_name)
-		pfree(gp->portal_name);
-
-	gp->portal_name = NULL;
 
 	if (gp->active)
 	{
@@ -2005,8 +2002,7 @@ cleanupGang(Gang *gp)
 
 	/*
 	 * Loop through the segment_database_descriptors array and, for each
-	 * SegmentDatabaseDescriptor:
-	 *	   1) discard the query results (if any)
+	 * SegmentDatabaseDescriptor, discard the query results (if any)
 	 */
 	for (i = 0; i < gp->size; i++)
 	{
@@ -2015,72 +2011,35 @@ cleanupGang(Gang *gp)
 		if (segdbDesc == NULL)
 			return false;
 
-		/*
-		 * Note, we cancel all "still running" queries
-		 */
 		/* PQstatus() is smart enough to handle NULL */
-		if (PQstatus(segdbDesc->conn) == CONNECTION_OK)
+		if (PQstatus(segdbDesc->conn) != CONNECTION_OK)
 		{
-			PGresult   *pRes;
-			int			retry = 0;
-
-			ExecStatusType stat;
-
-			while (NULL != (pRes = PQgetResult(segdbDesc->conn)))
-			{
-				stat = PQresultStatus(pRes);
-
-				elog(LOG, "(%s) Leftover result at freeGang time: %s %s",
-					 segdbDesc->whoami,
-					 PQresStatus(stat),
-					 PQerrorMessage(segdbDesc->conn));
-
-				PQclear(pRes);
-				if (stat == PGRES_FATAL_ERROR)
-					break;
-				if (stat == PGRES_BAD_RESPONSE)
-					break;
-				retry++;
-				if (retry > 20)
-				{
-					elog(LOG, "cleanup called when a segworker is still busy, waiting didn't help, trying to destroy the segworker group");
-					disconnectAndDestroyGang(gp);
-					gp = NULL;
-					elog(FATAL, "cleanup called when a segworker is still busy");
-					return false;
-				}
-			}
-		}
-		else
-		{
-			/*
-			 * something happened to this gang, disconnect instead of
-			 * sending it back onto our lists!
-			 */
 			elog(LOG, "lost connection with segworker group member");
-			disconnectAndDestroyGang(gp);
 			return false;
 		}
+
+		/* Note, we cancel all "still running" queries */
+		if (!cdbconn_discardResults(segdbDesc, 20))
+			elog(FATAL, "cleanup called when a segworker is still busy");
 
 		/* QE is no longer associated with a slice. */
 		if (!cdbconn_setSliceIndex(segdbDesc, -1))
 		{
 			insist_log(false, "could not reset slice index during cleanup");
 		}
+	}
 
+	/* disassociate this gang with any portal that it may have belonged to */
+	if (gp->portal_name != NULL)
+	{
+		pfree(gp->portal_name);
+		gp->portal_name = NULL;
 	}
 
 	gp->allocated = false;
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
 		elog(LOG, "cleanupGang done");
-
-	if (gp->noReuse)
-	{
-		disconnectAndDestroyGang(gp);
-		gp = NULL;
-		return false;
-	}
 
 	return true;
 }
@@ -2477,18 +2436,12 @@ freeGangsForPortal(char *portal_name)
 	 * if we have multiple active portals trying to release, we can't just
 	 * release and re-release the writers each time !
 	 */
-	if (!portal_name)
+	if (portal_name == NULL &&
+	    primaryWriterGang != NULL &&
+	    !cleanupGang(primaryWriterGang))
 	{
-		if (!cleanupGang(primaryWriterGang))
-		{
-			primaryWriterGang = NULL;	/* cleanupGang called
-										 * disconnectAndDestroyGang() already */
-			disconnectAndDestroyAllGangs();
-
-			elog(ERROR, "could not temporarily connect to one or more segments");
-
-			return;
-		}
+		disconnectAndDestroyAllGangs();
+		elog(ERROR, "could not temporarily connect to one or more segments");
 	}
 
 	if (GangContext)
@@ -2523,6 +2476,8 @@ freeGangsForPortal(char *portal_name)
 				/* we only return the gang to the available list if it is good */
 				if (cleanupGang(gp))
 					availableReaderGangsN = lappend(availableReaderGangsN, gp);
+				else
+					disconnectAndDestroyGang(gp);
 
 				if (prev_item)
 					cur_item = lnext(prev_item);
@@ -2563,6 +2518,8 @@ freeGangsForPortal(char *portal_name)
 				/* we only return the gang to the available list if it is good */
 				if (cleanupGang(gp))
 					availableReaderGangs1 = lappend(availableReaderGangs1, gp);
+				else
+					disconnectAndDestroyGang(gp);
 
 				if (prev_item)
 					cur_item = lnext(prev_item);

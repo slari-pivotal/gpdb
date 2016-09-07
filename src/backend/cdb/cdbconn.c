@@ -499,3 +499,38 @@ cdbconn_setSliceIndex(SegmentDatabaseDescriptor    *segdbDesc,
     truncatePQExpBuffer(scratchbuf, scratchoff);
     return true;
 }                               /* cdbconn_setSliceIndex */
+
+
+/*
+ * Read result from connection and discard it.
+ *
+ * Retry at most N times.
+ *
+ * Return false if there'er still leftovers.
+ */
+bool cdbconn_discardResults(SegmentDatabaseDescriptor *segdbDesc,
+		int retryCount)
+{
+	PGresult *pRes = NULL;
+	ExecStatusType stat;
+	int i = 0;
+
+	/* PQstatus() is smart enough to handle NULL */
+	while (NULL != (pRes = PQgetResult(segdbDesc->conn)))
+	{
+		stat = PQresultStatus(pRes);
+		PQclear(pRes);
+
+		elog(LOG, "(%s) Leftover result at freeGang time: %s %s", segdbDesc->whoami,
+				PQresStatus(stat),
+				PQerrorMessage(segdbDesc->conn));
+
+		if (stat == PGRES_FATAL_ERROR || stat == PGRES_BAD_RESPONSE)
+			return true;
+
+		if (i++ > retryCount)
+			return false;
+	}
+
+	return true;
+}
