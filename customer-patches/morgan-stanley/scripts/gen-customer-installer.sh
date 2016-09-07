@@ -216,6 +216,19 @@ gunzip ${GPDB_INSTALLDIR}/bin/gpsupport.gz
 chmod a+x ${GPDB_INSTALLDIR}/bin/gpsupport
 
 ## ----------------------------------------------------------------------
+## Process gpmt
+## ----------------------------------------------------------------------
+
+echo ""
+echo "----------------------------------------------------------------------"
+echo "GPMT retrieval: $( basename ${GPMT_FILE} )"
+echo "----------------------------------------------------------------------"
+
+cp ${GPMT_FILE} ${GPDB_INSTALLDIR}/bin/gpmt.gz
+gunzip ${GPDB_INSTALLDIR}/bin/gpmt.gz
+chmod a+x ${GPDB_INSTALLDIR}/bin/gpmt
+
+## ----------------------------------------------------------------------
 ## Process gpcheckmirrorseg.pl
 ## ----------------------------------------------------------------------
 
@@ -453,19 +466,6 @@ echo "----------------------------------------------------------------------"
 cp ${GPSUPPORT_FILE} ${CLIENTS_INSTALLDIR}/bin/gpsupport.gz
 gunzip ${CLIENTS_INSTALLDIR}/bin/gpsupport.gz
 chmod a+x ${CLIENTS_INSTALLDIR}/bin/gpsupport
-
-## ----------------------------------------------------------------------
-## Process gpmt
-## ----------------------------------------------------------------------
-
-echo ""
-echo "----------------------------------------------------------------------"
-echo "GPMT retrieval: $( basename ${GPMT_FILE} )"
-echo "----------------------------------------------------------------------"
-
-cp ${GPMT_FILE} ${CLIENTS_INSTALLDIR}/bin/gpmt.gz
-gunzip ${CLIENTS_INSTALLDIR}/bin/gpmt.gz
-chmod a+x ${CLIENTS_INSTALLDIR}/bin/gpmt
 
 ## ----------------------------------------------------------------------
 ## Process gpcheckmirrorseg.pl
