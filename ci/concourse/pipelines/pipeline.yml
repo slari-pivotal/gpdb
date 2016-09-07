@@ -900,6 +900,7 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
+      passed: [gpdb_rc_packaging_centos]
     - get: gpdb_src_archive
       passed: [gpdb_src_packaging]
       trigger: true
