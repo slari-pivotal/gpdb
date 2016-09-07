@@ -117,3 +117,12 @@ insert into copytest4 values (1,4);
 copy (select * from copytest4) to stdout csv delimiter ',' force quote id, id1, id2;
 copy (select * from copytest4) to stdout csv delimiter ',' force quote id, id1;
 
+-- inject error after query is dispatched in cdbCopyStart
+create table copytest5(a int, b text);
+insert into copytest5 select i, repeat('abcdefghijklmnopqrstuvwxyz', i) from generate_series(1,100) as i;
+--start_ignore
+\!gpfaultinjector -f cdb_copy_start_after_dispatch -m async -y reset -s 1
+\!gpfaultinjector -f cdb_copy_start_after_dispatch -m async -y error -s 1
+--end_ignore
+copy copytest5 to '@abs_builddir@/results/copytest5.csv';
+select count(*) from copytest5;

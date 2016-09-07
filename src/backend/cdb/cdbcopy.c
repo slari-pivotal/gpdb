@@ -191,13 +191,25 @@ cdbCopyStart(CdbCopy *c, char *copyCmd)
 			true, /* want snapshot */
 			false /* in cursor */);
 	
-	cdbdisp_dispatchCommand(copyCmd, serializedQuerytree, serializedQuerytree_len, 
-								false 		/* cancelonError */, 
-								c->copy_in 	/* need2phase */, 
-								true 		/* withSnapshot */,
+	PG_TRY();
+	{
+		cdbdisp_dispatchCommand(copyCmd, serializedQuerytree, serializedQuerytree_len,
+								false           /* cancelonError */,
+								c->copy_in      /* need2phase */,
+								true            /* withSnapshot */,
 								&ds);
 
-	SIMPLE_FAULT_INJECTOR(CdbCopyStartAfterDispatch);
+		SIMPLE_FAULT_INJECTOR(CdbCopyStartAfterDispatch);
+	}
+	PG_CATCH();
+	{
+		/* If dispatched, stop QEs and clean up after them. */
+		if (ds.primaryResults)
+			cdbdisp_handleError(&ds);
+		/* Carry on with error handling. */
+		PG_RE_THROW();
+	}
+	PG_END_TRY();
 
 	/*
 	 * Wait for all QEs to finish. If not all of our QEs were successful,
