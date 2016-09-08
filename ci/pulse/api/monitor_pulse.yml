@@ -1,0 +1,16 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: ruby
+inputs:
+  - name: gpdb_src
+  - name: build_id
+run:
+  path: gpdb_src/ci/pulse/api/bin/monitor_pulse
+params:
+  PULSE_URL: "http://pulse-cloud.gopivotal.com/"
+  PULSE_PROJECT_NAME: GPDB-43_STABLE-MFR-TINC_toolsmiths_trigger_126607015
+  PULSE_USERNAME: toolsmiths
+  PULSE_PASSWORD: hawqtoolsmiths
+  INPUT_DIR: build_id

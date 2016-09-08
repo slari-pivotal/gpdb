@@ -1,0 +1,83 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/pulse_proxy'
+require 'json'
+
+url = ENV['PULSE_URL']
+project_name = ENV['PULSE_PROJECT_NAME']
+username = ENV['PULSE_USERNAME']
+password = ENV['PULSE_PASSWORD']
+input_dir = ENV['INPUT_DIR']
+
+puts "PULSE_URL is #{url}"
+puts "PULSE_PROJECT_NAME is #{project_name}"
+
+build_id_file = input_dir + "/build_id"
+build_id = File.read(build_id_file).strip.to_i
+puts "Build ID is #{build_id} (read from #{build_id_file})"
+
+base_url = URI.parse(url + URI.escape("browse/projects/#{project_name}")).to_s
+build_url = "#{base_url}/builds/#{build_id}/"
+puts "Build project URL: #{build_url}"
+
+#Pulse builds can take between 20 minutes to 6-7 hours to complete
+end_time = Time.now + 10*(60*60)
+puts "Polling Pulse build status every 60 seconds with a timeout of 10 hours"
+while Time.now < end_time do
+  #we spawn a new connection on each polling to avoid login token expiration
+  pulse_proxy = PulseProxy.new(url, username, password)
+
+  #pulse always returns a single-element array
+  build_result = pulse_proxy.request_getBuild(project_name, build_id)[0]
+
+  if build_result['completed']
+    break
+  end
+
+  sleep(60)
+end
+
+puts "Build ID: #{build_result['id']}"
+
+build_successful = build_result['succeeded']
+puts "Build " + (if build_successful then "succeeded" else "failed" end)
+
+# ? add proxy call - will these return build properties?
+# customfields = request_getCustomFieldsInBuild(project_name, build_id);
+# print the custom fields (struct)
+
+puts "Revision: " + build_result['revision']
+puts "Owner: " + build_result['owner']
+puts "Errors: " + build_result['errorCount'].to_s
+puts "Warnings: " + build_result['warningCount'].to_s
+
+seconds = (build_result['endTimeMillis'].to_i - build_result['startTimeMillis'].to_i) / 1000
+puts "Duration: " + (build_result['completed'] ? Time.at(seconds).utc.strftime("%H:%M:%S") : "N/A")
+
+# below always returns 0 for all
+#test_summary = build_result['tests']
+#puts "Test Summary (Overall):"
+#puts "  Total: " + test_summary['total'].to_s
+#puts "  Errors: " + test_summary['errors'].to_s
+#puts "  Expected Failures: " + test_summary['expectedFailures'].to_s
+#puts "  Failures: " + test_summary['failures'].to_s
+#puts "  Passed: " + test_summary['passed'].to_s
+#puts "  Skipped: " + test_summary['skipped'].to_s
+
+stages = build_result['stages']
+# ? stages interesting
+
+buildmsgs = pulse_proxy.request_getMessagesInBuild(project_name, build_id);
+puts "Messages:"
+$n = 0;
+while $n < buildmsgs.count  do
+  $m = buildmsgs[$n]
+  puts "  " + $m['message']
+  $n +=1
+end
+
+# print the error/warn/info messages (array of messages returned)
+# alternatively, there are separate calls to get each type of msg
+
+exit build_successful
+

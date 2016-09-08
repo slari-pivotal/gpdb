@@ -30,6 +30,7 @@ groups:
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
+  - pulse_toolsmiths_MFR-TINC
 - name: CentOS/RHEL
   jobs:
   - compile_gpdb_centos
@@ -60,6 +61,10 @@ groups:
   - gpdb_sync_to_dist
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_sles
+- name: Pulse
+  jobs:
+  - gpdb_sync_to_dist
+  - pulse_toolsmiths_MFR-TINC
 
 ## ======================================================================
 ## resources
@@ -451,6 +456,12 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
+
+- name: nightly-trigger
+  type: time
+  source:
+    start: 12:00 AM -0700
+    stop: 1:00 AM -0700
 
 ## ======================================================================
 ## jobs
@@ -1346,6 +1357,35 @@ jobs:
     params:
       BEHAVE_TAGS: backup
       TEST_OS: centos
+
+- name: pulse_toolsmiths_MFR-TINC
+  public: true
+  plan:
+  - get: nightly-trigger
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse_toolsmiths_MFR-TINC
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC_toolsmiths_trigger_126607015"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+      BUILD_ARTIFACT_URL: "http://dist.eng.pivotal.io/dist/GPDB/builds_from_concourse/gpdb-4.3-stable-concourse/greenplum-db-4.3.9.1-build-1-rhel5-x86_64.zip"
+      QAUTIL_URL: "http://dist.eng.pivotal.io/dist/GPDB/builds_from_concourse/gpdb-4.3-stable-concourse/QAUtils-rhel5-x86_64.tar.gz"
+  - task: monitor_pulse_toolsmiths_MFR-TINC
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC_toolsmiths_trigger_126607015"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
 
 - name: manual_testing_on_pulse_centos
   public: true

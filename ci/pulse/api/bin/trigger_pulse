@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/pulse_proxy'
+require 'json'
+
+url = ENV['PULSE_URL']
+project_name = ENV['PULSE_PROJECT_NAME']
+username = ENV['PULSE_USERNAME']
+password = ENV['PULSE_PASSWORD']
+output_dir = ENV['OUTPUT_DIR']
+build_artifact_url = ENV['BUILD_ARTIFACT_URL']
+qautil_url = ENV['QAUTIL_URL']
+
+puts "PULSE_URL is #{url}"
+puts "PULSE_PROJECT_NAME is #{project_name}"
+
+pulse_proxy = PulseProxy.new(url, username, password)
+
+#todo: add a better reason (URL tbd)
+trigger_options = {
+  :force => true,
+  :properties => {
+    :BUILD_ARTIFACT_URL => build_artifact_url,
+    :QAUTIL_URL => qautil_url,
+  },
+  :reason => "Triggered via Concourse http://shared.ci.eng.pivotal.io"
+}
+request_ids = pulse_proxy.request_triggerBuild(project_name, trigger_options)
+request_id = request_ids[0] #we only ever get one back; we aren't using the pulse feature that would give us multiple
+puts "request_id is #{request_id}"
+
+#Give the build 2 minutes to be activated
+build_request_status = pulse_proxy.request_waitForBuildRequestToBeActivated(request_id, 2*60*1000)
+status = build_request_status['status']
+
+if status == 'QUEUED'
+  puts "Waited two minutes for the build to be activated, but it was still in QUEUED state"
+  puts "We consider this a failure because often it means that the pulse agents are misconfigured"
+  exit 1
+elsif status != 'ACTIVATED'
+  puts "Build trigger failed with status #{status}"
+  exit 1
+end
+
+build_id = build_request_status['buildId']
+puts "build_id is #{build_id}"
+
+if !File.directory?(output_dir)
+  puts "#{output_dir} must be a valid directory"
+  exit 1
+end
+
+puts "Writing build_id to " + output_dir + "/build_id"
+open(output_dir + "/build_id", 'w') { |f|
+  f.puts build_id
+}
+
