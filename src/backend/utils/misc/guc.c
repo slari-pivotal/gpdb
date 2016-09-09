@@ -701,6 +701,7 @@ bool        gp_enable_groupext_distinct_gather = true;
 bool		gp_dynamic_partition_pruning = true;
 bool		gp_log_dynamic_partition_pruning = false;
 bool		gp_cte_sharing = false;
+bool		gp_enable_relsize_collection = false;
 
 /*
  * If set to true, we will silently insert into the correct leaf
@@ -3740,6 +3741,16 @@ static struct config_bool ConfigureNamesBool[] =
 			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
 		},
 		&gp_cte_sharing,
+		false, NULL, NULL
+	},
+
+	{
+		{"gp_enable_relsize_collection", PGC_USERSET, QUERY_TUNING_METHOD,
+			gettext_noop("This guc enables relsize collection when stats are not present. If disabled and stats are not present a default "
+                         "value is used."),
+			NULL
+		},
+		&gp_enable_relsize_collection,
 		false, NULL, NULL
 	},
 

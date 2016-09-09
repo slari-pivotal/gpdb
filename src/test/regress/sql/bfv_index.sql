@@ -26,6 +26,13 @@ explain
 select * from bfv_tab1, (values(147, 'RFAAAA'), (931, 'VJAAAA')) as v (i, j)
     WHERE bfv_tab1.unique1 = v.i and bfv_tab1.stringu1 = v.j;
 
+set gp_enable_relsize_collection=on;
+
+explain select * from bfv_tab1, (values(147, 'RFAAAA'), (931, 'VJAAAA')) as v (i, j)
+    WHERE bfv_tab1.unique1 = v.i and bfv_tab1.stringu1 = v.j;
+
+reset gp_enable_relsize_collection;
+
 --start_ignore
 DROP TABLE IF EXISTS bfv_tab2_facttable1;
 DROP TABLE IF EXISTS bfv_tab2_dimdate;

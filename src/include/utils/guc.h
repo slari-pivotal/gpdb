@@ -296,6 +296,8 @@ extern bool gp_plpgsql_clear_cache_always;
 extern bool fts_diskio_check;
 extern bool gp_disable_catalog_access_on_segment;
 
+extern bool gp_enable_relsize_collection;
+
 /* Debug DTM Action */
 typedef enum
 {
