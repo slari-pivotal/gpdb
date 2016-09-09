@@ -13,6 +13,13 @@ qautil_url = ENV['QAUTIL_URL']
 
 puts "PULSE_URL is #{url}"
 puts "PULSE_PROJECT_NAME is #{project_name}"
+puts "BUILD_ARTIFACT_URL is #{build_artifact_url}"
+puts "QAUTIL_URL is #{qautil_url}"
+
+if !File.directory?(output_dir)
+  puts "#{output_dir} must be a valid directory"
+  exit 1
+end
 
 pulse_proxy = PulseProxy.new(url, username, password)
 
@@ -44,11 +51,6 @@ end
 
 build_id = build_request_status['buildId']
 puts "build_id is #{build_id}"
-
-if !File.directory?(output_dir)
-  puts "#{output_dir} must be a valid directory"
-  exit 1
-end
 
 puts "Writing build_id to " + output_dir + "/build_id"
 open(output_dir + "/build_id", 'w') { |f|

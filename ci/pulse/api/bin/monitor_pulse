@@ -14,11 +14,13 @@ puts "PULSE_PROJECT_NAME is #{project_name}"
 
 build_id_file = input_dir + "/build_id"
 build_id = File.read(build_id_file).strip.to_i
-puts "Build ID is #{build_id} (read from #{build_id_file})"
+puts "Build ID input: #{build_id} (read from #{build_id_file})"
 
 base_url = URI.parse(url + URI.escape("browse/projects/#{project_name}")).to_s
 build_url = "#{base_url}/builds/#{build_id}/"
+puts ""
 puts "Build project URL: #{build_url}"
+puts ""
 
 #Pulse builds can take between 20 minutes to 6-7 hours to complete
 end_time = Time.now + 10*(60*60)
@@ -37,7 +39,7 @@ while Time.now < end_time do
   sleep(60)
 end
 
-puts "Build ID: #{build_result['id']}"
+puts "Build ID fetched from pulse: #{build_result['id']}"
 
 build_successful = build_result['succeeded']
 puts "Build " + (if build_successful then "succeeded" else "failed" end)
