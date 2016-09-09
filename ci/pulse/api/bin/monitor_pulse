@@ -25,9 +25,16 @@ puts ""
 #Pulse builds can take between 20 minutes to 6-7 hours to complete
 end_time = Time.now + 10*(60*60)
 puts "Polling Pulse build status every 60 seconds with a timeout of 10 hours"
+
+#Pulse login tokens expire every 30 minutes; get a new one every 20
+pulse_proxy = PulseProxy.new(url, username, password)
+time_to_get_a_new_token = Time.now + 20*60
+
 while Time.now < end_time do
-  #we spawn a new connection on each polling to avoid login token expiration
-  pulse_proxy = PulseProxy.new(url, username, password)
+  if Time.now < time_to_get_a_new_token
+    pulse_proxy = PulseProxy.new(url, username, password)
+    time_to_get_a_new_token = Time.now + 20*60
+  end
 
   #pulse always returns a single-element array
   build_result = pulse_proxy.request_getBuild(project_name, build_id)[0]
