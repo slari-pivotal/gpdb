@@ -59,7 +59,7 @@ function generate_build_number() {
 function make_sync_tools() {
   pushd gpdb_src/gpAux
     make IVYREPO_HOST=${IVYREPO_HOST} IVYREPO_REALM="${IVYREPO_REALM}" IVYREPO_USER=${IVYREPO_USER} IVYREPO_PASSWD=${IVYREPO_PASSWD} sync_tools
-    tar -czf ../../sync_tools_gpdb/sync_tools_gpdb.tar.gz ext
+    tar -czf "$GPDB_ARTIFACTS_DIR/sync_tools_gpdb.tar.gz" ext
   popd
 }
 
