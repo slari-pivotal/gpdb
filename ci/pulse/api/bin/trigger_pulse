@@ -8,9 +8,14 @@ project_name = ENV['PULSE_PROJECT_NAME']
 username = ENV['PULSE_USERNAME']
 password = ENV['PULSE_PASSWORD']
 output_dir = ENV['OUTPUT_DIR']
-build_artifact_url = ENV['BUILD_ARTIFACT_URL']
-build_src_code_url = ENV['BUILD_SRC_CODE_URL']
-qautil_url = ENV['QAUTIL_URL']
+
+#read the s3 signed URLs from Concourse
+build_artifact_url_file = "installer_rhel5_gpdb_rc/url"
+build_artifact_url = File.read(build_artifact_url_file).strip
+build_src_code_url_file = "gpdb_src_archive/url"
+build_src_code_url = File.read(build_src_code_url_file).strip
+qautil_url_file = "qautils_rhel5_tarball/url"
+qautil_url = File.read(qautil_url_file).strip
 
 puts "PULSE_URL is #{url}"
 puts "PULSE_PROJECT_NAME is #{project_name}"

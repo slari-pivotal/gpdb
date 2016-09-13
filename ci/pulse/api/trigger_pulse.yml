@@ -17,7 +17,4 @@ params:
   PULSE_PROJECT_NAME:
   PULSE_USERNAME:
   PULSE_PASSWORD:
-  BUILD_ARTIFACT_URL: "http://dist.eng.pivotal.io/dist/GPDB/builds_from_concourse/gpdb-4.3-stable-concourse/greenplum-db-4.3.9.1-build-1-rhel5-x86_64.zip"
-  BUILD_SRC_CODE_URL: ""
-  QAUTIL_URL: "http://dist.eng.pivotal.io/dist/GPDB/builds_from_concourse/gpdb-4.3-stable-concourse/QAUtils-rhel5-x86_64.tar.gz"
   OUTPUT_DIR: build_id

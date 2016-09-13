@@ -10,7 +10,7 @@ run:
   path: gpdb_src/ci/pulse/api/bin/monitor_pulse
 params:
   PULSE_URL: "http://pulse-cloud.gopivotal.com/"
-  PULSE_PROJECT_NAME: GPDB-43_STABLE-MFR-TINC_toolsmiths_trigger_126607015
-  PULSE_USERNAME: toolsmiths
-  PULSE_PASSWORD: hawqtoolsmiths
+  PULSE_PROJECT_NAME:
+  PULSE_USERNAME:
+  PULSE_PASSWORD:
   INPUT_DIR: build_id
