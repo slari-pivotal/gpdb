@@ -9,11 +9,13 @@ username = ENV['PULSE_USERNAME']
 password = ENV['PULSE_PASSWORD']
 output_dir = ENV['OUTPUT_DIR']
 build_artifact_url = ENV['BUILD_ARTIFACT_URL']
+build_src_code_url = ENV['BUILD_SRC_CODE_URL']
 qautil_url = ENV['QAUTIL_URL']
 
 puts "PULSE_URL is #{url}"
 puts "PULSE_PROJECT_NAME is #{project_name}"
 puts "BUILD_ARTIFACT_URL is #{build_artifact_url}"
+puts "BUILD_SRC_CODE_URL is #{build_src_code_url}"
 puts "QAUTIL_URL is #{qautil_url}"
 
 if !File.directory?(output_dir)
@@ -28,6 +30,7 @@ trigger_options = {
   :force => true,
   :properties => {
     :BUILD_ARTIFACT_URL => build_artifact_url,
+    :BUILD_SRC_CODE_URL => build_src_code_url,
     :QAUTIL_URL => qautil_url,
   },
   :reason => "Triggered via Concourse http://shared.ci.eng.pivotal.io"

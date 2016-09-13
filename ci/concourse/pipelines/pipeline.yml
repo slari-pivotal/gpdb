@@ -1365,6 +1365,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+    - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
     - get: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
@@ -1374,10 +1375,11 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC_toolsmiths_trigger_126607015"
+      PULSE_PROJECT_NAME: "GPDB-O2-TINC-Sub-transaction-limit-removal-no-scm_s3url"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
       BUILD_ARTIFACT_URL: "http://dist.eng.pivotal.io/dist/GPDB/builds_from_concourse/gpdb-4.3-stable-concourse/greenplum-db-4.3.9.1-build-1-rhel5-x86_64.zip"
+      BUILD_SRC_CODE_URL: ""
       QAUTIL_URL: "http://dist.eng.pivotal.io/dist/GPDB/builds_from_concourse/gpdb-4.3-stable-concourse/QAUtils-rhel5-x86_64.tar.gz"
   - task: monitor_pulse_toolsmiths_MFR-TINC
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
