@@ -256,6 +256,12 @@ CreatePortal(const char *name, bool allowDup, bool dupSilent)
 	{
 		portal->portalId = ResCreatePortalId(name);
 		portal->queueId = GetResQueueId();
+
+		if (Debug_print_resource_queue_id)
+		{
+			elog(LOG, "RQ Logging: Creating portal, setting portal queueId=%d. Portal id=%d",
+				portal->queueId, portal->portalId);
+		}
 	}
 	portal->is_extended_query = false; /* default value */	
 
@@ -386,6 +392,12 @@ PortalDrop(Portal portal, bool isTopCommit)
 	 * infinite error-recovery loop.
 	 */
 	PortalHashTableDelete(portal);
+
+	if (Debug_print_resource_queue_id)
+	{
+		elog(LOG, "RQ Logging: PortalDrop: dropping portal with portalId = %d, queueId = %d, releaseResLock=%d",
+				portal->portalId, portal->queueId, portal->releaseResLock);
+	}
 
     if (portal->releaseResLock)
     {

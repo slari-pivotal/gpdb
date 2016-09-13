@@ -50,6 +50,8 @@ int		MaxResourcePortalsPerXact;				/* Max # tracked portals -
 bool	ResourceSelectOnly;						/* Only lock SELECT/DECLARE? */
 bool	ResourceCleanupIdleGangs;				/* Cleanup idle gangs? */
 
+bool	Debug_print_resource_queue_id = false;  /*  Print resource queue id changes */
+
 
 /*
  * Global variables
@@ -551,6 +553,17 @@ ResLockPortal(Portal portal, QueryDesc *qDesc)
 
 	queueid = portal->queueId;
 
+	if (Debug_print_resource_queue_id)
+	{
+		if (queueid != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockPortal portal->queueId different from MyQueueId. portalId=%d, portal->queueId=%d, MyQueueId=%d",
+							portal->portalId, portal->queueId, MyQueueId),
+					 errprintstack(true)));
+		}
+	}
+
 	/* 
 	 * Check we have a valid queue before going any further.
 	 */
@@ -712,6 +725,12 @@ ResLockPortal(Portal portal, QueryDesc *qDesc)
 					qDesc->gpmon_pkt = NULL;
 				}
 
+				if (Debug_print_resource_queue_id)
+				{
+					elog(LOG, "RQ Logging: ResLockPortal, setting portal with portalId=%d queueId from %d to INVALID",
+						 portal->portalId, portal->queueId);
+				}
+
 				portal->queueId = InvalidOid;
 				portal->portalId = INVALID_PORTALID;
 
@@ -733,6 +752,12 @@ ResLockPortal(Portal portal, QueryDesc *qDesc)
 				 * Reset portalId and queueid for this portal so the queue
 				 * and increment accounting tests continue to work properly.
 				 */
+				if (Debug_print_resource_queue_id)
+				{
+					elog(LOG, "RQ Logging: ResLockPortal, setting portal with portalId=%d queueId from %d to INVALID",
+						 portal->portalId, portal->queueId);
+				}
+
 				portal->queueId = InvalidOid;
 				portal->portalId = INVALID_PORTALID;
 				returnReleaseOk = false;
@@ -762,6 +787,17 @@ ResLockUtilityPortal(Portal portal, float4 ignoreCostLimit)
 	ResPortalIncrement	incData;
 
 	queueid = portal->queueId;
+
+	if (Debug_print_resource_queue_id)
+	{
+		if (queueid != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockUtilityPortal portal->queueId different from MyQueueId. portalId=%d, portal->queueId=%d, MyQueueId=%d",
+							portal->portalId, portal->queueId, MyQueueId),
+					 errprintstack(true)));
+		}
+	}
 
 	/*
 	 * Check we have a valid queue before going any further.
@@ -812,6 +848,11 @@ ResLockUtilityPortal(Portal portal, float4 ignoreCostLimit)
 			 * Perfmon related stuff: clean up if we got cancelled
 			 * while waiting.
 			 */
+			if (Debug_print_resource_queue_id)
+			{
+				elog(LOG, "RQ Logging: ResLockUtilityPortal, setting portal with portalId=%d queueId from %d to INVALID",
+					 portal->portalId, portal->queueId);
+			}
 
 			portal->queueId = InvalidOid;
 			portal->portalId = INVALID_PORTALID;
@@ -843,6 +884,17 @@ ResUnLockPortal(Portal portal)
 		elog(DEBUG1, "release resource lock for queue %u (portal %u)", 
 			 queueid, portal->portalId);
 #endif
+		if (Debug_print_resource_queue_id)
+		{
+			if (queueid != MyQueueId)
+			{
+				ereport(LOG,
+						(errmsg("RQ Logging: ResUnlockPortal portal queueId different from MyQueueId. portal queueid=%d, MyQueueId=%d, portal id=%d",
+								queueid, MyQueueId, portal->portalId),
+						 errprintstack(true)));
+			}
+		}
+
 		SET_LOCKTAG_RESOURCE_QUEUE(tag, queueid);
 
 		ResLockRelease(&tag, portal->portalId);
@@ -909,7 +961,19 @@ SetResQueueId(void)
 		CurrentResourceOwner = owner;
 	}
 
+	Oid oldQueueId = MyQueueId;
 	MyQueueId = GetResQueueForRole(GetUserId());
+
+	if (Debug_print_resource_queue_id)
+	{
+		if (OidIsValid(oldQueueId) && (oldQueueId != MyQueueId))
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: Changing MyQueueId: oldQueueId=%d, MyQueueId=%d, UserId:%d",
+							oldQueueId, MyQueueId, GetUserId()),
+					 errprintstack(true)));
+		}
+	}
 
 	if (owner)
 	{

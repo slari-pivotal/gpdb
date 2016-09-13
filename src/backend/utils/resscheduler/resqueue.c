@@ -22,6 +22,8 @@
 #include "access/xact.h"
 #include "catalog/pg_type.h"
 #include "cdb/cdbgang.h"
+#include "cdb/cdbvars.h"
+#include "cdb/memquota.h"
 #include "funcapi.h"
 #include "miscadmin.h"
 #include "pgstat.h"
@@ -33,7 +35,6 @@
 #include "utils/ps_status.h"
 #include "utils/resowner.h"
 #include "utils/resscheduler.h"
-#include "cdb/memquota.h"
 
 static void ResCleanUpLock(LOCK *lock, PROCLOCK *proclock, uint32 hashcode, bool wakeupNeeded);
 
@@ -131,6 +132,18 @@ ResLockAcquire(LOCKTAG *locktag, ResPortalIncrement *incrementSet)
 	/* Setup the lock method bits. */
 	Assert(locktag->locktag_lockmethodid == RESOURCE_LOCKMETHOD);
 
+	if (Debug_print_resource_queue_id)
+	{
+		Oid tagQueueId = locktag->locktag_field1;
+		if (tagQueueId != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockAcquire tag queueId different from MyQueueId. tagQueueId=%d, MyQueueId=%d",
+							tagQueueId, MyQueueId),
+					 errprintstack(true)));
+		}
+	}
+
 	/* Provide a resource owner. */
 	owner = CurrentResourceOwner;
 
@@ -160,6 +173,18 @@ ResLockAcquire(LOCKTAG *locktag, ResPortalIncrement *incrementSet)
 		locallock->lockOwners = NULL;
 		locallock->lockOwners = (LOCALLOCKOWNER *)
 			MemoryContextAlloc(TopMemoryContext, locallock->maxLockOwners * sizeof(LOCALLOCKOWNER));
+	}
+
+	if (Debug_print_resource_queue_id)
+	{
+		Oid localLockTagOid = locallock->tag.lock.locktag_field1;
+		if (localLockTagOid != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockAcquire local lock queueId different from MyQueueId. local lock queueId=%d, MyQueueId=%d, key in localtag=%d, already in local lock hashtable=%d",
+							localLockTagOid, MyQueueId, localtag.lock.locktag_field1, found),
+					 errprintstack(true)));
+		}
 	}
 
 	/* We are going to examine the shared lock table. */
@@ -206,6 +231,18 @@ ResLockAcquire(LOCKTAG *locktag, ResPortalIncrement *incrementSet)
 		Assert((lock->nRequested >= 0) && (lock->requested[lockmode] >= 0));
 		Assert((lock->nGranted >= 0) && (lock->granted[lockmode] >= 0));
 		Assert(lock->nGranted <= lock->nRequested);
+	}
+
+	if (Debug_print_resource_queue_id)
+	{
+		Oid lockTagOid = GET_RESOURCE_QUEUEID_FOR_LOCK(lock);
+		if (lockTagOid != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockAcquire shared lock queueId different from MyQueueId. shared lock queueId=%d, MyQueueId=%d, key in locktag=%d, already in shared lock hashtable=%d",
+						lockTagOid, MyQueueId, locktag->locktag_field1, found),
+					 errprintstack(true)));
+		}
 	}
 	
 	/*
@@ -271,6 +308,18 @@ ResLockAcquire(LOCKTAG *locktag, ResPortalIncrement *incrementSet)
 		/* Could do a deadlock risk check here. */
 	}
 
+	if (Debug_print_resource_queue_id)
+	{
+		Oid proclockTagOid = GET_RESOURCE_QUEUEID_FOR_LOCK(proclock->tag.myLock);
+		if (proclockTagOid != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockAcquire proclock queueId different from MyQueueId. proclock queueId=%d, MyQueueId=%d, key in proclocktag=%d, already in proclock hashtable=%d",
+						proclockTagOid, MyQueueId, proclocktag.myLock->tag.locktag_field1, found),
+					 errprintstack(true)));
+		}
+	}
+
 	/*
 	 * lock->nRequested and lock->requested[] count the total number of
 	 * requests, whether granted or waiting, so increment those immediately.
@@ -286,6 +335,18 @@ ResLockAcquire(LOCKTAG *locktag, ResPortalIncrement *incrementSet)
 	PG_TRY();
 	{
 		queue = GetResQueueFromLock(lock);
+
+		if (Debug_print_resource_queue_id)
+		{
+			Oid foundQueueId = queue->queueid;
+			if (foundQueueId != MyQueueId)
+			{
+				ereport(LOG,
+						(errmsg("RQ Logging: ResLockAcquire retrieved queueId different from MyQueueId. retrieved queueId=%d, MyQueueId=%d",
+							foundQueueId, MyQueueId),
+						 errprintstack(true)));
+			}
+		}
 	}
 	PG_CATCH();
 	{
@@ -545,6 +606,36 @@ ResLockRelease(LOCKTAG *locktag, uint32 resPortalId)
         RemoveLocalLock(locallock);
 
 		return false;			
+	}
+
+	if (Debug_print_resource_queue_id)
+	{
+		Oid localLockTagOid = locallock->tag.lock.locktag_field1;
+		if (localLockTagOid != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockRelease local lock queueId different from MyQueueId. local lock queueId=%d, MyQueueId=%d",
+							localLockTagOid, MyQueueId),
+					 errprintstack(true)));
+		}
+
+		Oid lockTagOid = GET_RESOURCE_QUEUEID_FOR_LOCK(lock);
+		if (lockTagOid != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockRelease shared lock queueId different from MyQueueId. shared lock queueId=%d, MyQueueId=%d",
+							lockTagOid, MyQueueId),
+					 errprintstack(true)));
+		}
+
+		Oid proclockTagOid = GET_RESOURCE_QUEUEID_FOR_LOCK(proclock->tag.myLock);
+		if (proclockTagOid != MyQueueId)
+		{
+			ereport(LOG,
+					(errmsg("RQ Logging: ResLockRelease proclock queueId different from MyQueueId. proclock queueId=%d, MyQueueId=%d",
+							proclockTagOid, MyQueueId),
+					 errprintstack(true)));
+		}
 	}
 
 	/*

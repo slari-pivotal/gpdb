@@ -301,6 +301,13 @@ extern bool Debug_print_dispatch_plan;
  */
 extern bool Debug_print_plannedstmt;
 
+/* Parameter Debug_print_resource_queue_id
+ *
+ * This parameter controls printing the assignments to the current
+ * resource queue id.
+ */
+extern bool Debug_print_resource_queue_id;
+
 /*
  * gp_backup_directIO
  *
