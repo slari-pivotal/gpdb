@@ -156,3 +156,20 @@ NOTICE:  drop cascades to constraint trunc_e_a_fkey on table trunc_e
 NOTICE:  drop cascades to constraint trunc_b_a_fkey on table trunc_b
 NOTICE:  drop cascades to constraint trunc_e_b_fkey on table trunc_e
 NOTICE:  drop cascades to constraint trunc_d_a_fkey on table trunc_d
+-- verify that truncate throws the right error when there is some error
+CREATE SCHEMA s1;
+CREATE TABLE s1.t1(a int);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'a' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+INSERT INTO s1.t1 SELECT * FROM generate_series(1, 100);
+CREATE ROLE u1;
+NOTICE:  resource queue required -- using default resource queue "pg_default"
+REVOKE ALL ON s1.t1 FROM u1;
+NOTICE:  no privileges could be revoked from role u1 on object t1
+SET ROLE u1;
+TRUNCATE TABLE s1.t1;
+ERROR:  permission denied for schema s1
+RESET ROLE;
+DROP SCHEMA s1 CASCADE;
+NOTICE:  drop cascades to table s1.t1
+DROP ROLE u1;

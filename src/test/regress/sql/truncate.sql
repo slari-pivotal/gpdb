@@ -77,3 +77,15 @@ SELECT * FROM truncate_a
 SELECT * FROM trunc_e;
 
 DROP TABLE truncate_a,trunc_c,trunc_b,trunc_d,trunc_e CASCADE;
+
+-- verify that truncate throws the right error when there is some error
+CREATE SCHEMA s1;
+CREATE TABLE s1.t1(a int);
+INSERT INTO s1.t1 SELECT * FROM generate_series(1, 100);
+CREATE ROLE u1;
+REVOKE ALL ON s1.t1 FROM u1;
+SET ROLE u1;
+TRUNCATE TABLE s1.t1;
+RESET ROLE;
+DROP SCHEMA s1 CASCADE;
+DROP ROLE u1;
