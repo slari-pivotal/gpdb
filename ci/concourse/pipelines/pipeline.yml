@@ -1378,14 +1378,14 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-O2-TINC-Sub-transaction-limit-removal-no-scm_s3url"
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPCheckcat_s3url"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse_toolsmiths_MFR-TINC
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-O2-TINC-Sub-transaction-limit-removal-no-scm_s3url"
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPCheckcat_s3url"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 

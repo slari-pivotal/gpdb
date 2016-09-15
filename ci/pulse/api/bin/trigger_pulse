@@ -19,9 +19,9 @@ qautil_url = File.read(qautil_url_file).strip
 
 puts "PULSE_URL is #{url}"
 puts "PULSE_PROJECT_NAME is #{project_name}"
-puts "BUILD_ARTIFACT_URL is #{build_artifact_url}"
-puts "BUILD_SRC_CODE_URL is #{build_src_code_url}"
-puts "QAUTIL_URL is #{qautil_url}"
+puts "BUILD_ARTIFACT_URL:\n#{build_artifact_url}\n"
+puts "BUILD_SRC_CODE_URL:\n#{build_src_code_url}\n"
+puts "QAUTIL_URL:\n#{qautil_url}\n"
 
 if !File.directory?(output_dir)
   puts "#{output_dir} must be a valid directory"
