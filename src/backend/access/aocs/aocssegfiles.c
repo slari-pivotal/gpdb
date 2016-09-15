@@ -123,47 +123,59 @@ GetAOCSFileSegInfo(
 	int32 nvp = RelationGetNumberOfAttributes(prel);
 
 	Relation segrel;
-	Relation segidx;
-	ScanKeyData scankey;
-	IndexScanDesc scan;
-	HeapTuple segtup;
-
+	TupleDesc tupdesc;
+	HeapScanDesc scan;
+	HeapTuple segtup = NULL;
+	HeapTuple fssegtup = NULL;
+	int tuple_segno = InvalidFileSegNumber;
 	AOCSFileSegInfo *seginfo;
 	Datum *d;
 	bool *null;
+	bool isNull;
 
 	segrel = heap_open(aoEntry->segrelid, AccessShareLock);
-	segidx = index_open(aoEntry->segidxid, AccessShareLock);
+	tupdesc = RelationGetDescr(segrel);
 
-	ScanKeyInit(&scankey, (AttrNumber)Anum_pg_aocs_segno, BTEqualStrategyNumber, F_OIDEQ, Int32GetDatum(segno));
+	scan = heap_beginscan(segrel, appendOnlyMetaDataSnapshot, 0, NULL);
+	while ((segtup = heap_getnext(scan, ForwardScanDirection)) != NULL)
+	{
+		tuple_segno = DatumGetInt32(fastgetattr(segtup, Anum_pg_aocs_segno, tupdesc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&segtup->t_self))));
 
-	scan = index_beginscan(segrel, segidx, appendOnlyMetaDataSnapshot, 1, &scankey);
+		if (segno == tuple_segno)
+		{
+			/* Check for duplicate aoseg entries with the same segno */
+			if (fssegtup != NULL)
+				ereport(ERROR,
+						(errcode(ERRCODE_INTERNAL_ERROR),
+						 errmsg("found two entries in pg_aoseg.%s with segno %d: ctid %s and ctid %s",
+								segrel->rd_rel->relname.data,
+								segno,
+								ItemPointerToString(&fssegtup->t_self),
+								ItemPointerToString2(&segtup->t_self))));
+			else
+				fssegtup = heap_copytuple(segtup);
+		}
+	}
 
-	segtup = index_getnext(scan, ForwardScanDirection);
-
-	if(!HeapTupleIsValid(segtup))
+	if(!HeapTupleIsValid(fssegtup))
 	{
 		/* This segment file does not have an entry. */
-		index_endscan(scan);
-		index_close(segidx, AccessShareLock);
+		heap_endscan(scan);
 		heap_close(segrel, AccessShareLock);
 		return NULL;
 	}
-
-	/* Close the index */
-	segtup = heap_copytuple(segtup);
-	
-	index_endscan(scan);
-	index_close(segidx, AccessShareLock);
-
-	Assert(HeapTupleIsValid(segtup));
 
 	seginfo = (AOCSFileSegInfo *) palloc0(aocsfileseginfo_size(nvp));
 
 	d = (Datum *) palloc(sizeof(Datum) * Natts_pg_aocsseg);
 	null = (bool *) palloc(sizeof(bool) * Natts_pg_aocsseg); 
 
-	heap_deform_tuple(segtup, RelationGetDescr(segrel), d, null);
+	heap_deform_tuple(fssegtup, tupdesc, d, null);
 
 	Assert(!null[Anum_pg_aocs_segno - 1]);
 	Assert(DatumGetInt32(d[Anum_pg_aocs_segno - 1] == segno));
@@ -195,6 +207,8 @@ GetAOCSFileSegInfo(
 	pfree(d);
 	pfree(null);
 
+	heap_freetuple(fssegtup);
+	heap_endscan(scan);
 	heap_close(segrel, AccessShareLock);
 
 	return seginfo;
@@ -471,12 +485,12 @@ SetAOCSFileSegInfoState(Relation prel,
 {
 	LockAcquireResult acquireResult;
 	Relation segrel;
-	Relation segidx;
-	ScanKeyData key;
-	IndexScanDesc scan;
-	HeapTuple oldtup;
+	HeapScanDesc scan;
+	HeapTuple oldtup = NULL;
 	HeapTuple newtup;
+	int tuple_segno = InvalidFileSegNumber;
 	Datum d[Natts_pg_aocsseg];
+	bool isNull;
 	bool null[Natts_pg_aocsseg] = {0, };
 	bool repl[Natts_pg_aocsseg] = {0, };
 	TupleDesc tupdesc; 
@@ -486,11 +500,6 @@ SetAOCSFileSegInfoState(Relation prel,
 			segno,
 			RelationGetRelationName(prel),
 			newState);
-	/*
-	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
-	 * we can use SnapshotNow.
-	 */
-	Snapshot usesnapshot = SnapshotNow;
 
 	Assert(aoEntry != NULL);
 	Assert(RelationIsAoCols(prel));
@@ -511,13 +520,22 @@ SetAOCSFileSegInfoState(Relation prel,
 	}
 
 	segrel = heap_open(aoEntry->segrelid, RowExclusiveLock);
-	segidx = index_open(aoEntry->segidxid, RowExclusiveLock);
 	tupdesc = RelationGetDescr(segrel);
 
-	ScanKeyInit(&key, (AttrNumber)Anum_pg_aocs_segno, BTEqualStrategyNumber, F_OIDEQ, ObjectIdGetDatum(segno)); 
-	scan = index_beginscan(segrel, segidx, usesnapshot, 1, &key);
-
-	oldtup = index_getnext(scan, ForwardScanDirection);
+	/*
+	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
+	 * we can use SnapshotNow.
+	 */
+	scan = heap_beginscan(segrel, SnapshotNow, 0, NULL);
+	while (segno != tuple_segno && (oldtup = heap_getnext(scan, ForwardScanDirection)) != NULL)
+	{
+		tuple_segno = DatumGetInt32(fastgetattr(oldtup, Anum_pg_aocs_segno, tupdesc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&oldtup->t_self))));
+	}
 
 	if(!HeapTupleIsValid(oldtup))
 		ereport(ERROR, (errcode(ERRCODE_UNDEFINED_OBJECT),
@@ -541,8 +559,7 @@ SetAOCSFileSegInfoState(Relation prel,
 
 	pfree(newtup);
 
-	index_endscan(scan);
-	index_close(segidx, RowExclusiveLock);
+	heap_endscan(scan);
 	heap_close(segrel, RowExclusiveLock);
 }
 
@@ -551,12 +568,12 @@ ClearAOCSFileSegInfo(Relation prel, AppendOnlyEntry *aoEntry, int segno, FileSeg
 {
 	LockAcquireResult acquireResult;
 	Relation segrel;
-	Relation segidx;
-	ScanKeyData key;
-	IndexScanDesc scan;
-	HeapTuple oldtup;
+	HeapScanDesc scan;
+	HeapTuple oldtup = NULL;
 	HeapTuple newtup;
+	int tuple_segno = InvalidFileSegNumber;
 	Datum d[Natts_pg_aocsseg];
+	bool isNull;
 	bool null[Natts_pg_aocsseg] = {0, };
 	bool repl[Natts_pg_aocsseg] = {0, };
 	TupleDesc tupdesc; 
@@ -564,13 +581,8 @@ ClearAOCSFileSegInfo(Relation prel, AppendOnlyEntry *aoEntry, int segno, FileSeg
 	int i;
 	AOCSVPInfo *vpinfo = create_aocs_vpinfo(nvp);
 
-	/*
-	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
-	 * we can use SnapshotNow.
-	 */
-	Snapshot usesnapshot = SnapshotNow;
-
 	Assert(aoEntry != NULL);
+
 	Assert(RelationIsAoCols(prel));
 	Assert(newState >= AOSEG_STATE_USECURRENT && newState <= AOSEG_STATE_AWAITING_DROP);
 
@@ -594,13 +606,22 @@ ClearAOCSFileSegInfo(Relation prel, AppendOnlyEntry *aoEntry, int segno, FileSeg
 	}
 
 	segrel = heap_open(aoEntry->segrelid, RowExclusiveLock);
-	segidx = index_open(aoEntry->segidxid, RowExclusiveLock);
 	tupdesc = RelationGetDescr(segrel);
 
-	ScanKeyInit(&key, (AttrNumber)Anum_pg_aocs_segno, BTEqualStrategyNumber, F_OIDEQ, ObjectIdGetDatum(segno)); 
-	scan = index_beginscan(segrel, segidx, usesnapshot, 1, &key);
-
-	oldtup = index_getnext(scan, ForwardScanDirection);
+	/*
+	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
+	 * we can use SnapshotNow.
+	 */
+	scan = heap_beginscan(segrel, SnapshotNow, 0, NULL);
+	while (segno != tuple_segno && (oldtup = heap_getnext(scan, ForwardScanDirection)) != NULL)
+	{
+		tuple_segno = DatumGetInt32(fastgetattr(oldtup, Anum_pg_aocs_segno, tupdesc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&oldtup->t_self))));
+	}
 
 	if(!HeapTupleIsValid(oldtup))
 		ereport(ERROR, (errcode(ERRCODE_UNDEFINED_OBJECT),
@@ -651,8 +672,7 @@ ClearAOCSFileSegInfo(Relation prel, AppendOnlyEntry *aoEntry, int segno, FileSeg
 	pfree(newtup);
 	pfree(vpinfo);
 
-	index_endscan(scan);
-	index_close(segidx, RowExclusiveLock);
+	heap_endscan(scan);
 	heap_close(segrel, RowExclusiveLock);
 }
 
@@ -663,13 +683,12 @@ UpdateAOCSFileSegInfo(AOCSInsertDesc idesc)
 	
 	Relation prel = idesc->aoi_rel;
 	Relation segrel;
-	Relation segidx;
+	HeapScanDesc scan;
 
-	ScanKeyData key;
-	IndexScanDesc scan;
-
-	HeapTuple oldtup;
+	HeapTuple oldtup = NULL;
 	HeapTuple newtup;
+	int tuple_segno = InvalidFileSegNumber;
+	bool isNull;
 	Datum d[Natts_pg_aocsseg];
 	bool null[Natts_pg_aocsseg] = {0, };
 	bool repl[Natts_pg_aocsseg] = {0, };
@@ -679,12 +698,6 @@ UpdateAOCSFileSegInfo(AOCSInsertDesc idesc)
 	int i;
 	AOCSVPInfo *vpinfo = create_aocs_vpinfo(nvp);
 	AppendOnlyEntry *aoEntry = idesc->aoEntry;
-
-	/*
-	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
-	 * we can use SnapshotNow.
-	 */
-	Snapshot usesnapshot = SnapshotNow;
 
 	Assert(aoEntry != NULL);
 
@@ -703,13 +716,22 @@ UpdateAOCSFileSegInfo(AOCSInsertDesc idesc)
 	}
 
 	segrel = heap_open(aoEntry->segrelid, RowExclusiveLock);
-	segidx = index_open(aoEntry->segidxid, RowExclusiveLock);
 	tupdesc = RelationGetDescr(segrel);
 
-	ScanKeyInit(&key, 1, BTEqualStrategyNumber, F_OIDEQ, ObjectIdGetDatum(idesc->cur_segno)); 
-	scan = index_beginscan(segrel, segidx, usesnapshot, 1, &key);
-
-	oldtup = index_getnext(scan, ForwardScanDirection);
+	/*
+	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
+	 * we can use SnapshotNow.
+	 */
+	scan = heap_beginscan(segrel, SnapshotNow, 0, NULL);
+	while (idesc->cur_segno != tuple_segno && (oldtup = heap_getnext(scan, ForwardScanDirection)) != NULL)
+	{
+		tuple_segno = DatumGetInt32(fastgetattr(oldtup, Anum_pg_aocs_segno, tupdesc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&oldtup->t_self))));
+	}
 
 	if(!HeapTupleIsValid(oldtup))
 		ereport(ERROR, (errcode(ERRCODE_UNDEFINED_OBJECT),
@@ -813,8 +835,7 @@ UpdateAOCSFileSegInfo(AOCSInsertDesc idesc)
 	pfree(newtup);
 	pfree(vpinfo);
 
-	index_endscan(scan);
-	index_close(segidx, RowExclusiveLock);
+	heap_endscan(scan);
 	heap_close(segrel, RowExclusiveLock);
 }
 
@@ -830,16 +851,15 @@ void AOCSFileSegInfoAddVpe(Relation prel, AppendOnlyEntry *aoEntry, int32 segno,
 	LockAcquireResult acquireResult;
 
 	Relation segrel;
-	Relation segidx;
-
-	ScanKeyData key;
-	IndexScanDesc scan;
+	HeapScanDesc scan;
 
 	AOCSVPInfo *oldvpinfo;
 	AOCSVPInfo *newvpinfo;
-	HeapTuple oldtup;
+	HeapTuple oldtup = NULL;
 	HeapTuple newtup;
+	int tuple_segno = InvalidFileSegNumber;
 	Datum d[Natts_pg_aocsseg];
+	bool isNull;
 	bool null[Natts_pg_aocsseg] = {0, };
 	bool repl[Natts_pg_aocsseg] = {0, };
 
@@ -869,18 +889,22 @@ void AOCSFileSegInfoAddVpe(Relation prel, AppendOnlyEntry *aoEntry, int32 segno,
 	}
 
 	segrel = heap_open(aoEntry->segrelid, RowExclusiveLock);
-	segidx = index_open(aoEntry->segidxid, RowExclusiveLock);
 	tupdesc = RelationGetDescr(segrel);
 
-	ScanKeyInit(&key, 1, BTEqualStrategyNumber, F_OIDEQ,
-				ObjectIdGetDatum(segno));
 	/*
-	 * Since we have the segment-file entry under lock (with
-	 * LockRelationAppendOnlySegmentFile) we can use SnapshotNow.
+	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
+	 * we can use SnapshotNow.
 	 */
-	scan = index_beginscan(segrel, segidx, SnapshotNow, 1, &key);
-
-	oldtup = index_getnext(scan, ForwardScanDirection);
+	scan = heap_beginscan(segrel, SnapshotNow, 0, NULL);
+	while (segno != tuple_segno && (oldtup = heap_getnext(scan, ForwardScanDirection)) != NULL)
+	{
+		tuple_segno = DatumGetInt32(fastgetattr(oldtup, Anum_pg_aocs_segno, tupdesc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&oldtup->t_self))));
+	}
 
 	if(!HeapTupleIsValid(oldtup))
 	{
@@ -957,13 +981,12 @@ void AOCSFileSegInfoAddVpe(Relation prel, AppendOnlyEntry *aoEntry, int32 segno,
 		pfree(oldvpinfo);
 	}
 
-	index_endscan(scan);
 	/*
 	 * Holding RowExclusiveLock lock on pg_aocsseg_* until the ALTER
 	 * TABLE transaction commits/aborts.  Additionally, we are already
 	 * holding AccessExclusive lock on the AOCS relation OID.
 	 */
-	index_close(segidx, NoLock);
+	heap_endscan(scan);
 	heap_close(segrel, NoLock);
 }
 
@@ -973,25 +996,17 @@ void AOCSFileSegInfoAddCount(Relation prel, AppendOnlyEntry *aoEntry,
 	LockAcquireResult acquireResult;
 	
     Relation segrel;
-    Relation segidx;
+    HeapScanDesc scan;
 
-    ScanKeyData key;
-    IndexScanDesc scan;
-
-    HeapTuple oldtup;
+    HeapTuple oldtup = NULL;
     HeapTuple newtup;
+	int tuple_segno = InvalidFileSegNumber;
     Datum d[Natts_pg_aocsseg];
+	bool isNull;
     bool null[Natts_pg_aocsseg] = {0, };
     bool repl[Natts_pg_aocsseg] = {0, };
 
     TupleDesc tupdesc; 
-
-	/*
-	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
-	 * we can use SnapshotNow.
-	 */
-    Snapshot usesnapshot = SnapshotNow;
-
 
 	Assert(aoEntry != NULL);
 
@@ -1010,14 +1025,22 @@ void AOCSFileSegInfoAddCount(Relation prel, AppendOnlyEntry *aoEntry,
 	}
 
     segrel = heap_open(aoEntry->segrelid, RowExclusiveLock);
-    segidx = index_open(aoEntry->segidxid, RowExclusiveLock);
-
     tupdesc = RelationGetDescr(segrel);
 
-    ScanKeyInit(&key, 1, BTEqualStrategyNumber, F_OIDEQ, ObjectIdGetDatum(segno));
-    scan = index_beginscan(segrel, segidx, usesnapshot, 1, &key);
-
-    oldtup = index_getnext(scan, ForwardScanDirection);
+	/*
+	 * Since we have the segment-file entry under lock (with LockRelationAppendOnlySegmentFile)
+	 * we can use SnapshotNow.
+	 */
+	scan = heap_beginscan(segrel, SnapshotNow, 0, NULL);
+	while (segno != tuple_segno && (oldtup = heap_getnext(scan, ForwardScanDirection)) != NULL)
+	{
+		tuple_segno = DatumGetInt32(fastgetattr(oldtup, Anum_pg_aocs_segno, tupdesc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&oldtup->t_self))));
+	}
 
     if(!HeapTupleIsValid(oldtup))
         ereport(ERROR, (errcode(ERRCODE_UNDEFINED_OBJECT),
@@ -1054,8 +1077,7 @@ void AOCSFileSegInfoAddCount(Relation prel, AppendOnlyEntry *aoEntry,
 
     heap_freetuple(newtup);
 
-    index_endscan(scan);
-    index_close(segidx, RowExclusiveLock);
+    heap_endscan(scan);
     heap_close(segrel, RowExclusiveLock);
 }
 

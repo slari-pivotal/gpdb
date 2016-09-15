@@ -999,6 +999,37 @@ select count(*) from (select distinct * from ao_compress_results) temp; -- shoul
      2
 (1 row)
 
+-- check if aoseg index is updated after insert into ao table
+CREATE OR REPLACE FUNCTION readindex(oid) RETURNS SETOF record AS
+'$libdir/indexscan', 'readindex'
+LANGUAGE C STRICT;
+CREATE OR REPLACE FUNCTION readindex_wrapper(
+  IN relname text) RETURNS setof record AS $$
+DECLARE
+  aosegidxid oid;
+  result record;
+BEGIN
+  select into aosegidxid segidxid from pg_appendonly where relid=relname::regclass;
+  for result in EXECUTE 'select * from readindex(' || aosegidxid || ') as (ictid tid, hctid tid, aotid text, istatus text, hstatus text, segno int);' loop
+    return next result;
+  end loop;
+  return;
+END;
+$$ LANGUAGE plpgsql;
+create table foo (a int, b int) with (appendonly=true);
+select * from readindex_wrapper('foo') as rec(ictid tid, hctid tid, aotid text, istatus text, hstatus text, segno int); -- should be empty
+ ictid | hctid | aotid | istatus | hstatus | segno 
+-------+-------+-------+---------+---------+-------
+(0 rows)
+
+insert into foo values (1,1);
+select * from readindex_wrapper('foo') as rec(ictid tid, hctid tid, aotid text, istatus text, hstatus text, segno int); -- entries added
+ ictid | hctid | aotid | istatus |       hstatus        | segno 
+-------+-------+-------+---------+----------------------+-------
+ (1,1) | (0,2) | N/A   | USED    | XMAX_INVALID UPDATED |     1
+ (1,2) | (0,1) | N/A   | USED    | XMIN_COMITTTED       |     1
+(2 rows)
+
 -------------------- 
 -- supported sql 
 --------------------

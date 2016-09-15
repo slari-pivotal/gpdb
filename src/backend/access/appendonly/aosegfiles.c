@@ -87,7 +87,6 @@ InsertInitialSegnoEntry(AppendOnlyEntry *aoEntry,
 						int segno)
 {
 	Relation	pg_aoseg_rel;
-	Relation	pg_aoseg_idx;
 	TupleDesc	pg_aoseg_dsc;
 	HeapTuple	pg_aoseg_tuple = NULL;
 	int			natts = 0;
@@ -107,8 +106,6 @@ InsertInitialSegnoEntry(AppendOnlyEntry *aoEntry,
 	nulls = palloc(sizeof(bool) * natts);
 	values = palloc0(sizeof(Datum) * natts);
 	MemSet(nulls, false, sizeof(char) * natts);
-
-	pg_aoseg_idx = index_open(aoEntry->segidxid, RowExclusiveLock);
 
 	values[Anum_pg_aoseg_segno - 1] = Int32GetDatum(segno);
 	values[Anum_pg_aoseg_tupcount - 1] = Float8GetDatum(0);
@@ -130,7 +127,6 @@ InsertInitialSegnoEntry(AppendOnlyEntry *aoEntry,
 
 	heap_freetuple(pg_aoseg_tuple);
 
-	index_close(pg_aoseg_idx, RowExclusiveLock);
 	heap_close(pg_aoseg_rel, RowExclusiveLock);
 }
 
@@ -142,7 +138,7 @@ InsertInitialSegnoEntry(AppendOnlyEntry *aoEntry,
  * AppendOnly table.
  *
  * If a caller intends to append to this file segment entry they must
- * already hold a relation Append-Only segment file (transaction-scope) lock (tag 
+ * already hold a relation Append-Only segment file (transaction-scope) lock (tag
  * LOCKTAG_RELATION_APPENDONLY_SEGMENT_FILE) in order to guarantee
  * stability of the pg_aoseg information on this segment file and exclusive right
  * to append data to the segment file.
@@ -150,14 +146,12 @@ InsertInitialSegnoEntry(AppendOnlyEntry *aoEntry,
 FileSegInfo *
 GetFileSegInfo(Relation parentrel, AppendOnlyEntry *aoEntry, Snapshot appendOnlyMetaDataSnapshot, int segno)
 {
-
 	Relation		pg_aoseg_rel;
-	Relation		pg_aoseg_idx;
 	TupleDesc		pg_aoseg_dsc;
-	HeapTuple		tuple;
-	ScanKeyData		key;
-	IndexScanDesc	aoscan;
-	Datum			eof, eof_uncompressed, tupcount, varbcount, modcount, state;
+	HeapScanDesc	aoscan;
+	HeapTuple		tuple = NULL;
+	HeapTuple		fstuple = NULL;
+	int				tuple_segno = InvalidFileSegNumber;
 	bool			isNull;
 	FileSegInfo 	*fsinfo;
 
@@ -167,50 +161,67 @@ GetFileSegInfo(Relation parentrel, AppendOnlyEntry *aoEntry, Snapshot appendOnly
 	 */
 	pg_aoseg_rel = heap_open(aoEntry->segrelid, AccessShareLock);
 	pg_aoseg_dsc = RelationGetDescr(pg_aoseg_rel);
-	pg_aoseg_idx = index_open(aoEntry->segidxid, AccessShareLock);
 
-	/*
-	 * Setup a scan key to fetch from the index by segno.
-	 */
-	ScanKeyInit(&key,
-				(AttrNumber) Anum_pg_aoseg_segno,
-				BTEqualStrategyNumber,
-				F_OIDEQ,
-				ObjectIdGetDatum(segno));
-
-	aoscan = index_beginscan(pg_aoseg_rel, pg_aoseg_idx, appendOnlyMetaDataSnapshot, 1, &key);
-
-	tuple = index_getnext(aoscan, ForwardScanDirection);
-
-	if (!HeapTupleIsValid(tuple))
+	/* Do heap scan on pg_aoseg relation */
+	aoscan = heap_beginscan(pg_aoseg_rel, appendOnlyMetaDataSnapshot, 0, NULL);
+	while ((tuple = heap_getnext(aoscan, ForwardScanDirection)) != NULL)
 	{
-        /* This segment file does not have an entry. */
-		index_endscan(aoscan);
-		index_close(pg_aoseg_idx, AccessShareLock);
+		tuple_segno = DatumGetInt32(fastgetattr(tuple, Anum_pg_aoseg_segno, pg_aoseg_dsc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&tuple->t_self))));
+
+		/* Check for duplicate aoseg entries with the same segno */
+		if (segno == tuple_segno)
+		{
+			if (fstuple != NULL)
+				ereport(ERROR,
+						(errcode(ERRCODE_INTERNAL_ERROR),
+						 errmsg("found two entries in pg_aoseg.%s with segno %d: "
+								"(ctid %s with eof " INT64_FORMAT ") and (ctid %s with eof " INT64_FORMAT ")",
+								pg_aoseg_rel->rd_rel->relname.data,
+								segno,
+								ItemPointerToString(&fstuple->t_self),
+								DatumGetInt64(
+										fastgetattr(fstuple, Anum_pg_aoseg_eof, pg_aoseg_dsc, &isNull)),
+								ItemPointerToString2(&tuple->t_self),
+								DatumGetInt64(
+										fastgetattr(tuple, Anum_pg_aoseg_eof, pg_aoseg_dsc, &isNull)))));
+			else
+				fstuple = heap_copytuple(tuple);
+		}
+	}
+
+	if (!HeapTupleIsValid(fstuple))
+	{
+		/* This segment file does not have an entry. */
+		heap_endscan(aoscan);
 		heap_close(pg_aoseg_rel, AccessShareLock);
 		return NULL;
 	}
 
-	/* Close the index */
-	tuple = heap_copytuple(tuple);
-
-	index_endscan(aoscan);
-	index_close(pg_aoseg_idx, AccessShareLock);
-
-	Assert(HeapTupleIsValid(tuple));
-
 	fsinfo = (FileSegInfo *) palloc0(sizeof(FileSegInfo));
 
 	/* get the eof */
-	eof = fastgetattr(tuple, Anum_pg_aoseg_eof, pg_aoseg_dsc, &isNull);
+	fsinfo->eof = (int64)DatumGetFloat8(
+			fastgetattr(fstuple, Anum_pg_aoseg_eof, pg_aoseg_dsc, &isNull));
 
 	if(isNull)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				errmsg("got invalid eof value: NULL")));
 
+	if (fsinfo->eof < 0)
+		ereport(ERROR,
+				(errcode(ERRCODE_GP_INTERNAL_ERROR),
+				errmsg("Invalid eof " INT64_FORMAT " for relation %s",
+					   fsinfo->eof, RelationGetRelationName(parentrel))));
+
 	/* get the tupcount */
-	tupcount = fastgetattr(tuple, Anum_pg_aoseg_tupcount, pg_aoseg_dsc, &isNull);
+	fsinfo->total_tupcount = (int64)DatumGetFloat8(
+			fastgetattr(fstuple, Anum_pg_aoseg_tupcount, pg_aoseg_dsc, &isNull));
 
 	if(isNull)
 		ereport(ERROR,
@@ -218,7 +229,8 @@ GetFileSegInfo(Relation parentrel, AppendOnlyEntry *aoEntry, Snapshot appendOnly
 				errmsg("got invalid tupcount value: NULL")));
 
 	/* get the varblock count */
-	varbcount = fastgetattr(tuple, Anum_pg_aoseg_varblockcount, pg_aoseg_dsc, &isNull);
+	fsinfo->varblockcount = (int64)DatumGetFloat8(
+			fastgetattr(fstuple, Anum_pg_aoseg_varblockcount, pg_aoseg_dsc, &isNull));
 
 	if(isNull)
 		ereport(ERROR,
@@ -226,7 +238,8 @@ GetFileSegInfo(Relation parentrel, AppendOnlyEntry *aoEntry, Snapshot appendOnly
 				errmsg("got invalid varblockcount value: NULL")));
 	
 	/* get the modcount */
-	modcount = fastgetattr(tuple, Anum_pg_aoseg_modcount, pg_aoseg_dsc, &isNull);
+	fsinfo->modcount = DatumGetInt64(
+			fastgetattr(fstuple, Anum_pg_aoseg_modcount, pg_aoseg_dsc, &isNull));
 
 	if(isNull)
 		ereport(ERROR,
@@ -234,7 +247,8 @@ GetFileSegInfo(Relation parentrel, AppendOnlyEntry *aoEntry, Snapshot appendOnly
 				errmsg("got invalid modcount value: NULL")));
 
 	/* get the state */
-	state = fastgetattr(tuple, Anum_pg_aoseg_state, pg_aoseg_dsc, &isNull);
+	fsinfo->state = (int32)DatumGetInt16(
+			fastgetattr(fstuple, Anum_pg_aoseg_state, pg_aoseg_dsc, &isNull));
 
 	if(isNull)
 		ereport(ERROR,
@@ -242,12 +256,8 @@ GetFileSegInfo(Relation parentrel, AppendOnlyEntry *aoEntry, Snapshot appendOnly
 				errmsg("got invalid state value: NULL")));
 
 	/* get the uncompressed eof */
-	eof_uncompressed = fastgetattr(tuple, Anum_pg_aoseg_eofuncompressed, pg_aoseg_dsc, &isNull);
-	/*
-	 * Confusing: This eof_uncompressed variable is never used.  It appears we only
-	 * call fastgetattr to get the isNull value.  this variable "eof_uncompressed" is
-	 * not at all the same as fsinfo->eof_uncompressed.
-	 */
+	fsinfo->eof_uncompressed = (int64)DatumGetFloat8(
+			fastgetattr(fstuple, Anum_pg_aoseg_eofuncompressed, pg_aoseg_dsc, &isNull));
 
 	if(isNull)
 	{
@@ -257,25 +267,12 @@ GetFileSegInfo(Relation parentrel, AppendOnlyEntry *aoEntry, Snapshot appendOnly
 		 */
 		fsinfo->eof_uncompressed = InvalidUncompressedEof;
 	}
-	else
-	{
-		fsinfo->eof_uncompressed = (int64)DatumGetFloat8(eof_uncompressed);
-	}
 
 	fsinfo->segno = segno;
-	fsinfo->eof = (int64)DatumGetFloat8(eof);
-	fsinfo->total_tupcount = (int64)DatumGetFloat8(tupcount);
-	fsinfo->varblockcount = (int64)DatumGetFloat8(varbcount);
-	fsinfo->modcount = (int64)DatumGetInt64(modcount);
-	fsinfo->state = (int32)DatumGetInt16(state);
-
-	if (fsinfo->eof < 0)
-		ereport(ERROR,
-				(errcode(ERRCODE_GP_INTERNAL_ERROR),
-				errmsg("Invalid eof " INT64_FORMAT " for relation %s",
-					   fsinfo->eof, RelationGetRelationName(parentrel))));
 
 	/* Finish up scan and close appendonly catalog. */
+	heap_freetuple(fstuple);
+	heap_endscan(aoscan);
 	heap_close(pg_aoseg_rel, AccessShareLock);
 
 	return fsinfo;
@@ -308,7 +305,7 @@ FileSegInfo **GetAllFileSegInfo(Relation parentrel,
 									pg_aoseg_rel,
 									appendOnlyMetaDataSnapshot,
 									totalsegs);
-	
+
 	heap_close(pg_aoseg_rel, AccessShareLock);
 
 	CheckAOConsistencyWithGpRelationNode(appendOnlyMetaDataSnapshot,
@@ -353,6 +350,7 @@ FileSegInfo **GetAllFileSegInfo_pg_aoseg_rel(
 	int				seginfo_slot_no = AO_FILESEGINFO_ARRAY_SIZE;
 	Datum			segno,
 					eof,
+					eof_uncompressed,
 					tupcount,
 					varblockcount,
 					modcount,
@@ -389,38 +387,69 @@ FileSegInfo **GetAllFileSegInfo_pg_aoseg_rel(
 								&oneseginfo->tupleVisibilitySummary);
 
 		segno = fastgetattr(tuple, Anum_pg_aoseg_segno, pg_aoseg_dsc, &isNull);
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value: NULL")));
 		oneseginfo->segno = DatumGetInt32(segno);
 
+		/* get the eof */
 		eof = fastgetattr(tuple, Anum_pg_aoseg_eof, pg_aoseg_dsc, &isNull);
+		if(isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid eof value: NULL")));
 		oneseginfo->eof += (int64)DatumGetFloat8(eof);
 
+		/* get the tupcount */
 		tupcount = fastgetattr(tuple, Anum_pg_aoseg_tupcount, pg_aoseg_dsc, &isNull);
+		if(isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid tupcount value: NULL")));
 		oneseginfo->total_tupcount += (int64)DatumGetFloat8(tupcount);
 
+		/* get the varblock count */
 		varblockcount = fastgetattr(tuple, Anum_pg_aoseg_varblockcount, pg_aoseg_dsc, &isNull);
+		if(isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid varblockcount value: NULL")));
 		oneseginfo->varblockcount += (int64)DatumGetFloat8(varblockcount);
 
-		/*
-		 * Modcount cannot be NULL in normal operation. However, when
-		 * called from gp_aoseg_history after an upgrade, the old now invisible
-		 * entries may have not set the state and the modcount.
-		 */
+		/* get the modcount */
 		modcount = fastgetattr(tuple, Anum_pg_aoseg_modcount, pg_aoseg_dsc, &isNull);
-		Assert(!isNull || appendOnlyMetaDataSnapshot == SnapshotAny);
-		if (!isNull)
-			oneseginfo->modcount += (int64)DatumGetInt64(modcount);
+		if(isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid modcount value: NULL")));
+		oneseginfo->modcount += DatumGetInt64(modcount);
 
+		/* get the state */
 		state = fastgetattr(tuple, Anum_pg_aoseg_state, pg_aoseg_dsc, &isNull);
 		Assert(!isNull || appendOnlyMetaDataSnapshot == SnapshotAny);
-		if (!isNull)
+		if(isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid state value: NULL")));
+		else
 			oneseginfo->state = (int64)DatumGetInt16(state);
 
-		fastgetattr(tuple, Anum_pg_aoseg_eofuncompressed, pg_aoseg_dsc, &isNull);
-
+		/*
+		 * get the uncompressed eof
+		 * We only call fastgetattr to get the isNull value.
+		 */
+		eof_uncompressed = fastgetattr(tuple, Anum_pg_aoseg_eofuncompressed, pg_aoseg_dsc, &isNull);
 		if(isNull)
+		{
+			/*
+			 * NULL is allowed. Tables that were created before the release of the
+			 * eof_uncompressed catalog column will have a NULL instead of a value.
+			 */
 			oneseginfo->eof_uncompressed = InvalidUncompressedEof;
+		}
 		else
-			oneseginfo->eof_uncompressed += (int64)DatumGetFloat8(eof);
+			oneseginfo->eof_uncompressed += (int64)DatumGetFloat8(eof_uncompressed);
 
 		elogif(Debug_appendonly_print_scan, LOG,
 				"Append-only found existing segno %d with eof " INT64_FORMAT " for table '%s'",
@@ -485,14 +514,15 @@ ClearFileSegInfo(Relation parentrel,
 	LockAcquireResult acquireResult;
 	
 	Relation			pg_aoseg_rel;
-	Relation			pg_aoseg_idx;
 	TupleDesc			pg_aoseg_dsc;
-	ScanKeyData			key;
-	IndexScanDesc		aoscan;
-	HeapTuple			tuple, new_tuple;
+	HeapScanDesc		aoscan;
+	HeapTuple			tuple = NULL;
+	HeapTuple			new_tuple;
+	int					tuple_segno = InvalidFileSegNumber;
 	Datum			   *new_record;
 	bool			   *new_record_nulls;
 	bool			   *new_record_repl;
+	bool				isNull;
 
     Assert(RelationIsAoRows(parentrel));
 	Assert(newState >= AOSEG_STATE_USECURRENT && newState <= AOSEG_STATE_AWAITING_DROP);
@@ -521,20 +551,17 @@ ClearFileSegInfo(Relation parentrel,
 	 */
 	pg_aoseg_rel = heap_open(aoEntry->segrelid, RowExclusiveLock);
 	pg_aoseg_dsc = RelationGetDescr(pg_aoseg_rel);
-	pg_aoseg_idx = index_open(aoEntry->segidxid, RowExclusiveLock);
 
-	/*
-	 * Setup a scan key to fetch from the index by segno.
-	 */
-	ScanKeyInit(&key,
-				(AttrNumber) Anum_pg_aoseg_segno,
-				BTEqualStrategyNumber,
-				F_OIDEQ,
-				ObjectIdGetDatum(segno));
-
-	aoscan = index_beginscan(pg_aoseg_rel, pg_aoseg_idx, SnapshotNow, 1, &key);
-
-	tuple = index_getnext(aoscan, ForwardScanDirection);
+	aoscan = heap_beginscan(pg_aoseg_rel, SnapshotNow, 0, NULL);
+	while (segno != tuple_segno && (tuple = heap_getnext(aoscan, ForwardScanDirection)) != NULL)
+	{
+		tuple_segno = DatumGetInt32(fastgetattr(tuple, Anum_pg_aoseg_segno, pg_aoseg_dsc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&tuple->t_self))));
+	}
 
 	if (!HeapTupleIsValid(tuple))
 		ereport(ERROR,
@@ -569,8 +596,7 @@ ClearFileSegInfo(Relation parentrel,
 	CatalogUpdateIndexes(pg_aoseg_rel, new_tuple);
 	heap_freetuple(new_tuple);
 
-	index_endscan(aoscan);
-	index_close(pg_aoseg_idx, RowExclusiveLock);
+	heap_endscan(aoscan);
 	heap_close(pg_aoseg_rel, RowExclusiveLock);
 
 	pfree(new_record);
@@ -634,19 +660,19 @@ UpdateFileSegInfo_internal(Relation parentrel,
 	LockAcquireResult acquireResult;
 	
 	Relation			pg_aoseg_rel;
-	Relation			pg_aoseg_idx;
 	TupleDesc			pg_aoseg_dsc;
-	ScanKeyData			key;
-	IndexScanDesc		aoscan;
-	HeapTuple			tuple, new_tuple;
-	Datum				filetupcount;
-	Datum				filevarblockcount;
-	Datum				new_tuple_count;
-	Datum				new_varblock_count;
-	Datum               new_modcount;
-	Datum               old_eof;
-	Datum               old_eof_uncompressed;
-	Datum               old_modcount;
+	HeapScanDesc		aoscan;
+	HeapTuple			tuple = NULL;
+	HeapTuple			new_tuple;
+	int					tuple_segno = InvalidFileSegNumber;
+	int64				filetupcount;
+	int64				filevarblockcount;
+	int64				new_tuple_count;
+	int64				new_varblock_count;
+	int64               new_modcount;
+	int64               old_eof;
+	int64               old_eof_uncompressed;
+	int64               old_modcount;
 	Datum			   *new_record;
 	bool			   *new_record_nulls;
 	bool			   *new_record_repl;
@@ -674,20 +700,17 @@ UpdateFileSegInfo_internal(Relation parentrel,
 	 */
 	pg_aoseg_rel = heap_open(aoEntry->segrelid, RowExclusiveLock);
 	pg_aoseg_dsc = RelationGetDescr(pg_aoseg_rel);
-	pg_aoseg_idx = index_open(aoEntry->segidxid, RowExclusiveLock);
 
-	/*
-	 * Setup a scan key to fetch from the index by segno.
-	 */
-	ScanKeyInit(&key,
-				(AttrNumber) Anum_pg_aoseg_segno,
-				BTEqualStrategyNumber,
-				F_OIDEQ,
-				ObjectIdGetDatum(segno));
-
-	aoscan = index_beginscan(pg_aoseg_rel, pg_aoseg_idx, SnapshotNow, 1, &key);
-
-	tuple = index_getnext(aoscan, ForwardScanDirection);
+	aoscan = heap_beginscan(pg_aoseg_rel, SnapshotNow, 0, NULL);
+	while (segno != tuple_segno && (tuple = heap_getnext(aoscan, ForwardScanDirection)) != NULL)
+	{
+		tuple_segno = DatumGetInt32(fastgetattr(tuple, Anum_pg_aoseg_segno, pg_aoseg_dsc, &isNull));
+		if (isNull)
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("got invalid segno value NULL for tid %s",
+							ItemPointerToString(&tuple->t_self))));
+	}
 
 	if (!HeapTupleIsValid(tuple))
 		ereport(ERROR,
@@ -841,8 +864,7 @@ UpdateFileSegInfo_internal(Relation parentrel,
 	heap_freetuple(new_tuple);
 
 	/* Finish up scan */
-	index_endscan(aoscan);
-	index_close(pg_aoseg_idx, RowExclusiveLock);
+	heap_endscan(aoscan);
 	heap_close(pg_aoseg_rel, RowExclusiveLock);
 
 	pfree(new_record);
