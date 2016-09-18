@@ -6,94 +6,108 @@ resources:
 - name: gpdb_src
   type: git
   source:
-    branch: 4.3_STABLE
-    private_key: {{private-repo-key}}
-    uri: git@github.com:greenplum-db/gpdb4.git
-- name: centos6-gpdb-image
+    branch: {{s3ext-git-branch}}
+    private_key: {{gpdb-git-key}}
+    uri: {{s3ext-git-remote}}
+- name: centos511-java7-gpdb-dev-image
   type: docker-image
   source:
-    repository: gpdbunitedockers/centos6-gcc48-gpdb-s3
-    username: {{docker_username_centos6}}
-    password: {{docker_password_centos6}}
-    email: hawang@pivotal.io
-- name: centos5-gpdb-image
+    repository: pivotaldata/centos511-java7-gpdb-dev-image
+    username: {{docker_username}}
+    password: {{docker_password}}
+- name: centos72-java7-gpdb-dev-image
   type: docker-image
   source:
-    repository: gpdbunitedockers2/centos511-gcc442-s3
-    username: {{docker_username_centos5}}
-    password: {{docker_password_centos5}}
-    email: pqiu@pivotal.io
-jobs:
-- name: compile_s3_centos
-  public: true
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      trigger: true
-      params: {submodules: none}
-    - get: centos5-gpdb-image
-  - task: build_gpdb
-    file: gpdb_src/ci/concourse/compile_s3.yml
-    image: centos5-gpdb-image
+    repository: pivotaldata/centos72-java7-gpdb-dev-image
+    username: {{docker_username}}
+    password: {{docker_password}}
+- name: bin_gpdb_centos
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: bin_gpdb_centos/bin_gpdb.tar.gz
+- name: sync_tools_gpdb_centos
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: sync_tools_gpdb_centos/sync_tools_gpdb.tar.gz
 
+jobs:
 - name: unit_tests_s3_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
       trigger: true
-      passed: [compile_s3_centos]
       params: {submodules: none}
-    - get: centos6-gpdb-image
-  - task: unit_test_s3
-    file: gpdb_src/ci/concourse/unittest_s3.yml
-    image: centos6-gpdb-image
+    - get: centos72-java7-gpdb-dev-image
+  - task: unit_tests_s3
+    file: gpdb_src/ci/concourse/unit_tests_s3.yml
+    image: centos72-java7-gpdb-dev-image
 
 - name: regression_tests_s3_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [compile_s3_centos]
+      passed: [unit_tests_s3_centos]
       trigger: true
       params: {submodules: none}
-    - get: centos5-gpdb-image
-  - task: regression_test_s3
-    file: gpdb_src/ci/concourse/regression_test_s3.yml
-    image: centos5-gpdb-image
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+    - get: centos511-java7-gpdb-dev-image
+  - task: regression_tests_s3
+    file: gpdb_src/ci/concourse/regression_tests_s3.yml
+    image: centos511-java7-gpdb-dev-image
     params:
-      s3conf: {{s3_conf_key}}
+      s3conf: {{s3_configuration_file}}
+      TEST_OS: centos
 
 - name: gpcheckcloud_tests_s3_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [compile_s3_centos]
+      passed: [unit_tests_s3_centos]
       trigger: true
       params: {submodules: none}
-    - get: centos5-gpdb-image
-  - task: regression_test_s3
-    file: gpdb_src/ci/concourse/gpcheckcloud_test_s3.yml
-    image: centos5-gpdb-image
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+    - get: centos511-java7-gpdb-dev-image
+  - task: gpcheckcloud_tests_s3
+    file: gpdb_src/ci/concourse/gpcheckcloud_tests_s3.yml
+    image: centos511-java7-gpdb-dev-image
     params:
-      s3conf: {{s3_conf_key}}
+      s3conf: {{s3_configuration_file}}
 
-- name: stage_s3_centos
+- name: staging_server_s3_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      trigger: true
+      trigger: false
       params: {submodules: none}
       passed:
-            - unit_tests_s3_centos
             - regression_tests_s3_centos
             - gpcheckcloud_tests_s3_centos
-    - get: centos5-gpdb-image
-  - task: staging_s3
-    file: gpdb_src/ci/concourse/stage_s3.yml
-    image: centos5-gpdb-image
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+    - get: centos511-java7-gpdb-dev-image
+  - task: staging_server_s3
+    file: gpdb_src/ci/concourse/staging_server_s3.yml
+    image: centos511-java7-gpdb-dev-image
     params:
       EC2_PRIVATE_KEY: {{ec2_key}}
       EC2_INSTANCE_IP: {{ec2_ip}}
