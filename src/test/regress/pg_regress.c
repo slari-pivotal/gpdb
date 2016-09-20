@@ -418,6 +418,8 @@ convert_sourcefiles_in(char *source, char *dest, char *suffix)
 	char	testtablespace[MAXPGPATH];
 	char	indir[MAXPGPATH];
 	char    outdir[MAXPGPATH];
+	struct stat	st;
+	int			ret;
 	char  **name;
 	char  **names;
 	int		count = 0;
@@ -442,6 +444,18 @@ convert_sourcefiles_in(char *source, char *dest, char *suffix)
 		strlcpy(abs_srcdir, abs_builddir, MAXPGPATH);
 
 	snprintf(indir, MAXPGPATH, "%s/%s", abs_srcdir, source);
+
+	/* Check that indir actually exists and is a directory */
+	ret = stat(indir, &st);
+	if (ret != 0 || !S_ISDIR(st.st_mode))
+	{
+		/*
+		 * No warning, to avoid noise in tests that do not have
+		 * these directories; for example, ecpg, contrib and src/pl.
+		 */
+		return;
+	}
+
 	names = pgfnames(indir);
 	if (!names)
 		/* Error logged in pgfnames */
@@ -569,20 +583,9 @@ convert_sourcefiles_in(char *source, char *dest, char *suffix)
 static void
 convert_sourcefiles(void)
 {
-	struct stat	st;
-	int		ret;
-
-	ret = stat("input", &st);
-	if (ret == 0 && S_ISDIR(st.st_mode))
-		convert_sourcefiles_in("input", "sql", "sql");
-
-	ret = stat("output", &st);
-	if (ret == 0 && S_ISDIR(st.st_mode))
-		convert_sourcefiles_in("output", "expected", "out");
-
-	ret = stat("mapred", &st);
-	if (ret == 0 && S_ISDIR(st.st_mode))
-		convert_sourcefiles_in("mapred", "yml", "yml");
+	convert_sourcefiles_in("input", "sql", "sql");
+	convert_sourcefiles_in("output", "expected", "out");
+	convert_sourcefiles_in("mapred", "yml", "yml");
 }
 
 /*
