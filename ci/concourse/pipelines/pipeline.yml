@@ -759,6 +759,46 @@ jobs:
       BLDWRAP_POSTGRES_CONF_ADDONS: ""
       TEST_OS: sles
 
+- name: regression_tests_s3_centos
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+  - task: regression_tests_s3
+    file: gpdb_src/ci/concourse/regression_tests_s3.yml
+    params:
+      s3conf: {{s3_configuration_file}}
+      TEST_OS: centos
+
+- name: regression_tests_s3_sles
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [compile_gpdb_sles]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_sles
+      passed: [compile_gpdb_sles]
+    - get: bin_gpdb
+      resource: bin_gpdb_sles
+      passed: [compile_gpdb_sles]
+      trigger: true
+    - get: sles11-toolchain
+  - task: regression_tests_s3
+    file: gpdb_src/ci/concourse/regression_tests_s3.yml
+    image: sles11-toolchain
+    params:
+      s3conf: {{s3_configuration_file}}
+      TEST_OS: sles
+
 - name: MU_check_centos
   public: true
   plan:
