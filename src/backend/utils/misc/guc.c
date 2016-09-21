@@ -2515,7 +2515,7 @@ static struct config_bool ConfigureNamesBool[] =
 		{"debug_print_resource_queue_id", PGC_USERSET, LOGGING_WHAT,
 			gettext_noop("Enables resource queue debug logging to the server log"),
 			NULL,
-			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+			GUC_NOT_IN_SAMPLE
 		},
 		&Debug_print_resource_queue_id,
 		false, NULL, NULL

@@ -964,7 +964,7 @@ SetResQueueId(void)
 	Oid oldQueueId = MyQueueId;
 	MyQueueId = GetResQueueForRole(GetUserId());
 
-	if (Debug_print_resource_queue_id)
+	if (Debug_print_resource_queue_id && Gp_role == GP_ROLE_DISPATCH)
 	{
 		if (OidIsValid(oldQueueId) && (oldQueueId != MyQueueId))
 		{

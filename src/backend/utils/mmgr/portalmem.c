@@ -393,7 +393,7 @@ PortalDrop(Portal portal, bool isTopCommit)
 	 */
 	PortalHashTableDelete(portal);
 
-	if (Debug_print_resource_queue_id)
+	if (Gp_role == GP_ROLE_DISPATCH && Debug_print_resource_queue_id)
 	{
 		elog(LOG, "RQ Logging: PortalDrop: dropping portal with portalId = %d, queueId = %d, releaseResLock=%d",
 				portal->portalId, portal->queueId, portal->releaseResLock);
