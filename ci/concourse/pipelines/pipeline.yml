@@ -15,6 +15,7 @@ groups:
   - icg_orca_sles
   - icg_planner_centos
   - icg_planner_sles
+  - regression_tests_s3_centos
   - MU_check_centos
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging
@@ -38,6 +39,7 @@ groups:
   - icb_planner_centos
   - icg_orca_centos
   - icg_planner_centos
+  - regression_tests_s3_centos
   - MU_check_centos
   - gpdb_rc_packaging_centos
   - gpdb_sync_to_dist_centos6
@@ -778,27 +780,6 @@ jobs:
       s3conf: {{s3_configuration_file}}
       TEST_OS: centos
 
-- name: regression_tests_s3_sles
-  public: true
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      passed: [compile_gpdb_sles]
-    - get: sync_tools_gpdb
-      resource: sync_tools_gpdb_sles
-      passed: [compile_gpdb_sles]
-    - get: bin_gpdb
-      resource: bin_gpdb_sles
-      passed: [compile_gpdb_sles]
-      trigger: true
-    - get: sles11-toolchain
-  - task: regression_tests_s3
-    file: gpdb_src/ci/concourse/regression_tests_s3.yml
-    image: sles11-toolchain
-    params:
-      s3conf: {{s3_configuration_file}}
-      TEST_OS: sles
-
 - name: MU_check_centos
   public: true
   plan:
@@ -833,6 +814,7 @@ jobs:
       - icb_planner_centos
       - icg_orca_centos
       - icg_planner_centos
+      - regression_tests_s3_centos
       - MU_check_centos
       trigger: true
   - task: separate_qautils_files_for_rc
@@ -921,6 +903,7 @@ jobs:
       - icb_planner_centos
       - icg_orca_centos
       - icg_planner_centos
+      - regression_tests_s3_centos
       - MU_check_centos
       - icg_orca_sles
       - icg_planner_sles
