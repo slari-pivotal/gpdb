@@ -2148,6 +2148,55 @@ GRANT SELECT ON %%JETPACK_PREFIX%%workfile_usage_per_query TO public;
 
 --------------------------------------------------------------------------------
 -- @function:
+--        %%JETPACK_PREFIX_AUX%%workfile_mgr_used_diskspace_f
+--
+-- @in:
+--
+-- @out:
+--        int - segment id
+--        bigint - size in bytes,
+--
+-- @doc:
+--        UDF to retrieve workfile used diskspace counter in bytes per segment
+--
+--------------------------------------------------------------------------------
+
+CREATE FUNCTION %%JETPACK_PREFIX_AUX%%workfile_mgr_used_diskspace_f()
+RETURNS SETOF record
+AS '$libdir/gp_workfile_mgr', 'gp_workfile_mgr_used_diskspace'
+LANGUAGE C IMMUTABLE;
+
+GRANT EXECUTE ON FUNCTION %%JETPACK_PREFIX_AUX%%workfile_mgr_used_diskspace_f() TO public;
+
+--------------------------------------------------------------------------------
+-- @view:
+--        %%JETPACK_PREFIX%%workfile_mgr_used_diskspace
+--
+-- @doc:
+--        Workfile used diskspace counter in bytes per segment
+--
+--------------------------------------------------------------------------------
+CREATE VIEW %%JETPACK_PREFIX%%workfile_mgr_used_diskspace AS
+WITH all_entries AS (
+  SELECT C.*
+       FROM %%JETPACK_PREFIX_AUX%%localid, %%JETPACK_PREFIX_AUX%%workfile_mgr_used_diskspace_f() as C (
+         segid int,
+         bytes bigint
+       )
+  UNION ALL
+  SELECT C.*
+       FROM %%JETPACK_PREFIX_AUX%%masterid, %%JETPACK_PREFIX_AUX%%workfile_mgr_used_diskspace_f() as C (
+         segid int,
+         bytes bigint
+       ))
+SELECT segid, bytes
+FROM all_entries
+ORDER BY segid;
+
+GRANT SELECT ON %%JETPACK_PREFIX%%workfile_mgr_used_diskspace TO public;
+
+--------------------------------------------------------------------------------
+-- @function:
 --		%%JETPACK_PREFIX_AUX%%workfile_cache_clear_f(content int)
 --
 -- @in:
