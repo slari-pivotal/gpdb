@@ -7,6 +7,8 @@ source "${CWDIR}/common.bash"
 
 function gen_env(){
 	cat > /home/gpadmin/run_regression_test.sh <<-EOF
+	set -exo pipefail
+
 	source /opt/gcc_env.sh
 	source /usr/local/greenplum-db-devel/greenplum_path.sh
 
