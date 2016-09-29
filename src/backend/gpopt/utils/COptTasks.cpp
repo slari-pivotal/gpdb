@@ -789,9 +789,10 @@ COptTasks::PoconfCreate
 	DOUBLE dDampingFactorJoin = (DOUBLE) optimizer_damping_factor_join;
 	DOUBLE dDampingFactorGroupBy = (DOUBLE) optimizer_damping_factor_groupby;
 
-	ULONG ulCTEInliningCutoff =  (ULONG) optimizer_cte_inlining_bound;
-	ULONG ulJoinArityForAssociativityCommutativity =  (ULONG) optimizer_join_arity_for_associativity_commutativity;
-	ULONG ulArrayExpansionThreshold =  (ULONG) optimizer_array_expansion_threshold;
+	ULONG ulCTEInliningCutoff = (ULONG) optimizer_cte_inlining_bound;
+	ULONG ulJoinArityForAssociativityCommutativity = (ULONG) optimizer_join_arity_for_associativity_commutativity;
+	ULONG ulArrayExpansionThreshold = (ULONG) optimizer_array_expansion_threshold;
+	ULONG ulJoinOrderThreshold = (ULONG) optimizer_join_order_threshold;
 
 	return GPOS_NEW(pmp) COptimizerConfig
 						(
@@ -799,9 +800,13 @@ COptTasks::PoconfCreate
 						GPOS_NEW(pmp) CStatisticsConfig(pmp, dDampingFactorFilter, dDampingFactorJoin, dDampingFactorGroupBy),
 						GPOS_NEW(pmp) CCTEConfig(ulCTEInliningCutoff),
 						pcm,
-						GPOS_NEW(pmp) CHint(INT_MAX /* optimizer_parts_to_force_sort_on_insert */,
+						GPOS_NEW(pmp) CHint
+								(
+								INT_MAX /* optimizer_parts_to_force_sort_on_insert */,
 								ulJoinArityForAssociativityCommutativity,
-								ulArrayExpansionThreshold)
+								ulArrayExpansionThreshold,
+								ulJoinOrderThreshold
+								)
 						);
 }
 
