@@ -1368,6 +1368,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
     - get: installer_rhel5_gpdb_rc
