@@ -485,11 +485,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-create table foo (a int, b int) with (appendonly=true);
-select * from readindex_wrapper('foo') as rec(ictid tid, hctid tid, aotid text, istatus text, hstatus text, segno int); -- should be empty
+create table ao_table_check_aoseg_index (a int, b int) with (appendonly=true);
+select * from readindex_wrapper('ao_table_check_aoseg_index') as rec(ictid tid, hctid tid, aotid text, istatus text, hstatus text, segno int); -- should be empty
 
-insert into foo values (1,1);
-select * from readindex_wrapper('foo') as rec(ictid tid, hctid tid, aotid text, istatus text, hstatus text, segno int); -- entries added
+insert into ao_table_check_aoseg_index values (1,1);
+select * from readindex_wrapper('ao_table_check_aoseg_index') as rec(ictid tid, hctid tid, aotid text, istatus text, hstatus text, segno int); -- entries added
 
 -------------------- 
 -- supported sql 
