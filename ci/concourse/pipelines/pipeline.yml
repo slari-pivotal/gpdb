@@ -30,7 +30,7 @@ groups:
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
-  - pulse_toolsmiths_MFR-TINC
+  - pulse_MU_BehaveGPCheckcat
 - name: CentOS/RHEL
   jobs:
   - compile_gpdb_centos
@@ -64,7 +64,7 @@ groups:
 - name: Pulse
   jobs:
   - gpdb_sync_to_dist
-  - pulse_toolsmiths_MFR-TINC
+  - pulse_MU_BehaveGPCheckcat
 
 ## ======================================================================
 ## resources
@@ -1361,7 +1361,7 @@ jobs:
       BEHAVE_TAGS: backup
       TEST_OS: centos
 
-- name: pulse_toolsmiths_MFR-TINC
+- name: pulse_MU_BehaveGPCheckcat
   public: true
   plan:
   - get: nightly-trigger
@@ -1375,14 +1375,14 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
-  - task: trigger_pulse_toolsmiths_MFR-TINC
+  - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPCheckcat"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse_toolsmiths_MFR-TINC
+  - task: monitor_pulse
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
