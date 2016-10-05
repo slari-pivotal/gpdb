@@ -31,6 +31,7 @@ groups:
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
   - pulse_MU_BehaveGPCheckcat
+  - pulse_CS_Storage
 - name: CentOS/RHEL
   jobs:
   - compile_gpdb_centos
@@ -65,6 +66,7 @@ groups:
   jobs:
   - gpdb_sync_to_dist
   - pulse_MU_BehaveGPCheckcat
+  - pulse_CS_Storage
 
 ## ======================================================================
 ## resources
@@ -1387,6 +1389,35 @@ jobs:
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPCheckcat"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_CS_Storage
+  public: true
+  plan:
+  - get: nightly-trigger
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-Storage-no-scm"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-Storage-no-scm"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
