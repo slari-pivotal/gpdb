@@ -188,8 +188,13 @@ tar zxf $( basename ${MADLIB_GPPKG_FILE} )
 
 rpm2cpio *.rpm | cpio -idm
 
+get_madlib_version() {
+  # capture 1.9 out of ...madlib-ossv1.9_pv1.9.5... (or similar)
+  echo "$MADLIB_GPPKG_FILE" | sed -n 's/.*madlib-ossv\(.*\)_pv.*/\1/p'
+}
+
 pushd usr/local/madlib > /dev/null
-ln -s Versions/1.7.1 Current
+ln -s "Versions/$(get_madlib_version)" Current
 ln -s Current/bin bin
 ln -s Current/doc doc
 popd > /dev/null
