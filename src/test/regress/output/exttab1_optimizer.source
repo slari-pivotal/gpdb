@@ -899,7 +899,7 @@ select * from exttab1_gpfdist_start;
 select * from exttab1_gpfdist_status;
                                 x                                 
 ------------------------------------------------------------------
- Okay, gpfdist version "4.3.9.1 build 1" is running on g182:7070.
+ Okay, gpfdist version "4.3_STABLE build 1" is running on g182:7070.
 (1 row)
 
 DROP EXTERNAL TABLE IF EXISTS subtrans_w_ext;
@@ -908,14 +908,14 @@ CREATE WRITABLE EXTERNAL TABLE subtrans_w_ext(a int, b int, c int)
 LOCATION('gpfdist://g182:7070/subtrans_w_ext.data') FORMAT 'csv';
 \!gpfaultinjector -f external_insert_finish -y reset --seg_dbid 2
 20160822:20:05:11:007553 gpfaultinjector:g182:gpadmin-[INFO]:-Starting gpfaultinjector with args: -f external_insert_finish -y reset --seg_dbid 2
-20160822:20:05:11:007553 gpfaultinjector:g182:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3.9.1 build 1'
+20160822:20:05:11:007553 gpfaultinjector:g182:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3_STABLE build 1'
 20160822:20:05:11:007553 gpfaultinjector:g182:gpadmin-[INFO]:-Obtaining Segment details from master...
 20160822:20:05:11:007553 gpfaultinjector:g182:gpadmin-[INFO]:-Injecting fault on 1 segment(s)
 20160822:20:05:11:007553 gpfaultinjector:g182:gpadmin-[INFO]:-Injecting fault on g182:/home/gpadmin/dbinst/m2/data0/gpsne0:content=0:dbid=2:mode=s:status=u
 20160822:20:05:11:007553 gpfaultinjector:g182:gpadmin-[INFO]:-DONE
 \!gpfaultinjector -f external_insert_finish -y error --seg_dbid 2
 20160822:20:05:11:007583 gpfaultinjector:g182:gpadmin-[INFO]:-Starting gpfaultinjector with args: -f external_insert_finish -y error --seg_dbid 2
-20160822:20:05:11:007583 gpfaultinjector:g182:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3.9.1 build 1'
+20160822:20:05:11:007583 gpfaultinjector:g182:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3_STABLE build 1'
 20160822:20:05:11:007583 gpfaultinjector:g182:gpadmin-[INFO]:-Obtaining Segment details from master...
 20160822:20:05:11:007583 gpfaultinjector:g182:gpadmin-[INFO]:-Injecting fault on 1 segment(s)
 20160822:20:05:11:007583 gpfaultinjector:g182:gpadmin-[INFO]:-Injecting fault on g182:/home/gpadmin/dbinst/m2/data0/gpsne0:content=0:dbid=2:mode=s:status=u
@@ -930,7 +930,7 @@ ROLLBACK TO s1;
 select * from exttab1_gpfdist_status;
                                 x                                 
 ------------------------------------------------------------------
- Okay, gpfdist version "4.3.9.1 build 1" is running on g182:7070.
+ Okay, gpfdist version "4.3_STABLE build 1" is running on g182:7070.
 (1 row)
 
 select * from exttab1_gpfdist_stop;

@@ -93,14 +93,14 @@ insert into copytest5 select i, repeat('abcdefghijklmnopqrstuvwxyz', i) from gen
 --start_ignore
 \!gpfaultinjector -f cdb_copy_start_after_dispatch -m async -y reset -s 1
 20160907:18:23:44:031222 gpfaultinjector:g182:gpadmin-[INFO]:-Starting gpfaultinjector with args: -f cdb_copy_start_after_dispatch -m async -y reset -s 1
-20160907:18:23:44:031222 gpfaultinjector:g182:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3.9.1 build 1'
+20160907:18:23:44:031222 gpfaultinjector:g182:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3_STABLE build 1'
 20160907:18:23:44:031222 gpfaultinjector:g182:gpadmin-[INFO]:-Obtaining Segment details from master...
 20160907:18:23:44:031222 gpfaultinjector:g182:gpadmin-[INFO]:-Injecting fault on 1 segment(s)
 20160907:18:23:44:031222 gpfaultinjector:g182:gpadmin-[INFO]:-Injecting fault on g182:/home/gpadmin/dbinst/d1/master/gpsne-1:content=-1:dbid=1:mode=s:status=u
 20160907:18:23:44:031222 gpfaultinjector:g182:gpadmin-[INFO]:-DONE
 \!gpfaultinjector -f cdb_copy_start_after_dispatch -m async -y error -s 1
 20160907:18:23:44:031247 gpfaultinjector:g182:gpadmin-[INFO]:-Starting gpfaultinjector with args: -f cdb_copy_start_after_dispatch -m async -y error -s 1
-20160907:18:23:44:031247 gpfaultinjector:g182:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3.9.1 build 1'
+20160907:18:23:44:031247 gpfaultinjector:g182:gpadmin-[INFO]:-local Greenplum Version: 'postgres (Greenplum Database) 4.3_STABLE build 1'
 20160907:18:23:44:031247 gpfaultinjector:g182:gpadmin-[INFO]:-Obtaining Segment details from master...
 20160907:18:23:44:031247 gpfaultinjector:g182:gpadmin-[INFO]:-Injecting fault on 1 segment(s)
 20160907:18:23:44:031247 gpfaultinjector:g182:gpadmin-[INFO]:-Injecting fault on g182:/home/gpadmin/dbinst/d1/master/gpsne-1:content=-1:dbid=1:mode=s:status=u
