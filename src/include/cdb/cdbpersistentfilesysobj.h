@@ -77,11 +77,6 @@ extern int64 PersistentFileSysObj_MyHighestSerialNum(
 extern int64 PersistentFileSysObj_CurrentMaxSerialNum(
 	PersistentFsObjType 	fsObjType);
 
-extern PersistentTidIsKnownResult PersistentFileSysObj_TidIsKnown(
-	PersistentFsObjType 	fsObjType,
-	ItemPointer 			persistentTid,
-	ItemPointer 			maxTid);
-
 extern void PersistentFileSysObj_UpdateTuple(
 	PersistentFsObjType		fsObjType,
 	ItemPointer 			persistentTid,
