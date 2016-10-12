@@ -129,7 +129,6 @@ static Buffer ReadBuffer_Internal(SMgrRelation smgr,
 								 volatile BufferDesc* availBufHdr,
 								 bool isLocalBuf, 
 								 bool isTemp, 
-								 char * relErrMsgString, 
 								 bool *pHit); 
 
 #define ShouldMemoryProtect(buf) (ShouldMemoryProtectBufferPool() && ! BufferIsLocal(buf->buf_id+1) && ! BufferIsInvalid(buf->buf_id+1))
@@ -237,7 +236,7 @@ ReadBuffer_Ex(Relation reln, BlockNumber blockNum, volatile BufferDesc* availBuf
 
 		returnBuffer = ReadBuffer_Internal(reln->rd_smgr, blockNum, availBufHdr, 
 						   reln->rd_isLocalBuf,
-						   reln->rd_istemp,RelationGetRelationName(reln),
+						   reln->rd_istemp,
 						   &isHit);
 
 		if (isHit){
@@ -277,7 +276,7 @@ ReadBuffer_Ex_SMgr(SMgrRelation smgr, BlockNumber blockNum, volatile BufferDesc*
 		
 		return ReadBuffer_Internal(smgr, blockNum, availBufHdr, 
 						   isLocalBuf,
-						   isTemp,"ReadBuffer_Ex_SMgr does not have the relname",
+						   isTemp,
 						   &isHit);
 
 }
@@ -300,8 +299,7 @@ ReadBuffer_Ex_SMgr(SMgrRelation smgr, BlockNumber blockNum, volatile BufferDesc*
 static Buffer
 ReadBuffer_Internal(SMgrRelation smgr, BlockNumber blockNum, 
 				   volatile BufferDesc* availBufHdr, bool isLocalBuf,
-				   bool isTemp, char * relErrMsgString,
-				   bool *pHit)
+				   bool isTemp, bool *pHit)
 {
 		//MIRROREDLOCK_BUFMGR_DECLARE;
 
@@ -382,8 +380,8 @@ ReadBuffer_Internal(SMgrRelation smgr, BlockNumber blockNum,
 		bufBlock = isLocalBuf ? LocalBufHdrGetBlock(bufHdr) : BufHdrGetBlock(bufHdr);
 		if (!PageIsNew((PageHeader) bufBlock))
 			ereport(ERROR,
-					(errmsg("unexpected data beyond EOF in block %u of relation \"%s\"",
-							blockNum, relErrMsgString),
+					(errmsg("unexpected data beyond EOF in block %u of relation %s",
+							blockNum, relpath(smgr->smgr_rnode)),
 					 errhint("This has been seen to occur with buggy kernels; consider updating your system.")));
 
 		/*
@@ -456,15 +454,15 @@ ReadBuffer_Internal(SMgrRelation smgr, BlockNumber blockNum,
 			{
 				ereport(WARNING,
 						(errcode(ERRCODE_DATA_CORRUPTED),
-						 errmsg("invalid page header in block %u of relation \"%s\"; zeroing out page",
-								blockNum, relErrMsgString)));
+						 errmsg("invalid page header in block %u of relation %s; zeroing out page",
+								blockNum, relpath(smgr->smgr_rnode))));
 				MemSet((char *) bufBlock, 0, BLCKSZ);
 			}
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_DATA_CORRUPTED),
-				 errmsg("invalid page header in block %u of relation \"%s\"",
-						blockNum, relErrMsgString),
+				 errmsg("invalid page header in block %u of relation %s",
+						blockNum, relpath(smgr->smgr_rnode)),
 				 errSendAlert(true)));
 		}
 	}
