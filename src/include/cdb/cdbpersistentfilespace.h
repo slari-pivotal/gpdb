@@ -192,7 +192,7 @@ extern void PersistentFilespace_Dropped(
 	
 
 /* 
- * Identify the mirror dbid referenced in the gp_persistet_filespae_node table 
+ * Identify the mirror dbid referenced in the gp_persistet_filespace_node table 
  */
 extern int16 PersistentFilespace_LookupMirrorDbid(int16 primaryDbid);
 
