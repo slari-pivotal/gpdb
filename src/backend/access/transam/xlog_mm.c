@@ -625,7 +625,7 @@ emit_mmxlog_fs_record(mm_fs_obj_type type, Oid filespace,
 	rdata.buffer = InvalidBuffer;
 	rdata.next = NULL;
 
-	XLogInsert(RM_MMXLOG_ID, flags | XLOG_NO_TRAN, &rdata);
+	XLogInsert(RM_MMXLOG_ID, flags, &rdata);
 	*beginLoc = XLogLastInsertBeginLoc();
 
 	return true;

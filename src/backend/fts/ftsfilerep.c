@@ -11,14 +11,14 @@
  */
 #include "postgres.h"
 
+#include "access/genam.h"
+#include "catalog/pg_filespace_entry.h"
 #include "cdb/cdbfts.h"
 #include "executor/spi.h"
 #include "postmaster/fts.h"
 #include "postmaster/primary_mirror_mode.h"
-
 #include "cdb/ml_ipc.h" /* gettime_elapsed_ms */
-#include "catalog/catquery.h"
-
+#include "utils/fmgroids.h"
 
 /*
  * CONSTANTS
@@ -260,6 +260,7 @@ FtsResolveStateFilerep(FtsSegmentPairState *pairState)
 }
 
 
+
 /*
  * pre-process probe results to take into account some special
  * state-changes that Filerep uses: when the segments have completed
@@ -483,6 +484,7 @@ modeUpdate(int dbid, char *mode, char status, FilerepModeUpdateLoggingEnum logMs
 
 	switch (logMsgToSend)
 	{
+
 		case FilerepModeUpdateLoggingEnum_MirrorToChangeTracking:
 			ereport(LOG,
 					(errmsg("FTS: mirror (dbid=%d) on %s:%d taking over as primary in change-tracking mode.",
@@ -505,16 +507,38 @@ modeUpdate(int dbid, char *mode, char status, FilerepModeUpdateLoggingEnum logMs
 
 	if (peer_rep_port == -1)
 	{
-			/* we are using segment WAL replication.  Call gpactivatemirrors */
-		char *fselocation = caql_getcstring(NULL,
-								cql("SELECT fselocation FROM pg_filespace_entry"
-									" WHERE fsedbid = :1 ",
-									ObjectIdGetDatum(dbid)));
-		if (!fselocation)
-		{
-			elog(ERROR, "FTS: could not find tuple for filespace_entry for dbid %u",
+		Relation rel;
+		ScanKeyData scankey;
+		SysScanDesc sscan;
+		HeapTuple tuple;
+
+		char *fselocation;
+		bool isnull;
+
+		rel = heap_open(FileSpaceEntryRelationId, RowExclusiveLock);
+
+		ScanKeyInit(&scankey,
+				Anum_pg_filespace_entry_fsedbid,
+				BTEqualStrategyNumber, F_INT2EQ,
+				Int16GetDatum(dbid));
+
+		sscan = systable_beginscan(rel, InvalidOid, true,
+							   SnapshotNow, 1, &scankey);
+		tuple = systable_getnext(sscan);
+		if (!HeapTupleIsValid(tuple))
+			elog(ERROR, "FTS: could not find tuple for filespace entry for dbid %u",
 				 dbid);
-		}
+		fselocation = TextDatumGetCString(
+			heap_getattr(tuple,
+						 Anum_pg_filespace_entry_fselocation,
+						 RelationGetDescr(rel),
+						 &isnull));
+		Assert(strlen(fselocation) <= MAXPGPATH);
+		Assert(!isnull);
+		systable_endscan(sscan);
+		heap_close(rel, AccessShareLock);
+
+		/* we are using segment WAL replication.  Call gpactivatemirrors */
 		snprintf(cmd, sizeof(cmd), "PGPORT=%d MASTER_DATA_DIRECTORY=%s "
                  "gpactivatemirrors -a", seg_pm_port, fselocation);
 	}
