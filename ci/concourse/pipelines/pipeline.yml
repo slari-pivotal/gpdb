@@ -30,7 +30,15 @@ groups:
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
+  - pulse_MU_BehaveBackupRestore
   - pulse_MU_BehaveGPCheckcat
+  - pulse_MU_BehaveGPRecoverseg
+  - pulse_MU_BehaveGptransfer43xTo43x
+  - pulse_MU_BehaveNetBackup
+  - pulse_MU_BehaveNetBackup76
+  - pulse_MU_Kerberos-jdbc-no-scm
+  - pulse_MU_Kerberos-smoke
+  - pulse_MU_OpenBAR
   - pulse_CS_aoco-compression
   - pulse_CS_bin-swap
   - pulse_CS_filerep-SchemaTopology-crashrecov
