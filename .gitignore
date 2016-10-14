@@ -47,3 +47,5 @@ cscope.*
 
 #emacs
 *~
+
+.DS_Store
