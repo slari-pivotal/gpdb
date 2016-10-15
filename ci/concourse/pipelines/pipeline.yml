@@ -36,8 +36,12 @@ groups:
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_DDBOOST_Full
+  - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_Gpexpand
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
+  - pulse_MU_MFR-TINC
   - pulse_MU_OpenBAR
   - pulse_CS_aoco-compression
   - pulse_CS_bin-swap
@@ -53,6 +57,8 @@ groups:
   - pulse_QP_memory-accounting
   - pulse_QP_workfile-tinc
   - pulse_QP_optimizer-functional
+  - pulse_Gppkg
+  - pulse_Gppkg-redhat6
 
 - name: CentOS/RHEL
   jobs:
@@ -93,8 +99,12 @@ groups:
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_DDBOOST_Full
+  - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_Gpexpand
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
+  - pulse_MU_MFR-TINC
   - pulse_MU_OpenBAR
   - pulse_CS_aoco-compression
   - pulse_CS_bin-swap
@@ -110,6 +120,8 @@ groups:
   - pulse_QP_memory-accounting
   - pulse_QP_workfile-tinc
   - pulse_QP_optimizer-functional
+  - pulse_Gppkg
+  - pulse_Gppkg-redhat6
 - name: Pulse_CS
   jobs:
   - pulse_CS_aoco-compression
@@ -128,6 +140,7 @@ groups:
   - pulse_QP_memory-accounting
   - pulse_QP_workfile-tinc
   - pulse_QP_optimizer-functional
+
 - name: Pulse_MU
   jobs:
   - pulse_MU_BehaveBackupRestore
@@ -136,8 +149,12 @@ groups:
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_DDBOOST_Full
+  - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_Gpexpand
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
+  - pulse_MU_MFR-TINC
   - pulse_MU_OpenBAR
 
 ## ======================================================================
@@ -1697,6 +1714,122 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
+- name: pulse_MU_DDBOOST_Full
+  public: true
+  plan:
+  - get: nightly-trigger
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Full"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Full"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_DDBOOST_Incremental
+  public: true
+  plan:
+  - get: nightly-trigger
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Incremental"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Incremental"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_MFR-TINC
+  public: true
+  plan:
+  - get: nightly-trigger
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_Gpexpand
+  public: true
+  plan:
+  - get: nightly-trigger
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gpexpand"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gpexpand"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
 - name: pulse_CS_aoco-compression
   public: true
   plan:
@@ -2103,6 +2236,65 @@ jobs:
       PULSE_PROJECT_NAME: "GPDB-43_STABLE-QP-TINC-OptimizerFunctional-no-scm"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_Gppkg
+  public: true
+  plan:
+  - get: nightly-trigger
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_Gppkg-redhat6
+  public: true
+  plan:
+  - get: nightly-trigger
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg-redhat6"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg-redhat6"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
 
 - name: manual_testing_on_pulse_centos
   public: true
