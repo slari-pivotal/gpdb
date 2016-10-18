@@ -909,6 +909,8 @@ jobs:
 - name: gpdb_rc_packaging_centos
   public: true
   plan:
+  - get: nightly-trigger
+    trigger: true
   - aggregate:
     - get: gpdb_src
       passed: [icg_planner_centos]
@@ -966,6 +968,8 @@ jobs:
 - name: gpdb_rc_packaging_sles
   public: true
   plan:
+  - get: nightly-trigger
+    trigger: true
   - aggregate:
     - get: gpdb_src
       passed: [icg_planner_sles]
@@ -1001,6 +1005,8 @@ jobs:
 - name: gpdb_src_packaging
   public: true
   plan:
+  - get: nightly-trigger
+    trigger: true
   - aggregate:
     - get: gpdb_src
       passed:
