@@ -215,8 +215,6 @@
 		}	\
 		else \
 		{ \
-			EmitErrorReport(); \
-			FlushErrorState(); \
 			GPOS_RAISE(gpdxl::ExmaGPDB, gpdxl::ExmiGPDBError); \
 		} \
 	}	\
