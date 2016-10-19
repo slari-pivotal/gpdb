@@ -554,8 +554,9 @@ resources:
 - name: nightly-trigger
   type: time
   source:
-    start: 12:00 AM -0700
-    stop: 1:00 AM -0700
+    location: America/Los_Angeles
+    start: 1:00 AM
+    stop: 2:00 AM
 
 ## ======================================================================
 ## jobs
