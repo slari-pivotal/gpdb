@@ -1,51 +1,22 @@
 #!/usr/bin/env ruby
 
 require_relative '../lib/pulse_proxy'
-require 'json'
+require_relative '../lib/pulse_options'
 
-url = ENV['PULSE_URL']
-project_name = ENV['PULSE_PROJECT_NAME']
-username = ENV['PULSE_USERNAME']
-password = ENV['PULSE_PASSWORD']
-output_dir = ENV['OUTPUT_DIR']
+options = PulseOptions.new(:output => true)
+options.read_from_environment
+options.read_from_concourse_urls("installer_rhel5_gpdb_rc/url", "gpdb_src_archive/url", "qautils_rhel5_tarball/url")
+options.print_environment_settings
+options.validate_options
 
-#read the s3 signed URLs from Concourse
-build_artifact_url_file = "installer_rhel5_gpdb_rc/url"
-build_artifact_url = File.read(build_artifact_url_file).strip
-build_src_code_url_file = "gpdb_src_archive/url"
-build_src_code_url = File.read(build_src_code_url_file).strip
-qautil_url_file = "qautils_rhel5_tarball/url"
-qautil_url = File.read(qautil_url_file).strip
+pulse_proxy = PulseProxy.new(options.url, options.username, options.password)
 
-puts "PULSE_URL is #{url}"
-puts "PULSE_PROJECT_NAME is #{project_name}"
-puts "BUILD_ARTIFACT_URL:\n#{build_artifact_url}\n"
-puts "BUILD_SRC_CODE_URL:\n#{build_src_code_url}\n"
-puts "QAUTIL_URL:\n#{qautil_url}\n"
-
-if !File.directory?(output_dir)
-  puts "#{output_dir} must be a valid directory"
-  exit 1
-end
-
-pulse_proxy = PulseProxy.new(url, username, password)
-
-#todo: add a better reason (URL tbd)
-trigger_options = {
-  :force => true,
-  :properties => {
-    :BUILD_ARTIFACT_URL => build_artifact_url,
-    :BUILD_SRC_CODE_URL => build_src_code_url,
-    :QAUTIL_URL => qautil_url,
-  },
-  :reason => "Triggered via Concourse http://shared.ci.eng.pivotal.io"
-}
-request_ids = pulse_proxy.request_triggerBuild(project_name, trigger_options)
-request_id = request_ids[0] #we only ever get one back; we aren't using the pulse feature that would give us multiple
+request_ids = pulse_proxy.request_triggerBuild(options.project_name, options.trigger_options)
+request_id = request_ids.first
 puts "request_id is #{request_id}"
 
-#Give the build 2 minutes to be activated
-build_request_status = pulse_proxy.request_waitForBuildRequestToBeActivated(request_id, 2*60*1000)
+# Give the build 2 minutes to be activated
+build_request_status = pulse_proxy.request_waitForBuildRequestToBeActivated(request_id, options.build_request_time)
 status = build_request_status['status']
 
 if status == 'QUEUED'
@@ -60,8 +31,5 @@ end
 build_id = build_request_status['buildId']
 puts "build_id is #{build_id}"
 
-puts "Writing build_id to " + output_dir + "/build_id"
-open(output_dir + "/build_id", 'w') { |f|
-  f.puts build_id
-}
-
+puts "Writing build_id to #{options.output_dir}/build_id"
+open("#{options.output_dir}/build_id", 'w+') { |f| f.puts build_id }
