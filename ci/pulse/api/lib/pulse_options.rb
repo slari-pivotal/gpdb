@@ -4,7 +4,7 @@ class PulseOptions
   DEFAULT_TIMEOUT_IN_HOURS = 10
   DEFAULT_POLLING_TIME_IN_SECONDS = 60
   DEFAULT_TOKEN_REFRESH_TIME_IN_SECONDS = 1200
-  DEFAULT_BUILD_REQUEST_TIME_IN_MS = 120000
+  DEFAULT_BUILD_REQUEST_TIME_IN_SECONDS = 60 * 15
   CONCOURSE_URL = "https://shared.ci.eng.pivotal.io/"
 
   attr_reader :url, :project_name, :username, :password, :input_dir, :output_dir, :build_artifact_url, :build_src_code_url, :qautil_url, :start_time
@@ -95,7 +95,7 @@ class PulseOptions
   end
 
   def build_request_time
-    DEFAULT_BUILD_REQUEST_TIME_IN_MS
+    DEFAULT_BUILD_REQUEST_TIME_IN_SECONDS
   end
 
   # Pulse login tokens expire every 30 minutes; get a new one every 20 minutes
