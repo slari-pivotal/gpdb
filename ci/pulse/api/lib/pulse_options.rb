@@ -9,9 +9,17 @@ class PulseOptions
 
   attr_reader :url, :project_name, :username, :password, :input_dir, :output_dir, :build_artifact_url, :build_src_code_url, :qautil_url, :start_time
 
+  def self.forTriggerJob
+    PulseOptions.new(needs_output_dir: true)
+  end
+
+  def self.forMonitorJob
+    PulseOptions.new(needs_input_dir: true)
+  end
+
   def initialize(options = {})
-    @input_required = options[:input]
-    @output_required = options[:output]
+    @input_required = options[:needs_input_dir]
+    @output_required = options[:needs_output_dir]
     @start_time = Time.now
   end
 
@@ -31,7 +39,6 @@ class PulseOptions
 
   # read the s3 signed URLs from Concourse
   def read_from_concourse_urls(artifact_url, src_code_url, qa_util_url)
-
     build_artifact_url_file = artifact_url
     @build_artifact_url = File.read(build_artifact_url_file).strip
     build_src_code_url_file = src_code_url
