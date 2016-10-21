@@ -3,7 +3,7 @@
 require_relative '../lib/pulse_proxy'
 require_relative '../lib/pulse_options'
 
-options = PulseOptions.new(:output => true)
+options = PulseOptions.forTriggerJob
 options.read_from_environment
 options.read_from_concourse_urls("installer_rhel5_gpdb_rc/url", "gpdb_src_archive/url", "qautils_rhel5_tarball/url")
 options.print_environment_settings

@@ -4,7 +4,7 @@ require_relative '../lib/pulse_proxy'
 require_relative '../lib/pulse_options'
 require_relative '../lib/pulse_build_result'
 
-options = PulseOptions.new(:input => true)
+options = PulseOptions.forMonitorJob
 options.read_from_environment
 options.print_environment_settings
 options.validate_options
