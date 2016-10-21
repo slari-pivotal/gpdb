@@ -264,6 +264,7 @@ check: $(MOCK_BIN) unittest2
 		echo "Running pure unit and also "unit" tests that require cluster to be up..." ; \
 		PYTHONPATH="$$UNIT_PYTHONPATH" \
 		gppylib/gpunit discover --verbose -s $(SRC)/gppylib -p "test_unit*.py" 2> $(SRC)/../gpMgmt_testunit_results.log 1> $(SRC)/../gpMgmt_testunit_output.log && \
+		PYTHONPATH="$$UNIT_PYTHONPATH" \
 		gppylib/gpunit discover --verbose -s $(SRC)/gppylib -p "test_cluster*.py" 2>> $(SRC)/../gpMgmt_testunit_results.log 1>> $(SRC)/../gpMgmt_testunit_output.log ; \
 	fi
 
