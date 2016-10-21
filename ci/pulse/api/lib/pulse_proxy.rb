@@ -19,8 +19,23 @@ class PulseProxy
     retry_call { proxy.triggerBuild(token, project_name, trigger_options) }
   end
 
-  def request_waitForBuildRequestToBeActivated(request_id, timeoutMillis)
-    retry_call { proxy.waitForBuildRequestToBeActivated(token, request_id, timeoutMillis) }
+  def waitForBuildRequestToBeActivated(request_id, timeout_seconds)
+    end_time = Time.now() + timeout_seconds
+    puts 'waiting'
+    while Time.now < end_time
+      build_request_status = request_getBuildRequestStatus(request_id)
+      status = build_request_status['status']
+      if status == 'QUEUED' || status == 'UNHANDLED'
+        sleep 10
+        print '.'
+      else
+        return build_request_status
+      end
+    end
+
+    # if it's still queued after the timeout, return a queued
+    # build_request_status and let the caller handle it
+    request_getBuildRequestStatus(request_id)
   end
 
   def request_getBuildRequestStatus(request_id)

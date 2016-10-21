@@ -15,12 +15,12 @@ request_ids = pulse_proxy.request_triggerBuild(options.project_name, options.tri
 request_id = request_ids.first
 puts "request_id is #{request_id}"
 
-# Give the build 2 minutes to be activated
-build_request_status = pulse_proxy.request_waitForBuildRequestToBeActivated(request_id, options.build_request_time)
+# Give the build time to be activated
+build_request_status = pulse_proxy.waitForBuildRequestToBeActivated(request_id, options.build_request_time)
 status = build_request_status['status']
 
 if status == 'QUEUED'
-  puts "Waited two minutes for the build to be activated, but it was still in QUEUED state"
+  puts "Waited #{options.build_request_time} seconds for the build to be activated, but it was still in QUEUED state"
   puts "We consider this a failure because often it means that the pulse agents are misconfigured"
   exit 1
 elsif status != 'ACTIVATED'
