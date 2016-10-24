@@ -551,7 +551,16 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
 
-- name: nightly-trigger
+# We trigger packaging right before Pulse projects so that the signed URLs
+# do not expire on us
+- name: nightly-trigger-packaging
+  type: time
+  source:
+    location: America/Los_Angeles
+    start: 12:00 AM
+    stop: 1:00 AM
+
+- name: nightly-trigger-pulse
   type: time
   source:
     location: America/Los_Angeles
@@ -910,7 +919,7 @@ jobs:
 - name: gpdb_rc_packaging_centos
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-packaging
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -969,7 +978,7 @@ jobs:
 - name: gpdb_rc_packaging_sles
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-packaging
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1006,7 +1015,7 @@ jobs:
 - name: gpdb_src_packaging
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-packaging
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1462,7 +1471,7 @@ jobs:
 - name: pulse_MU_BehaveBackupRestore
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1492,7 +1501,7 @@ jobs:
 - name: pulse_MU_BehaveGPCheckcat
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1521,7 +1530,7 @@ jobs:
 - name: pulse_MU_BehaveGPRecoverseg
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1550,7 +1559,7 @@ jobs:
 - name: pulse_MU_BehaveGptransfer43xTo43x
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1579,7 +1588,7 @@ jobs:
 - name: pulse_MU_BehaveNetBackup
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1608,7 +1617,7 @@ jobs:
 - name: pulse_MU_BehaveNetBackup76
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1637,7 +1646,7 @@ jobs:
 - name: pulse_MU_Kerberos-jdbc-no-scm
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1666,7 +1675,7 @@ jobs:
 - name: pulse_MU_Kerberos-smoke
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1695,7 +1704,7 @@ jobs:
 - name: pulse_MU_OpenBAR
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1724,7 +1733,7 @@ jobs:
 - name: pulse_MU_DDBOOST_Full
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: false
   - aggregate:
     - get: gpdb_src
@@ -1753,7 +1762,7 @@ jobs:
 - name: pulse_MU_DDBOOST_Incremental
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: false
   - aggregate:
     - get: gpdb_src
@@ -1782,7 +1791,7 @@ jobs:
 - name: pulse_MU_MFR-TINC
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: false
   - aggregate:
     - get: gpdb_src
@@ -1811,7 +1820,7 @@ jobs:
 - name: pulse_MU_Gpexpand
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1840,7 +1849,7 @@ jobs:
 - name: pulse_cs-aoco-compression
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1869,7 +1878,7 @@ jobs:
 - name: pulse_cs-bin-swap
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1898,7 +1907,7 @@ jobs:
 - name: pulse_cs-filerep-schema-topology-crashrecov
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1927,7 +1936,7 @@ jobs:
 - name: pulse_cs-filerep-end-to-end
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1956,7 +1965,7 @@ jobs:
 - name: pulse_cs-fts
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -1985,7 +1994,7 @@ jobs:
 - name: pulse_cs-persistent-tables
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2014,7 +2023,7 @@ jobs:
 - name: pulse_cs-pg-two-phase
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2043,7 +2052,7 @@ jobs:
 - name: pulse_cs-storage
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2072,7 +2081,7 @@ jobs:
 - name: pulse_cs-sub-transaction-limit-removal
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2101,7 +2110,7 @@ jobs:
 - name: pulse_cs-uao-regression
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2131,7 +2140,7 @@ jobs:
 - name: pulse_cs-walrepl-multinode
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2160,7 +2169,7 @@ jobs:
 - name: pulse_QP_memory-accounting
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2189,7 +2198,7 @@ jobs:
 - name: pulse_QP_workfile-tinc
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2218,7 +2227,7 @@ jobs:
 - name: pulse_QP_optimizer-functional
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2247,7 +2256,7 @@ jobs:
 - name: pulse_Gppkg
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
@@ -2276,7 +2285,7 @@ jobs:
 - name: pulse_Gppkg-redhat6
   public: true
   plan:
-  - get: nightly-trigger
+  - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
     - get: gpdb_src
