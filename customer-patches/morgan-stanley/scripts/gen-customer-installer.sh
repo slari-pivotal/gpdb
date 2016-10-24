@@ -59,7 +59,7 @@ extract_std_gppkg(){
 
 ## ======================================================================
 
-RELEASE=4.3.9.1MS28
+RELEASE=4.3.10.0MS29
 BASE_DIR=`pwd`
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
