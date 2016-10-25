@@ -3,6 +3,8 @@ require 'uri'
 
 # http://confluence.zutubi.com/display/pulse0206/Remote+API+Reference
 class PulseProxy
+  MAX_RETRY_ATTEMPTS = 3
+
   def initialize(url, username, password)
     @url = url
     @username = username
@@ -73,11 +75,11 @@ class PulseProxy
     attempts = 0
     begin
       yield
-    rescue SocketError => error
-      raise error if attempts > 3
-      puts "Got a socket error #{error} - retry ##{attempts}"
-      sleep 10
+    rescue Net::ReadTimeout, SocketError => error
+      raise error if attempts > MAX_RETRY_ATTEMPTS
+      puts "Got error: #{error} - retry ##{attempts} of #{MAX_RETRY_ATTEMPTS}"
       attempts += 1
+      sleep (10 * attempts)
       retry
     end
   end
