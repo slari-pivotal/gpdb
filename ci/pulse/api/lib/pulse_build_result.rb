@@ -11,7 +11,7 @@ class PulseBuildResult
   end
 
   def build_successful?
-    @build_result['succeeded'] == "succeeded"
+    @build_result['succeeded']
   end
 
   def print_build_stats
