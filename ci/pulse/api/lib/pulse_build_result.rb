@@ -43,7 +43,9 @@ class PulseBuildResult
       uri_string = [@pulse_options.url, artifact["permalink"], URI.escape(artifact_name)].join("")
       puts "\n= #{artifact_name} @ #{uri_string} =\n"
       response = fetch_uri(uri_string)
-      puts response.body
+      response.body.split("\n").each do |line|
+        puts colorize(line)
+      end
     end
   end
 
@@ -57,4 +59,24 @@ class PulseBuildResult
       response.error!
     end
   end
+
+  def colorize(message)
+    colors = {
+      :red => 31,
+      :green => 32,
+      :yellow => 33,
+      :white => 37
+    }
+    color_code = 37
+    case message
+    when /FAIL|Traceback|, line \d+, in/i
+      color_code = colors[:red]
+    when /\|PASS|ms ... ok/
+      color_code = colors[:green]
+    when /ms ... skipped|Ran \d+ tests in/
+      color_code = colors[:yellow]
+    end
+    "\e[#{color_code}m#{message}\e[0m"
+  end
+
 end
