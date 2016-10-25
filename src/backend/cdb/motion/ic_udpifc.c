@@ -1789,7 +1789,7 @@ destroyConnHashTable(ConnHashTable *ht)
 			if (ht->cxt)
 				pfree(trash);
 			else
-				free(ht->table);
+				free(trash);
 		}
 	}
 
@@ -1797,6 +1797,9 @@ destroyConnHashTable(ConnHashTable *ht)
 		pfree(ht->table);
 	else
 		free(ht->table);
+
+	ht->table = NULL;
+	ht->size = 0;
 }
 
 /*
