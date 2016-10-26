@@ -33,7 +33,12 @@ This document describes the steps required to produce a release specific to Morg
 	We attempted to refactor the pipelines to unblock this but ran into issues.
 4. Create the pre-requisites as required by the pipeline
 	* Create and check in a new credential file with updated parameter values (git branch and s3 bucket) in [gpdb-ci-deployments](https://www.github.com/greenplum-db/gpdb-ci-deployments)
+	  + Create the credential file by copying from the corresponding release branch file. It will have many extraneous values, but should be the most up-to-date
+		+ Add in the variable `noarch-toolchain-snowflakes-bucket`, most easily by copying from the previous Morgan Stanley release's credentials file. This configures where to get the Madlib gppkg from.
+		+ Ask the Toolsmiths if the auto-push to FTP feature is enabled yet. If not, you'll have to upload it manually
 	* Ensure that a new buckets are created to avoid overwriting the artifacts, and make the buckets "versioned"
 5. Fly set a new pipeline, push the files to git and start it.
+6. Should the morgan-stanley/README.md be updated with MD5's from the end of the build process?
+7. Make sure it gets up to the FTP server and Morgan Stanley receives it
 
 You should see the gpdb server and clients artifacts generated in `<main_bucket_name>/morganstanleydeliverables` packaged as required by MS after pipeline completion.
