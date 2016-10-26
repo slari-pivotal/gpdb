@@ -155,6 +155,15 @@ make installcheck-good
 ```
 
 ## Development with Docker (alpha)
+
+Docker can be set up via script or manually:
+
+### Docker setup script for mounted (auto-sync) volume 
+
+This uses the beta, native macOS app for docker. Follow the readme and the script at gpdb4/docker/mounted_volume/
+
+### Docker manual setup
+
 We provide a docker image with all dependencies required to compile and test
 GPDB. You can view the dependency dockerfile at `./docker/base/Dockerfile`.
 The image is hosted on docker hub at `pivotaldata/gpdb4-devel`. This docker
