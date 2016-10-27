@@ -141,6 +141,7 @@ extern bool fullPageWrites;
 extern bool enable_partition_rules;
 
 extern bool gp_hash_index;
+extern int listenerBacklog;
 
 /* GUC lists for gp_guc_list_show().  (List of struct config_generic) */
 List       *gp_guc_list_for_explain;
@@ -5855,6 +5856,16 @@ static struct config_int ConfigureNamesInt[] =
 		},
 		&interconnect_setup_timeout,
 		7200, 0, 7200, NULL, NULL
+	},
+
+	{
+		{"gp_interconnect_tcp_listener_backlog", PGC_USERSET, GP_ARRAY_TUNING,
+			gettext_noop("Size of the listening queue for each TCP interconnect socket"),
+			gettext_noop("Cooperate with kernel parameter net.core.somaxconn and net.ipv4.tcp_max_syn_backlog to tune network performance."),
+			GUC_NOT_IN_SAMPLE | GUC_GPDB_ADDOPT
+		},
+		&listenerBacklog,
+		128, 0, 65535, NULL, NULL
 	},
 
 	{
