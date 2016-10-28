@@ -273,7 +273,7 @@ jobs:
         file: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
     - put: sync_tools_gpdb_centos
       params:
-        file: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+        file: gpdb_artifacts/sync_tools_gpdb.tar.gz
 
 # Stage 2: Installcheck and Python Unit Tests
 
