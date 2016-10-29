@@ -453,7 +453,7 @@ jobs:
   - aggregate:
     - put: ms_installer_rhel5_gpdb_rc
       params:
-        file: ms_installer_rhel5_gpdb_rc/greenplum-db-4.3.10MS29-build-1-rhel5-x86_64.zip
+        file: ms_installer_rhel5_gpdb_rc/greenplum-db-4.3.10.0MS29-build-1-rhel5-x86_64.zip
     - put: ms_installer_rhel5_gpdb_rc_md5
       params:
         file: ms_installer_rhel5_gpdb_rc/greenplum-db-4.3.10.0MS29-build-1-rhel5-x86_64.zip.md5
