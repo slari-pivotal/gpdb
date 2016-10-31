@@ -26,3 +26,4 @@ table_functions.out
 tidycat2.out
 tpch500GB.out
 partindex_test.out
+guc_env_var.out
