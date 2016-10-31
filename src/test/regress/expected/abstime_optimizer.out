@@ -37,7 +37,6 @@ INSERT INTO ABSTIME_TBL (f1) VALUES ('bad date format');
 ERROR:  invalid input syntax for type abstime: "bad date format"
 INSERT INTO ABSTIME_TBL (f1) VALUES ('Jun 10, 1843');
 ERROR:  cannot convert abstime "invalid" to timestamp
-ERROR:  GPDB exception. Aborting PQO plan generation. (CGPOptimizer.cpp:73)
 -- test abstime operators
 SELECT '' AS eight, * FROM ABSTIME_TBL ORDER BY 2;
  eight |              f1              
