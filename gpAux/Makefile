@@ -702,7 +702,7 @@ else
 	GPOPT_UDF_FLAGS := -m64 -shared
 endif
 
-VERSION:=$(shell [ -f ../VERSION ] && perl -pe 's, ,-,g' ../VERSION)
+win32_GP_VERSION := 4.3-g$(shell git rev-parse --short HEAD)
 
 ifeq "$(findstring win,$(BLD_ARCH))" "win"
 BLD_PACKAGING_PID:=$(shell ssh build@harpy 'echo $$$$')
@@ -749,7 +749,7 @@ else
 
 ifneq "$(findstring win,$(BLD_ARCH))" "win"
 	cd client/install/src/unix/ && \
-	  $(MAKE) TAR=$(TAR) PRODUCT=Connectivity PACKAGE=greenplum-connectivity README=GPConnectUnix VERSION=$(VERSION) INSTALL_SRC=$(CONNECTIVITYINSTLOC) INSTALL_DIR=../../../..
+	  $(MAKE) TAR=$(TAR) PRODUCT=Connectivity PACKAGE=greenplum-connectivity README=GPConnectUnix INSTALL_SRC=$(CONNECTIVITYINSTLOC) INSTALL_DIR=../../../..
 else
 	if [ "$(BLD_PACKAGING_PID)" = "" ]; then \
 	    echo "ERROR: BLD_PACKAGING_PID must have a value for Windows packaging operations; check your Makefile"; \
@@ -759,9 +759,9 @@ else
 	ssh $(WIX_PACKAGER) 'mkdir -p $(BLD_PACKAGING_PID)/packaging/src/windows'
 	tar cf - -C client/install/src/windows . | ssh $(WIX_PACKAGER) 'tar xf - -C $(BLD_PACKAGING_PID)/packaging/src/windows/'
 	tar cf - -C $(dir $(CONNECTIVITYINSTLOC)) $(notdir $(CONNECTIVITYINSTLOC)) | ssh $(WIX_PACKAGER) 'tar xf - -C $(BLD_PACKAGING_PID)/packaging/'
-	ssh $(WIX_PACKAGER) 'cd $(BLD_PACKAGING_PID)/packaging/src/windows/ && make PACKAGE=greenplum-$@ VERSION=$(VERSION) SRCDIR=../../$(notdir $(CONNECTIVITYINSTLOC))'
-	scp $(WIX_PACKAGER):$(BLD_PACKAGING_PID)/packaging/greenplum-$@-$(VERSION)-WinXP-x86_32.msi .
-	chmod 755 greenplum-$@-$(VERSION)-WinXP-x86_32.msi
+	ssh $(WIX_PACKAGER) 'cd $(BLD_PACKAGING_PID)/packaging/src/windows/ && make PACKAGE=greenplum-$@ VERSION=$(win32_GP_VERSION) SRCDIR=../../$(notdir $(CONNECTIVITYINSTLOC))'
+	scp $(WIX_PACKAGER):$(BLD_PACKAGING_PID)/packaging/greenplum-$@-$(win32_GP_VERSION)-WinXP-x86_32.msi .
+	chmod 755 greenplum-$@-$(win32_GP_VERSION)-WinXP-x86_32.msi
 	ssh $(WIX_PACKAGER) 'rm -rf $(BLD_PACKAGING_PID)'
 endif
 endif
@@ -801,7 +801,7 @@ endif
 
 ifneq "$(findstring win,$(BLD_ARCH))" "win"
 	cd client/install/src/unix/ && \
-	  $(MAKE) TAR=$(TAR) PRODUCT=Clients PACKAGE=greenplum-clients README=GPClientToolsUnix VERSION=`perl -pe 's, ,-,g' ../../../../../VERSION` INSTALL_SRC=$(CLIENTINSTLOC) INSTALL_DIR=../../../..
+	  $(MAKE) TAR=$(TAR) PRODUCT=Clients PACKAGE=greenplum-clients README=GPClientToolsUnix INSTALL_SRC=$(CLIENTINSTLOC) INSTALL_DIR=../../../..
 else
 	if [ "$(BLD_PACKAGING_PID)" = "" ]; then \
 	    echo "ERROR: BLD_PACKAGING_PID must have a value for Windows packaging operations; check your Makefile"; \
@@ -811,9 +811,9 @@ else
 	ssh $(WIX_PACKAGER) 'mkdir -p $(BLD_PACKAGING_PID)/packaging/src/windows'
 	tar cf - -C client/install/src/windows . | ssh $(WIX_PACKAGER) 'tar xf - -C $(BLD_PACKAGING_PID)/packaging/src/windows/'
 	tar cf - -C $(dir $(CLIENTINSTLOC)) $(notdir $(CLIENTINSTLOC)) | ssh $(WIX_PACKAGER) 'tar xf - -C $(BLD_PACKAGING_PID)/packaging/'
-	ssh $(WIX_PACKAGER) 'cd $(BLD_PACKAGING_PID)/packaging/src/windows/ && make PACKAGE=greenplum-$@ VERSION=$(VERSION) SRCDIR=../../$(notdir $(CLIENTINSTLOC))'
-	scp $(WIX_PACKAGER):$(BLD_PACKAGING_PID)/packaging/greenplum-$@-$(VERSION)-WinXP-x86_32.msi .
-	chmod 755 greenplum-$@-$(VERSION)-WinXP-x86_32.msi
+	ssh $(WIX_PACKAGER) 'cd $(BLD_PACKAGING_PID)/packaging/src/windows/ && make PACKAGE=greenplum-$@ VERSION=$(win32_GP_VERSION) SRCDIR=../../$(notdir $(CLIENTINSTLOC))'
+	scp $(WIX_PACKAGER):$(BLD_PACKAGING_PID)/packaging/greenplum-$@-$(win32_GP_VERSION)-WinXP-x86_32.msi .
+	chmod 755 greenplum-$@-$(win32_GP_VERSION)-WinXP-x86_32.msi
 	ssh $(WIX_PACKAGER) 'rm -rf $(BLD_PACKAGING_PID)'
 endif
 endif
@@ -875,7 +875,7 @@ endif
 
 ifneq "$(findstring win,$(BLD_ARCH))" "win"
 	cd client/install/src/unix/ && \
-	  $(MAKE) TAR=$(TAR) PRODUCT=Loaders PACKAGE=greenplum-loaders README=GPLoadToolsUnix VERSION=`perl -pe 's, ,-,g' ../../../../../VERSION` INSTALL_SRC=$(LOADERSINSTLOC) INSTALL_DIR=../../../..
+	  $(MAKE) TAR=$(TAR) PRODUCT=Loaders PACKAGE=greenplum-loaders README=GPLoadToolsUnix INSTALL_SRC=$(LOADERSINSTLOC) INSTALL_DIR=../../../..
 else
 	if [ "$(BLD_PACKAGING_PID)" = "" ]; then \
 	    echo "ERROR: BLD_PACKAGING_PID must have a value for Windows packaging operations; check your Makefile"; \
@@ -885,9 +885,9 @@ else
 	ssh $(WIX_PACKAGER) 'mkdir -p $(BLD_PACKAGING_PID)/packaging/src/windows'
 	tar cf - -C client/install/src/windows . | ssh $(WIX_PACKAGER) 'tar xf - -C $(BLD_PACKAGING_PID)/packaging/src/windows/'
 	tar cf - -C $(dir $(LOADERSINSTLOC)) $(notdir $(LOADERSINSTLOC)) | ssh $(WIX_PACKAGER) 'tar xf - -C $(BLD_PACKAGING_PID)/packaging/'
-	ssh $(WIX_PACKAGER) 'cd $(BLD_PACKAGING_PID)/packaging/src/windows/ && make PACKAGE=greenplum-$@ VERSION=$(VERSION) SRCDIR=../../$(notdir $(LOADERSINSTLOC))'
-	scp $(WIX_PACKAGER):$(BLD_PACKAGING_PID)/packaging/greenplum-$@-$(VERSION)-WinXP-x86_32.msi .
-	chmod 755 greenplum-$@-$(VERSION)-WinXP-x86_32.msi
+	ssh $(WIX_PACKAGER) 'cd $(BLD_PACKAGING_PID)/packaging/src/windows/ && make PACKAGE=greenplum-$@ VERSION=$(win32_GP_VERSION) SRCDIR=../../$(notdir $(LOADERSINSTLOC))'
+	scp $(WIX_PACKAGER):$(BLD_PACKAGING_PID)/packaging/greenplum-$@-$(win32_GP_VERSION)-WinXP-x86_32.msi .
+	chmod 755 greenplum-$@-$(win32_GP_VERSION)-WinXP-x86_32.msi
 	ssh $(WIX_PACKAGER) 'rm -rf $(BLD_PACKAGING_PID)'
 endif
 endif
