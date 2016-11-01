@@ -10,7 +10,6 @@ groups:
   - compile_gpdb_centos7
   - compile_gpdb_sles
   - cs-fts_centos
-  - cs-storage_centos
   - cs-subtransaction_centos
   - cs-uao_centos
   - icb_orca_centos
