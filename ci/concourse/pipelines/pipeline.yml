@@ -65,6 +65,8 @@ groups:
   - pulse_Gppkg-redhat6
   - pulse_CCLE
   - pulse_CCLE-sles11sp4
+  - pulse_mpp-interconnect
+  - pulse_mpp-interconnect-sles
 
 - name: CentOS/RHEL
   jobs:
@@ -87,6 +89,7 @@ groups:
   - manual_testing_on_pulse_centos
   - manual_appliance_testing_centos
   - push_to_pivnet_manually_centos
+  - pulse_mpp-interconnect
 - name: SLES
   jobs:
   - compile_gpdb_sles
@@ -96,6 +99,7 @@ groups:
   - gpdb_sync_to_dist
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_sles
+  - pulse_mpp-interconnect-sles
 - name: Pulse
   jobs:
   - gpdb_sync_to_dist
@@ -130,6 +134,8 @@ groups:
   - pulse_Gppkg-redhat6
   - pulse_CCLE
   - pulse_CCLE-sles11sp4
+  - pulse_mpp-interconnect
+  - pulse_mpp-interconnect-sles
 - name: CS
   jobs:
   - cs-fts_centos
@@ -2463,6 +2469,64 @@ jobs:
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE-sles11sp4"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_mpp-interconnect
+  public: true
+  plan:
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "mpp-interconnect"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "mpp-interconnect"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_mpp-interconnect-sles
+  public: true
+  plan:
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_sles11_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_sles11_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "mpp-interconnect-sles"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "mpp-interconnect-sles"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
