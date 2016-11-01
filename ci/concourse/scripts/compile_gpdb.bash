@@ -50,11 +50,13 @@ function export_gpdb() {
 
 function export_gpdb_extensions() {
   pushd gpdb_src/gpAux
-    if ls greenplum-*zip* 1>/dev/null 2>&1; then
+    if [ -f greenplum-*zip* ] ; then
       chmod 755 greenplum-*zip*
       cp greenplum-*zip* "$GPDB_ARTIFACTS_DIR"/
     fi
-    chmod 755 "$GPDB_ARTIFACTS_DIR"/*.gppkg
+    if [ -f "$GPDB_ARTIFACTS_DIR"/*.gppkg ] ; then
+      chmod 755 "$GPDB_ARTIFACTS_DIR"/*.gppkg
+    fi
   popd
 }
 
@@ -65,6 +67,9 @@ function _main() {
       ;;
     sles)
       prep_env_for_sles
+      ;;
+    win32)
+      export BLD_ARCH=win32
       ;;
     *)
       echo "only centos and sles are supported TARGET_OS'es"
@@ -84,7 +89,11 @@ function _main() {
   fi
   build_gpdb "${BLD_TARGET_OPTION[@]}"
   build_gppkg
-  unittest_check_gpdb
+  if [ "$TARGET_OS" != "win32" ] ; then
+    # Don't unit test when cross compiling. Tests don't build because they
+    # require `./configure --with-zlib`.
+    unittest_check_gpdb
+  fi
   export_gpdb
   export_gpdb_extensions
 }
