@@ -213,7 +213,7 @@ LDD=$($(BLD_ARCH)_LDD)
 endif
 
 LDD_FILTER_NULL=cat
-LDD_FILTER=$(GREP) '\=>' | awk '{print $$3}' | perl -p -i -e 's,\.so.*$$,\.so,'
+LDD_FILTER=$(GREP) '\=>' | $(GREP) -v 'linux-vdso.so' | awk '{print $$3}' | perl -p -i -e 's,\.so.*$$,\.so,'
 aix5_ppc_32_LDD_FILTER=$(GREP) -v 'needs:' | $(AWK) -F\( '{print $$1}' | $(AWK) '{print $$1}' | $(GREP) -E -v '^/unix$$'
 aix5_ppc_64_LDD_FILTER=$(GREP) -v 'needs:' | $(AWK) -F\( '{print $$1}' | $(AWK) '{print $$1}' | $(GREP) -E -v '^/unix$$'
 osx106_x86_LDD_FILTER=awk '{print $$1}' | perl -p -i -e 's,\.[0-9\.]*\.$(LDD_LIB_SUFFIX)$$,\.,'
