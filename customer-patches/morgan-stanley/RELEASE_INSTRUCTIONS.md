@@ -8,7 +8,7 @@ This document describes the steps required to produce a release specific to Morg
 ### Steps
 1. Increment the last release number by 1 for a new MS release.
 2. Checkout a new branch for MS including the new release number.
-	
+
 	```
 	$ git checkout -b <new_branch> <base_branch>
 	$ git checkout -b 4.3.9.0MS27 4.3.9.0
@@ -37,8 +37,50 @@ This document describes the steps required to produce a release specific to Morg
 		+ Add in the variable `noarch-toolchain-snowflakes-bucket`, most easily by copying from the previous Morgan Stanley release's credentials file. This configures where to get the Madlib gppkg from.
 		+ Ask the Toolsmiths if the auto-push to FTP feature is enabled yet. If not, you'll have to upload it manually
 	* Ensure that a new buckets are created to avoid overwriting the artifacts, and make the buckets "versioned"
-5. Fly set a new pipeline, push the files to git and start it.
-6. Should the morgan-stanley/README.md be updated with MD5's from the end of the build process?
+5. Fly set a new pipeline, push the files to git. The pipeline should start
+   automatically
+6. Find the packages. You should see the gpdb server and clients artifacts
+	 generated in S3 at `<main_bucket_name>/morganstanleydeliverables` packaged
+	 as required by MS after pipeline completion.
 7. Make sure it gets up to the FTP server and Morgan Stanley receives it
 
-You should see the gpdb server and clients artifacts generated in `<main_bucket_name>/morganstanleydeliverables` packaged as required by MS after pipeline completion.
+#### Finding the packages
+
+The toolsmiths are looking to automate how we push to FTP:
+[https://www.pivotaltracker.com/story/show/128436597]()
+Until then...
+
+1. From the concourse pipeline, observe the 4 output resources at the end of
+	 the pipeline (thin black rectangles between
+	 "apply_morgan_stanley_specific_patches" and "gpdb_sync_to_dist")
+2. Clicking into each, you'll see one version ID. Click on the version_id to
+	 reveal the metadata for that artifact
+3. Going to the URL should give you an error, but reading the XML will reveal
+	 where to find these.
+4. Two options
+
+Option "CLI":
+
+- Install the `awscli` with `pip install awscli`
+- `aws configure` and log in with your Access Key ID and Secret Access Key,
+	which you would create for your pivotal-pa-toolsmiths AWS account IAM user
+- For each artifact, send a command like
+  `aws s3 cp s3://bucket-name/directory-prefix/filename .`; in a recent case:
+    + bucket-name is gpdb-4.3.10.0ms29-concourse
+    + directory-prefix is morganstanleydeliverables
+    + filename is shown in the Concourse UI under metadata for a particular
+		  resource version
+- This works because you'll get the latest version. If you needed to get a
+	version which was not the latest...	[We'll have to research that answer
+	more.](https://www.pivotaltracker.com/story/show/133540511)
+
+Option "GUI":
+
+- Go to the pivotal-pa-toolsmiths AWS account with your IAM user
+- In S3, go to the gpdb-4.3.10.0ms29-concourse bucket,
+	morganstanleydeliverables directory prefix
+- Or just go straight to
+	[https://console.aws.amazon.com/s3/home?region=us-west-2#&bucket=gpdb-4.3.10.0ms29-concourse&prefix=morganstanleydeliverables/]()
+- Right click to download
+- ALERT: don't go to "deliverables". [Story in Toolsmiths backlog to clarify
+	the naming.](https://www.pivotaltracker.com/story/show/133541875)
