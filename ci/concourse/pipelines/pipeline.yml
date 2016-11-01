@@ -63,6 +63,8 @@ groups:
   - pulse_QP_optimizer-functional
   - pulse_Gppkg
   - pulse_Gppkg-redhat6
+  - pulse_CCLE
+  - pulse_CCLE-sles11sp4
 
 - name: CentOS/RHEL
   jobs:
@@ -126,6 +128,8 @@ groups:
   - pulse_QP_optimizer-functional
   - pulse_Gppkg
   - pulse_Gppkg-redhat6
+  - pulse_CCLE
+  - pulse_CCLE-sles11sp4
 - name: CS
   jobs:
   - cs-fts_centos
@@ -149,7 +153,6 @@ groups:
   - pulse_QP_memory-accounting
   - pulse_QP_workfile-tinc
   - pulse_QP_optimizer-functional
-
 - name: Pulse_MU
   jobs:
   - pulse_MU_BehaveBackupRestore
@@ -573,6 +576,14 @@ resources:
   type: time
   source:
     location: America/Los_Angeles
+    start: 1:00 AM
+    stop: 2:00 AM
+
+- name: weekly-trigger-pulse
+  type: time
+  source:
+    location: America/Los_Angeles
+    days: Sunday
     start: 1:00 AM
     stop: 2:00 AM
 
@@ -1585,7 +1596,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-
 - name: pulse_MU_BehaveGPCheckcat
   public: true
   plan:
@@ -2224,7 +2234,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-
 - name: pulse_cs-walrepl-multinode
   public: true
   plan:
@@ -2399,6 +2408,63 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
+- name: pulse_CCLE
+  public: true
+  plan:
+  - get: weekly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_CCLE-sles11sp4
+  public: true
+  plan:
+  - get: weekly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_sles11_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_sles11_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE-sles11sp4"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE-sles11sp4"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
 
 - name: manual_testing_on_pulse_centos
   public: true
