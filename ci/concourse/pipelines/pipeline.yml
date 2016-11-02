@@ -588,7 +588,7 @@ resources:
   type: time
   source:
     location: America/Los_Angeles
-    days: Sunday
+    days: [Sunday]
     start: 1:00 AM
     stop: 2:00 AM
 
