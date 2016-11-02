@@ -15,7 +15,6 @@
 //
 //---------------------------------------------------------------------------
 
-#define ALLOW_isnan
 #include "postgres.h"
 #include "gpopt/translate/CTranslatorScalarToDXL.h"
 #include "gpopt/translate/CTranslatorQueryToDXL.h"
