@@ -47,7 +47,7 @@ This document describes the steps required to produce a release specific to Morg
 #### Finding the packages
 
 The toolsmiths are looking to automate how we push to FTP:
-[https://www.pivotaltracker.com/story/show/128436597]()
+[](https://www.pivotaltracker.com/story/show/128436597)
 Until then...
 
 1. From the concourse pipeline, observe the 4 output resources at the end of
@@ -80,7 +80,7 @@ Option "GUI":
 - In S3, go to the gpdb-4.3.10.0ms29-concourse bucket,
 	morganstanleydeliverables directory prefix
 - Or just go straight to
-	[https://console.aws.amazon.com/s3/home?region=us-west-2#&bucket=gpdb-4.3.10.0ms29-concourse&prefix=morganstanleydeliverables/]()
+	()[https://console.aws.amazon.com/s3/home?region=us-west-2#&bucket=gpdb-4.3.10.0ms29-concourse&prefix=morganstanleydeliverables/]
 - Right click to download
 - ALERT: don't go to "deliverables". [Story in Toolsmiths backlog to clarify
 	the naming.](https://www.pivotaltracker.com/story/show/133541875)
