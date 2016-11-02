@@ -2515,6 +2515,9 @@ jobs:
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    input_mapping:
+      installer_sles11_gpdb_rc: installer_rhel5_gpdb_rc
+      qautils_sles11_tarball: qautils_rhel5_tarball
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: "mpp-interconnect-sles"
@@ -2522,6 +2525,9 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    input_mapping:
+      installer_sles11_gpdb_rc: installer_rhel5_gpdb_rc
+      qautils_sles11_tarball: qautils_rhel5_tarball
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: "mpp-interconnect-sles"
