@@ -671,7 +671,6 @@ jobs:
   - task: build_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
     image: sles11-toolchain
-    privileged: true
     params:
       IVYREPO_HOST: {{ivyrepo_host}}
       IVYREPO_REALM: {{ivyrepo_realm}}
