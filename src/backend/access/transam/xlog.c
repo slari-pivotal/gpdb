@@ -1537,10 +1537,10 @@ begin:;
 			skipIssue)
 		{
 			/* Code for investigating MPP-13909, will be removed as part of the fix */
-			elog(WARNING, 
+			elog(WARNING,
 				 "ChangeTracking_PrintRelationChangeInfo hang skipIssue %s",
 				 (skipIssue ? "true" : "false"));
-			
+
 			for (int i=0; i < 24 * 60; i++)
 			{
 				pg_usleep(60000000L); /* 60 sec */
@@ -2529,7 +2529,7 @@ XLogFileInit(
 	 * holding the lock throughout this lengthy process.
 	 */
 	xlogDir = makeRelativeToTxnFilespace(XLOGDIR);
-		
+
 	if (snprintf(tmpsimple, MAXPGPATH, "xlogtemp.%d", (int) getpid()) > MAXPGPATH)
 	{
 		ereport(ERROR, (errmsg("could not generate filename xlogtemp.%d", (int)getpid())));
@@ -2686,7 +2686,7 @@ XLogFileCopy(uint32 log, uint32 seg,
 		ereport(ERROR,
 				(errmsg("could not generate filename %s/xlogtemp.%d",
 						xlogDir, (int) getpid())));
-	pfree(xlogDir);	
+	pfree(xlogDir);
 	unlink(tmppath);
 
 	elog((Debug_print_qd_mirroring ? LOG : DEBUG5), "Master Mirroring: copying xlog file '%s' to '%s'",
@@ -5795,7 +5795,7 @@ exitArchiveRecovery(TimeLineID endTLI, uint32 endLogId, uint32 endLogSeg)
 	xlogDir = makeRelativeToTxnFilespace(XLOGDIR);
 	if (snprintf(recoveryPath, MAXPGPATH, "%s/RECOVERYXLOG", xlogDir) > MAXPGPATH)
 	{
-		ereport(ERROR, (errmsg("cannot generate path %s/RECOVERYXLOG", xlogDir)));	
+		ereport(ERROR, (errmsg("cannot generate path %s/RECOVERYXLOG", xlogDir)));
 	}
 	XLogFilePath(xlogpath, ThisTimeLineID, endLogId, endLogSeg);
 
@@ -6816,7 +6816,7 @@ StartupXLOG(void)
 		 * to clear any inconsistent entries in Persistent Tables without
 		 * doing the whole redo loop below.
 		 */
-		if (record == NULL)	
+		if (record == NULL)
 		{
 			/*
 			 * There are no WAL records following the checkpoint
@@ -7636,7 +7636,7 @@ StartupXLOG_Pass4(void)
 		if (ControlFile->state == DB_IN_STANDBY_NEW_TLI_SET)
 		{
 			GpRoleValue old_role = Gp_role;
-	
+
 			/* I am privileged */
 			InitializeSessionUserIdStandalone();
 			/* Start transaction locally */
@@ -9149,8 +9149,8 @@ RecoveryRestartPoint(const CheckPoint *checkPoint)
 {
 //	int			elapsed_secs;
 	int			rmid;
-	uint _logId = 0;
-	uint _logSeg = 0;
+	unsigned int _logId = 0;
+	unsigned int _logSeg = 0;
 
 	/* use volatile pointer to prevent code rearrangement */
 	volatile XLogCtlData *xlogctl = XLogCtl;
@@ -11074,7 +11074,7 @@ StartupProcessMain(int passNum)
 
 		/*
 		 * Now we can mark our PGPROC entry with the database ID */
-		/* (We assume this is an atomic store so no lock is needed) 
+		/* (We assume this is an atomic store so no lock is needed)
 		 */
 		MyProc->databaseId = MyDatabaseId;
 
