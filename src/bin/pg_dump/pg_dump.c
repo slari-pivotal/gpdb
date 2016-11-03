@@ -832,7 +832,7 @@ main(int argc, char **argv)
 	 * Collect dependency data to assist in ordering the objects.
 	 */
 	getDependencies();
-	
+
 	setExtPartDependency(tblinfo, numTables);
 
 	/*
@@ -1077,21 +1077,20 @@ expand_oid_patterns(SimpleStringList *patterns, SimpleOidList *oids)
 	for (cell = patterns->head; cell; cell = cell->next)
 	{
 		const char *cp = cell->val;
-		const char *ch = cp;
+
 		while (*cp)
 		{
-			if (*cp < '0' || *cp > '9')
+			char *end = NULL;
+			Oid oid = atooid_endptr(cp, &end);
+			if (end == cp)
 			{
-				if (cp != ch)
-					simple_oid_list_append(oids, atooid(strndup(ch, cp - ch)));
-				ch = ++cp;
-			}
-			else
+				/* Conversion was not successful. Try the next char. */
 				++cp;
+				continue;
+			}
+			cp = end;
+			simple_oid_list_append(oids, oid);
 		}
-
-		if (cp != ch)
-			simple_oid_list_append(oids, atooid(strndup(ch, cp - ch)));
 	}
 }
 
@@ -3006,8 +3005,8 @@ getTables(int *numTables)
 		if (tblinfo[i].parrelid != 0)
 		{
 			/*
-			 * Length of tmpStr is bigger than the sum of NAMEDATALEN 
-			 * and the length of EXT_PARTITION_NAME_POSTFIX 
+			 * Length of tmpStr is bigger than the sum of NAMEDATALEN
+			 * and the length of EXT_PARTITION_NAME_POSTFIX
 			 */
 			char tmpStr[500];
 			snprintf(tmpStr, sizeof(tmpStr), "%s%s", tblinfo[i].dobj.name, EXT_PARTITION_NAME_POSTFIX);
@@ -7749,7 +7748,7 @@ dumpExternal(TableInfo *tbinfo, PQExpBuffer query, PQExpBuffer q, PQExpBuffer de
 			case 'p':
 				tabfmt = "parquet";
 				customfmt = custom_fmtopts_string(tmpstring);
-				break;	
+				break;
 			default:
 				tabfmt = "csv";
 		}

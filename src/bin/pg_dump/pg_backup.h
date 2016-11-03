@@ -30,7 +30,8 @@
 #include "libpq-fe.h"
 
 
-#define atooid(x)  ((Oid) strtoul((x), NULL, 10))
+#define atooid_endptr(x, end_ptr)  ((Oid) strtoul((x), (end_ptr), 10))
+#define atooid(x)  atooid_endptr(x, NULL)
 #define oidcmp(x,y) ( ((x) < (y) ? -1 : ((x) > (y)) ?  1 : 0) )
 #define oideq(x,y) ( (x) == (y) )
 #define oidle(x,y) ( (x) <= (y) )
