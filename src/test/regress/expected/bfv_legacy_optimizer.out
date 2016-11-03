@@ -1325,9 +1325,9 @@ AS $$
 $$ LANGUAGE plpythonu;
 -- start_ignore
 -- EXPECT to see ERROR other than SEGV. The error is like:
---     ERROR:  plpy.SPIError: function cannot execute on segment because it accesses relation "public.testdata_in" (plpython.c:4648)
+--     ERROR:  plpy.SPIError: function cannot execute on segment because it accesses relation "public.testdata_in" (plpython.c:4656)
 INSERT INTO testdata_out SELECT * FROM func_plpythonu(10);
-ERROR:  plpy.SPIError: function cannot execute on segment because it accesses relation "public.testdata_in" (plpython.c:4648)  (entry db Venkateshs-MacBook-Pro.local:15432 pid=1113) (cdbdisp.c:1326)
+ERROR:  plpy.SPIError: function cannot execute on segment because it accesses relation "public.testdata_in" (plpython.c:4656)  (entry db Venkateshs-MacBook-Pro.local:15432 pid=1113) (cdbdisp.c:1326)
 DETAIL:  
 Traceback (most recent call last):
   PL/Python function "func_plpythonu", line 3, in <module>

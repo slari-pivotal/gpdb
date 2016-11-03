@@ -971,7 +971,7 @@ $$ LANGUAGE plpythonu;
 
 -- start_ignore
 -- EXPECT to see ERROR other than SEGV. The error is like:
---     ERROR:  plpy.SPIError: function cannot execute on segment because it accesses relation "public.testdata_in" (plpython.c:4648)
+--     ERROR:  plpy.SPIError: function cannot execute on segment because it accesses relation "public.testdata_in" (plpython.c:4656)
 INSERT INTO testdata_out SELECT * FROM func_plpythonu(10);
 -- end_ignore
 
