@@ -69,12 +69,12 @@ class PulseBuildResult
     }
     color_code = 37
     case message
-    when /FAIL|Traceback|, line \d+, in/i
-      color_code = colors[:red]
     when /\|PASS|ms ... ok/
       color_code = colors[:green]
     when /ms ... skipped|Ran \d+ tests in/
       color_code = colors[:yellow]
+    when /FAIL|Traceback|, line \d+, in/i
+      color_code = colors[:red]
     end
     "\e[#{color_code}m#{message}\e[0m"
   end
