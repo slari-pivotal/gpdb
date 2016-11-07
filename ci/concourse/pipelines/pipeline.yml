@@ -1581,9 +1581,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1610,9 +1612,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1639,9 +1643,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1668,9 +1674,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1697,9 +1705,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1726,9 +1736,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1755,9 +1767,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1784,9 +1798,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1813,9 +1829,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1842,9 +1860,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1871,9 +1891,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1900,9 +1922,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1929,9 +1953,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1958,9 +1984,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1987,9 +2015,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2016,9 +2046,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2045,9 +2077,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2074,9 +2108,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2103,9 +2139,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2132,9 +2170,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2161,9 +2201,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2190,9 +2232,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2219,9 +2263,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2248,9 +2294,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2277,9 +2325,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2306,9 +2356,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2335,9 +2387,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2364,9 +2418,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2393,9 +2449,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2422,9 +2480,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2451,9 +2511,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_sles11_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_sles11_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_sles11_tarball
+    - get: qautils_tarball
+      resource: qautils_sles11_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2480,9 +2542,11 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_rhel5_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_rhel5_tarball
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2509,15 +2573,14 @@ jobs:
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
-    - get: installer_sles11_gpdb_rc
+    - get: installer_gpdb_rc
+      resource: installer_sles11_gpdb_rc
       passed: [gpdb_sync_to_dist]
-    - get: qautils_sles11_tarball
+    - get: qautils_tarball
+      resource: qautils_sles11_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    input_mapping:
-      installer_sles11_gpdb_rc: installer_rhel5_gpdb_rc
-      qautils_sles11_tarball: qautils_rhel5_tarball
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: "mpp-interconnect-sles"
@@ -2525,9 +2588,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    input_mapping:
-      installer_sles11_gpdb_rc: installer_rhel5_gpdb_rc
-      qautils_sles11_tarball: qautils_rhel5_tarball
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: "mpp-interconnect-sles"
