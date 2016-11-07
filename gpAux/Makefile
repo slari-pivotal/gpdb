@@ -78,7 +78,7 @@ export EXE_EXT=.exe
 export PY_EXT=.py
 
 # Host used for Windows packaging
-WIX_PACKAGER=build@wix-packaging
+WIX_PACKAGER=build@wix-packaging.ci.eng.pivotal.io
 endif
 
 #---------------------------------------------------------------------
