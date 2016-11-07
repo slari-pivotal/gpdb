@@ -78,7 +78,7 @@ export EXE_EXT=.exe
 export PY_EXT=.py
 
 # Host used for Windows packaging
-WIX_PACKAGER=build@harpy
+WIX_PACKAGER=build@wix-packaging
 endif
 
 #---------------------------------------------------------------------
@@ -702,10 +702,10 @@ else
 	GPOPT_UDF_FLAGS := -m64 -shared
 endif
 
-win32_GP_VERSION := 4.3-g$(shell git rev-parse --short HEAD)
+win32_GP_VERSION := 4.3.10
 
 ifeq "$(findstring win,$(BLD_ARCH))" "win"
-BLD_PACKAGING_PID:=$(shell ssh build@harpy 'echo $$$$')
+BLD_PACKAGING_PID:=$(shell ssh $(WIX_PACKAGER) 'echo $$$$')
 endif
 
 connectivity :
