@@ -50,11 +50,11 @@ function export_gpdb() {
 
 function export_gpdb_extensions() {
   pushd gpdb_src/gpAux
-    if [ -f greenplum-*zip* ] ; then
+    if ls greenplum-*zip* >/dev/null ; then
       chmod 755 greenplum-*zip*
       cp greenplum-*zip* "$GPDB_ARTIFACTS_DIR"/
     fi
-    if [ -f "$GPDB_ARTIFACTS_DIR"/*.gppkg ] ; then
+    if ls "$GPDB_ARTIFACTS_DIR"/*.gppkg >/dev/null ; then
       chmod 755 "$GPDB_ARTIFACTS_DIR"/*.gppkg
     fi
   popd
