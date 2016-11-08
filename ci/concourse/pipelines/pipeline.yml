@@ -173,6 +173,9 @@ groups:
   - pulse_MU_Kerberos-smoke
   - pulse_MU_MFR-TINC
   - pulse_MU_OpenBAR
+- name: Windows
+  jobs:
+  - compile_gpdb_windows_ccl
 
 ## ======================================================================
 ## resources
@@ -190,6 +193,13 @@ resources:
   type: docker-image
   source:
     repository: pivotaldata/centos511-java7-gpdb-dev-image
+    username: {{docker_username}}
+    password: {{docker_password}}
+
+- name: centos-mingw
+  type: docker-image
+  source:
+    repository: pivotaldata/centos-mingw
     username: {{docker_username}}
     password: {{docker_password}}
 
@@ -240,6 +250,33 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: sync_tools_gpdb_centos/sync_tools_gpdb.tar.gz
+
+- name: bin_gpdb_windows_clients
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: gpdb-windows-ccl
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    regexp: greenplum-clients-(.*)-WinXP-x86_32.msi
+
+- name: bin_gpdb_windows_connectivity
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: gpdb-windows-ccl
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    regexp: greenplum-connectivity-(.*)-WinXP-x86_32.msi
+
+- name: bin_gpdb_windows_loaders
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: gpdb-windows-ccl
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    regexp: greenplum-loaders-(.*)-WinXP-x86_32.msi
 
 - name: sync_tools_gpdb_sles
   type: s3
@@ -660,6 +697,35 @@ jobs:
     - put: sync_tools_gpdb_centos
       params:
         file: gpdb_artifacts/sync_tools_gpdb.tar.gz
+
+- name: compile_gpdb_windows_ccl
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      trigger: true
+    - get: centos-mingw
+  - task: compile_gpdb
+    file: gpdb_src/ci/concourse/compile_gpdb.yml
+    image: centos-mingw
+    params:
+      TARGET_OS: win32
+      TARGET_OS_VERSION:
+      BLD_TARGETS: clients connectivity loaders
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
+  - aggregate:
+    - put: bin_gpdb_windows_clients
+      params:
+        file: gpdb_artifacts/greenplum-clients-*-WinXP-x86_32.msi
+    - put: bin_gpdb_windows_connectivity
+      params:
+        file: gpdb_artifacts/greenplum-connectivity-*-WinXP-x86_32.msi
+    - put: bin_gpdb_windows_loaders
+      params:
+        file: gpdb_artifacts/greenplum-loaders-*-WinXP-x86_32.msi
 
 - name: compile_gpdb_sles
   public: true
