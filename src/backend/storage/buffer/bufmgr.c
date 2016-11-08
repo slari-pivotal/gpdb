@@ -1223,6 +1223,16 @@ BufferAlloc_SMgr(SMgrRelation smgr,
 		 */
 		buf = &BufferDescriptors[buf_id];
 
+		if (!RelFileNodeEquals(buf->tag.rnode, smgr->smgr_rnode))
+		{
+			LWLockRelease(newPartitionLock);
+			elog(ERROR, "buffer tag mismatch: found %d/%d/%d buffer when "
+				 "looking for %d/%d/%d", buf->tag.rnode.spcNode,
+				 buf->tag.rnode.dbNode, buf->tag.rnode.relNode,
+				 smgr->smgr_rnode.spcNode, smgr->smgr_rnode.dbNode,
+				 smgr->smgr_rnode.relNode);
+		}
+
 		valid = PinBuffer(buf);
 
 		/* Can release the mapping lock as soon as we've pinned it */
@@ -1417,6 +1427,16 @@ BufferAlloc_SMgr(SMgrRelation smgr,
 			/* remaining code should match code at top of routine */
 
 			buf = &BufferDescriptors[buf_id];
+
+			if (!RelFileNodeEquals(buf->tag.rnode, smgr->smgr_rnode))
+			{
+				LWLockRelease(newPartitionLock);
+				elog(ERROR, "buffer tag mismatch: found %d/%d/%d buffer when "
+					 "looking for %d/%d/%d", buf->tag.rnode.spcNode,
+					 buf->tag.rnode.dbNode, buf->tag.rnode.relNode,
+					 smgr->smgr_rnode.spcNode, smgr->smgr_rnode.dbNode,
+					 smgr->smgr_rnode.relNode);
+			}
 
 			valid = PinBuffer(buf);
 
