@@ -36,7 +36,7 @@ all : devel
 .PHONY : autoconf
 
 # Internal functions which are invoked by other rules within this makefile
-.PHONY : groupSession mkgpfdist mkgpperfmon copydocs mgmtcopy copylibs copyoptimizerlibs
+.PHONY : groupSession mkgpperfmon copydocs mgmtcopy copylibs copyoptimizerlibs
 .PHONY : greenplum_path RECONFIG HOMEDEP GPROOTDEP GPROOTDEP GPROOTFAIL
 .PHONY : gccVersionCheck clients loaders connectivity gppkg
 
@@ -362,7 +362,6 @@ define BUILD_STEPS
 	cd $(BUILDDIR) && $(MAKE) $(parallelexec_opts) install
 	#@$(MAKE) greenplum_path INSTLOC=$(INSTLOC)
 	#@$(MAKE) groupSession INSTLOC=$(INSTLOC)
-	@$(MAKE) mkgpfdist INSTCFLAGS=$(INSTCFLAGS) INSTLOC=$(INSTLOC)
 	@$(MAKE) mkgps3ext INSTLOC=$(INSTLOC)
 	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
 	#@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
@@ -401,7 +400,6 @@ ifeq "$(BLD_GPDB_BUILDSET)" "aix_subset"
 define BUILD_STEPS
 	rm -rf $(INSTLOC)
 	cd $(BUILDDIR)/src/include/ && $(MAKE) install
-	@$(MAKE) mkgpfdist INSTLOC=$(INSTLOC)
 	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
 	@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
 	@$(MAKE) copylibs INSTLOC=$(INSTLOC)
@@ -440,7 +438,6 @@ define BUILD_STEPS
 	if [ "$(findstring win,$(BLD_ARCH))" != "win" ]; then \
 	  cd extensions/gpmapreduce/ && $(MAKE) install ; \
 	fi
-	@$(MAKE) mkgpfdist INSTCFLAGS=$(INSTCFLAGS) INSTLOC=$(INSTLOC)
 	cp -p $(GPMGMT)/bin/gpload $(INSTLOC)/bin/gpload
 	cp -p $(GPMGMT)/bin/gpload.py $(INSTLOC)/bin/gpload.py
 	$(MAKE) copylibs INSTLOC=$(INSTLOC)
@@ -1024,10 +1021,6 @@ set_scripts_version :
 groupSession:
 	@cd $(GPMGMT)/bin && $(MAKE)
 
-mkgpfdist:
-	@cd extensions && $(MAKE) mkgpfdist OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
-	cp -p extensions/gpfdist/gpfdist$(EXE_EXT) $(INSTLOC)/bin/
-
 mkgps3ext:
 	@cd extensions && $(MAKE) mks3ext OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
 
@@ -1110,7 +1103,6 @@ ifeq "$(findstring $(BLD_ARCH),$(GPPKG_PLATFORMS))" ""
 	rm -f $(INSTLOC)/bin/gppkg
 endif
 	cp -rp $(GPMGMT)/sbin/* $(INSTLOC)/sbin/.
-	cp -p extensions/gpfdist/gpfdist$(EXE_EXT) $(INSTLOC)/bin/
 	cp $(GPPGDIR)/src/test/regress/*.pl $(INSTLOC)/bin
 	if [ ! -d ${INSTLOC}/docs ] ; then mkdir ${INSTLOC}/docs ; fi
 	if [ -d $(GPMGMT)/doc ]; then cp -rp $(GPMGMT)/doc $(INSTLOC)/docs/cli_help; fi
@@ -1340,7 +1332,6 @@ clean :
 	@if [ -d Release -a -f Release/GNUmakefile ]; then cd Release; $(MAKE) clean; fi
 	@if [ -d $(GPPGDIR) -a -f $(GPPGDIR)/GNUmakefile ]; then cd $(GPPGDIR); $(MAKE) clean; fi
 	@if [ -d $(GPMGMT)/bin ]; then cd $(GPMGMT)/bin; $(MAKE) clean; fi
-	@if [ -d extensions/gpfdist ]; then cd extensions/gpfdist; $(MAKE) clean; fi
 	@if [ -d $(GPPERFMON) ]; then cd $(GPPERFMON); $(MAKE) clean; fi
 	@if [ -d client/odbc/src/Makefile ]; then cd client/odbc/src; $(MAKE) clean; fi
 
@@ -1350,7 +1341,6 @@ distclean :
 	@if [ -d Release -a -f Release/GNUmakefile ]; then cd Release; $(MAKE) distclean; fi
 	@if [ -d $(GPPGDIR) -a -f $(GPPGDIR)/GNUmakefile ]; then cd $(GPPGDIR); $(MAKE) distclean; fi
 	@if [ -d $(GPMGMT)/bin ]; then cd $(GPMGMT)/bin; $(MAKE) distclean; fi
-	@if [ -d extensions/gpfdist ]; then cd extensions/gpfdist; $(MAKE) clean; fi
 	@if [ -d $(GPPERFMON) ]; then cd $(GPPERFMON); $(MAKE) clean; fi
 	@if [ -d client/odbc/src/Makefile ]; then cd client/odbc/src; $(MAKE) clean; fi
 	@rm -f VERSION
@@ -1369,14 +1359,15 @@ bouncer:
 installcheck-good :
 	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
 	@cd $(BUILDDIR)/src/test/regress && $(MAKE) installcheck-good && gpcheckcat -A
-
-installcheck-extensions :
-	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
 	@cd extensions && $(MAKE) installcheck
 
 installcheck-parallel :
 	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
 	@cd $(BUILDDIR)/src/test/regress && $(MAKE) installcheck-parallel
+	@cd extensions && $(MAKE) installcheck
+
+installcheck-extensions :
+	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
 	@cd extensions && $(MAKE) installcheck
 
 installcheck-olaptest :

@@ -28,7 +28,7 @@ test: partition
 test: gp_hashagg gp_dqa exttab1 privileges
 test: column_compression rangefuncs_cdb temp
 
-test: gphdfs custom_format gpcopy appendonly filter gpctas gpdist matrix gpdtm_plpgsql
+test: custom_format gpcopy appendonly filter gpctas gpdist matrix gpdtm_plpgsql
 test: notin with_clause eagerfree toast mapred gpparams tidycat tidycat2 aocs
 test: ic gp_numeric_agg foreign_data
 test: filespace trig xml auth_constraint role rle portals_updatable plpgsql_cache percentile timeseries resource_queue_function gp_optimizer co_nestloop_idxscan pg_stat_last_operation
