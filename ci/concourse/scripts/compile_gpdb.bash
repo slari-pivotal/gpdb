@@ -60,6 +60,14 @@ function export_gpdb_extensions() {
   popd
 }
 
+function export_gpdb_win32_ccl() {
+  pushd gpdb_src/gpAux
+    if [ -f "$(find . -maxdepth 1 -name 'greenplum-*.msi' -print -quit)" ] ; then
+      cp greenplum-*.msi "$GPDB_ARTIFACTS_DIR"/
+    fi
+  popd
+}
+
 function _main() {
   case "$TARGET_OS" in
     centos)
@@ -96,6 +104,7 @@ function _main() {
   fi
   export_gpdb
   export_gpdb_extensions
+  export_gpdb_win32_ccl
 }
 
 _main "$@"
