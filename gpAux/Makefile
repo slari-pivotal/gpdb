@@ -702,7 +702,7 @@ else
 	GPOPT_UDF_FLAGS := -m64 -shared
 endif
 
-win32_GP_VERSION := 4.3.10
+win32_GP_VERSION := $(shell $(GPPGDIR)/getversion --short)
 
 ifeq "$(findstring win,$(BLD_ARCH))" "win"
 BLD_PACKAGING_PID:=$(shell ssh $(WIX_PACKAGER) 'echo $$$$')
