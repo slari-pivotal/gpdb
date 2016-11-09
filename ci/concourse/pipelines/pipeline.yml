@@ -10,7 +10,9 @@ groups:
   - compile_gpdb_centos7
   - compile_gpdb_sles
   - cs-fts_centos
+  - cs-storage_centos
   - cs-subtransaction_centos
+  - cs-persistent-tables_centos
   - cs-uao_centos
   - icb_orca_centos
   - icb_planner_centos
@@ -138,7 +140,9 @@ groups:
 - name: CS
   jobs:
   - cs-fts_centos
+  - cs-storage_centos
   - cs-subtransaction_centos
+  - cs-persistent-tables_centos
   - cs-uao_centos
   - gpdb_rc_packaging_centos
   - gpdb_sync_to_dist
@@ -1038,6 +1042,53 @@ jobs:
         MAKE_TEST_COMMAND: fts_transitions_part03
         TEST_OS: centos
 
+- name: cs-storage_centos
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos511-java7-gpdb-dev-image
+  - aggregate:
+    - task: aocoalter_catalog_loaders
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: aocoalter_catalog_loaders
+        TEST_OS: centos
+    - task: storage_persistent_filerep_accessmethods_and_vacuum
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: storage_persistent_filerep_accessmethods_and_vacuum
+        TEST_OS: centos
+    - task: filerep_end_to_end_xlog_ctlog_cons
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: filerep_end_to_end_xlog_ctlog_cons
+        TEST_OS: centos
+    - task: storage_queryfinish_and_transactionmanagement
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: storage_queryfinish_and_transactionmanagement
+        TEST_OS: centos
+    - task: storage_vacuum_xidlimits
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: storage_vacuum_xidlimits
+        TEST_OS: centos
+
 - name: cs-subtransaction_centos
   public: true
   plan:
@@ -1059,6 +1110,53 @@ jobs:
     params:
       MAKE_TEST_COMMAND: sub_transaction_limit_removal
       TEST_OS: centos
+
+- name: cs-persistent-tables_centos
+  public: true
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos511-java7-gpdb-dev-image
+  - aggregate:
+    - task: crash_recovery_part_1
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: crash_recovery_part_1
+        TEST_OS: centos
+    - task: crash_recovery_part_3
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: crash_recovery_part_3
+        TEST_OS: centos
+    - task: crash_recovery_part_4
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: crash_recovery_part_4
+        TEST_OS: centos
+    - task: drop_db
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: drop_db
+        TEST_OS: centos
+    - task: oom
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos511-java7-gpdb-dev-image
+      params:
+        MAKE_TEST_COMMAND: oom
+        TEST_OS: centos
 
 - name: cs-uao_centos
   public: true
