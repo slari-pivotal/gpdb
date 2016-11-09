@@ -616,34 +616,6 @@ AC_MSG_RESULT([checking whether to build with ORCA... $enable_orca])
 AC_SUBST(enable_orca)
 
 #
-# Enable code generation
-#
-PGAC_ARG_BOOL(enable, codegen, no, [  --enable-codegen        enable code generation],
-              [AC_DEFINE([USE_CODEGEN], 1,
-                         [Define to 1 to enable code generation. (--enable-codegen)])])
-AC_MSG_RESULT([checking whether to build with codegen... $enable_codegen])
-AC_SUBST(enable_codegen)
-
-PGAC_ARG_REQ(with, codegen-prefix,
-             [  --with-codegen-prefix="PATH;PATH"  semicolon separated prefix search path for LLVM and Clang],
-             [AS_IF([test "${enable_codegen}" = no],
-					[AC_MSG_WARN([--with-codegen-prefix used without --enable-codegen])])])
-
-AS_IF([test "$enable_codegen" = yes],
-[ # then
-   GPAC_PATH_CMAKE
-
-   cd src/backend/codegen
-   AS_IF([test "${prefix}" = NONE], [prefix=${ac_default_prefix}])
-   AS_IF([test "${enable_debug}" = yes], [build_type="Debug"], [build_type="Release"])
-
-   CMAKE_CMD="${CMAKE} -DCMAKE_PREFIX_PATH="${with_codegen_prefix}" -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=${build_type} ."
-   echo "Executing cmake command : ${CMAKE_CMD}"
-   AS_IF([${CMAKE_CMD}], [], [AC_MSG_ERROR(['error while configuring codegen.'])])
-   cd -
-]) # fi
-
-#
 # --enable-snmp enables snmp mib and trap/inform
 #
 PGAC_ARG_BOOL(enable, snmp, no, [  --enable-snmp        enable snmp for MIB and alerts via TRAP/INFORM],
@@ -1219,6 +1191,11 @@ if test "$with_libxslt" = yes ; then
   AC_CHECK_LIB(xslt, xsltCleanupGlobals, [], [AC_MSG_ERROR([library 'xslt' is required for XSLT support])])
 fi
 
+# RSA BSAFE crypto-C ME library. We don't want this added to $LIBS.
+pgac_save_LIBS="$LIBS"
+AC_CHECK_LIB(ccme_core, R_LIB_CTX_new)
+AC_CHECK_LIB(ccme_fipsprov, R_PROV_FIPS140_self_tests_full)
+
 if test "$ac_cv_lib_ccme_core_R_LIB_CTX_new" = yes ; then
 	if test "$ac_cv_lib_ccme_fipsprov_R_PROV_FIPS140_self_tests_full" = yes ; then
 		AC_DEFINE(HAVE_RSA_BSAFE_FIPS, 1, [Define to 1 if you have FIPS 140-2 RSA BSAFE.])
@@ -1228,6 +1205,7 @@ if test "$ac_cv_lib_ccme_core_R_LIB_CTX_new" = yes ; then
 fi
 AC_SUBST(RSA_BSAFE_DY_LIBS)
 AC_SUBST(RSA_BSAFE_STATIC_LIBS)
+LIBS="$pgac_save_LIBS"
 
 # for contrib/uuid-ossp
 if test "$with_ossp_uuid" = yes ; then
