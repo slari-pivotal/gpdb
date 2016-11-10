@@ -1323,12 +1323,16 @@ RecordTransactionCommit(void)
 			TransactionIdCommitTree(nchildren, children);
 		}
 
-#ifdef FAULT_INJECTOR	
-		FaultInjector_InjectFaultIfSet(
+#ifdef FAULT_INJECTOR
+		/* Wish to inject this fault only for distributed transactions */
+		if (isDtxPrepared)
+		{
+			FaultInjector_InjectFaultIfSet(
 					       DtmXLogDistributedCommit, 
 					       DDLNotSpecified,
 					       "",	// databaseName
 					       ""); // tableName
+		}
 #endif
 
 		/* Unlock checkpoint lock if we acquired it */
