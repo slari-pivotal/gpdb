@@ -1363,12 +1363,13 @@ FaultInjector_SetFaultInjection(
 			HASH_SEQ_STATUS			hash_status;
 			FaultInjectorEntry_s	*entryLocal;
 			bool					found = FALSE;
+			int                     length;
 			
 			if (faultInjectorShmem->hash == NULL) {
 				status = STATUS_ERROR;
 				break;
-			} 
-			snprintf(entry->bufOutput, sizeof(entry->bufOutput), "Success: ");
+			}
+			length = snprintf(entry->bufOutput, sizeof(entry->bufOutput), "Success: ");
 			
 			if (entry->faultInjectorIdentifier == ChangeTrackingCompactingReport)
 			{
@@ -1379,7 +1380,7 @@ FaultInjector_SetFaultInjection(
 			}
 			
 			hash_seq_init(&hash_status, faultInjectorShmem->hash);
-			
+
 			while ((entryLocal = (FaultInjectorEntry_s *) hash_seq_search(&hash_status)) != NULL) {
 				ereport(LOG,
 					(errmsg("fault injector status: "
@@ -1403,28 +1404,27 @@ FaultInjector_SetFaultInjection(
 						entryLocal->numTimesTriggered)));
 				
 				if (entry->faultInjectorIdentifier == entryLocal->faultInjectorIdentifier ||
-					entry->faultInjectorIdentifier == FaultInjectorIdAll) {
-						snprintf(entry->bufOutput, sizeof(entry->bufOutput), 
-								 "%s \n"
-								 "fault name:'%s' "
-								 "fault type:'%s' "
-								 "ddl statement:'%s' "
-								 "database name:'%s' "
-								 "table name:'%s' "
-								 "occurrence:'%d' "
-								 "sleep time:'%d' "
-								 "fault injection state:'%s' "
-								 "num times hit:'%d' ",
-								 entry->bufOutput,
-								 FaultInjectorIdentifierEnumToString[entryLocal->faultInjectorIdentifier],
-								 FaultInjectorTypeEnumToString[entryLocal->faultInjectorType],
-								 FaultInjectorDDLEnumToString[entryLocal->ddlStatement],
-								 entryLocal->databaseName,
-								 entryLocal->tableName,
-								 entryLocal->occurrence,
-								 entryLocal->sleepTime,
-								 FaultInjectorStateEnumToString[entryLocal->faultInjectorState],
-							entryLocal->numTimesTriggered);
+					entry->faultInjectorIdentifier == FaultInjectorIdAll)
+				{
+					length = snprintf((entry->bufOutput + length), sizeof(entry->bufOutput) - length,
+									  "fault name:'%s' "
+									  "fault type:'%s' "
+									  "ddl statement:'%s' "
+									  "database name:'%s' "
+									  "table name:'%s' "
+									  "occurrence:'%d' "
+									  "sleep time:'%d' "
+									  "fault injection state:'%s'  "
+									  "num times hit:'%d' \n",
+									  FaultInjectorIdentifierEnumToString[entryLocal->faultInjectorIdentifier],
+									  FaultInjectorTypeEnumToString[entryLocal->faultInjectorType],
+									  FaultInjectorDDLEnumToString[entryLocal->ddlStatement],
+									  entryLocal->databaseName,
+									  entryLocal->tableName,
+									  entryLocal->occurrence,
+									  entryLocal->sleepTime,
+									  FaultInjectorStateEnumToString[entryLocal->faultInjectorState],
+									  entryLocal->numTimesTriggered);
 						found = TRUE;
 				}
 			}
