@@ -76,7 +76,7 @@ install: generate_greenplum_path_file
 	# Generate some python libraries
 	$(MAKE) -C bin all prefix=$(prefix)
 
-#	#Copy the management utilities
+	#Copy the management utilities
 	mkdir -p $(prefix)/bin
 	mkdir -p $(prefix)/lib
 	mkdir -p $(prefix)/lib/python
@@ -88,31 +88,18 @@ install: generate_greenplum_path_file
 	fi
 
 	#Setup /lib/python contents
-	cp -rp bin/gppylib $(prefix)/lib/python
-	cp -rp bin/ext/* $(prefix)/lib/python
-	cp -rp bin $(prefix)
-	
+	cp -Rp bin/gppylib $(prefix)/lib/python
+	cp -Rp bin/ext/* $(prefix)/lib/python
+	cp -Rp bin $(prefix)
 
-#ifeq "$(findstring $(BLD_ARCH),$(GPPKG_PLATFORMS))" ""
-#	@echo "Removing gppkg from distribution"
-#	rm -f $(prefix)/bin/gppkg
-#endif
-
-	cp -rp sbin/* $(prefix)/sbin/.
-	#cp -p extensions/gpfdist/gpfdist$(EXE_EXT) $(prefix)/bin/
+	cp -Rp sbin/* $(prefix)/sbin/.
 	cp $(top_builddir)/src/test/regress/*.pl $(prefix)/bin
 	if [ ! -d ${prefix}/docs ] ; then mkdir ${prefix}/docs ; fi
-	if [ -d doc ]; then cp -rp doc $(prefix)/docs/cli_help; fi
+	if [ -d doc ]; then cp -Rp doc $(prefix)/docs/cli_help; fi
 	if [ -d demo/gpmapreduce ]; then \
 	  mkdir -p $(prefix)/demo; \
 	  $(TAR) -C demo -czf $(prefix)/demo/gpmapreduce.tar.gz gpmapreduce; \
 	fi
-
-#	THIS NEEDS TO MOVE
-#	if [ -d demo/gpfdist_transform ]; then \
-#	  mkdir -p $(prefix)/demo; \
-#	  $(TAR) -C demo -czf $(prefix)/demo/gpfdist_transform.tar.gz gpfdist_transform; \
-#	fi
 
 	$(MAKE) set_scripts_version prefix=$(prefix)
 	# Remove unwanted files.
