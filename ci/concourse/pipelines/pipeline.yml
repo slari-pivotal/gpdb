@@ -262,7 +262,7 @@ resources:
     bucket: gpdb-windows-ccl
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: greenplum-clients-(.*)-WinXP-x86_32.msi
+    versioned_file: greenplum-clients-4.3.10.1-WinXP-x86_32.msi
 
 - name: bin_gpdb_windows_connectivity
   type: s3
@@ -271,7 +271,7 @@ resources:
     bucket: gpdb-windows-ccl
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: greenplum-connectivity-(.*)-WinXP-x86_32.msi
+    versioned_file: greenplum-connectivity-4.3.10.1-WinXP-x86_32.msi
 
 - name: bin_gpdb_windows_loaders
   type: s3
@@ -280,7 +280,7 @@ resources:
     bucket: gpdb-windows-ccl
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: greenplum-loaders-(.*)-WinXP-x86_32.msi
+    versioned_file: greenplum-loaders-4.3.10.1-WinXP-x86_32.msi
 
 - name: sync_tools_gpdb_sles
   type: s3
