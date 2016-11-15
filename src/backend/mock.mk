@@ -5,6 +5,7 @@
 # mock versions of every backend file, except for those listed in
 # <testname>_REAL_OBJS variable.
 
+include $(top_srcdir)/src/Makefile.global
 include $(top_srcdir)/src/Makefile.mock
 
 override CPPFLAGS+= -I$(top_srcdir)/src/backend/libpq \
@@ -17,6 +18,10 @@ override CPPFLAGS+= -I$(top_srcdir)/src/backend/libpq \
 # TODO: add ldl for quick hack; we need to figure out why
 # postgres in src/backend/Makefile doesn't need this and -pthread.
 MOCK_LIBS := -ldl $(filter-out -lpgport -ledit, $(LIBS)) $(LDAP_LIBS_BE)
+
+ifneq ($(RSA_BSAFE_DY_LIBS),)
+MOCK_LIBS += $(RSA_BSAFE_STATIC_LIBS) $(RSA_BSAFE_DY_LIBS)
+endif
 
 # These files are not linked into test programs.
 EXCL_OBJS=\

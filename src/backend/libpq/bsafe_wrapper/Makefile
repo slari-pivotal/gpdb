@@ -27,6 +27,8 @@ override CFLAGS += -DCRYPTOCME_FIPSPROV -DR_OPT_FIPS140 \
 
 ifneq ($(RSA_BSAFE_DY_LIBS),)
 OBJS = rsa_bsafe_sha2.o
+include $(top_builddir)/src/backend/common.mk
+
 SHLIB_LINK += $(RSA_BSAFE_STATIC_LIBS) $(RSA_BSAFE_DY_LIBS)
 
 

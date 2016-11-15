@@ -17,4 +17,7 @@ include $(top_builddir)/src/Makefile.global
 OBJS = be-fsstubs.o be-secure.o auth.o crypt.o hba.o ip.o md5.o pqcomm.o \
        pqformat.o pqsignal.o sha2.o pg_sha2.o
 
+SUBDIRS = bsafe_wrapper
+
 include $(top_srcdir)/src/backend/common.mk
+
