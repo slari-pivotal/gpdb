@@ -188,7 +188,7 @@ else
 APR_CONFIG=--with-apr-config=$(BLD_THIRDPARTY_BIN_DIR)/apr-1-config
 endif
 
-win32_CONFIGFLAGS=--with-gssapi --without-libcurl $(APR_CONFIG)
+win32_CONFIGFLAGS=--with-gssapi --without-libcurl --disable-mapreduce $(APR_CONFIG)
 rhel5_x86_32_CONFIGFLAGS=--host=i686-pc-linux-gnu --enable-snmp --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 rhel5_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 rhel6_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
