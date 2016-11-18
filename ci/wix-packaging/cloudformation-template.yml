@@ -47,6 +47,7 @@ Resources:
       InstanceType: t2.micro
       KeyName: Wix-packaging
       SubnetId: subnet-b1f977d5 # ORE5-Concourse
+      PrivateIpAddress: 10.32.120.7
       Tags:
       - Key: Name
         Value: wix-packaging
