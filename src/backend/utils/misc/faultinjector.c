@@ -315,6 +315,8 @@ FaultInjectorIdentifierEnumToString[] = {
 		/* inject fault while translating relcache entries */
 	_("external_insert_finish"),
 		/* inject fault at the end of external insert */
+	_("interconnect_stop_ack_is_lost"),
+		/* inject fault in interconnect to skip sending the stop ack */
 	_("not recognized"),
 };
 
@@ -1001,6 +1003,7 @@ FaultInjector_NewHashEntry(
 				
 			case FinishPreparedTransactionAbortPass1AbortingCreateNeeded:
 			case FinishPreparedTransactionAbortPass2AbortingCreateNeeded:
+			case InterconnectStopAckIsLost:
 
 				break;
 			default:
