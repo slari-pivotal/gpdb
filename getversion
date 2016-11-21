@@ -7,7 +7,7 @@ if [ -f BUILD_NUMBER ] ; then
     GP_BUILDNUMBER=`cat BUILD_NUMBER`
 fi
 
-FLAG="$1"
+FLAG="${1:-noflag}"
 if [ "$FLAG" = '--short' ] ; then
     echo "${GP_VERSION}"
 else
