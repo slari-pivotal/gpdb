@@ -68,6 +68,9 @@ pg_regress$(X): pg_regress.o pg_regress_main.o
 pg_regress.o: pg_regress.c $(top_builddir)/src/port/pg_config_paths.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I$(top_builddir)/src/port $(EXTRADEFS) -c -o $@ $<
 
+twophase_pqexecparams: twophase_pqexecparams.c
+	$(CC) $(CPPFLAGS) -I$(top_builddir)/src/interfaces/libpq -L$(GPHOME)/lib -L$(top_builddir)/src/interfaces/libpq -lpq -o $@ $<
+
 $(top_builddir)/src/port/pg_config_paths.h: $(top_builddir)/src/Makefile.global
 	$(MAKE) -C $(top_builddir)/src/port pg_config_paths.h
 
@@ -157,7 +160,7 @@ check: all upg2-setup ugpart-setup
 installcheck: all upg2-setup ugpart-setup
 	$(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=$(srcdir)/serial_schedule --srcdir=$(abs_srcdir)
 
-installcheck-good: all ./current_good_schedule
+installcheck-good: all twophase_pqexecparams ./current_good_schedule
 	if [ -z "$(INSTALLCHECK_GOOD_KERBEROS)" ]; then \
 	$(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=$(srcdir)/current_good_schedule --srcdir=$(abs_srcdir); \
 	else \
@@ -268,7 +271,7 @@ clean distclean maintainer-clean: clean-lib
 # things built by `all' target
 	rm -f $(NAME)$(DLSUFFIX) $(OBJS)
 	$(MAKE) -C $(contribdir)/spi clean
-	rm -f $(output_files) $(input_files) pg_regress_main.o pg_regress.o pg_regress$(X)
+	rm -f $(output_files) $(input_files) pg_regress_main.o pg_regress.o pg_regress$(X) twophase_pqexecparams
 	rm -f $(bb_output_files) $(bb_input_files)
 # things created by dynamic configs
 	rm -f ./current_good_schedule
