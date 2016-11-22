@@ -75,7 +75,7 @@ class PulseProxy
     attempts = 0
     begin
       yield
-    rescue Net::ReadTimeout, SocketError => error
+    rescue Net::ReadTimeout, Net::OpenTimeout, SocketError => error
       raise error if attempts > MAX_RETRY_ATTEMPTS
       puts "Got error: #{error} - retry ##{attempts} of #{MAX_RETRY_ATTEMPTS}"
       attempts += 1
