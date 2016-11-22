@@ -39,7 +39,7 @@
       <dependency org="Apache"          name="maven"           rev="3.0.5"          conf="osx106_x86->osx106_x86" />
       <dependency org="Brian_Stafford"  name="libesmtp"        rev="1.0.4-p1"       conf="osx106_x86->osx106_x86" />
       <dependency org="Hyperic"         name="sigar"           rev="1.6.3"          conf="osx106_x86->osx106_x86" />
-      <dependency org="OpenLDAP"        name="openldap"        rev="2.3.38"         conf="osx106_x86->osx106_x86" />
+      <dependency org="OpenLDAP"        name="openldap"        rev="2.4.44"         conf="osx106_x86->osx106_x86" />
       <dependency org="PROJ.4"          name="proj"            rev="4.7.0"          conf="osx106_x86->osx106_x86" />
       <dependency org="Pivotal"         name="libhdfs3"        rev="2.2.30"         conf="osx106_x86->osx106_x86" />
       <dependency org="Pivotal"         name="libbm"           rev="1.0.1"          conf="osx106_x86->osx106_x86" />
