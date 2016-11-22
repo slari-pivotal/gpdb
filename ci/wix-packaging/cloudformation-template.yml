@@ -42,7 +42,7 @@ Resources:
   WixPackaging:
     Type: "AWS::EC2::Instance"
     Properties:
-      ImageId: ami-27b81547 # Name: wix-packaging-11-16-2016
+      ImageId: ami-59208c39 # Name: wix-packaging-2016-11-21-1653
       AvailabilityZone: us-west-2b
       InstanceType: t2.micro
       KeyName: Wix-packaging
