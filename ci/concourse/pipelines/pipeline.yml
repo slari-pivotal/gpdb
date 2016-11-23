@@ -12,7 +12,6 @@ groups:
   - cs-fts_centos
   - cs-storage_centos
   - cs-subtransaction_centos
-  - cs-persistent-tables_centos
   - cs-uao_centos
   - icb_orca_centos
   - icb_planner_centos
@@ -53,7 +52,6 @@ groups:
   - pulse_cs-filerep-schema-topology-crashrecov
   - pulse_cs-filerep-end-to-end
   - pulse_cs-fts
-  - pulse_cs-persistent-tables
   - pulse_cs-pg-two-phase
   - pulse_cs-storage
   - pulse_cs-sub-transaction-limit-removal
@@ -142,7 +140,6 @@ groups:
   - cs-fts_centos
   - cs-storage_centos
   - cs-subtransaction_centos
-  - cs-persistent-tables_centos
   - cs-uao_centos
   - gpdb_rc_packaging_centos
   - gpdb_sync_to_dist
@@ -1118,53 +1115,6 @@ jobs:
     params:
       MAKE_TEST_COMMAND: sub_transaction_limit_removal
       TEST_OS: centos
-
-- name: cs-persistent-tables_centos
-  public: true
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      params: {submodules: none}
-      passed: [compile_gpdb_centos]
-    - get: sync_tools_gpdb
-      resource: sync_tools_gpdb_centos
-      passed: [compile_gpdb_centos]
-    - get: bin_gpdb
-      resource: bin_gpdb_centos
-      passed: [compile_gpdb_centos]
-      trigger: true
-    - get: centos511-java7-gpdb-dev-image
-  - aggregate:
-    - task: crash_recovery_part_1
-      file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
-      params:
-        MAKE_TEST_COMMAND: crash_recovery_part_1
-        TEST_OS: centos
-    - task: crash_recovery_part_3
-      file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
-      params:
-        MAKE_TEST_COMMAND: crash_recovery_part_3
-        TEST_OS: centos
-    - task: crash_recovery_part_4
-      file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
-      params:
-        MAKE_TEST_COMMAND: crash_recovery_part_4
-        TEST_OS: centos
-    - task: drop_db
-      file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
-      params:
-        MAKE_TEST_COMMAND: drop_db
-        TEST_OS: centos
-    - task: oom
-      file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
-      params:
-        MAKE_TEST_COMMAND: oom
-        TEST_OS: centos
 
 - name: cs-uao_centos
   public: true
