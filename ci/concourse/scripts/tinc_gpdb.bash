@@ -7,6 +7,7 @@ source "${CWDIR}/common.bash"
 
 function gen_env(){
   cat > /opt/run_test.sh <<-EOF
+		source /opt/gcc_env.sh
 		source /usr/local/greenplum-db-devel/greenplum_path.sh
 		cd "\${1}/gpdb_src/gpAux"
 		source gpdemo/gpdemo-env.sh
