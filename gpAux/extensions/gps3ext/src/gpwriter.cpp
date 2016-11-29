@@ -1,6 +1,9 @@
 #include "gpwriter.h"
 #include "s3memory_mgmt.h"
 
+// Hold memory context to avoid it being destructed before GPReader or GPWriter
+extern S3MemoryContext* memoryContextHolder;
+
 GPWriter::GPWriter(const S3Params& params, const string& url, string fmt)
     : format(fmt), params(params), restfulService(this->params), s3InterfaceService(this->params) {
     string replacedURL = S3UrlUtility::replaceSchemaFromURL(url, this->params.isEncryption());
@@ -100,6 +103,8 @@ GPWriter* writer_init(const char* url_with_options, const char* format) {
         // Prepare memory to be used for thread chunk buffer.
         PrepareS3MemContext(params);
 
+        memoryContextHolder = new S3MemoryContext(params.getMemoryContext());
+
         string extName = params.isAutoCompress() ? string(format) + ".gz" : format;
         writer = new GPWriter(params, url, extName);
         if (writer == NULL) {
@@ -108,10 +113,10 @@ GPWriter* writer_init(const char* url_with_options, const char* format) {
 
         writer->open(params);
         return writer;
-
     } catch (S3Exception& e) {
         if (writer != NULL) {
             delete writer;
+            delete memoryContextHolder;
         }
         s3extErrorMessage =
             "writer_init caught a " + e.getType() + " exception: " + e.getFullMessage();
@@ -120,6 +125,7 @@ GPWriter* writer_init(const char* url_with_options, const char* format) {
     } catch (...) {
         if (writer != NULL) {
             delete writer;
+            delete memoryContextHolder;
         }
         S3ERROR("Caught an unexpected exception.");
         s3extErrorMessage = "Caught an unexpected exception.";
@@ -160,6 +166,7 @@ bool writer_cleanup(GPWriter** writer) {
         if (*writer) {
             (*writer)->close();
             delete *writer;
+            delete memoryContextHolder;
             *writer = NULL;
         } else {
             result = false;
