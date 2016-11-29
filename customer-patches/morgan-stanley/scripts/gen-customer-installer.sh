@@ -147,10 +147,13 @@ echo "Update greenplum_path.sh"
 echo '' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 echo 'export R_HOME=$GPHOME/ext/R-3.1.0/lib64/R' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
-JAVA_VER1=$(basename ${GPDB_INSTALLDIR}/ext/jre*)
-JAVA_VER2=$(basename ${GPDB_INSTALLDIR}/ext/jre*/jre*)
+JAVA_JRE=$(echo ${GPDB_INSTALLDIR}/ext/jre*)  # force glob expansion
+if ! [ -d $JAVA_JRE ] ; then
+  echo "ERROR: JRE not found at $JAVA_JRE"
+  exit 1
+fi
 
-echo 'export JAVA_HOME=$GPHOME/ext/'"${JAVA_VER1}/${JAVA_VER2}" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo 'export JAVA_HOME=$GPHOME/ext/'"$(basename ${JAVA_JRE})" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 echo 'export LD_LIBRARY_PATH=$GPHOME/ext/R-3.1.0/lib64/R/lib:$JAVA_HOME/lib/amd64/server:$LD_LIBRARY_PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
