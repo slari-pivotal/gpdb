@@ -43,7 +43,19 @@ typedef uint32 pg_crc32c;
 /* Use SSE4.2 instructions. */
 #define COMP_CRC32C(crc, data, len) \
 	((crc) = pg_comp_crc32c_sse42((crc), (data), (len)))
+
+
+#ifdef LATER
+ /* By historical accident, the checksum calculated
+  * is *not* inverted, like CRC-32C checksums usually are.
+  * So we want the FIN_CRC32 macro to be a no-op to preserve
+  * backward compatibility.
+  */
 #define FIN_CRC32C(crc) ((crc) ^= 0xFFFFFFFF)
+#else
+/* This is currently a NOOP */
+#define FIN_CRC32C(crc) /* NOOP */
+#endif /* LATER */
 
 extern pg_crc32c pg_comp_crc32c_sse42(pg_crc32c crc, const void *data, size_t len);
 
@@ -54,7 +66,17 @@ extern pg_crc32c pg_comp_crc32c_sse42(pg_crc32c crc, const void *data, size_t le
  */
 #define COMP_CRC32C(crc, data, len) \
 	((crc) = pg_comp_crc32c((crc), (data), (len)))
+#ifdef LATER
+ /* By historical accident, the checksum calculated
+  * is *not* inverted, like CRC-32C checksums usually are.
+  * So we want the FIN_CRC32 macro to be a no-op to preserve
+  * backward compatibility.
+  */
 #define FIN_CRC32C(crc) ((crc) ^= 0xFFFFFFFF)
+#else
+/* This is currently a NOOP */
+#define FIN_CRC32C(crc) /* NOOP */
+#endif /* LATER */
 
 extern pg_crc32c pg_comp_crc32c_sse42(pg_crc32c crc, const void *data, size_t len);
 extern pg_crc32c pg_comp_crc32c_sb8(pg_crc32c crc, const void *data, size_t len);
@@ -81,9 +103,29 @@ extern pg_crc32c (*pg_comp_crc32c) (pg_crc32c crc, const void *data, size_t len)
 					((x >> 24) & 0x000000ff))
 #endif
 
+#ifdef LATER
+ /* By historical accident, the checksum calculated
+  * is *not* inverted, like CRC-32C checksums usually are.
+  * So we want the FIN_CRC32 macro to be a no-op to preserve
+  * backward compatibility.
+  */
 #define FIN_CRC32C(crc) ((crc) = BSWAP32(crc) ^ 0xFFFFFFFF)
 #else
+/* This is currently a NOOP */
+#define FIN_CRC32C(crc) /* NOOP */
+#endif /* LATER */
+#else
+#ifdef LATER
+ /* By historical accident, the checksum calculated
+  * is *not* inverted, like CRC-32C checksums usually are.
+  * So we want the FIN_CRC32 macro to be a no-op to preserve
+  * backward compatibility.
+  */
 #define FIN_CRC32C(crc) ((crc) ^= 0xFFFFFFFF)
+#else
+/* This is currently a NOOP */
+#define FIN_CRC32C(crc) /* NOOP */
+#endif /* LATER */
 #endif
 
 extern pg_crc32c pg_comp_crc32c_sb8(pg_crc32c crc, const void *data, size_t len);
