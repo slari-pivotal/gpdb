@@ -1697,25 +1697,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1723,7 +1717,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1735,25 +1728,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1761,7 +1748,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1773,25 +1759,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1799,7 +1779,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1811,25 +1790,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1837,7 +1810,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1849,25 +1821,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1875,7 +1841,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1887,25 +1852,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1913,7 +1872,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1925,25 +1883,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1951,7 +1903,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1963,25 +1914,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1989,7 +1934,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2001,25 +1945,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2027,7 +1965,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2039,25 +1976,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: false
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2065,7 +1996,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2077,25 +2007,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: false
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2103,7 +2027,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2115,25 +2038,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: false
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2141,7 +2058,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2153,25 +2069,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2179,7 +2089,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2191,25 +2100,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2217,7 +2120,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2229,25 +2131,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2255,7 +2151,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2267,25 +2162,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2293,7 +2182,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2305,25 +2193,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2331,7 +2213,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2343,25 +2224,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2369,7 +2244,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2381,25 +2255,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2407,7 +2275,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2419,25 +2286,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2445,7 +2306,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2457,25 +2317,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2483,7 +2337,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2495,25 +2348,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2521,7 +2368,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2533,25 +2379,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2559,7 +2399,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2571,25 +2410,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2597,7 +2430,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2609,25 +2441,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2635,7 +2461,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2647,25 +2472,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2673,7 +2492,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2685,25 +2503,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2711,7 +2523,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2723,25 +2534,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2749,7 +2554,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2761,25 +2565,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2787,7 +2585,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2799,25 +2596,19 @@ jobs:
   public: true
   plan:
   - get: weekly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2825,7 +2616,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2837,25 +2627,19 @@ jobs:
   public: true
   plan:
   - get: weekly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_sles11_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_sles11_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2863,7 +2647,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2875,25 +2658,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_rhel5_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2901,7 +2678,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2913,25 +2689,19 @@ jobs:
   public: true
   plan:
   - get: nightly-trigger-pulse
-    tags: ["pulse-worker"]
     trigger: true
   - aggregate:
     - get: gpdb_src
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
-      tags: ["pulse-worker"]
       passed: [gpdb_sync_to_dist]
     - get: installer_gpdb_rc
-      tags: ["pulse-worker"]
       resource: installer_sles11_gpdb_rc
       passed: [gpdb_sync_to_dist]
     - get: qautils_tarball
-      tags: ["pulse-worker"]
       resource: qautils_sles11_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2939,7 +2709,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
-    tags: ["pulse-worker"]
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
