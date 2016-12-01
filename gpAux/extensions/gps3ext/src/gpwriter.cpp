@@ -103,13 +103,13 @@ GPWriter* writer_init(const char* url_with_options, const char* format) {
         // Prepare memory to be used for thread chunk buffer.
         PrepareS3MemContext(params);
 
-        memoryContextHolder = new S3MemoryContext(params.getMemoryContext());
-
         string extName = params.isAutoCompress() ? string(format) + ".gz" : format;
         writer = new GPWriter(params, url, extName);
         if (writer == NULL) {
             return NULL;
         }
+
+        memoryContextHolder = new S3MemoryContext(params.getMemoryContext());
 
         writer->open(params);
         return writer;

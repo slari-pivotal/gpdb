@@ -118,12 +118,12 @@ GPReader* reader_init(const char* url_with_options) {
         // Prepare memory to be used for thread chunk buffer.
         PrepareS3MemContext(params);
 
-        memoryContextHolder = new S3MemoryContext(params.getMemoryContext());
-
         reader = new GPReader(params, url);
         if (reader == NULL) {
             return NULL;
         }
+
+        memoryContextHolder = new S3MemoryContext(params.getMemoryContext());
 
         reader->open(params);
         return reader;
