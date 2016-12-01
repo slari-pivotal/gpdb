@@ -29,6 +29,7 @@
 
 extern bool sort_op_can_sort(Oid opid, bool mergejoin);
 extern List *add_to_flat_tlist(List *tlist, List *exprs, bool resjunk);
+extern bool is_simple_subquery(PlannerInfo *root, Query *subquery);
 
 static Node *
 pull_up_IN_clauses(PlannerInfo *root, List** rtrlist_inout, Node *clause);
@@ -905,6 +906,23 @@ convert_EXISTS_to_join(PlannerInfo *root, List** rtrlist_inout, SubLink *sublink
 	 * If deeply correlated, don't bother.
 	 */
 	if (IsSubqueryMultiLevelCorrelated(subselect))
+		return (Node *) sublink;
+
+	/*
+	* Don't remove the sublink if we cannot pull-up the subquery
+	* later during pull_up_simple_subquery()
+	*/
+	if (!is_simple_subquery(root, subselect))
+	{
+		   return (Node *) sublink;
+	}
+
+	/*
+	 * 'LIMIT n' makes EXISTS false when n <= 0, and doesn't affect the
+	 * outcome when n > 0.  Delete subquery's LIMIT and build (0 < n) expr to
+	 * be ANDed into the parent qual.
+	 */
+	if (subselect->limitCount)
 	{
     	return (Node *) sublink;
 	}
