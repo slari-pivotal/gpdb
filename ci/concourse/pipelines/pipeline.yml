@@ -1029,18 +1029,21 @@ jobs:
     - get: centos511-java7-gpdb-dev-image
   - aggregate:
     - task: fts_transitions_part01
+      timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: centos511-java7-gpdb-dev-image
       params:
         MAKE_TEST_COMMAND: fts_transitions_part01
         TEST_OS: centos
     - task: fts_transitions_part02
+      timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: centos511-java7-gpdb-dev-image
       params:
         MAKE_TEST_COMMAND: fts_transitions_part02
         TEST_OS: centos
     - task: fts_transitions_part03
+      timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: centos511-java7-gpdb-dev-image
       params:
@@ -1070,24 +1073,28 @@ jobs:
         MAKE_TEST_COMMAND: aocoalter_catalog_loaders
         TEST_OS: centos
     - task: storage_persistent_filerep_accessmethods_and_vacuum
+      timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: centos511-java7-gpdb-dev-image
       params:
         MAKE_TEST_COMMAND: storage_persistent_filerep_accessmethods_and_vacuum
         TEST_OS: centos
     - task: filerep_end_to_end_xlog_ctlog_cons
+      timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: centos511-java7-gpdb-dev-image
       params:
         MAKE_TEST_COMMAND: filerep_end_to_end_xlog_ctlog_cons
         TEST_OS: centos
     - task: storage_queryfinish_and_transactionmanagement
+      timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: centos511-java7-gpdb-dev-image
       params:
         MAKE_TEST_COMMAND: storage_queryfinish_and_transactionmanagement
         TEST_OS: centos
     - task: storage_vacuum_xidlimits
+      timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: centos511-java7-gpdb-dev-image
       params:
@@ -1110,6 +1117,7 @@ jobs:
       trigger: true
     - get: centos511-java7-gpdb-dev-image
   - task: sub_transaction_limit_removal
+    timeout: 3h
     file: gpdb_src/ci/concourse/tinc_gpdb.yml
     image: centos511-java7-gpdb-dev-image
     params:
@@ -1132,6 +1140,7 @@ jobs:
       trigger: true
     - get: centos511-java7-gpdb-dev-image
   - task: uao_orca_both_regression
+    timeout: 2h
     file: gpdb_src/ci/concourse/tinc_gpdb.yml
     image: centos511-java7-gpdb-dev-image
     params:
