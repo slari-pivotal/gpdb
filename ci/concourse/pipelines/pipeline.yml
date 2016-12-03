@@ -687,8 +687,8 @@ jobs:
     - get: gpdb_src
       trigger: true
     - get: centos511-java7-gpdb-dev-image
-    - get: ccache_gpdb_centos5
-      resource: ccache
+    - get: ccache_snapshot
+      resource: ccache_gpdb_centos5
       trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
@@ -785,8 +785,8 @@ jobs:
     - get: gpdb_src
       trigger: true
     - get: sles11-toolchain
-    - get: ccache_gpdb_sles11
-      resource: ccache
+    - get: ccache_snapshot
+      resource: ccache_gpdb_sles11
       trigger: false
   - task: build_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
@@ -854,8 +854,8 @@ jobs:
     - get: gpdb_src
       trigger: true
     - get: centos67-java7-gpdb-dev-image
-    - get: ccache_gpdb_centos6
-      resource: ccache
+    - get: ccache_snapshot
+      resource: ccache_gpdb_centos6
       trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
@@ -883,8 +883,8 @@ jobs:
     - get: gpdb_src
       trigger: true
     - get: centos72-java7-gpdb-dev-image
-    - get: ccache_gpdb_centos7
-      resource: ccache
+    - get: ccache
+      resource: ccache_gpdb_centos7
       trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
