@@ -95,6 +95,8 @@ function _main() {
 
   generate_build_number
   make_sync_tools
+  prep_ccache
+
   # By default, only GPDB Server binary is build.
   # Use BLD_TARGETS flag with appropriate value string to generate client, loaders
   # connectors binaries

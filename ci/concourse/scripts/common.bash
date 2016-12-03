@@ -41,13 +41,11 @@ function prep_env_for_centos() {
       BLDARCH=rhel5_x86_64
       export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.40.x86_64
       source /opt/gcc_env.sh
-      prep_ccache
       ;;
 
     6)
       BLDARCH=rhel6_x86_64
       export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.40.x86_64
-      prep_ccache
       ;;
 
     7)
@@ -56,7 +54,6 @@ function prep_env_for_centos() {
       export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64
       ln -sf /usr/bin/xsubpp /usr/share/perl5/ExtUtils/xsubpp
       source /opt/gcc_env.sh
-      prep_ccache
       ;;
 
     *)
