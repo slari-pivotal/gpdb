@@ -259,6 +259,51 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: sync_tools_gpdb_centos/sync_tools_gpdb.tar.gz
 
+- name: ccache_gpdb_centos5
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_centos5/ccache_gpdb.tar.gz
+
+- name: ccache_gpdb_centos6
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_centos6/ccache_gpdb.tar.gz
+
+- name: ccache_gpdb_centos7
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_centos7/ccache_gpdb.tar.gz
+
+- name: ccache_gpdb_sles11
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_sles11/ccache_gpdb.tar.gz
+
+- name: ccache_gpdb_mingw
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_mingw/ccache_gpdb.tar.gz
+
 - name: bin_gpdb_windows_clients
   type: s3
   source:
@@ -705,6 +750,9 @@ jobs:
     - put: sync_tools_gpdb_centos
       params:
         file: gpdb_artifacts/sync_tools_gpdb.tar.gz
+    - put: ccache_gpdb_centos5
+      params:
+        file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 - name: compile_gpdb_windows_ccl
   public: true
@@ -735,6 +783,9 @@ jobs:
     - put: bin_gpdb_windows_loaders
       params:
         file: gpdb_artifacts/greenplum-loaders-*-WinXP-x86_32.msi
+    - put: ccache_gpdb_mingw
+      params:
+        file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 - name: compile_gpdb_sles
   public: true
@@ -797,6 +848,9 @@ jobs:
     - put: sync_tools_gpdb_sles
       params:
         file: gpdb_artifacts/sync_tools_gpdb.tar.gz
+    - put: ccache_gpdb_sles11
+      params:
+        file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 # Compile gpdb and plperl on centos6
 - name: compile_gpdb_centos6
@@ -820,6 +874,9 @@ jobs:
   - put: plperl_rhel6_gppkg
     params:
       file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
+  - put: ccache_gpdb_centos6
+    params:
+      file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 # Compile gpdb and plperl on centos7
 - name: compile_gpdb_centos7
@@ -843,6 +900,9 @@ jobs:
   - put: plperl_rhel7_gppkg
     params:
       file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel7-x86_64.gppkg
+  - put: ccache_gpdb_centos7
+    params:
+      file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 # Stage 2: Installcheck, Python unit, and local TINC tests
 
