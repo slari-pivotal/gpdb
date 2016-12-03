@@ -18,14 +18,14 @@ function prep_ccache() {
   export CCACHE_DIR=$(pwd)/ccache
   case "$TARGET_OS" in
     centos)
-      export PATH="$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin:$PATH"
-      ln -sf "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin/gcc"
-      ln -sf "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin/g++"
+      export PATH="$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin:$PATH"
+      ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/gcc"
+      ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/g++"
       ;;
     sles)
-      export PATH="$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin:$PATH"
-      ln -sf "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin/gcc"
-      ln -sf "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin/g++"
+      export PATH="$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin:$PATH"
+      ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/gcc"
+      ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/g++"
       ;;
     *)
       echo "only centos and sles are supported TARGET_OS'es"

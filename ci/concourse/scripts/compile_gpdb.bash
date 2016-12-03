@@ -10,7 +10,8 @@ CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
 
 function prep_env_for_sles() {
-  ln -sf "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/python-2.6.2" /opt
+  BLDARCH=sles11_x86_64
+  ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/python-2.6.2" /opt
   export JAVA_HOME=/usr/lib64/jvm/java-1.6.0-openjdk-1.6.0
   export PATH=${JAVA_HOME}/bin:${PATH}
   source /opt/gcc_env.sh
