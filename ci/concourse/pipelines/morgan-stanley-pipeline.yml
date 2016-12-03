@@ -299,7 +299,7 @@ jobs:
     file: gpdb_src/ci/concourse/ic_gpdb.yml
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
-      BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
       TEST_OS: centos
 
 - name: icb_planner_centos
@@ -319,7 +319,7 @@ jobs:
     file: gpdb_src/ci/concourse/ic_gpdb.yml
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
-      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
       TEST_OS: centos
 
 - name: icg_orca_centos
@@ -339,7 +339,7 @@ jobs:
     file: gpdb_src/ci/concourse/ic_gpdb.yml
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
       TEST_OS: centos
 
 - name: icg_planner_centos
@@ -359,7 +359,7 @@ jobs:
     file: gpdb_src/ci/concourse/ic_gpdb.yml
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
       TEST_OS: centos
 
 - name: MU_check_centos
