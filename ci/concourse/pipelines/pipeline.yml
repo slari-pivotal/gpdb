@@ -1278,6 +1278,7 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_rc_packaging_centos]
     - get: gpdb_src_archive
       passed: [gpdb_src_packaging]
@@ -1622,6 +1623,7 @@ jobs:
       passed: [compile_gpdb_centos6]
       trigger: true
     - get: gpdb_src
+      params: {submodules: none}
       passed: [compile_gpdb_centos6]
   - task: plperl_rhel6_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -1640,6 +1642,7 @@ jobs:
       passed: [compile_gpdb_centos7]
       trigger: true
     - get: gpdb_src
+      params: {submodules: none}
       passed: [compile_gpdb_centos7]
   - task: plperl_rhel7_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
@@ -1674,6 +1677,7 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_rc_packaging_centos]
     - get: bin_gpdb
       resource: bin_gpdb_centos
@@ -1691,6 +1695,7 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_rc_packaging_centos]
     - get: bin_gpdb
       resource: bin_gpdb_centos
@@ -1709,6 +1714,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1740,6 +1746,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1771,6 +1778,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1802,6 +1810,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1833,6 +1842,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1864,6 +1874,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1895,6 +1906,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1926,6 +1938,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1957,6 +1970,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -1988,6 +2002,7 @@ jobs:
     trigger: false
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2019,6 +2034,7 @@ jobs:
     trigger: false
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2050,6 +2066,7 @@ jobs:
     trigger: false
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2081,6 +2098,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2112,6 +2130,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2143,6 +2162,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2174,6 +2194,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2205,6 +2226,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2236,6 +2258,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2267,6 +2290,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2298,6 +2322,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2329,6 +2354,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2360,6 +2386,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2391,6 +2418,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2422,6 +2450,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2453,6 +2482,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2484,6 +2514,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2515,6 +2546,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2546,6 +2578,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2577,6 +2610,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2608,6 +2642,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2639,6 +2674,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2670,6 +2706,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
@@ -2701,6 +2738,7 @@ jobs:
     trigger: true
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
       passed: [gpdb_sync_to_dist]
