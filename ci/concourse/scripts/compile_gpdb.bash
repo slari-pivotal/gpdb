@@ -1,6 +1,7 @@
 #!/bin/bash -l
 set -exo pipefail
 
+CONCURRENCY="--jobs=8 --load-average=16"
 GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
 export GPDB_ARTIFACTS_DIR
 GPDB_ARTIFACTS_DIR=$(pwd)/$OUTPUT_ARTIFACT_DIR
@@ -18,23 +19,23 @@ function prep_env_for_sles() {
 function build_gpdb() {
   pushd gpdb_src/gpAux
     if [ -n "$1" ]; then
-      make "$1" GPROOT=/usr/local dist
+      make $CONCURRENCY "$1" GPROOT=/usr/local dist
     else
-      make GPROOT=/usr/local dist
+      make $CONCURRENCY GPROOT=/usr/local dist
     fi
   popd
 }
 
 function build_gppkg() {
   pushd gpdb_src/gpAux
-    make gppkg BLD_TARGETS="gppkg" INSTLOC="$GREENPLUM_INSTALL_DIR" GPPKGINSTLOC="$GPDB_ARTIFACTS_DIR" RELENGTOOLS=/opt/releng/tools
+    make $CONCURRENCY gppkg BLD_TARGETS="gppkg" INSTLOC="$GREENPLUM_INSTALL_DIR" GPPKGINSTLOC="$GPDB_ARTIFACTS_DIR" RELENGTOOLS=/opt/releng/tools
   popd
 }
 
 function unittest_check_gpdb() {
   pushd gpdb_src/gpAux
     source $GREENPLUM_INSTALL_DIR/greenplum_path.sh
-    make GPROOT=/usr/local unittest-check
+    make $CONCURRENCY GPROOT=/usr/local unittest-check
   popd
 }
 
