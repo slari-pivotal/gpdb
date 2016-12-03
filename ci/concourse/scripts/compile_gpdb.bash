@@ -14,6 +14,7 @@ function prep_env_for_sles() {
   export JAVA_HOME=/usr/lib64/jvm/java-1.6.0-openjdk-1.6.0
   export PATH=${JAVA_HOME}/bin:${PATH}
   source /opt/gcc_env.sh
+  prep_ccache
 }
 
 function build_gpdb() {
@@ -69,6 +70,12 @@ function export_gpdb_win32_ccl() {
   popd
 }
 
+function export_ccache() {
+  TARBALL="$GPDB_ARTIFACTS_DIR"/ccache_gpdb.tar.gz
+  print_ccache_stats
+  tar -czf $TARBALL ccache
+}
+
 function _main() {
   case "$TARGET_OS" in
     centos)
@@ -106,6 +113,7 @@ function _main() {
   export_gpdb
   export_gpdb_extensions
   export_gpdb_win32_ccl
+  export_ccache
 }
 
 _main "$@"

@@ -9,17 +9,45 @@ function set_env() {
     export TIMEFORMAT=$'\e[4;33mIt took %R seconds to complete this step\e[0m';
 }
 
+function print_ccache_stats() {
+  ccache -s
+}
+
+function prep_ccache() {
+  export CCACHE_BASEDIR=$(pwd)/gpdb_src
+  export CCACHE_DIR=$(pwd)/ccache
+  case "$TARGET_OS" in
+    centos)
+      export PATH="$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin:$PATH"
+      ln -sf "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin/gcc"
+      ln -sf "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/ccache/bin/g++"
+      ;;
+    sles)
+      export PATH="$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin:$PATH"
+      ln -sf "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin/gcc"
+      ln -sf "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/ccache/bin/g++"
+      ;;
+    *)
+      echo "only centos and sles are supported TARGET_OS'es"
+      false
+      ;;
+  esac
+  print_ccache_stats
+}
+
 function prep_env_for_centos() {
   case "$TARGET_OS_VERSION" in
     5)
       BLDARCH=rhel5_x86_64
       export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.40.x86_64
       source /opt/gcc_env.sh
+      prep_ccache
       ;;
 
     6)
       BLDARCH=rhel6_x86_64
       export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.40.x86_64
+      prep_ccache
       ;;
 
     7)
@@ -28,6 +56,7 @@ function prep_env_for_centos() {
       export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64
       ln -sf /usr/bin/xsubpp /usr/share/perl5/ExtUtils/xsubpp
       source /opt/gcc_env.sh
+      prep_ccache
       ;;
 
     *)
