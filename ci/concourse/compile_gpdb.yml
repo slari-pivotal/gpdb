@@ -8,7 +8,7 @@ image_resource:
     email: releng@pivotal.io
 inputs:
   - name: gpdb_src
-  - name: ccache
+  - name: ccache_snapshot
 outputs:
   - name: gpdb_artifacts
 run:
