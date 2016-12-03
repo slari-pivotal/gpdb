@@ -88,7 +88,7 @@ function _main() {
       export BLD_ARCH=win32
       ;;
     *)
-      echo "only centos and sles are supported TARGET_OS'es"
+      echo "only centos, sles and win32 are supported TARGET_OS'es"
       false
       ;;
   esac
