@@ -16,6 +16,9 @@ function print_ccache_stats() {
 function prep_ccache() {
   export CCACHE_BASEDIR=$(pwd)/gpdb_src
   export CCACHE_DIR=$(pwd)/ccache
+  if [ -d $(pwd)/ccache_snapshot ]; then
+    tar -xvf $(pwd)/ccache_snapshot/ccache_gpdb.tar.gz -C $(pwd)/ccache
+  fi
   case "$TARGET_OS" in
     centos)
       export PATH="$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin:$PATH"
