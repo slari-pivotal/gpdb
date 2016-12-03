@@ -242,7 +242,7 @@ insert into addcol7 values
    ('201204', 301, 7, 'p3', 22/7::float, 'newcol2'),
    ('201204', 301, 8, 'p3', null, null),
    ('201204', 301, 9, 'p3', null, null);
-select * from addcol7 where tag2 like 'p%' order by user_id;
+select * from addcol7 where tag2 like 'p%' order by user_id, tag1;
 update addcol7 set new1 = 0, tag1 = -1 where tag2 like 'p%';
 delete from addcol7 where new2 is null;
 vacuum addcol7;

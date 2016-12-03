@@ -1498,11 +1498,7 @@ drop table if exists qp_misc_jiras.tbl7553_test;
 create table qp_misc_jiras.tbl7553_test (i int, j int);
 insert into qp_misc_jiras.tbl7553_test values(1,2);
 
-explain select i as a, i as b from qp_misc_jiras.tbl7553_test group by grouping sets( (a, b), (a));
-
 select i as a, i as b from qp_misc_jiras.tbl7553_test group by grouping sets( (a, b), (a)); 
-
-explain select j as a, j as b from qp_misc_jiras.tbl7553_test group by grouping sets( (a, b), (a)); 
 
 select j as a, j as b from qp_misc_jiras.tbl7553_test group by grouping sets( (a, b), (a)); 
 

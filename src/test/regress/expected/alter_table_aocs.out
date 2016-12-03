@@ -363,7 +363,7 @@ insert into addcol7 values
    ('201204', 301, 7, 'p3', 22/7::float, 'newcol2'),
    ('201204', 301, 8, 'p3', null, null),
    ('201204', 301, 9, 'p3', null, null);
-select * from addcol7 where tag2 like 'p%' order by user_id;
+select * from addcol7 where tag2 like 'p%' order by user_id, tag1;
  timest | user_id | tag1 | tag2 |       new1        |  new2   
 --------+---------+------+------+-------------------+---------
  201202 |     101 |    1 | p1   |               0.6 | newcol2
@@ -372,8 +372,8 @@ select * from addcol7 where tag2 like 'p%' order by user_id;
  201203 |     201 |    4 | p2   | 0.333333333333333 | newcol2
  201203 |     202 |    5 | p2   |                   | 
  201203 |     203 |    6 | p2   |                   | 
- 201204 |     301 |    8 | p3   |                   | 
  201204 |     301 |    7 | p3   |  3.14285714285714 | newcol2
+ 201204 |     301 |    8 | p3   |                   | 
  201204 |     301 |    9 | p3   |                   | 
 (9 rows)
 

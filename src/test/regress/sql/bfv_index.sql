@@ -1,38 +1,4 @@
 -- tests index filter with outer refs
-drop table if exists bfv_tab1;
-
-CREATE TABLE bfv_tab1 (
-	unique1		int4,
-	unique2		int4,
-	two			int4,
-	four		int4,
-	ten			int4,
-	twenty		int4,
-	hundred		int4,
-	thousand	int4,
-	twothousand	int4,
-	fivethous	int4,
-	tenthous	int4,
-	odd			int4,
-	even		int4,
-	stringu1	name,
-	stringu2	name,
-	string4		name
-) distributed by (unique1);
-
-create index bfv_tab1_idx1 on bfv_tab1 using btree(unique1);
-
-explain
-select * from bfv_tab1, (values(147, 'RFAAAA'), (931, 'VJAAAA')) as v (i, j)
-    WHERE bfv_tab1.unique1 = v.i and bfv_tab1.stringu1 = v.j;
-
-set gp_enable_relsize_collection=on;
-
-explain select * from bfv_tab1, (values(147, 'RFAAAA'), (931, 'VJAAAA')) as v (i, j)
-    WHERE bfv_tab1.unique1 = v.i and bfv_tab1.stringu1 = v.j;
-
-reset gp_enable_relsize_collection;
-
 --start_ignore
 DROP TABLE IF EXISTS bfv_tab2_facttable1;
 DROP TABLE IF EXISTS bfv_tab2_dimdate;
@@ -106,7 +72,6 @@ return result
 $$
 language plpythonu;
 
-DROP TABLE bfv_tab1;
 DROP TABLE bfv_tab2_facttable1;
 DROP TABLE bfv_tab2_dimdate;
 DROP TABLE bfv_tab2_dimtabl1;

@@ -616,8 +616,6 @@ select * from subselect_t1 where x in (select y from subselect_t2);
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
-
 select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
 
 explain select count(*) from subselect_t1 where x in (select y from subselect_t2);
@@ -627,8 +625,6 @@ select count(*) from subselect_t1 where x in (select y from subselect_t2);
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
-
 select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
 
 select count(*) from 

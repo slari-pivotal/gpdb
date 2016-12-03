@@ -1305,22 +1305,6 @@ select * from subselect_t1 where x in (select y from subselect_t2);
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
-                                             QUERY PLAN                                             
-----------------------------------------------------------------------------------------------------
- Gather Motion 2:1  (slice2; segments: 2)  (cost=4.37..6.44 rows=4 width=4)
-   ->  Hash EXISTS Join  (cost=4.37..6.44 rows=2 width=4)
-         Hash Cond: subselect_t1.x = "IN_subquery".y
-         ->  Seq Scan on subselect_t1  (cost=0.00..2.02 rows=1 width=4)
-         ->  Hash  (cost=4.30..4.30 rows=3 width=4)
-               ->  Redistribute Motion 2:2  (slice1; segments: 2)  (cost=0.00..4.30 rows=3 width=4)
-                     Hash Key: "IN_subquery".y
-                     ->  Append  (cost=0.00..4.12 rows=3 width=4)
-                           ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
-                           ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
- Settings:  optimizer_segments=3
-(11 rows)
-
 select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
  x 
 ---
@@ -1351,24 +1335,6 @@ select count(*) from subselect_t1 where x in (select y from subselect_t2);
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
-                                                   QUERY PLAN                                                   
-----------------------------------------------------------------------------------------------------------------
- Aggregate  (cost=6.50..6.51 rows=1 width=8)
-   ->  Gather Motion 2:1  (slice2; segments: 2)  (cost=6.45..6.49 rows=1 width=8)
-         ->  Aggregate  (cost=6.45..6.46 rows=1 width=8)
-               ->  Hash EXISTS Join  (cost=4.37..6.44 rows=2 width=0)
-                     Hash Cond: subselect_t1.x = "IN_subquery".y
-                     ->  Seq Scan on subselect_t1  (cost=0.00..2.02 rows=1 width=4)
-                     ->  Hash  (cost=4.30..4.30 rows=3 width=4)
-                           ->  Redistribute Motion 2:2  (slice1; segments: 2)  (cost=0.00..4.30 rows=3 width=4)
-                                 Hash Key: "IN_subquery".y
-                                 ->  Append  (cost=0.00..4.12 rows=3 width=4)
-                                       ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
-                                       ->  Seq Scan on subselect_t2  (cost=0.00..2.03 rows=2 width=4)
- Settings:  optimizer_segments=3
-(13 rows)
-
 select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
  count 
 -------

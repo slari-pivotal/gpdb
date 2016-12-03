@@ -1301,24 +1301,6 @@ select * from subselect_t1 where x in (select y from subselect_t2);
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
-                                        QUERY PLAN                                        
-------------------------------------------------------------------------------------------
- Gather Motion 2:1  (slice1; segments: 2)  (cost=0.00..1293.00 rows=2 width=4)
-   ->  Hash Join  (cost=0.00..1293.00 rows=1 width=4)
-         Hash Cond: "outer".y = subselect_t1.x
-         ->  GroupAggregate  (cost=0.00..862.00 rows=2 width=4)
-               Group By: y
-               ->  Sort  (cost=0.00..862.00 rows=3 width=4)
-                     Sort Key: y
-                     ->  Append  (cost=0.00..862.00 rows=3 width=4)
-                           ->  Table Scan on subselect_t2  (cost=0.00..431.00 rows=2 width=4)
-                           ->  Table Scan on subselect_t2  (cost=0.00..431.00 rows=2 width=4)
-         ->  Hash  (cost=431.00..431.00 rows=1 width=4)
-               ->  Table Scan on subselect_t1  (cost=0.00..431.00 rows=1 width=4)
- Settings:  optimizer=on; optimizer_segments=3
-(13 rows)
-
 select * from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
  x 
 ---
@@ -1360,26 +1342,6 @@ select count(*) from subselect_t1 where x in (select y from subselect_t2);
 -- start_ignore
 -- Known_opt_diff: MPP-21351
 -- end_ignore
-explain select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
-                                              QUERY PLAN                                              
-------------------------------------------------------------------------------------------------------
- Aggregate  (cost=0.00..1293.00 rows=1 width=8)
-   ->  Gather Motion 2:1  (slice1; segments: 2)  (cost=0.00..1293.00 rows=1 width=8)
-         ->  Aggregate  (cost=0.00..1293.00 rows=1 width=8)
-               ->  Hash Join  (cost=0.00..1293.00 rows=1 width=1)
-                     Hash Cond: "outer".y = subselect_t1.x
-                     ->  GroupAggregate  (cost=0.00..862.00 rows=2 width=4)
-                           Group By: y
-                           ->  Sort  (cost=0.00..862.00 rows=3 width=4)
-                                 Sort Key: y
-                                 ->  Append  (cost=0.00..862.00 rows=3 width=4)
-                                       ->  Table Scan on subselect_t2  (cost=0.00..431.00 rows=2 width=4)
-                                       ->  Table Scan on subselect_t2  (cost=0.00..431.00 rows=2 width=4)
-                     ->  Hash  (cost=431.00..431.00 rows=1 width=4)
-                           ->  Table Scan on subselect_t1  (cost=0.00..431.00 rows=1 width=4)
- Settings:  optimizer=on; optimizer_segments=3
-(15 rows)
-
 select count(*) from subselect_t1 where x in (select y from subselect_t2 union all select y from subselect_t2);
  count 
 -------

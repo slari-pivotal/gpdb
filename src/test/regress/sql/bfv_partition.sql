@@ -477,9 +477,15 @@ select count_operator('explain select * from (select * from p1 union select * fr
 
 select count_operator('explain select * from (select * from p1 union select * from p union all select * from p2) as p_all, t where p_all.b=t.b;','Partition Selector');
 
+-- start_ignore
+set optimizer_parallel_union=off; -- TODO: remove the GUC setting after story #134885333 is fixed
+-- end_ignore
 select count_operator('explain select * from (select * from p1 union select * from p2 intersect all select * from p3) as p_all, t where p_all.b=t.b;','Partition Selector');
 
 select count_operator('explain select * from (select * from p1 union select * from p intersect all select * from p2) as p_all, t where p_all.b=t.b;','Partition Selector');
+-- start_ignore
+reset optimizer_parallel_union; -- TODO: remove the GUC setting after story #134885333 is fixed
+-- end_ignore
 
 -- CLEANUP
 -- start_ignore
