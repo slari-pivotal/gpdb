@@ -21,18 +21,21 @@ function prep_ccache() {
       export PATH="$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin:$PATH"
       ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/gcc"
       ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/g++"
+      print_ccache_stats
       ;;
     sles)
       export PATH="$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin:$PATH"
       ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/gcc"
       ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/g++"
+      print_ccache_stats
+      ;;
+    win32)
       ;;
     *)
       echo "only centos and sles are supported TARGET_OS'es"
       false
       ;;
   esac
-  print_ccache_stats
 }
 
 function prep_env_for_centos() {

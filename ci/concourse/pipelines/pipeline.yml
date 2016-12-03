@@ -295,15 +295,6 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: ccache_gpdb_sles11/ccache_gpdb.tar.gz
 
-- name: ccache_gpdb_mingw
-  type: s3
-  source:
-    access_key_id: {{bucket-access-key-id}}
-    bucket: {{bucket-name}}
-    region_name: {{aws-region}}
-    secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: ccache_gpdb_mingw/ccache_gpdb.tar.gz
-
 - name: bin_gpdb_windows_clients
   type: s3
   source:
@@ -783,9 +774,6 @@ jobs:
     - put: bin_gpdb_windows_loaders
       params:
         file: gpdb_artifacts/greenplum-loaders-*-WinXP-x86_32.msi
-    - put: ccache_gpdb_mingw
-      params:
-        file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 - name: compile_gpdb_sles
   public: true
