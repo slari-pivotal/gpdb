@@ -1186,6 +1186,12 @@ puttuple_common(Tuplesortstate *state, SortTuple *tuple)
 			 * Dump tuples until we are back under the limit.
 			 */
 			dumptuples(state, false);
+
+			if (state->instrument)
+			{
+				state->instrument->workfileCreated = true;
+			}
+
 			break;
 		case TSS_BUILDRUNS:
 
