@@ -15,7 +15,6 @@ function prep_env_for_sles() {
   export JAVA_HOME=/usr/lib64/jvm/java-1.6.0-openjdk-1.6.0
   export PATH=${JAVA_HOME}/bin:${PATH}
   source /opt/gcc_env.sh
-  prep_ccache
 }
 
 function build_gpdb() {
