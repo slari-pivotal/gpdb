@@ -6281,7 +6281,7 @@ dumpIndex(Archive *fout, IndxInfo *indxinfo)
 		 * DROP must be fully qualified in case same name appears in
 		 * pg_catalog
 		 */
-		appendPQExpBuffer(delq, "DROP INDEX %s.",
+		appendPQExpBuffer(delq, "DROP INDEX IF EXISTS %s.",
 						  fmtId(tbinfo->dobj.namespace->dobj.name));
 		appendPQExpBuffer(delq, "%s;\n",
 						  fmtId(indxinfo->dobj.name));
@@ -6382,11 +6382,11 @@ dumpConstraint(Archive *fout, ConstraintInfo *coninfo)
 		 * DROP must be fully qualified in case same name appears in
 		 * pg_catalog
 		 */
-		appendPQExpBuffer(delq, "ALTER TABLE ONLY %s.",
+		appendPQExpBuffer(delq, "select pg_temp.drop_table_constraint_only_if_exists('%s',",
 						  fmtId(tbinfo->dobj.namespace->dobj.name));
-		appendPQExpBuffer(delq, "%s ",
+		appendPQExpBuffer(delq, " '%s',",
 						  fmtId(tbinfo->dobj.name));
-		appendPQExpBuffer(delq, "DROP CONSTRAINT %s;\n",
+		appendPQExpBuffer(delq, " '%s');\n",
 						  fmtId(coninfo->dobj.name));
 
 		ArchiveEntry(fout, coninfo->dobj.catId, coninfo->dobj.dumpId,
@@ -6414,11 +6414,11 @@ dumpConstraint(Archive *fout, ConstraintInfo *coninfo)
 		 * DROP must be fully qualified in case same name appears in
 		 * pg_catalog
 		 */
-		appendPQExpBuffer(delq, "ALTER TABLE ONLY %s.",
+		appendPQExpBuffer(delq, "select pg_temp.drop_table_constraint_only_if_exists('%s',",
 						  fmtId(tbinfo->dobj.namespace->dobj.name));
-		appendPQExpBuffer(delq, "%s ",
+		appendPQExpBuffer(delq, " '%s',",
 						  fmtId(tbinfo->dobj.name));
-		appendPQExpBuffer(delq, "DROP CONSTRAINT %s;\n",
+		appendPQExpBuffer(delq, " '%s');\n",
 						  fmtId(coninfo->dobj.name));
 
 		ArchiveEntry(fout, coninfo->dobj.catId, coninfo->dobj.dumpId,
@@ -6751,7 +6751,7 @@ dumpTrigger(Archive *fout, TriggerInfo *tginfo)
 	/*
 	 * DROP must be fully qualified in case same name appears in pg_catalog
 	 */
-	appendPQExpBuffer(delqry, "DROP TRIGGER %s ",
+	appendPQExpBuffer(delqry, "DROP TRIGGER IF EXISTS %s ",
 					  fmtId(tginfo->dobj.name));
 	appendPQExpBuffer(delqry, "ON %s.",
 					  fmtId(tbinfo->dobj.namespace->dobj.name));
@@ -6956,7 +6956,7 @@ dumpRule(Archive *fout, RuleInfo *rinfo)
 	/*
 	 * DROP must be fully qualified in case same name appears in pg_catalog
 	 */
-	appendPQExpBuffer(delcmd, "DROP RULE %s ",
+	appendPQExpBuffer(delcmd, "DROP RULE IF EXISTS %s ",
 					  fmtId(rinfo->dobj.name));
 	appendPQExpBuffer(delcmd, "ON %s.",
 					  fmtId(tbinfo->dobj.namespace->dobj.name));
