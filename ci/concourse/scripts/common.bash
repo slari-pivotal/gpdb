@@ -33,6 +33,7 @@ function prep_ccache() {
       print_ccache_stats
       ;;
     win32)
+      echo "skipping ccache for win32"
       ;;
     *)
       echo "only centos and sles are supported TARGET_OS'es"
