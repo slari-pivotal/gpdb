@@ -13,6 +13,10 @@ function print_ccache_stats() {
   ccache --show-stats
 }
 
+function zero_ccache_stats() {
+  ccache --zero-stats
+}
+
 function prep_ccache() {
   export CCACHE_BASEDIR=$(pwd)/gpdb_src
   export CCACHE_DIR=$(pwd)/ccache
@@ -25,12 +29,14 @@ function prep_ccache() {
       ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/gcc"
       ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/g++"
       print_ccache_stats
+      zero_ccache_stats
       ;;
     sles)
       export PATH="$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin:$PATH"
       ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/gcc"
       ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/ccache" "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/ccache/bin/g++"
       print_ccache_stats
+      zero_ccache_stats
       ;;
     win32)
       echo "skipping ccache for win32"
