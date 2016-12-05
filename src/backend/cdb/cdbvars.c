@@ -24,6 +24,7 @@
 #include "libpq/libpq-be.h"
 #include "utils/memutils.h"
 #include "storage/bfz.h"
+#include "storage/proc.h"
 #include "cdb/memquota.h"
 
 /*
@@ -551,6 +552,9 @@ assign_gp_session_role(const char *newval, bool doit, GucSource source __attribu
 
 		if (Gp_role == GP_ROLE_DISPATCH)
 			Gp_segment = -1;
+
+		if (Gp_role == GP_ROLE_UTILITY && MyProc != NULL)
+			MyProc->mppIsWriter = false;
 	}
 	return newval;
 }
