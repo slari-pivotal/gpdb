@@ -10,7 +10,7 @@ function set_env() {
 }
 
 function print_ccache_stats() {
-  ccache -s
+  ccache --show-stats
 }
 
 function prep_ccache() {
