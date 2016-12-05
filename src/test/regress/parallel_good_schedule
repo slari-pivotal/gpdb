@@ -22,7 +22,7 @@ test: qp_gist_indexes2 qp_gist_indexes3 qp_gist_indexes4
 test: qp_query_execution
 
 # namespace will show diff if concurrent work has temporary tables.
-test: without_oid namespace truncate sequence gpdiffcheck gptokencheck olap_setup
+test: without_oid namespace truncate sequence gpdiffcheck gptokencheck olap_setup subtransaction_limit
 # test 'partition' needs to serial since occasionally it picks up other tables in its view
 test: partition
 test: gp_hashagg gp_dqa exttab1 privileges
