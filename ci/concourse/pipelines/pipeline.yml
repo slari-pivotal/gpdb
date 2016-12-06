@@ -235,10 +235,11 @@ resources:
     username: {{docker_username}}
     password: {{docker_password}}
 
-- name: sles11-toolchain
+- name: sles-gpdb-dev
   type: docker-image
   source:
-    repository: pivotaldata/sles11sp4-toolchain
+    repository: pivotaldata/sles-gpdb-dev
+    tag: '11'
     username: {{docker_username}}
     password: {{docker_password}}
 
@@ -794,13 +795,13 @@ jobs:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: sles11-toolchain
+    - get: sles-gpdb-dev
     - get: ccache_snapshot
       resource: ccache_gpdb_sles11
       trigger: false
   - task: build_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: sles11-toolchain
+    image: sles-gpdb-dev
     params:
       IVYREPO_HOST: {{ivyrepo_host}}
       IVYREPO_REALM: {{ivyrepo_realm}}
@@ -994,10 +995,10 @@ jobs:
       resource: bin_gpdb_sles
       passed: [compile_gpdb_sles]
       trigger: true
-    - get: sles11-toolchain
+    - get: sles-gpdb-dev
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
-    image: sles11-toolchain
+    image: sles-gpdb-dev
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
@@ -1036,10 +1037,10 @@ jobs:
       resource: bin_gpdb_sles
       passed: [compile_gpdb_sles]
       trigger: true
-    - get: sles11-toolchain
+    - get: sles-gpdb-dev
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
-    image: sles11-toolchain
+    image: sles-gpdb-dev
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
