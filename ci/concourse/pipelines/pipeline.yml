@@ -883,7 +883,7 @@ jobs:
     - get: gpdb_src
       trigger: true
     - get: centos72-java7-gpdb-dev-image
-    - get: ccache
+    - get: ccache_snapshot
       resource: ccache_gpdb_centos7
       trigger: false
   - task: compile_gpdb
