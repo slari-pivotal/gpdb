@@ -179,6 +179,16 @@ groups:
   - compile_gpdb_windows_ccl
 
 ## ======================================================================
+## resource types
+## ======================================================================
+
+resource_types:
+- name: s3-week-long-urls
+  type: docker-image
+  source:
+    repository: pivotaldata/s3-resource
+
+## ======================================================================
 ## resources
 ## ======================================================================
 
@@ -332,7 +342,7 @@ resources:
     versioned_file: sync_tools_gpdb_sles/sync_tools_gpdb.tar.gz
 
 - name: gpdb_src_archive
-  type: s3
+  type: s3-week-long-urls
   source:
     private: true
     access_key_id: {{bucket-access-key-id}}
@@ -342,7 +352,7 @@ resources:
     versioned_file: gpdb_src_archive/greenplum-db-4.3.11-src.tar.gz
 
 - name: installer_rhel5_gpdb_rc
-  type: s3
+  type: s3-week-long-urls
   source:
     private: true
     access_key_id: {{bucket-access-key-id}}
@@ -379,7 +389,7 @@ resources:
     versioned_file: deliverables/greenplum-clients-4.3.11-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_rc
-  type: s3
+  type: s3-week-long-urls
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
@@ -415,7 +425,7 @@ resources:
     versioned_file: deliverables/greenplum-db-appliance-4.3.11-build-1-rhel5-x86_64.zip.md5
 
 - name: qautils_rhel5_tarball
-  type: s3
+  type: s3-week-long-urls
   source:
     private: true
     access_key_id: {{bucket-access-key-id}}
@@ -425,7 +435,7 @@ resources:
     versioned_file: deliverables/QAUtils-rhel5-x86_64.tar.gz
 
 - name: qautils_sles11_tarball
-  type: s3
+  type: s3-week-long-urls
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
