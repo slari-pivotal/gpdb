@@ -243,6 +243,12 @@ resources:
     username: {{docker_username}}
     password: {{docker_password}}
 
+- name: pulse-api-image
+  type: docker-image
+  source:
+    repository: ruby
+    tag: 2-alpine
+
 - name: bin_gpdb_centos
   type: s3
   source:
@@ -1781,6 +1787,7 @@ jobs:
 - name: pulse_MU_BehaveBackupRestore
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -1796,6 +1803,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1803,6 +1811,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1813,6 +1822,7 @@ jobs:
 - name: pulse_MU_BehaveGPCheckcat
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -1828,6 +1838,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1835,6 +1846,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1845,6 +1857,7 @@ jobs:
 - name: pulse_MU_BehaveGPRecoverseg
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -1860,6 +1873,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1867,6 +1881,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1877,6 +1892,7 @@ jobs:
 - name: pulse_MU_BehaveGptransfer43xTo43x
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -1892,6 +1908,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1899,6 +1916,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1909,6 +1927,7 @@ jobs:
 - name: pulse_MU_BehaveNetBackup
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -1924,6 +1943,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1931,6 +1951,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1941,6 +1962,7 @@ jobs:
 - name: pulse_MU_BehaveNetBackup76
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -1956,6 +1978,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1963,6 +1986,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1973,6 +1997,7 @@ jobs:
 - name: pulse_MU_Kerberos-jdbc-no-scm
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -1988,6 +2013,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -1995,6 +2021,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2005,6 +2032,7 @@ jobs:
 - name: pulse_MU_Kerberos-smoke
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2020,6 +2048,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2027,6 +2056,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2037,6 +2067,7 @@ jobs:
 - name: pulse_MU_OpenBAR
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2052,6 +2083,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2059,6 +2091,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2069,6 +2102,7 @@ jobs:
 - name: pulse_MU_DDBOOST_Full
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: false
   - aggregate:
@@ -2084,6 +2118,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2091,6 +2126,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2101,6 +2137,7 @@ jobs:
 - name: pulse_MU_DDBOOST_Incremental
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: false
   - aggregate:
@@ -2116,6 +2153,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2123,6 +2161,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2133,6 +2172,7 @@ jobs:
 - name: pulse_MU_MFR-TINC
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: false
   - aggregate:
@@ -2148,6 +2188,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2155,6 +2196,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2165,6 +2207,7 @@ jobs:
 - name: pulse_MU_Gpexpand
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2180,6 +2223,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2187,6 +2231,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2197,6 +2242,7 @@ jobs:
 - name: pulse_cs-aoco-compression
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2212,6 +2258,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2219,6 +2266,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2229,6 +2277,7 @@ jobs:
 - name: pulse_cs-bin-swap
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2244,6 +2293,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2251,6 +2301,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2261,6 +2312,7 @@ jobs:
 - name: pulse_cs-filerep-schema-topology-crashrecov
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2276,6 +2328,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2283,6 +2336,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2293,6 +2347,7 @@ jobs:
 - name: pulse_cs-filerep-end-to-end
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2308,6 +2363,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2315,6 +2371,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2325,6 +2382,7 @@ jobs:
 - name: pulse_cs-fts
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2340,6 +2398,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2347,6 +2406,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2357,6 +2417,7 @@ jobs:
 - name: pulse_cs-persistent-tables
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2372,6 +2433,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2379,6 +2441,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2389,6 +2452,7 @@ jobs:
 - name: pulse_cs-pg-two-phase
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2404,6 +2468,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2411,6 +2476,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2421,6 +2487,7 @@ jobs:
 - name: pulse_cs-storage
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2436,6 +2503,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2443,6 +2511,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2453,6 +2522,7 @@ jobs:
 - name: pulse_cs-sub-transaction-limit-removal
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2468,6 +2538,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2475,6 +2546,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2485,6 +2557,7 @@ jobs:
 - name: pulse_cs-uao-regression
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2500,6 +2573,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2507,6 +2581,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2517,6 +2592,7 @@ jobs:
 - name: pulse_cs-walrepl-multinode
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2532,6 +2608,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2539,6 +2616,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2549,6 +2627,7 @@ jobs:
 - name: pulse_QP_memory-accounting
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2564,6 +2643,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2571,6 +2651,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2581,6 +2662,7 @@ jobs:
 - name: pulse_QP_workfile-tinc
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2596,6 +2678,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2603,6 +2686,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2613,6 +2697,7 @@ jobs:
 - name: pulse_QP_optimizer-functional
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2628,6 +2713,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2635,6 +2721,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2645,6 +2732,7 @@ jobs:
 - name: pulse_Gppkg
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2660,6 +2748,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2667,6 +2756,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2677,6 +2767,7 @@ jobs:
 - name: pulse_Gppkg-redhat6
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2692,6 +2783,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2699,6 +2791,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2709,6 +2802,7 @@ jobs:
 - name: pulse_CCLE
   public: true
   plan:
+  - get: pulse-api-image
   - get: weekly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2724,6 +2818,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2731,6 +2826,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2741,6 +2837,7 @@ jobs:
 - name: pulse_CCLE-sles11sp4
   public: true
   plan:
+  - get: pulse-api-image
   - get: weekly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2756,6 +2853,7 @@ jobs:
       resource: qautils_sles11_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2763,6 +2861,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2773,6 +2872,7 @@ jobs:
 - name: pulse_mpp-interconnect
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2788,6 +2888,7 @@ jobs:
       resource: qautils_rhel5_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2795,6 +2896,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2805,6 +2907,7 @@ jobs:
 - name: pulse_mpp-interconnect-sles
   public: true
   plan:
+  - get: pulse-api-image
   - get: nightly-trigger-pulse
     trigger: true
   - aggregate:
@@ -2820,6 +2923,7 @@ jobs:
       resource: qautils_sles11_tarball
       passed: [gpdb_sync_to_dist]
   - task: trigger_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
@@ -2827,6 +2931,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
