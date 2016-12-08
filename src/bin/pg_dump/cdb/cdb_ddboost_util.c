@@ -879,39 +879,39 @@ parmValNeedsQuotes(const char *Value)
 static char *
 addPassThroughLongParm(const char *Parm, const char *pszValue, char *pszPassThroughParmString)
 {
-        char       *pszRtn;
-        bool            bFirstTime = (pszPassThroughParmString == NULL);
+	char	   *pszRtn;
+	bool		bFirstTime = (pszPassThroughParmString == NULL);
 
-        if (pszValue != NULL)
-        {
-                if (parmValNeedsQuotes(pszValue))
-                {
-                        PQExpBuffer valueBuf = createPQExpBuffer();
+	if (pszValue != NULL)
+	{
+		if (parmValNeedsQuotes(pszValue))
+		{
+			PQExpBuffer valueBuf = createPQExpBuffer();
 
-                        if (bFirstTime)
-                                pszRtn = MakeString("--%s \"%s\"", Parm, shellEscape(pszValue, valueBuf));
-                        else
-                                pszRtn = MakeString("%s --%s \"%s\"", pszPassThroughParmString, Parm, shellEscape(pszValue, valueBuf));
+			if (bFirstTime)
+				pszRtn = MakeString("--%s \"%s\"", Parm, shellEscape(pszValue, valueBuf, false, false));
+			else
+				pszRtn = MakeString("%s --%s \"%s\"", pszPassThroughParmString, Parm, shellEscape(pszValue, valueBuf, false, false));
 
-                        destroyPQExpBuffer(valueBuf);
-                }
-                else
-                {
-                        if (bFirstTime)
-                                pszRtn = MakeString("--%s %s", Parm, pszValue);
-                        else
-                                pszRtn = MakeString("%s --%s %s", pszPassThroughParmString, Parm, pszValue);
-                }
-        }
-        else
-        {
-                if (bFirstTime)
-                        pszRtn = MakeString("--%s", Parm);
-                else
-                        pszRtn = MakeString("%s --%s", pszPassThroughParmString, Parm);
-        }
+			destroyPQExpBuffer(valueBuf);
+		}
+		else
+		{
+			if (bFirstTime)
+				pszRtn = MakeString("--%s %s", Parm, pszValue);
+			else
+				pszRtn = MakeString("%s --%s %s", pszPassThroughParmString, Parm, pszValue);
+		}
+	}
+	else
+	{
+		if (bFirstTime)
+			pszRtn = MakeString("--%s", Parm);
+		else
+			pszRtn = MakeString("%s --%s", pszPassThroughParmString, Parm);
+	}
 
-        return pszRtn;
+	return pszRtn;
 }
 
 int
