@@ -66,6 +66,7 @@ groups:
   - pulse_CCLE-sles11sp4
   - pulse_mpp-interconnect
   - pulse_mpp-interconnect-sles
+  - compile_gpdb_windows_ccl
 
 - name: CentOS/RHEL
   jobs:
