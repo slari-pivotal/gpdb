@@ -5,6 +5,9 @@ wix-packaging.ci.eng.pivotal.io
 This directory describes how to configure a Windows machine to package the CCLs for that platform.
 It has a Cloudformation template for launching an AWS instance from an AMI which is ready to package
 the CCLs with Wix. See the toolsmiths-images repository for more information on the AMI.
+Unfortunately, as of Dec. 2016, the process for generating the AMI is manual, based on a README.md
+
+The particular AMI that this Cloudformation expects to use is encoded in the Cloudformation template.
 
 `aws cloudformation update-stack --stack-name wix-packaging --template-body "$(cat cloudformation-template.yml)"`
 
