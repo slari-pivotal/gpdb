@@ -196,10 +196,11 @@ resources:
     private_key: {{gpdb-git-key}}
     uri: {{gpdb-git-remote}}
 
-- name: centos511-java7-gpdb-dev-image
+- name: centos-gpdb-dev-5
   type: docker-image
   source:
-    repository: pivotaldata/centos511-java7-gpdb-dev-image
+    repository: pivotaldata/centos-gpdb-dev
+    tag: '5'
     username: {{docker_username}}
     password: {{docker_password}}
 
@@ -210,17 +211,19 @@ resources:
     username: {{docker_username}}
     password: {{docker_password}}
 
-- name: centos67-java7-gpdb-dev-image
+- name: centos-gpdb-dev-6
   type: docker-image
   source:
-    repository: pivotaldata/centos67-java7-gpdb-dev-image
+    repository: pivotaldata/centos-gpdb-dev
+    tag: '6'
     username: {{docker_username}}
     password: {{docker_password}}
 
-- name: centos72-java7-gpdb-dev-image
+- name: centos-gpdb-dev-7
   type: docker-image
   source:
-    repository: pivotaldata/centos72-java7-gpdb-dev-image
+    repository: pivotaldata/centos-gpdb-dev
+    tag: '7'
     username: {{docker_username}}
     password: {{docker_password}}
 
@@ -694,13 +697,13 @@ jobs:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: centos511-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-5
     - get: ccache_snapshot
       resource: ccache_gpdb_centos5
       trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: centos511-java7-gpdb-dev-image
+    image: centos-gpdb-dev-5
     params:
       TARGET_OS: centos
       TARGET_OS_VERSION: 5
@@ -861,13 +864,13 @@ jobs:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: centos67-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-6
     - get: ccache_snapshot
       resource: ccache_gpdb_centos6
       trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: centos67-java7-gpdb-dev-image
+    image: centos-gpdb-dev-6
     params:
       IVYREPO_HOST: {{ivyrepo_host}}
       IVYREPO_REALM: {{ivyrepo_realm}}
@@ -890,13 +893,13 @@ jobs:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: centos72-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-7
     - get: ccache_snapshot
       resource: ccache_gpdb_centos7
       trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: centos72-java7-gpdb-dev-image
+    image: centos-gpdb-dev-7
     params:
       IVYREPO_HOST: {{ivyrepo_host}}
       IVYREPO_REALM: {{ivyrepo_realm}}
@@ -1094,26 +1097,26 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
-    - get: centos511-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-5
   - aggregate:
     - task: fts_transitions_part01
       timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
+      image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: fts_transitions_part01
         TEST_OS: centos
     - task: fts_transitions_part02
       timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
+      image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: fts_transitions_part02
         TEST_OS: centos
     - task: fts_transitions_part03
       timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
+      image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: fts_transitions_part03
         TEST_OS: centos
@@ -1132,39 +1135,39 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
-    - get: centos511-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-5
   - aggregate:
     - task: aocoalter_catalog_loaders
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
+      image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: aocoalter_catalog_loaders
         TEST_OS: centos
     - task: storage_persistent_filerep_accessmethods_and_vacuum
       timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
+      image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: storage_persistent_filerep_accessmethods_and_vacuum
         TEST_OS: centos
     - task: filerep_end_to_end_xlog_ctlog_cons
       timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
+      image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: filerep_end_to_end_xlog_ctlog_cons
         TEST_OS: centos
     - task: storage_queryfinish_and_transactionmanagement
       timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
+      image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: storage_queryfinish_and_transactionmanagement
         TEST_OS: centos
     - task: storage_vacuum_xidlimits
       timeout: 3h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: centos511-java7-gpdb-dev-image
+      image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: storage_vacuum_xidlimits
         TEST_OS: centos
@@ -1183,11 +1186,11 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
-    - get: centos511-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-5
   - task: sub_transaction_limit_removal
     timeout: 3h
     file: gpdb_src/ci/concourse/tinc_gpdb.yml
-    image: centos511-java7-gpdb-dev-image
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: sub_transaction_limit_removal
       TEST_OS: centos
@@ -1206,11 +1209,11 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
-    - get: centos511-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-5
   - task: uao_orca_both_regression
     timeout: 2h
     file: gpdb_src/ci/concourse/tinc_gpdb.yml
-    image: centos511-java7-gpdb-dev-image
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: uao_orca_both_regression
       TEST_OS: centos
