@@ -296,8 +296,10 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
       BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
@@ -316,8 +318,10 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
       BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
@@ -336,8 +340,10 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
@@ -356,8 +362,10 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-good
       BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
@@ -376,8 +384,10 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: MU_check_centos
     file: gpdb_src/ci/concourse/gpMgmt_check_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       TEST_OS: centos
 
@@ -397,12 +407,15 @@ jobs:
         - icg_planner_centos
         - MU_check_centos
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: separate_qautils_files_for_rc
     file: gpdb_src/ci/concourse/separate_qautils_files_for_rc.yml
+    image: centos-gpdb-dev-5
     params:
       QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
   - task: gpdb_rc_packaging_centos
     file: gpdb_src/ci/concourse/gpdb_packaging.yml
+    image: centos-gpdb-dev-5
     input_mapping:
       bin_gpdb: rc_bin_gpdb
     output_mapping:
@@ -449,8 +462,10 @@ jobs:
     - get: greenplum_jdbc_zip
     - get: gpsupport_package
     - get: gpmt_binary
+    - get: centos-gpdb-dev-5
   - task: update_artifacts
     file: gpdb_src/ci/concourse/apply_morgan_stanley_patches.yml
+    image: centos-gpdb-dev-5
   - aggregate:
     - put: ms_installer_rhel5_gpdb_rc
       params:
@@ -476,8 +491,10 @@ jobs:
       passed: &Stage3JobsCentos
       - gpdb_rc_packaging_centos
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: MU_backup_smoke_centos
     file: gpdb_src/ci/concourse/behave_tests.yml
+    image: centos-gpdb-dev-5
     params:
       BEHAVE_TAGS: backupsmoke
       TEST_OS: centos
@@ -492,8 +509,10 @@ jobs:
       resource: bin_gpdb_centos
       passed: *Stage3JobsCentos
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: MU_backup_centos
     file: gpdb_src/ci/concourse/behave_tests.yml
+    image: centos-gpdb-dev-5
     params:
       BEHAVE_TAGS: backup
       TEST_OS: centos
@@ -515,9 +534,11 @@ jobs:
       passed: [apply_morgan_stanley_specific_patches]
     - get: ms_installer_rhel5_gpdb_bundled_clients_md5
       passed: [apply_morgan_stanley_specific_patches]
+    - get: centos-gpdb-dev-5
   - aggregate:
     - task: ms_gpdb_rhel5_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: ms_installer_rhel5_gpdb_rc
       params:
@@ -526,6 +547,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: ms_gpdb_rhel5_sync_to_dist_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: ms_installer_rhel5_gpdb_rc_md5
       params:
@@ -534,6 +556,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: ms_gpdb_rhel5_clients_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: ms_installer_rhel5_gpdb_bundled_clients
       params:
@@ -542,6 +565,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: ms_gpdb_rhel5_clients_sync_to_dist_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: ms_installer_rhel5_gpdb_bundled_clients_md5
       params:
