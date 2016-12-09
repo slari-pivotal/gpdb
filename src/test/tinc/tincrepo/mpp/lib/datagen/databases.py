@@ -17,6 +17,7 @@ limitations under the License.
 
 from mpp.lib.datagen import TINCTestDatabase
 from mpp.lib.datagen import TINCDatagenException
+from mpp.lib.datagen.dataset import DataSetDatabase
 from mpp.lib.datagen.dispatch.db import DispatchSkewDatabase
 
 # Global database dict for supported databases. Each test case will be associated with a
@@ -30,3 +31,6 @@ __databases__[TINC_TEST_DATABASE] = TINCTestDatabase(database_name=TINC_TEST_DAT
 
 # Database for query-finish
 __databases__['queryfinish'] = DispatchSkewDatabase()
+
+# Database for Memory Accounting Tests
+__databases__['memory_accounting'] = DataSetDatabase(database_name='memory_accounting')
