@@ -189,13 +189,6 @@ resources:
     private_key: {{gpdb-git-key}}
     uri: {{gpdb-git-remote}}
 
-- name: gpdb_src_windows_ccl
-  type: git
-  source:
-    branch: gpdb_src_windows_ccl
-    private_key: {{gpdb-git-key}}
-    uri: {{gpdb-git-remote}}
-
 - name: centos-gpdb-dev-5
   type: docker-image
   source:
@@ -267,6 +260,15 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: sync_tools_gpdb_centos/sync_tools_gpdb.tar.gz
+
+- name: ccache_empty
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_empty/ccache_gpdb.tar.gz
 
 - name: ccache_gpdb_centos5
   type: s3
@@ -762,9 +764,10 @@ jobs:
   plan:
   - aggregate:
     - get: gpdb_src
-      resource: gpdb_src_windows_ccl
       trigger: true
     - get: centos-mingw
+    - get: ccache_snapshot
+      resource: ccache_empty
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
     image: centos-mingw
