@@ -71,6 +71,7 @@ function export_gpdb_win32_ccl() {
 }
 
 function export_ccache() {
+  [ -d ccache ] || return
   TARBALL="$GPDB_ARTIFACTS_DIR"/ccache_gpdb.tar.gz
   print_ccache_stats
   tar -czf $TARBALL ccache

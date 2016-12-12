@@ -10,11 +10,15 @@ function set_env() {
 }
 
 function print_ccache_stats() {
-  ccache --show-stats
+  case "$TARGET_OS" in
+    centos|sles) ccache --show-stats ;;
+  esac
 }
 
 function zero_ccache_stats() {
-  ccache --zero-stats
+  case "$TARGET_OS" in
+    centos|sles) ccache --zero-stats ;;
+  esac
 }
 
 function prep_ccache() {

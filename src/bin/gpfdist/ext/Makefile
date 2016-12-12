@@ -122,7 +122,7 @@ lib/libssl.a:
 	    fi ; \
 	fi
 
-	cd $(OPENSSL) && $(MAKE) clean build_libs >LOG.$(@F)-make 2>&1 ; \
+	cd $(OPENSSL) && $(MAKE) -j1 clean build_libs >LOG.$(@F)-make 2>&1 ; \
 	retval=$$?; \
 	if [ $${retval} != 0 ]; then \
 	    cat LOG.$(@F)-make; \
@@ -161,7 +161,7 @@ lib/libapr-1.a:
 	        exit $${retval}; \
 	    fi ; \
 	fi
-	cd $(APR) && $(MAKE) all install >LOG.$(@F)-make 2>&1 ; \
+	cd $(APR) && $(MAKE) -j1 all install >LOG.$(@F)-make 2>&1 ; \
 	retval=$$?; \
 	if [ $${retval} != 0 ]; then \
 	    cat LOG.$(@F)-make; \
