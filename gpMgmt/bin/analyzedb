@@ -40,8 +40,14 @@ except ImportError, e:
 
 
 EXECNAME = 'analyzedb'
-ANALYZE_SQL = """psql %s -c 'analyze %s'"""
-ANALYZE_ROOT_SQL = """psql %s -c 'analyze rootpartition %s'"""
+
+# Experimentally, this amount yields faster analysis than using a larger
+# statement_mem. It is not clear why this occurs within the GPDB analyze tool.
+# But for clients that have statement_mem set higher as a default
+# configuration, it is important to restrict it only for analyze.
+ANALYZE_SQL = """psql %s -c 'set statement_mem=125000; analyze %s'"""
+ANALYZE_ROOT_SQL = """psql %s -c 'set statement_mem=125000; analyze rootpartition %s'"""
+
 STATEFILE_DIR = 'db_analyze'
 logger = gplog.get_default_logger()
 CURR_TIME = None
