@@ -804,6 +804,7 @@ COptTasks::PoconfCreate
 	ULONG ulJoinArityForAssociativityCommutativity = (ULONG) optimizer_join_arity_for_associativity_commutativity;
 	ULONG ulArrayExpansionThreshold = (ULONG) optimizer_array_expansion_threshold;
 	ULONG ulJoinOrderThreshold = (ULONG) optimizer_join_order_threshold;
+	ULONG ulBroadcastThreshold = (ULONG) optimizer_penalize_broadcast_threshold;
 
 	return GPOS_NEW(pmp) COptimizerConfig
 						(
@@ -816,7 +817,8 @@ COptTasks::PoconfCreate
 								INT_MAX /* optimizer_parts_to_force_sort_on_insert */,
 								ulJoinArityForAssociativityCommutativity,
 								ulArrayExpansionThreshold,
-								ulJoinOrderThreshold
+								ulJoinOrderThreshold,
+								ulBroadcastThreshold
 								)
 						);
 }

@@ -782,6 +782,7 @@ double		optimizer_damping_factor_join;
 double 		optimizer_damping_factor_groupby;
 int			optimizer_segments;
 int			optimizer_join_arity_for_associativity_commutativity;
+int			optimizer_penalize_broadcast_threshold;
 int			optimizer_array_expansion_threshold;
 int 		optimizer_join_order_threshold;
 bool		optimizer_analyze_root_partition;
@@ -6529,6 +6530,15 @@ static struct config_int ConfigureNamesInt[] =
 		},
 		&optimizer_join_arity_for_associativity_commutativity,
 		INT_MAX, 0, INT_MAX, NULL, NULL
+	},
+    {
+		{"optimizer_penalize_broadcast_threshold", PGC_USERSET, QUERY_TUNING_METHOD,
+			gettext_noop("Maximum number of rows of a relation that can be broadcasted without penalty."),
+			NULL,
+			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+		},
+		&optimizer_penalize_broadcast_threshold,
+		10000000, 0, INT_MAX, NULL, NULL
 	},
 	{
 		{"optimizer_array_expansion_threshold", PGC_USERSET, QUERY_TUNING_METHOD,
