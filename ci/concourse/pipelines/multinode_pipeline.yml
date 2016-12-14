@@ -61,10 +61,10 @@ jobs:
       TARGET_OS: centos
   - put: bin_gpdb
     params:
-      from: bin_gpdb/bin_gpdb.tar.gz
+      file: bin_gpdb/bin_gpdb.tar.gz
   - put: sync_tools_gpdb
     params:
-      from: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+      file: sync_tools_gpdb/sync_tools_gpdb.tar.gz
 
 # Stage 2: Packaging
 - name: gpdb_rhel5_packaging
@@ -112,7 +112,7 @@ jobs:
       VPC_ID: {{multinode-vpc-id}}
   - put: hostfile
     params:
-      from: hostfile/internal-hosts
+      file: hostfile/internal-hosts
 
 - name: mn_busmoke
   public: true
@@ -177,7 +177,7 @@ jobs:
       VPC_ID: {{multinode-vpc-id}}
   - put: hostfile
     params:
-      from: hostfile/internal-hosts
+      file: hostfile/internal-hosts
 
 - name: mn_backup
   public: true
@@ -243,7 +243,7 @@ jobs:
       VPC_ID: {{multinode-vpc-id}}
   - put: hostfile
     params:
-      from: hostfile/internal-hosts
+      file: hostfile/internal-hosts
 
 - name: mn_gpcheckcat
   public: true
