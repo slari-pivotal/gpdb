@@ -224,7 +224,6 @@ resources:
 
 jobs:
 - name: compile_gpdb_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -284,7 +283,6 @@ jobs:
 #     passed: &Stage2JobsCentos
 
 - name: icb_orca_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -306,7 +304,6 @@ jobs:
       TEST_OS: centos
 
 - name: icb_planner_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -328,7 +325,6 @@ jobs:
       TEST_OS: centos
 
 - name: icg_orca_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -350,7 +346,6 @@ jobs:
       TEST_OS: centos
 
 - name: icg_planner_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -372,7 +367,6 @@ jobs:
       TEST_OS: centos
 
 - name: MU_check_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -393,7 +387,6 @@ jobs:
 
 # Stage 3a: Packaging the Release Candidate (rc)
 - name: gpdb_rc_packaging_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -435,7 +428,6 @@ jobs:
 
 # Stage 3b: Customize installer files for MS
 - name: apply_morgan_stanley_specific_patches
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -481,7 +473,6 @@ jobs:
         file: ms_installer_rhel5_gpdb_bundled_clients/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
 
 - name: MU_backup_smoke_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -500,7 +491,6 @@ jobs:
       TEST_OS: centos
 
 - name: MU_backup_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -519,7 +509,6 @@ jobs:
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
 - name: gpdb_sync_to_dist
-  public: true
   serial: true
   plan:
   - aggregate:

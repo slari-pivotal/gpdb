@@ -694,7 +694,6 @@ resources:
 
 jobs:
 - name: compile_gpdb_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -762,7 +761,6 @@ jobs:
         file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 - name: compile_gpdb_windows_ccl
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -793,7 +791,6 @@ jobs:
         file: gpdb_artifacts/greenplum-loaders-*-WinXP-x86_32.msi
 
 - name: compile_gpdb_sles
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -862,7 +859,6 @@ jobs:
 
 # Compile gpdb and plperl on centos6
 - name: compile_gpdb_centos6
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -891,7 +887,6 @@ jobs:
 
 # Compile gpdb and plperl on centos7
 - name: compile_gpdb_centos7
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -926,7 +921,6 @@ jobs:
 #     passed: &Stage2JobsCentos
 
 - name: icb_orca_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -948,7 +942,6 @@ jobs:
       TEST_OS: centos
 
 - name: icb_planner_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -970,7 +963,6 @@ jobs:
       TEST_OS: centos
 
 - name: icg_orca_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -992,7 +984,6 @@ jobs:
       TEST_OS: centos
 
 - name: icg_orca_sles
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1014,7 +1005,6 @@ jobs:
       TEST_OS: sles
 
 - name: icg_planner_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1036,7 +1026,6 @@ jobs:
       TEST_OS: centos
 
 - name: icg_planner_sles
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1058,7 +1047,6 @@ jobs:
       TEST_OS: sles
 
 - name: regression_tests_s3_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1079,7 +1067,6 @@ jobs:
       TEST_OS: centos
 
 - name: MU_check_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1099,7 +1086,6 @@ jobs:
       TEST_OS: centos
 
 - name: cs-fts_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1137,7 +1123,6 @@ jobs:
         TEST_OS: centos
 
 - name: cs-storage_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1188,7 +1173,6 @@ jobs:
         TEST_OS: centos
 
 - name: cs-subtransaction_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1211,7 +1195,6 @@ jobs:
       TEST_OS: centos
 
 - name: cs-uao_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1237,7 +1220,6 @@ jobs:
 # Stage 3a: Packaging the Release Candidate (rc)
 
 - name: gpdb_rc_packaging_centos
-  public: true
   plan:
   - get: nightly-trigger-packaging
     trigger: true
@@ -1300,7 +1282,6 @@ jobs:
         file: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
 
 - name: gpdb_rc_packaging_sles
-  public: true
   plan:
   - get: nightly-trigger-packaging
     trigger: true
@@ -1340,7 +1321,6 @@ jobs:
 
 # Stage 3b: Packaging of source code
 - name: gpdb_src_packaging
-  public: true
   plan:
   - get: nightly-trigger-packaging
     trigger: true
@@ -1368,7 +1348,6 @@ jobs:
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
 - name: gpdb_sync_to_dist
-  public: true
   serial: true
   plan:
   - aggregate:
@@ -1745,7 +1724,6 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
 
 - name: gpdb_sync_to_dist_centos6
-  public: true
   plan:
   - aggregate:
     - get: plperl_rhel6_gppkg
@@ -1766,7 +1744,6 @@ jobs:
       SSH_KEY: {{dist-ssh-key}}
 
 - name: gpdb_sync_to_dist_centos7
-  public: true
   plan:
   - aggregate:
     - get: plperl_rhel7_gppkg
@@ -1806,7 +1783,6 @@ jobs:
 # and tag is the tag passed to behave.
 
 - name: MU_backup_smoke_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1826,7 +1802,6 @@ jobs:
       TEST_OS: centos
 
 - name: MU_backup_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1845,7 +1820,6 @@ jobs:
       TEST_OS: centos
 
 - name: pulse_MU_BehaveBackupRestore
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1880,7 +1854,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_BehaveGPCheckcat
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1915,7 +1888,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_BehaveGPRecoverseg
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1950,7 +1922,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_BehaveGptransfer43xTo43x
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1985,7 +1956,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_BehaveNetBackup
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2020,7 +1990,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_BehaveNetBackup76
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2055,7 +2024,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_Kerberos-jdbc-no-scm
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2090,7 +2058,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_Kerberos-smoke
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2125,7 +2092,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_OpenBAR
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2160,7 +2126,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_DDBOOST_Full
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2195,7 +2160,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_DDBOOST_Incremental
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2230,7 +2194,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_MFR-TINC
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2265,7 +2228,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_MU_Gpexpand
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2300,7 +2262,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_cs-aoco-compression
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2335,7 +2296,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_cs-bin-swap
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2370,7 +2330,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_cs-filerep-schema-topology-crashrecov
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2405,7 +2364,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_cs-filerep-end-to-end
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2440,7 +2398,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_cs-persistent-tables
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2475,7 +2432,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_cs-pg-two-phase
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2510,7 +2466,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_cs-walrepl-multinode
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2545,7 +2500,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_QP_memory-accounting
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2580,7 +2534,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_QP_workfile-tinc
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2615,7 +2568,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_QP_optimizer-functional
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2650,7 +2602,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_Gppkg
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2685,7 +2636,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_Gppkg-redhat6
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2720,7 +2670,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_CCLE
-  public: true
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -2755,7 +2704,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_CCLE-sles11sp4
-  public: true
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -2790,7 +2738,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_mpp-interconnect
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2825,7 +2772,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_mpp-interconnect-sles
-  public: true
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -2860,7 +2806,6 @@ jobs:
       PULSE_PASSWORD: {{pulse_password}}
 
 - name: manual_testing_on_pulse_centos
-  public: true
   plan:
   - get: installer_rhel5_gpdb_rc
     passed: [gpdb_sync_to_dist]
@@ -2871,7 +2816,6 @@ jobs:
         path: /bin/false
 
 - name: manual_appliance_testing_centos
-  public: true
   plan:
   - get: installer_appliance_rhel5_gpdb_rc
     passed: [gpdb_sync_to_dist]
@@ -2882,7 +2826,6 @@ jobs:
         path: /bin/false
 
 - name: manual_testing_on_pulse_sles
-  public: true
   plan:
   - get: installer_sles11_gpdb_rc
     passed: [gpdb_sync_to_dist]
@@ -2893,7 +2836,6 @@ jobs:
         path: /bin/false
 
 - name: push_to_pivnet_manually_centos
-  public: true
   plan:
   - get: installer_rhel5_gpdb_rc
     passed: [gpdb_rc_packaging_centos]
@@ -2906,7 +2848,6 @@ jobs:
         path: /bin/false
 
 - name: push_to_pivnet_manually_sles
-  public: true
   plan:
   - get: installer_sles11_gpdb_rc
     passed: [gpdb_rc_packaging_sles]
