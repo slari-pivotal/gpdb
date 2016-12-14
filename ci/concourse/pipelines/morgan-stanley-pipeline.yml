@@ -42,7 +42,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip
+    versioned_file: outputs/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_clients
   type: s3
@@ -51,7 +51,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip
+    versioned_file: outputs/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip
 
 - name: qautils_rhel5_tarball
   type: s3
@@ -60,7 +60,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/QAUtils-rhel5-x86_64.tar.gz
+    versioned_file: outputs/QAUtils-rhel5-x86_64.tar.gz
 
 - name: installer_rhel5_gpdb_connectivity
   type: s3
@@ -69,7 +69,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.9.1MS28-build-1-rhel5-x86_64.zip
+    versioned_file: outputs/greenplum-connectivity-4.3.9.1MS28-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_loaders
   type: s3
@@ -78,7 +78,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.9.1MS28-build-1-rhel5-x86_64.zip
+    versioned_file: outputs/greenplum-loaders-4.3.9.1MS28-build-1-rhel5-x86_64.zip
 
 - name: postgis_rhel5_gppkg
   type: s3
@@ -87,7 +87,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: outputs/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: ddboost_rhel5_gppkg
   type: s3
@@ -96,7 +96,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: outputs/ddboostlib-2.6.2_pv1.2.1_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: pgcrypto_rhel5_gppkg
   type: s3
@@ -105,7 +105,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: outputs/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: plperl_rhel5_gppkg
   type: s3
@@ -114,7 +114,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: outputs/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: pljava_rhel5_gppkg
   type: s3
@@ -123,7 +123,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: outputs/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: plr_rhel5_gppkg
   type: s3
@@ -132,7 +132,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
+    versioned_file: outputs/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
 
 - name: madlib_rhel5_gppkg
   type: s3
@@ -186,7 +186,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: morganstanleydeliverables/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip
 
 - name: ms_installer_rhel5_gpdb_rc_md5
   type: s3
@@ -195,7 +195,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: morganstanleydeliverables/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
 
 - name: ms_installer_rhel5_gpdb_bundled_clients
   type: s3
@@ -204,7 +204,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: morganstanleydeliverables/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip
 
 - name: ms_installer_rhel5_gpdb_bundled_clients_md5
   type: s3
@@ -213,7 +213,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: morganstanleydeliverables/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
 
 ## ======================================================================
 ## jobs
