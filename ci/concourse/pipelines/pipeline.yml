@@ -387,6 +387,7 @@ resources:
 - name: installer_sles11_gpdb_rc
   type: s3-week-long-urls
   source:
+    private: true
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
@@ -433,6 +434,7 @@ resources:
 - name: qautils_sles11_tarball
   type: s3-week-long-urls
   source:
+    private: true
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
