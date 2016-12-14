@@ -106,7 +106,6 @@ CreateQueryDesc(PlannedStmt *plannedstmt,
 	qd->portal_name = NULL;
 
 	qd->gpmon_pkt = NULL;
-	qd->memoryAccountId = MEMORY_OWNER_TYPE_Undefined;
 	
     if (Gp_role != GP_ROLE_EXECUTE)
 	{
