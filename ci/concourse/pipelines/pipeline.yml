@@ -660,15 +660,6 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
 
-# We trigger packaging right before Pulse projects so that the signed URLs
-# do not expire on us
-- name: nightly-trigger-packaging
-  type: time
-  source:
-    location: America/Los_Angeles
-    start: 12:00 AM
-    stop: 1:00 AM
-
 - name: nightly-trigger-pulse
   type: time
   source:
@@ -1236,8 +1227,6 @@ jobs:
 - name: gpdb_rc_packaging_centos
   public: true
   plan:
-  - get: nightly-trigger-packaging
-    trigger: true
   - aggregate:
     - get: gpdb_src
       passed: [icg_planner_centos]
@@ -1299,8 +1288,6 @@ jobs:
 - name: gpdb_rc_packaging_sles
   public: true
   plan:
-  - get: nightly-trigger-packaging
-    trigger: true
   - aggregate:
     - get: gpdb_src
       passed: [icg_planner_sles]
@@ -1339,8 +1326,6 @@ jobs:
 - name: gpdb_src_packaging
   public: true
   plan:
-  - get: nightly-trigger-packaging
-    trigger: true
   - aggregate:
     - get: gpdb_src
       passed:
