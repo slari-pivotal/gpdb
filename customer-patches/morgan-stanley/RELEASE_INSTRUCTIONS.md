@@ -19,15 +19,7 @@ This document describes the steps required to produce a release specific to Morg
 	* customer-patches/morgan-stanley/scripts/gen-customer-installer.sh
 	* getversion
 
-	Note: As of 08/17, the files listed above only requires the change. In case, there are new files added later which needs an update, please update them as well.
-	You can use the below script to update the same.
-	Ex:
-	* Release Number from the base branch: 4.3.9.0.
-	* Targeted Release Number for MS branch: 4.3.9.0MS27.
-
- 	```
- 	$for file in ci/concourse/pipelines/morgan-stanley-pipeline.yml customer-patches/morgan-stanley/scripts/gen-customer-installer.sh getversion ; do sed -i s/4.3.9.0/4.3.9.0MS27/g $file ; done
- 	```
+	Note: getversion is updated from current GPDB version, and MS scripts are updated from last MS release number on 4.3_STABLE
 
 	The artifact names in Concourse are hardcoded because the way the pipeline is currently configured has directory structure in the same variable as the filename.
 	In different parts of the pipeline, the directory structure for the local context is different (S3 bucket, mounted into a container volume, etc.)
