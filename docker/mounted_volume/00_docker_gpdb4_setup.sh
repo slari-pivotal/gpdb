@@ -15,7 +15,7 @@ fi
 
 echo $DOCKER_NAME
 
-docker pull pivotaldata/centos511-java7-gpdb-dev-image
+docker pull pivotaldata/centos-gpdb-dev:5-gcc4.4-happy
 
 pushd $GPDB4_DIR
     git submodule update --init --recursive
@@ -27,7 +27,7 @@ set -e
 
 ## Note that the -v switch is used to mount the OS X’s gpdb4 folder into the container
 ## The privileged and seccomp flags are used to allow gdb to work in Docker (forum post)
-docker create --name $DOCKER_NAME -t -v $GPDB4_DIR:/home/gpadmin/gpdb4_mount --privileged --security-opt seccomp:unconfined -i pivotaldata/centos511-java7-gpdb-dev-image bash
+docker create --name $DOCKER_NAME -t -v $GPDB4_DIR:/home/gpadmin/gpdb4_mount --privileged --security-opt seccomp:unconfined -i pivotaldata/centos-gpdb-dev:5-gcc4.4-happy bash
 docker start $DOCKER_NAME
 docker cp $DOCKER_SCRIPT_SRC_DIR/01_root_docker_setup.sh $DOCKER_NAME:/tmp/
 docker cp $DOCKER_SCRIPT_SRC_DIR/02_docker_gpdb4_setup.sh $DOCKER_NAME:/tmp/
