@@ -103,11 +103,6 @@ FreeInputOptions(InputOptions * pInputOpts)
 	if (pInputOpts->pszReportDirectory != NULL)
 		free(pInputOpts->pszReportDirectory);
 
-    /* hard coded as gzip for now, no need to free
-	if ( pInputOpts->pszCompressionProgram != NULL )
-		free( pInputOpts->pszCompressionProgram );
-	*/
-
 	if (pInputOpts->pszPassThroughParms != NULL)
 		free(pInputOpts->pszPassThroughParms);
 
@@ -119,8 +114,6 @@ FreeInputOptions(InputOptions * pInputOpts)
 
 	if (pInputOpts->pszMasterDBName != NULL)
 		free(pInputOpts->pszMasterDBName);
-
-	/* FreeCDBSet( &pInputOpts->set ); */
 }
 
 /*
