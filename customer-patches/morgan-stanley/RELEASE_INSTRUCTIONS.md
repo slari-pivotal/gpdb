@@ -7,14 +7,14 @@ This document describes the steps required to produce a release specific to Morg
 
 ### Steps
 1. Increment the last release number by 1 for a new MS release.
-2. Checkout a new branch for MS including the new release number.
+1. Checkout a new branch for MS including the new release number.
 
 	```
 	$ git fetch
 	$ #git checkout -b <new_branch> origin/<base_branch>
 	$ git checkout -b 4.3.9.0MS27 origin/4.3.9.0 
 	```
-3. Update the release number in the below files. The artifacts name are hardcoded in the scripts as required by Concourse, so we need to update them with every release:
+1. Update the release number in the below files. The artifacts name are hardcoded in the scripts as required by Concourse, so we need to update them with every release:
 	* ci/concourse/pipelines/morgan-stanley-pipeline.yml
 	* customer-patches/morgan-stanley/scripts/gen-customer-installer.sh
 	* getversion
@@ -24,18 +24,23 @@ This document describes the steps required to produce a release specific to Morg
 	The artifact names in Concourse are hardcoded because the way the pipeline is currently configured has directory structure in the same variable as the filename.
 	In different parts of the pipeline, the directory structure for the local context is different (S3 bucket, mounted into a container volume, etc.)
 	We attempted to refactor the pipelines to unblock this but ran into issues.
-4. Create the pre-requisites as required by the pipeline
-	* Create and check in a new credential file with updated parameter values (git branch and s3 bucket) in [gpdb-ci-deployments](https://www.github.com/greenplum-db/gpdb-ci-deployments)
-            + Create the credential file by copying from the corresponding release branch file. It will have many extraneous values, but should be the most up-to-date ` $ cp gpdb-4.3.9.0-ci-secrets.yml gpdb-4.3.9.0MS27-ci-secrets.yml`
-	        + Add in this line to the bottom of the file `noarch-toolchain-snowflakes-bucket: noarch-toolchain-snowflakes`.  This configures where to get the Madlib gppkg from.
-		+ Ask the Toolsmiths if the auto-push to FTP feature is enabled yet. If not, you'll have to upload it manually
-	* Ensure that a new buckets are created to avoid overwriting the artifacts, and make the buckets "versioned"
-5. Fly set a new pipeline, push the files to git. The pipeline should start
-   automatically
-6. Find the packages. You should see the gpdb server and clients artifacts
-	 generated in S3 at `<main_bucket_name>/morganstanleydeliverables` packaged
+1. Create the pre-requisites as required by the pipeline
+   * Ensure that a new bucket is created to avoid overwriting the artifacts, and enable AWS S3 "versioning" on the bucket
+   * Create the credential file by copying from the corresponding release branch file in [gpdb-ci-deployments](https://www.github.com/greenplum-db/gpdb-ci-deployments). It will have many extraneous values, but should be the most up-to-date starting point ` $ cp gpdb-4.3.9.0-ci-secrets.yml gpdb-4.3.9.0MS27-ci-secrets.yml`
+   * Add in this line to the bottom of the file `noarch-toolchain-snowflakes-bucket: noarch-toolchain-snowflakes`.  This configures where to get the Madlib gppkg from.
+   * Change the `gpdb-git-branch` and `bucket-name` fields in the credentials file
+   * Check in the new credential file
+1. Download `fly` (if necessary)
+1. Log in to Concourse from the command line: `fly -t shared login -c https://shared.ci.eng.pivotal.io -n GPDB`
+1. Fly set a new pipeline: `fly -t shared set-pipeline -p 4.3.9.0MS27 -c ci/concourse/pipelines/morgan-stanley-pipeline.yml -l ../gpdb-ci-deployments/gpdb-4.3.9.0MS27-ci-secrets.yml`
+1. `git push` to the Morgan Stanley branch in the `gpdb4` repository
+1. Unpause the pipeline: `fly -t shared unpause-pipeline -p 4.3.9.0MS27`
+1. Watch it run.
+1. Find the packages. You should see the gpdb server and clients artifacts
+	 generated in S3 at `<main_bucket_name>/deliverables` packaged
 	 as required by MS after pipeline completion.
-7. Make sure it gets up to the FTP server and Morgan Stanley receives it
+1. Make sure it gets up to the FTP server and Morgan Stanley receives it
+     + Ask the Toolsmiths if the auto-push to FTP feature is enabled yet. If not, you'll have to upload it manually
 
 #### Finding the packages
 
