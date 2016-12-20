@@ -86,6 +86,7 @@ int				gp_statistics_blocks_target = 25;
 double			gp_statistics_ndistinct_scaling_ratio_threshold = 0.10;
 double			gp_statistics_sampling_threshold = 10000;
 
+
 /**
  * This struct contains statistics produced during ANALYZE
  * on a column. 
@@ -99,6 +100,11 @@ typedef struct AttributeStatistics
 	ArrayType	*freq;		/* frequencies of most common values */
 	ArrayType	*hist;		/* equi-depth histogram bounds */
 } AttributeStatistics;
+
+/**
+ * Flag to indicate whether analyze is being executed
+ */
+bool            running_analyze = false;
 
 /**
  * Logging level.
@@ -259,10 +265,12 @@ void analyzeStatement(VacuumStmt *stmt, List *relids)
 
 	PG_TRY();
 	{
+		running_analyze = true;
 		analyzeStmt(stmt, relids);
 		gp_autostats_mode = autostatvalBackup;
 		gp_autostats_mode_in_functions = autostatInFunctionsvalBackup;
 		optimizer = optimizerBackup;
+		running_analyze = false;
 	}
 
 	/* Clean up in case of error. */
@@ -271,6 +279,7 @@ void analyzeStatement(VacuumStmt *stmt, List *relids)
 		gp_autostats_mode = autostatvalBackup;
 		gp_autostats_mode_in_functions = autostatInFunctionsvalBackup;
 		optimizer = optimizerBackup;
+		running_analyze = false;
 
 		/* Carry on with error handling. */
 		PG_RE_THROW();
@@ -279,6 +288,7 @@ void analyzeStatement(VacuumStmt *stmt, List *relids)
 	Assert(gp_autostats_mode == autostatvalBackup);
 	Assert(gp_autostats_mode_in_functions == autostatInFunctionsvalBackup);
 	Assert(optimizer == optimizerBackup);
+	Assert(running_analyze == false);
 }
 
 /**

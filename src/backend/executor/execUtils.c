@@ -72,6 +72,11 @@
 #include "utils/typcache.h"
 #include "utils/workfile_mgr.h"
 
+/**
+ * Flag to identify if analyze is being executed
+ */
+extern bool running_analyze;
+
 /* ----------------------------------------------------------------
  *		global counters for number of tuples processed, retrieved,
  *		appended, replaced, deleted.
@@ -651,8 +656,14 @@ ExecAssignResultType(PlanState *planstate, TupleDesc tupDesc)
 	 * rowtypes must be the same between the master and all segments,
 	 * so we must assign typmods at executor startup, before the plan
 	 * gets dispatched to segments.
+	 *
+	 * There is performance impact for running ANALYZE, since it generates
+	 * a lot of short running queries. Hence, it's disabled when ANALYZE
+	 * is runing.
+	 * TODO: Remove running_analyze check once analyze merged with upstream
+	 * where short queries are removed.
 	 */
-	if (tupDesc->tdtypeid == RECORDOID &&
+	if (!running_analyze && tupDesc->tdtypeid == RECORDOID &&
 		tupDesc->tdtypmod < 0)
 		assign_record_type_typmod(tupDesc);
 
