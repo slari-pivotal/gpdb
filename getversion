@@ -1,6 +1,8 @@
 #!/bin/bash
 
-GP_VERSION=4.3.11.0
+# Make sure we're running from the root git repository, not whatever submodule
+# we could have been called from.
+GP_VERSION=$(cd "$(dirname "$0")"; git describe)
 
 GP_BUILDNUMBER=1
 if [ -f BUILD_NUMBER ] ; then
