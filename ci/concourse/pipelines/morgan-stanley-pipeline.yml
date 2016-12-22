@@ -2,6 +2,25 @@
 ## resources
 ## ======================================================================
 
+groups:
+- name: all
+  jobs:
+  - compile_gpdb_centos
+  - icb_orca_centos
+  - icb_planner_centos
+  - icg_orca_centos
+  - icg_planner_centos
+  - MU_check_centos
+  - gpdb_rc_packaging_centos
+  - apply_morgan_stanley_specific_patches
+  - MU_backup_smoke_centos
+  - MU_backup_centos
+  - gpdb_sync_to_dist
+
+- name: Bootstrap
+  jobs:
+  - bootstrap-ccache
+
 resources:
 - name: gpdb_src
   type: git
@@ -576,3 +595,12 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
+
+- name: bootstrap-ccache
+  plan:
+  - get: gpdb_src
+  - task: centos5
+    file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+    output_mapping: {ccache_tar: ccache_gpdb_centos5}
+  - put: ccache_gpdb_centos5
+    params: {file: ccache_gpdb_centos5/ccache_gpdb.tar.gz}
