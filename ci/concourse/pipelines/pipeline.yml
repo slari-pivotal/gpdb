@@ -667,16 +667,17 @@ resources:
   type: time
   source:
     location: America/Los_Angeles
-    start: 1:00 AM
-    stop: 2:00 AM
+    days: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday]
+    start: 5:00 AM
+    stop: 6:00 AM
 
 - name: weekly-trigger-pulse
   type: time
   source:
     location: America/Los_Angeles
     days: [Sunday]
-    start: 1:00 AM
-    stop: 2:00 AM
+    start: 1:00 PM
+    stop: 2:00 PM
 
 ## ======================================================================
 ## jobs
