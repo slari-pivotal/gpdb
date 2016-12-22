@@ -167,6 +167,10 @@ groups:
   jobs:
   - compile_gpdb_windows_ccl
 
+- name: Boostrap
+  jobs:
+  - bootstrap-ccache
+
 ## ======================================================================
 ## resource types
 ## ======================================================================
@@ -2841,3 +2845,38 @@ jobs:
       platform: linux
       run:
         path: /bin/false
+
+- name: bootstrap-ccache
+  plan:
+  - get: gpdb_src
+  - aggregate:
+    - do:
+      - task: centos5
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_centos5}
+      - put: ccache_gpdb_centos5
+        params: {file: ccache_gpdb_centos5/ccache_gpdb.tar.gz}
+    - do:
+      - task: centos6
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_centos6}
+      - put: ccache_gpdb_centos6
+        params: {file: ccache_gpdb_centos6/ccache_gpdb.tar.gz}
+    - do:
+      - task: centos7
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_centos7}
+      - put: ccache_gpdb_centos7
+        params: {file: ccache_gpdb_centos7/ccache_gpdb.tar.gz}
+    - do:
+      - task: sles11
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_sles11}
+      - put: ccache_gpdb_sles11
+        params: {file: ccache_gpdb_sles11/ccache_gpdb.tar.gz}
+    - do:
+      - task: empty
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_empty}
+      - put: ccache_empty
+        params: {file: ccache_empty/ccache_gpdb.tar.gz}
