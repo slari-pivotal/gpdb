@@ -167,7 +167,7 @@ groups:
   jobs:
   - compile_gpdb_windows_ccl
 
-- name: Boostrap
+- name: Bootstrap
   jobs:
   - bootstrap-ccache
 
