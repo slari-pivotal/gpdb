@@ -807,22 +807,22 @@ jobs:
         file: gpdb_artifacts/bin_gpdb.tar.gz
     - put: installer_sles11_gpdb_clients
       params:
-        file: gpdb_artifacts/greenplum-clients-*-sles11_x86_64.zip
+        file: gpdb_artifacts/greenplum-clients-*-sles11-x86_64.zip
     - put: installer_sles11_gpdb_clients_md5
       params:
-        file: gpdb_artifacts/greenplum-clients-*-sles11_x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-clients-*-sles11-x86_64.zip.md5
     - put: installer_sles11_gpdb_connectivity
       params:
-        file: gpdb_artifacts/greenplum-connectivity-*-sles11_x86_64.zip
+        file: gpdb_artifacts/greenplum-connectivity-*-sles11-x86_64.zip
     - put: installer_sles11_gpdb_connectivity_md5
       params:
-        file: gpdb_artifacts/greenplum-connectivity-*-sles11_x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-connectivity-*-sles11-x86_64.zip.md5
     - put: installer_sles11_gpdb_loaders
       params:
-        file: gpdb_artifacts/greenplum-loaders-*-sles11_x86_64.zip
+        file: gpdb_artifacts/greenplum-loaders-*-sles11-x86_64.zip
     - put: installer_sles11_gpdb_loaders_md5
       params:
-        file: gpdb_artifacts/greenplum-loaders-*-sles11_x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-loaders-*-sles11-x86_64.zip.md5
     - put: postgis_sles11_gppkg
       params:
         file: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-sles11-x86_64.gppkg
