@@ -84,8 +84,6 @@ extern List * getAllIdleReaderGangs(void);
 
 extern List * getAllAllocatedReaderGangs(void);
 
-extern void detectFailedConnections(void);
-
 extern CdbComponentDatabases *getComponentDatabases(void);
 
 extern bool gangsExist(void);

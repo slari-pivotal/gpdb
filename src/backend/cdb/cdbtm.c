@@ -1562,7 +1562,7 @@ initTM(void)
 				 * we should catch it if it happens.
 				 */
 				if (!first)
-					detectFailedConnections();
+					FtsNotifyProber();
 
 				initTM_recover_as_needed();
 				succeeded = true;

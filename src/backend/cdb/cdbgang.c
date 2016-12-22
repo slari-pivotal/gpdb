@@ -579,28 +579,44 @@ create_gang_retry:
 
 	if (successful_connections != newGangDefinition->size && isFTSEnabled())
 	{
-		bool		errorOut;
-
-		errorOut = FtsHandleGangConnectionFailure(newGangDefinition->db_descriptors, newGangDefinition->size);
-
-		/*
-		 * don't error out if our DTM isn't started yet. See MPP-5764:
-		 * ideally this would be fixed in FtsHandleGangConnectionFailure.
-		 */
-		if (shmDtmStarted != NULL && !*shmDtmStarted)
-			errorOut = false;
+		bool hasSegmentDown = FtsDetectFailedConnections(newGangDefinition->db_descriptors, newGangDefinition->size);
 
 		disconnectAndDestroyGang(newGangDefinition);
+		newGangDefinition = NULL;
 		CheckForResetSession();
 
-		if (errorOut)
+		if (hasSegmentDown)
 		{
-			ereport(ERROR, (errcode(ERRCODE_GP_INTERCONNECTION_ERROR),
+			bool resetSession = false;
+			/*
+			 * Some segments are not alive, previoius allocated and free gangs are not valid
+			 */
+			if (gangsExist())
+			{
+				disconnectAndDestroyAllGangs();
+				CheckForResetSession();
+				resetSession = true;
+			}
+
+			/*
+			 * 1. Don't error out if our DTM isn't started yet. See MPP-5764
+			 * 2. Don't error out if we are attempting a DTM protocol retry
+			 */
+			if ((shmDtmStarted != NULL && !*shmDtmStarted) ||
+				(DistributedTransactionContext == DTX_CONTEXT_QD_RETRY_PHASE_2))
+				return NULL;
+
+			/*
+			 * Error out if this sets read only flag, at this stage the read only
+			 * transaction checking has passed, so error out, but do not error out if
+			 * tm is in recovery.
+			 *
+			 * Error out if there is an active transaction.
+			 */
+			if(resetSession || isCurrentDtxActive() || (isFtsReadOnlySet() && !isTMInRecovery()))
+				ereport(ERROR, (errcode(ERRCODE_GP_INTERCONNECTION_ERROR),
 					errmsg("failed to acquire resources on one or more segments")));
-
 		}
-
-		newGangDefinition = NULL;
 	}
 
 	return newGangDefinition;
@@ -2803,35 +2819,6 @@ gangOK(Gang *gp)
 	}
 
 	return true;
-}
-
-/*
- * Set segdb states, called by FtsReConfigureMPP.
- */
-void
-detectFailedConnections(void)
-{
-	int			i;
-	CdbComponentDatabaseInfo *segInfo;
-	bool		fullScan = true;
-
-	/*
-	 * check primary gang
-	 */
-	if (primaryWriterGang != NULL)
-	{
-		for (i = 0; i < primaryWriterGang->size; i++)
-		{
-			segInfo = primaryWriterGang->db_descriptors[i].segment_database_info;
-
-			/*
-			 * Note: the probe process is responsible for doing the
-			 * actual marking of the segments.
-			 */
-			FtsTestConnection(segInfo, fullScan);
-			fullScan = false;
-		}
-	}
 }
 
 CdbComponentDatabases *
