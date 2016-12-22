@@ -54,7 +54,6 @@ groups:
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
   - pulse_QP_memory-accounting
-  - pulse_QP_workfile-tinc
   - pulse_QP_optimizer-functional
   - pulse_Gppkg
   - pulse_Gppkg-redhat6
@@ -120,7 +119,6 @@ groups:
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
   - pulse_QP_memory-accounting
-  - pulse_QP_workfile-tinc
   - pulse_QP_optimizer-functional
   - pulse_Gppkg
   - pulse_Gppkg-redhat6
@@ -146,7 +144,6 @@ groups:
 - name: Pulse_QP
   jobs:
   - pulse_QP_memory-accounting
-  - pulse_QP_workfile-tinc
   - pulse_QP_optimizer-functional
 - name: Pulse_MU
   jobs:
@@ -2510,7 +2507,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-memory-accounting-no-scm"
+      PULSE_PROJECT_NAME: "QP_memory-accounting"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2518,41 +2515,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-memory-accounting-no-scm"
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_QP_workfile-tinc
-  plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
-  - aggregate:
-    - get: gpdb_src
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-WORKFILE-TINC-no-scm"
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-WORKFILE-TINC-no-scm"
+      PULSE_PROJECT_NAME: "QP_memory-accounting"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2578,7 +2541,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-QP-TINC-OptimizerFunctional-no-scm"
+      PULSE_PROJECT_NAME: "QP_optimizer-functional"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2586,7 +2549,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-QP-TINC-OptimizerFunctional-no-scm"
+      PULSE_PROJECT_NAME: "QP_optimizer-functional"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
