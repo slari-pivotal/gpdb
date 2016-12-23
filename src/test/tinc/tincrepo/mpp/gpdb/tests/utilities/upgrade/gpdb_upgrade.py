@@ -38,7 +38,6 @@ from tinctest.lib import local_path, Gpdiff, run_shell_command
 from tinctest.lib import gpplatform
 from tinctest.lib.gpinitsystem import gpinitsystem
 from tinctest.lib.system import TINCSystem
-from tinctest.case import _TINCProductVersionMetadata 
 
 from mpp.models import MPPTestCase
 from mpp.lib.PSQL import PSQL
@@ -390,16 +389,11 @@ class UpgradeTestCase(MPPTestCase):
         if workload_dir =='catalog_sql':
             sql_file = load_path + 'setup.sql'
             docstring = self._read_metadata_as_docstring(sql_file)
-            if self.version_check(docstring):
-                assert PSQL.run_sql_file(sql_file=sql_file, dbname = db_name,port = db_port,output_to_file =False)
-            else:
-                logger.info('Skipping sql file %s since gpdb version does not match the sql file version' % sql_file)
+            assert PSQL.run_sql_file(sql_file=sql_file, dbname = db_name,port = db_port,output_to_file =False)
         for file in os.listdir(load_path):
             if file.endswith(".sql") and file.startswith(prefix):
                 sql_file = load_path + file
                 docstring = self._read_metadata_as_docstring(sql_file)
-                if not self.version_check(docstring): 
-                    continue
                 if output_to_file is False:
                     assert PSQL.run_sql_file(sql_file = load_path + file,
                                              dbname = db_name,
@@ -433,15 +427,12 @@ class UpgradeTestCase(MPPTestCase):
         if workload_dir =='catalog_sql':
             sql_file = load_path + 'setup.sql'
             docstring = self._read_metadata_as_docstring(sql_file)
-            if self.version_check(docstring): 
-                assert PSQL.run_sql_file(sql_file=sql_file, dbname = db_name,port = db_port,output_to_file =False)
+            assert PSQL.run_sql_file(sql_file=sql_file, dbname = db_name,port = db_port,output_to_file =False)
         for file in os.listdir(load_path):
             if file.endswith(".sql") and file.startswith("validate_"):
                 sql_file = os.path.join(load_path, file)
                 out_file = os.path.join(load_path, file.replace('.sql', '.out'))
                 docstring = self._read_metadata_as_docstring(sql_file)
-                if not self.version_check(docstring): 
-                    continue
                 assert PSQL.run_sql_file(sql_file = sql_file,
                                          port = db_port, dbname = db_name,
                                          out_file = out_file)
