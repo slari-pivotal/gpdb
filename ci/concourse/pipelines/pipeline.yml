@@ -1832,6 +1832,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -1866,6 +1867,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -1900,6 +1902,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -1934,6 +1937,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -1968,6 +1972,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2002,6 +2007,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2036,6 +2042,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2070,6 +2077,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2104,6 +2112,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2138,6 +2147,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2172,6 +2182,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2206,6 +2217,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2240,6 +2252,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2274,6 +2287,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2308,6 +2322,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2342,6 +2357,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2376,6 +2392,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2410,6 +2427,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2444,6 +2462,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2478,6 +2497,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2512,6 +2532,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2546,6 +2567,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2580,6 +2602,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2614,6 +2637,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2648,6 +2672,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2682,6 +2707,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2716,6 +2742,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
@@ -2750,6 +2777,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
+    attempts: 2
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
