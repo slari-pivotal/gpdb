@@ -162,18 +162,18 @@ installcheck: all upg2-setup ugpart-setup
 
 installcheck-good: all twophase_pqexecparams ./current_good_schedule
 	if [ -z "$(INSTALLCHECK_GOOD_KERBEROS)" ]; then \
-	$(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=$(srcdir)/current_good_schedule --srcdir=$(abs_srcdir); \
+	$(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=$(srcdir)/current_good_schedule --srcdir=$(abs_srcdir) --ao-dir=uao; \
 	else \
 	bash kerberos/setup_test.sh; \
-	PGUSER="gpadmin/kerberos-test" $(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=./parallel_kerberos_schedule --srcdir=$(abs_srcdir) --host=`hostname`; \
+	PGUSER="gpadmin/kerberos-test" $(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=./parallel_kerberos_schedule --srcdir=$(abs_srcdir) --host=`hostname` --ao-dir=uao; \
 	fi
 
 installcheck-good-serial: all ./current_good_schedule-serial upg2-setup ugpart-setup
 	if [ -z "$(INSTALLCHECK_GOOD_KERBEROS)" ]; then \
-	$(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=./current_good_schedule-serial --srcdir=$(abs_srcdir); \
+	$(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=./current_good_schedule-serial --srcdir=$(abs_srcdir) --ao-dir=uao; \
 	else \
 	bash kerberos/setup_test.sh; \
-	PGUSER="gpadmin/kerberos-test" $(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=./current_good_schedule-serial --srcdir=$(abs_srcdir) --host=`hostname`; \
+	PGUSER="gpadmin/kerberos-test" $(pg_regress_call)  --psqldir=$(PSQLDIR) --schedule=./current_good_schedule-serial --srcdir=$(abs_srcdir) --host=`hostname` --ao-dir=uao; \
 	fi
 
 testbouncer: all
