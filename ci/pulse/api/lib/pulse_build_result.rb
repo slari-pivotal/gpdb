@@ -2,6 +2,7 @@ require "net/http"
 require "uri"
 
 class PulseBuildResult
+  MAX_RETRY_ATTEMPTS = 3
 
   def initialize(pulse_options, build_result, build_messages, build_artifacts)
     @pulse_options = pulse_options
