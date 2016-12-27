@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GP_VERSION=4.3.9.1
+GP_VERSION=4.3.9.1CCB3
 
 GP_BUILDNUMBER=1
 if [ -f BUILD_NUMBER ] ; then
