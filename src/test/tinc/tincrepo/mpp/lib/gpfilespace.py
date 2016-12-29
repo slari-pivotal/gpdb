@@ -62,11 +62,12 @@ class Gpfilespace(object):
     TS_LIST = ['ts_a1','ts_a2','ts_a3','ts_b1','ts_b2','ts_b3','ts_c1','ts_c2','ts_c3']
 
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, port=None):
+        self.port = port
         if config is not None:
             self.config = config
         else:
-            self.config = GPDBConfig()
+            self.config = GPDBConfig(port)
         self.gphome = os.environ.get('GPHOME')
 
     
@@ -249,7 +250,7 @@ class Gpfilespace(object):
         @return True or False
         
         '''
-        fs_out = PSQL.run_sql_command("select count(*) from pg_filespace where fsname='%s'" % filespace, flags = '-t -q', dbname='postgres')
+        fs_out = PSQL.run_sql_command("select count(*) from pg_filespace where fsname='%s'" % filespace, flags = '-t -q', port=self.port, dbname='postgres')
         if int(fs_out.strip()) > 0:
             return True
         return False
@@ -276,7 +277,7 @@ class Gpfilespace(object):
             run_shell_command(cmd)
             f1.write("%s:%s:%s/%s\n" % (record.hostname, record.dbid, fileloc, os.path.split(record.datadir)[1])) 
         f1.close()
-        result = self.run(config=f1.name)
+        result = self.run(config=f1.name, port=self.port)
         if result.rc != 0:
             raise GPfilespaceException('"gpfilespace creation filespace FAILED".  Output = %s ' % out)
 

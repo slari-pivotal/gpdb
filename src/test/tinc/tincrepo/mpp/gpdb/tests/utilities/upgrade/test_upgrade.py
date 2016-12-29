@@ -212,7 +212,8 @@ class UpgradeScenarioTestCase(ScenarioTestCase, UpgradeTestCase):
         test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.install_GPDB', [self.binary_swap_from]))
 
         test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.setup_upgrade', {'old_version':self.binary_swap_from, 'master_port': self.db_port, 'mirror_enabled' : True}))
-
+        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.create_filespaces', [self.db_port]))
+        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.run_workload', ['test_objects'], {'db_port': self.db_port}))
         test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.run_workload', ['test_dir'], {'db_port': self.db_port}))
 
         test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.run_workload', ['test_dir_43x'], {'db_port': self.db_port, 'output_to_file': True}))

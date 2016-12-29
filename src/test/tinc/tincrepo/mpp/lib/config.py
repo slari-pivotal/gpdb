@@ -52,15 +52,15 @@ class GPDBConfig():
             self.san_mounts = line[11]
 
     
-    def __init__(self):
+    def __init__(self, port = None):
         self.record = []
-        self._fill()
+        self._fill(port)
     
-    def _fill(self):
+    def _fill(self, port):
         '''Get the records and add to Record class '''
         self.record = []
         config_sql = "select dbid, content, role, preferred_role, mode, status, hostname, address, port, fselocation as datadir, replication_port, san_mounts from gp_segment_configuration, pg_filespace_entry, pg_catalog.pg_filespace fs where fsefsoid = fs.oid and fsname='pg_system' and gp_segment_configuration.dbid=pg_filespace_entry.fsedbid ORDER BY content, preferred_role;"
-        config_out = PSQL.run_sql_command(config_sql, flags = '-t -q', dbname='postgres')
+        config_out = PSQL.run_sql_command(config_sql, port = port, flags = '-t -q', dbname='postgres')
         if len(config_out.strip()) > 0:
             config_out = config_out.splitlines()
             for line in config_out:
