@@ -43,6 +43,7 @@ from tinctest.case import _TINCProductVersionMetadata
 from mpp.models import MPPTestCase
 from mpp.lib.PSQL import PSQL
 from mpp.lib.gprecoverseg import GpRecover
+from mpp.lib.gpfilespace import Gpfilespace
 
 from tinctest.runner import TINCTextTestResult
 
@@ -363,6 +364,15 @@ class UpgradeTestCase(MPPTestCase):
                                      testcase_init_file_location, gpdb_path, master_port, mirror_enabled)
         gpdbinit = gpinitsystem(gphome_path, testcase_init_file_location, gpdb_path, mirror_enabled)
         gpdbinit.run()
+
+    def create_filespaces(self, master_port):
+        #config = GPDBConfig(master_port)
+        gpfile = Gpfilespace(port=master_port)
+        gpfile.create_filespace('regressionfs1')
+        gpfile.create_filespace('regressionfs2')
+        gpfile.create_filespace('regression_fs_a')
+        gpfile.create_filespace('regression_fs_b')
+        gpfile.create_filespace('regression_fs_c')
 
     def run_workload(self, workload_dir, db_port, prefix="load_", output_to_file=False, ext=".ans", db_name=None):
         """
