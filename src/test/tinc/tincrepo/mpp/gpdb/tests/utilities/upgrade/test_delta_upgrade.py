@@ -77,6 +77,8 @@ class DeltaUpgradeTestCase(ScenarioTestCase, UpgradeTestCase):
         test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.setup_upgrade', {'old_version':self.binary_swap_from, 'master_port': self.db_port, 'mirror_enabled' : True}))
         
         test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.run_workload', ['test_delta'], {'db_port': self.db_port}))
+        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.create_filespaces', [self.db_port]))
+        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.run_workload', ['test_objects'], {'db_port': self.db_port}))
         
         test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.run_swap',[self.old_gpdb, self.new_gpdb, self.db_port]))
         
