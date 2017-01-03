@@ -752,6 +752,37 @@ int64 PersistentFileSysObj_CurrentMaxSerialNum(
 								&fileSysObjSharedData->storeSharedData);
 }
 
+PersistentTidIsKnownResult PersistentFileSysObj_TidIsKnown(
+	PersistentFsObjType 	fsObjType,
+
+	ItemPointer 			persistentTid,
+
+	ItemPointer 			maxTid)
+{
+	READ_PERSISTENT_STATE_ORDERED_LOCK_DECLARE;
+
+	PersistentFileSysObjData 		*fileSysObjData;
+	PersistentFileSysObjSharedData 	*fileSysObjSharedData;
+
+	PersistentTidIsKnownResult result;
+
+	PersistentFileSysObj_GetDataPtrs(
+								fsObjType,
+								&fileSysObjData,
+								&fileSysObjSharedData);
+
+	READ_PERSISTENT_STATE_ORDERED_LOCK;
+
+	result = PersistentStore_TidIsKnown(
+								&fileSysObjSharedData->storeSharedData,
+								persistentTid,
+								maxTid);
+
+	READ_PERSISTENT_STATE_ORDERED_UNLOCK;
+
+	return result;
+}
+
 void PersistentFileSysObj_UpdateTuple(
 	PersistentFsObjType		fsObjType,
 
