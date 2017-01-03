@@ -67,11 +67,6 @@
 static XLogRecPtr log_heap_update(Relation reln, Buffer oldbuf,
 		   ItemPointerData from, Buffer newbuf, HeapTuple newtup, bool move);
 
-static HTSU_Result
-heap_delete_xid(Relation relation, ItemPointer tid,
-				TransactionId xid, ItemPointer ctid,
-				TransactionId *update_xmax, CommandId cid,
-				Snapshot crosscheck, bool wait);
 
 /* ----------------------------------------------------------------
  *						 heap support routines
@@ -2386,20 +2381,10 @@ heap_delete(Relation relation, ItemPointer tid,
 			ItemPointer ctid, TransactionId *update_xmax,
 			CommandId cid, Snapshot crosscheck, bool wait)
 {
-	return heap_delete_xid(relation, tid,
-						   GetCurrentTransactionId(), ctid,
-						   update_xmax, cid, crosscheck, wait);
-}
-
-static HTSU_Result
-heap_delete_xid(Relation relation, ItemPointer tid,
-				TransactionId xid, ItemPointer ctid,
-				TransactionId *update_xmax, CommandId cid,
-				Snapshot crosscheck, bool wait)
-{
 	MIRROREDLOCK_BUFMGR_DECLARE;
 
 	HTSU_Result result;
+	TransactionId xid = GetCurrentTransactionId();
 	ItemId		lp;
 	HeapTupleData tp;
 	PageHeader	dp;
@@ -2610,7 +2595,7 @@ l1:
 		rdata[1].buffer_std = true;
 		rdata[1].next = NULL;
 
-		recptr = XLogInsert_OverrideXid(RM_HEAP_ID, XLOG_HEAP_DELETE, rdata, xid);
+		recptr = XLogInsert(RM_HEAP_ID, XLOG_HEAP_DELETE, rdata);
 
 		PageSetLSN(dp, recptr);
 		PageSetTLI(dp, ThisTimeLineID);
@@ -2669,13 +2654,6 @@ l1:
 void
 simple_heap_delete(Relation relation, ItemPointer tid)
 {
-	simple_heap_delete_xid(relation, tid, GetCurrentTransactionId());
-}
-
-void
-simple_heap_delete_xid(Relation relation, ItemPointer tid, TransactionId xid)
-{
-
 	MIRROREDLOCK_BUFMGR_VERIFY_NO_LOCK_LEAK_DECLARE;
 
 	HTSU_Result result;
@@ -2684,10 +2662,10 @@ simple_heap_delete_xid(Relation relation, ItemPointer tid, TransactionId xid)
 
 	MIRROREDLOCK_BUFMGR_VERIFY_NO_LOCK_LEAK_ENTER;
 
-	result = heap_delete_xid(relation, tid, xid,
+	result = heap_delete(relation, tid,
 						 &update_ctid, &update_xmax,
 						 GetCurrentCommandId(), InvalidSnapshot,
-						 true /* wait for commit */);
+						 true /* wait for commit */ );
 	switch (result)
 	{
 		case HeapTupleSelfUpdated:
