@@ -232,7 +232,8 @@ static VPgClassStats VacFullInitialStats[MaxVacFullInitialStatsSize];
 static int VacFullInitialStatsSize = 0;
 
 /* non-export function prototypes */
-static List *get_rel_oids(List *relids, VacuumStmt *vacstmt, const char *stmttype);
+static List *get_rel_oids(List *relids, const RangeVar *vacrel,
+			 const char *stmttype, bool rootonly);
 static void vac_truncate_clog(TransactionId frozenXID);
 static void vacuum_rel(Relation onerel, VacuumStmt *vacstmt, LOCKMODE lmode, List *updated_stats);
 static void full_vacuum_rel(Relation onerel, VacuumStmt *vacstmt, List *updated_stats);
@@ -1132,7 +1133,7 @@ vacuumStatement(VacuumStmt *vacstmt, List *relids)
 	 * Build list of relations to process, unless caller gave us one. (If we
 	 * build one, we put it in vac_context for safekeeping.)
 	 */
-	relations = get_rel_oids(relids, vacstmt, stmttype);
+	relations = get_rel_oids(relids, vacstmt->relation, stmttype, vacstmt->rootonly);
 
 	/*
 	 * vacuum_rel expects to be entered with no transaction active; it will
@@ -1242,7 +1243,8 @@ vacuumStatement(VacuumStmt *vacstmt, List *relids)
  * per-relation transactions.
  */
 static List *
-get_rel_oids(List *relids, VacuumStmt *vacstmt, const char *stmttype)
+get_rel_oids(List *relids, const RangeVar *vacrel, const char *stmttype,
+			 bool rootonly)
 {
 	List	   *oid_list = NIL;
 	MemoryContext oldcontext;
@@ -1251,13 +1253,13 @@ get_rel_oids(List *relids, VacuumStmt *vacstmt, const char *stmttype)
 	if (relids)
 		return relids;
 
-	if (vacstmt->relation)
+	if (vacrel)
 	{
 		/* Process a specific relation */
 		Oid			relid;
 		List	   *prels = NIL;
 
-		relid = RangeVarGetRelid(vacstmt->relation, false);
+		relid = RangeVarGetRelid(vacrel, false);
 
 		if (rel_is_partitioned(relid))
 		{
@@ -1311,13 +1313,14 @@ get_rel_oids(List *relids, VacuumStmt *vacstmt, const char *stmttype)
 					classForm->relstorage == RELSTORAGE_VIRTUAL))
 				continue;
 
-			/* Skip persistent tables for Vacuum full.Vacuum full could turn out
-			 * dangerous as it has potential to move tuples around causing the 
-			 * TIDs for tuples to change, which violates its reference from
+			/* Skip persistent tables. Vacuum lazy is harmless, but also no
+			 * benefit to perform. Vacuum full could turn out dangerous as it
+			 * has potential to move tuples around causing the TIDs for tuples
+			 * to change, which violates its reference from
 			 * gp_relation_node. One scenario where this can happen is zero-page
 			 * due to failure between page extension and page initialization.
 			 */
-			 if (vacstmt->full && GpPersistent_IsPersistentRelation(HeapTupleGetOid(tuple)))
+			 if (GpPersistent_IsPersistentRelation(HeapTupleGetOid(tuple)))
 				 continue;
 
 			/* Make a relation list entry for this guy */
@@ -4963,7 +4966,7 @@ open_relation_and_check_permission(VacuumStmt *vacstmt,
 	 */
 	if (onerel->rd_rel->relkind != expected_relkind ||
 		RelationIsExternal(onerel) ||
-		(vacstmt->full && GpPersistent_IsPersistentRelation(RelationGetRelid(onerel))))
+		GpPersistent_IsPersistentRelation(RelationGetRelid(onerel)))
 	{
 		ereport(WARNING,
 				(errmsg("skipping \"%s\" --- cannot vacuum indexes, views, external tables, or special system tables",
