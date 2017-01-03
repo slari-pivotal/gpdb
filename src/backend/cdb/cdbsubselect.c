@@ -353,7 +353,7 @@ static bool IsCorrelatedOpExpr(OpExpr *opexp, Expr **innerExpr)
 	 * It is correlated only if we found an outer var and inner expr
 	 */
 
-	if (tOuterExpr)
+	if (tOuterExpr && contain_vars_of_level((Node *) tInnerExpr, 0))
 	{
 		*innerExpr = tInnerExpr;
 		return true;
