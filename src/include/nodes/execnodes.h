@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------
  *
  * execnodes.h
- *	  definitions for executor state nodes
+ *          definitions for executor state nodes
  *
  *
  * Portions Copyright (c) 2005-2009, Greenplum inc
@@ -53,92 +53,92 @@ struct MirroredBufferPoolBulkLoadInfo;
 struct SliceTable;
 
 /* ----------------
- *	  IndexInfo information
+ *          IndexInfo information
  *
  *                CDB: Moved declaration into "catalog/index.h" from "nodes/execnodes.h"
  * ----------------
  */
 
 /* ----------------
- *	  ExprContext_CB
+ *          ExprContext_CB
  *
- *		List of callbacks to be called at ExprContext shutdown.
+ *                List of callbacks to be called at ExprContext shutdown.
  * ----------------
  */
 typedef void (*ExprContextCallbackFunction) (Datum arg);
 
 typedef struct ExprContext_CB
 {
-	struct ExprContext_CB *next;
-	ExprContextCallbackFunction function;
-	Datum		arg;
+        struct ExprContext_CB *next;
+        ExprContextCallbackFunction function;
+        Datum                arg;
 } ExprContext_CB;
 
 /* ----------------
- *	  ExprContext
+ *          ExprContext
  *
- *		This class holds the "current context" information
- *		needed to evaluate expressions for doing tuple qualifications
- *		and tuple projections.	For example, if an expression refers
- *		to an attribute in the current inner tuple then we need to know
- *		what the current inner tuple is and so we look at the expression
- *		context.
+ *                This class holds the "current context" information
+ *                needed to evaluate expressions for doing tuple qualifications
+ *                and tuple projections.        For example, if an expression refers
+ *                to an attribute in the current inner tuple then we need to know
+ *                what the current inner tuple is and so we look at the expression
+ *                context.
  *
- *	There are two memory contexts associated with an ExprContext:
- *	* ecxt_per_query_memory is a query-lifespan context, typically the same
- *	  context the ExprContext node itself is allocated in.	This context
- *	  can be used for purposes such as storing function call cache info.
- *	* ecxt_per_tuple_memory is a short-term context for expression results.
- *	  As the name suggests, it will typically be reset once per tuple,
- *	  before we begin to evaluate expressions for that tuple.  Each
- *	  ExprContext normally has its very own per-tuple memory context.
+ *        There are two memory contexts associated with an ExprContext:
+ *        * ecxt_per_query_memory is a query-lifespan context, typically the same
+ *          context the ExprContext node itself is allocated in.        This context
+ *          can be used for purposes such as storing function call cache info.
+ *        * ecxt_per_tuple_memory is a short-term context for expression results.
+ *          As the name suggests, it will typically be reset once per tuple,
+ *          before we begin to evaluate expressions for that tuple.  Each
+ *          ExprContext normally has its very own per-tuple memory context.
  *
- *	CurrentMemoryContext should be set to ecxt_per_tuple_memory before
- *	calling ExecEvalExpr() --- see ExecEvalExprSwitchContext().
+ *        CurrentMemoryContext should be set to ecxt_per_tuple_memory before
+ *        calling ExecEvalExpr() --- see ExecEvalExprSwitchContext().
  * ----------------
  */
 typedef struct ExprContext
 {
-	NodeTag		type;
+        NodeTag                type;
 
-	/* Tuples that Var nodes in expression may refer to */
+        /* Tuples that Var nodes in expression may refer to */
         struct TupleTableSlot *ecxt_scantuple;
         struct TupleTableSlot *ecxt_innertuple;
         struct TupleTableSlot *ecxt_outertuple;
 
-	/* Memory contexts for expression evaluation --- see notes above */
-	MemoryContext ecxt_per_query_memory;
-	MemoryContext ecxt_per_tuple_memory;
+        /* Memory contexts for expression evaluation --- see notes above */
+        MemoryContext ecxt_per_query_memory;
+        MemoryContext ecxt_per_tuple_memory;
 
-	/* Values to substitute for Param nodes in expression */
-	ParamExecData *ecxt_param_exec_vals;		/* for PARAM_EXEC params */
-	ParamListInfo ecxt_param_list_info; /* for other param types */
+        /* Values to substitute for Param nodes in expression */
+        ParamExecData *ecxt_param_exec_vals;                /* for PARAM_EXEC params */
+        ParamListInfo ecxt_param_list_info; /* for other param types */
 
-	/*
-	 * Values to substitute for Aggref nodes in the expressions of an Agg
-	 * node, or for WindowFunc nodes within a WindowAgg node.
-	 */
-	Datum	   *ecxt_aggvalues; /* precomputed values for aggs/windowfuncs */
-	bool	   *ecxt_aggnulls;	/* null flags for aggs/windowfuncs */
+	    /*
+	     * Values to substitute for Aggref nodes in the expressions of an Agg
+	     * node, or for WindowFunc nodes within a WindowAgg node.
+	     */
+	    Datum	   *ecxt_aggvalues; /* precomputed values for aggs/windowfuncs */
+	    bool	   *ecxt_aggnulls;	/* null flags for aggs/windowfuncs */
 
-	/* Value to substitute for CaseTestExpr nodes in expression */
-	Datum		caseValue_datum;
-	bool		caseValue_isNull;
+        /* Value to substitute for CaseTestExpr nodes in expression */
+        Datum                caseValue_datum;
+        bool                caseValue_isNull;
 
-	/* Value to substitute for CoerceToDomainValue nodes in expression */
-	Datum		domainValue_datum;
-	bool		domainValue_isNull;
+        /* Value to substitute for CoerceToDomainValue nodes in expression */
+        Datum                domainValue_datum;
+        bool                domainValue_isNull;
 
-	/* Link to containing EState (NULL if a standalone ExprContext) */
-	struct EState *ecxt_estate;
+        /* Link to containing EState (NULL if a standalone ExprContext) */
+        struct EState *ecxt_estate;
 
-	/* Functions to call back when ExprContext is shut down */
-	ExprContext_CB *ecxt_callbacks;
+        /* Functions to call back when ExprContext is shut down */
+        ExprContext_CB *ecxt_callbacks;
 
-	/* Representing the final grouping and group_id for a tuple
-	 * in a grouping extension query. */
-	uint64      grouping;
-	uint32      group_id;
+        /* Representing the final grouping and group_id for a tuple
+         * in a grouping extension query. */
+        uint64      grouping;
+        uint32      group_id;
 } ExprContext;
 
 /* ----------------
@@ -152,161 +152,161 @@ typedef struct ExprContext
  */
 
 /* ----------------
- *		ProjectionInfo node information
+ *                ProjectionInfo node information
  *
- *		This is all the information needed to perform projections ---
- *		that is, form new tuples by evaluation of targetlist expressions.
- *		Nodes which need to do projections create one of these.
+ *                This is all the information needed to perform projections ---
+ *                that is, form new tuples by evaluation of targetlist expressions.
+ *                Nodes which need to do projections create one of these.
  *
- *		ExecProject() evaluates the tlist, forms a tuple, and stores it
- *		in the given slot.	Note that the result will be a "virtual" tuple
- *		unless ExecMaterializeSlot() is then called to force it to be
- *		converted to a physical tuple.	The slot must have a tupledesc
- *		that matches the output of the tlist!
+ *                ExecProject() evaluates the tlist, forms a tuple, and stores it
+ *                in the given slot.        Note that the result will be a "virtual" tuple
+ *                unless ExecMaterializeSlot() is then called to force it to be
+ *                converted to a physical tuple.        The slot must have a tupledesc
+ *                that matches the output of the tlist!
  *
- *		The planner very often produces tlists that consist entirely of
- *		simple Var references (lower levels of a plan tree almost always
- *		look like that).  So we have an optimization to handle that case
- *		with minimum overhead.
+ *                The planner very often produces tlists that consist entirely of
+ *                simple Var references (lower levels of a plan tree almost always
+ *                look like that).  So we have an optimization to handle that case
+ *                with minimum overhead.
  *
- *		targetlist		target list for projection
- *		exprContext		expression context in which to evaluate targetlist
- *		slot			slot to place projection result in
- *		itemIsDone		workspace for ExecProject
- *		isVarList		TRUE if simple-Var-list optimization applies
- *		varSlotOffsets	array indicating which slot each simple Var is from
- *		varNumbers		array indicating attr numbers of simple Vars
- *		lastInnerVar	highest attnum from inner tuple slot (0 if none)
- *		lastOuterVar	highest attnum from outer tuple slot (0 if none)
- *		lastScanVar		highest attnum from scan tuple slot (0 if none)
+ *                targetlist                target list for projection
+ *                exprContext                expression context in which to evaluate targetlist
+ *                slot                        slot to place projection result in
+ *                itemIsDone                workspace for ExecProject
+ *                isVarList                TRUE if simple-Var-list optimization applies
+ *                varSlotOffsets        array indicating which slot each simple Var is from
+ *                varNumbers                array indicating attr numbers of simple Vars
+ *                lastInnerVar        highest attnum from inner tuple slot (0 if none)
+ *                lastOuterVar        highest attnum from outer tuple slot (0 if none)
+ *                lastScanVar                highest attnum from scan tuple slot (0 if none)
  * ----------------
  */
 typedef struct ProjectionInfo
 {
-	NodeTag		type;
-	List	   *pi_targetlist;
-	ExprContext *pi_exprContext;
+        NodeTag                type;
+        List                   *pi_targetlist;
+        ExprContext         *pi_exprContext;
         struct TupleTableSlot         *pi_slot;
-	ExprDoneCond *pi_itemIsDone;
-	bool		pi_isVarList;
-	int		   *pi_varSlotOffsets;
-	int		   *pi_varNumbers;
-	int			pi_lastInnerVar;
-	int			pi_lastOuterVar;
-	int			pi_lastScanVar;
+        ExprDoneCond         *pi_itemIsDone;
+        bool                pi_isVarList;
+        int                   *pi_varSlotOffsets;
+        int                 *pi_varNumbers;
+        int                pi_lastInnerVar;
+        int                pi_lastOuterVar;
+        int                pi_lastScanVar;
 } ProjectionInfo;
 
 /* ----------------
- *	  JunkFilter
+ *          JunkFilter
  *
- *	  This class is used to store information regarding junk attributes.
- *	  A junk attribute is an attribute in a tuple that is needed only for
- *	  storing intermediate information in the executor, and does not belong
- *	  in emitted tuples.  For example, when we do an UPDATE query,
- *	  the planner adds a "junk" entry to the targetlist so that the tuples
- *	  returned to ExecutePlan() contain an extra attribute: the ctid of
- *	  the tuple to be updated.	This is needed to do the update, but we
- *	  don't want the ctid to be part of the stored new tuple!  So, we
- *	  apply a "junk filter" to remove the junk attributes and form the
+ *          This class is used to store information regarding junk attributes.
+ *          A junk attribute is an attribute in a tuple that is needed only for
+ *          storing intermediate information in the executor, and does not belong
+ *          in emitted tuples.  For example, when we do an UPDATE query,
+ *          the planner adds a "junk" entry to the targetlist so that the tuples
+ *          returned to ExecutePlan() contain an extra attribute: the ctid of
+ *          the tuple to be updated.        This is needed to do the update, but we
+ *          don't want the ctid to be part of the stored new tuple!  So, we
+ *          apply a "junk filter" to remove the junk attributes and form the
  *          real output tuple.
  *
- *	  targetList:		the original target list (including junk attributes).
- *	  cleanTupType:		the tuple descriptor for the "clean" tuple (with
- *						junk attributes removed).
- *	  cleanMap:			A map with the correspondence between the non-junk
- *						attribute numbers of the "original" tuple and the
- *						attribute numbers of the "clean" tuple.
- *	  resultSlot:		tuple slot used to hold cleaned tuple.
+ *          targetList:                the original target list (including junk attributes).
+ *          cleanTupType:                the tuple descriptor for the "clean" tuple (with
+ *                                                junk attributes removed).
+ *          cleanMap:                        A map with the correspondence between the non-junk
+ *                                                attribute numbers of the "original" tuple and the
+ *                                                attribute numbers of the "clean" tuple.
+ *          resultSlot:                tuple slot used to hold cleaned tuple.
  * ----------------
  */
 typedef struct JunkFilter
 {
-	NodeTag		type;
-	List	   *jf_targetList;
-	TupleDesc	jf_cleanTupType;
-	AttrNumber *jf_cleanMap;
+        NodeTag                type;
+        List           *jf_targetList;
+        TupleDesc        jf_cleanTupType;
+        AttrNumber *jf_cleanMap;
         struct TupleTableSlot *jf_resultSlot;
 } JunkFilter;
 
-typedef void *RelationUpdateDesc;
-typedef void *RelationDeleteDesc;
+typedef void* RelationUpdateDesc;
+typedef void* RelationDeleteDesc;
 
 /* ----------------
- *	  ResultRelInfo information
+ * ResultRelInfo information
  *
- *		Whenever we update an existing relation, we have to
- *		update indices on the relation, and perhaps also fire triggers.
- *		The ResultRelInfo class is used to hold all the information needed
- *		about a result relation, including indices.. -cim 10/15/89
+ * Whenever we update an existing relation, we have to
+ * update indices on the relation, and perhaps also fire triggers.
+ * The ResultRelInfo class is used to hold all the information needed
+ * about a result relation, including indices.. -cim 10/15/89
  *
- *		RangeTableIndex			result relation's range table index
- *		RelationDesc			relation descriptor for result relation
- *		NumIndices				# of indices existing on result relation
- *		IndexRelationDescs		array of relation descriptors for indices
- *		IndexRelationInfo		array of key/attr info for indices
- *		TrigDesc				triggers to be fired, if any
- *		TrigFunctions			cached lookup info for trigger functions
- *		TrigInstrument			optional runtime measurements for triggers
- *		ConstraintExprs			array of constraint-checking expr states
- *		junkFilter				for removing junk attributes from tuples
- *		projectReturning		for computing a RETURNING list
- *		tupdesc_match			???
- *		mt_bind					???
- *		aoInsertDesc			context for appendonly relation buffered INSERT.
- *		aoDeleteDesc			context for appendonly relation buffered DELETE.
- *		ao_segno				the AO segfile we inserted into.
- *		extinsertDesc			???
- *		aosegno					???
- *		aoprocessed				???
- *		partInsertMap			map input attrno to target attrno
- *		partSlot				TupleTableSlot for the target part relation
- *		resultSlot          	TupleTableSlot for the target relation
+ *  RangeTableIndex		result relation's range table index
+ *  RelationDesc		relation descriptor for result relation
+ *  NumIndices			# of indices existing on result relation
+ *  IndexRelationDescs	array of relation descriptors for indices
+ *  IndexRelationInfo	array of key/attr info for indices
+ *  TrigDesc			triggers to be fired, if any
+ *  TrigFunctions		cached lookup info for trigger functions
+ *  TrigInstrument		optional runtime measurements for triggers
+ *  ConstraintExprs		array of constraint-checking expr states
+ *  junkFilter			for removing junk attributes from tuples
+ *  projectReturning	for computing a RETURNING list
+ *  tupdesc_match		???
+ *  mt_bind				???
+ *  aoInsertDesc		context for appendonly relation buffered INSERT.
+ *  aoDeleteDesc		context for appendonly relation buffered DELETE.
+ *  ao_segno			the AO segfile we inserted into.
+ *  extinsertDesc		???
+ *  aosegno				???
+ *  aoprocessed			???
+ *  partInsertMap		map input attrno to target attrno
+ *  partSlot			TupleTableSlot for the target part relation
+ *  resultSlot          TupleTableSlot for the target relation
  * ----------------
  */
 typedef struct ResultRelInfo
 {
-	NodeTag		type;
-	Index		ri_RangeTableIndex;
-	Relation	ri_RelationDesc;
-	int			ri_NumIndices;
-	RelationPtr ri_IndexRelationDescs;
+	NodeTag                 type;
+	Index                   ri_RangeTableIndex;
+	Relation                ri_RelationDesc;
+	int                     ri_NumIndices;
+	RelationPtr             ri_IndexRelationDescs;
 	struct IndexInfo        **ri_IndexRelationInfo;
 	struct TriggerDesc             *ri_TrigDesc;
-	FmgrInfo   *ri_TrigFunctions;
-	struct Instrumentation *ri_TrigInstrument;
-	List	  **ri_ConstraintExprs;
-	JunkFilter *ri_junkFilter;
-	ProjectionInfo *ri_projectReturning;
-	int			tupdesc_match;
-	struct MemTupleBinding *mt_bind;
+	FmgrInfo                *ri_TrigFunctions;
+	struct Instrumentation  *ri_TrigInstrument;
+	List                    **ri_ConstraintExprs;
+	JunkFilter              *ri_junkFilter;
+	ProjectionInfo          *ri_projectReturning;
+	int                     tupdesc_match;
+	struct MemTupleBinding         *mt_bind;
 
 	struct AppendOnlyInsertDescData *ri_aoInsertDesc;
-	struct AOCSInsertDescData *ri_aocsInsertDesc;
-	struct ExternalInsertDescData *ri_extInsertDesc;
+	struct AOCSInsertDescData       *ri_aocsInsertDesc;
+	struct ExternalInsertDescData	*ri_extInsertDesc;   
 
 	RelationDeleteDesc ri_deleteDesc;
 	RelationUpdateDesc ri_updateDesc;
 
-	int			ri_aosegno;
-	uint64		ri_aoprocessed; /* tuples added/deleted for AO */
-	struct AttrMap *ri_partInsertMap;
+	int                     ri_aosegno;
+	uint64                  ri_aoprocessed; /* tuples added/deleted for AO */
+	struct AttrMap			*ri_partInsertMap;
 	struct TupleTableSlot			*ri_partSlot;
 	struct TupleTableSlot *ri_resultSlot;
 	/* Parent relation in checkPartitionUpdate */
-	Relation	ri_PartitionParent;
+	Relation				ri_PartitionParent;
 	/* tupdesc_match for checkPartitionUpdate */
-	int			ri_PartCheckTupDescMatch;
+	int						ri_PartCheckTupDescMatch;
 	/* Attribute map in checkPartitionUpdate */
-	struct AttrMap *ri_PartCheckMap;
+	struct AttrMap		   *ri_PartCheckMap;
 } ResultRelInfo;
 
 typedef struct ShareNodeEntry
 {
-	NodeTag		type;
+	NodeTag type;
 
-	Node	   *sharePlan;
-	Node	   *shareState;
-	int			refcount; /* reference count to guard from too-eager-free risk */
+	Node *sharePlan;
+	Node *shareState;
+	int		refcount; /* reference count to guard from too-eager-free risk */
 } ShareNodeEntry;
 
 /*
@@ -316,10 +316,10 @@ typedef struct ShareNodeEntry
 typedef struct PartitionAccessMethods
 {
 	/* Number of partition levels */
-	int			partLevels;
-
+	int partLevels;
+	
 	/* Access methods, one for each level */
-	void	  **amstate;
+	void **amstate;
 
 	/* Memory context for access methods */
 	MemoryContext part_cxt;
@@ -327,11 +327,11 @@ typedef struct PartitionAccessMethods
 
 typedef struct PartitionState
 {
-	NodeTag		type;
+	NodeTag type;
 
-	AttrNumber	max_partition_attr;
-	int			result_partition_array_size; /* max elements of result relation array */
-	HTAB	   *result_partition_hash;
+	AttrNumber max_partition_attr;
+	int result_partition_array_size; /* max elements of result relation array */
+	HTAB *result_partition_hash;
 	PartitionAccessMethods *accessMethods;
 } PartitionState;
 
@@ -352,10 +352,10 @@ typedef struct PartitionMetadata
 typedef struct PartOidEntry
 {
 	/* oid of an individual leaf partition */
-	Oid			partOid;
+	Oid partOid;
 
 	/* list of partition selectors that produced the above part oid */
-	List	   *selectorList;
+	List *selectorList;
 } PartOidEntry;
 
 /*
@@ -365,7 +365,7 @@ typedef struct PartOidEntry
 typedef struct DynamicPartitionIterator
 {
 	/* An HTAB of partition oids to work on. */
-	HTAB	   *partitionOids;
+	HTAB *partitionOids;
 
 	/* The current HTAB iterator */
 	HASH_SEQ_STATUS *partitionIterator;
@@ -374,10 +374,10 @@ typedef struct DynamicPartitionIterator
 	 * If the HTAB is not completely iterated, we need to
 	 * call hash_seq_term.
 	 */
-	bool		shouldCallHashSeqTerm;
+	bool shouldCallHashSeqTerm;
 
 	/* The relation oid at current iterator position. */
-	Oid			curRelOid;
+	Oid curRelOid;
 	/*
 	 * The per-partition memory context to prevent memory leak during
 	 * processing multiple partitions.
@@ -395,20 +395,20 @@ typedef struct DynamicTableScanInfo
 	/*
 	 * The total number of unique dynamic table scans in the plan.
 	 */
-	int			numScans;
+	int numScans;
 
 	/*
 	 * List containing the number of partition selectors for every scan id.
 	 * Element #i in the list corresponds to scan id i
 	 */
-	List	   *numSelectorsPerScanId;
+	List *numSelectorsPerScanId;
 
 	/*
 	 * An array of pid indexes, one for each unique dynamic table scans.
 	 * Each of these pid indexes maintains unique pids that are involved
 	 * in the scan.
 	 */
-	HTAB	  **pidIndexes;
+	HTAB **pidIndexes;
 
 	/*
 	 * An array of *pointers* to DynamicPartitionIterator to record the
@@ -419,7 +419,7 @@ typedef struct DynamicTableScanInfo
 	/*
 	 * Partitioning metadata for all relevant partition tables.
 	 */
-	List	   *partsMetadata;
+	List *partsMetadata;
 
 	/*
 	 * The memory context in which pidIndexes are allocated.
@@ -446,14 +446,14 @@ typedef struct DynamicTableScanInfo
 extern DynamicTableScanInfo *dynamicTableScanInfo;
 
 /* ----------------
- *	  EState information
+ *          EState information
  *
  * Master working state for an Executor invocation
  * ----------------
  */
 typedef struct EState
 {
-	NodeTag		type;
+	NodeTag                type;
 
 	/* Basic state for all query types: */
 	ScanDirection es_direction; /* current scan direction */
@@ -463,16 +463,16 @@ typedef struct EState
 
 	/* Info about target table for insert/update/delete queries: */
 	ResultRelInfo *es_result_relations; /* array of ResultRelInfos */
-	int			es_num_result_relations;		/* length of array */
-	ResultRelInfo *es_result_relation_info;		/* currently active array elt */
-	JunkFilter *es_junkFilter;	/* currently active junk filter */
+	int                        es_num_result_relations;                /* length of array */
+	ResultRelInfo *es_result_relation_info;                /* currently active array elt */
+	JunkFilter *es_junkFilter;        /* currently active junk filter */
 
 	/* partitioning info for target relation */
 	PartitionNode *es_result_partitions;
 
 	/* AO fileseg info for target relation */
-	List	   *es_result_aosegnos;
-
+	List                *es_result_aosegnos;
+        
 	struct TupleTableSlot *es_trig_tuple_slot; /* for trigger output tuples */
 
 	/* Stuff used for SELECT INTO: */
@@ -484,25 +484,25 @@ typedef struct EState
 	struct MirroredBufferPoolBulkLoadInfo *es_into_relation_bulkloadinfo;
 
 	/* Parameter info: */
-	ParamListInfo es_param_list_info;	/* values of external params */
-	ParamExecData *es_param_exec_vals;	/* values of internal params */
+	ParamListInfo es_param_list_info;        /* values of external params */
+	ParamExecData *es_param_exec_vals;        /* values of internal params */
 
 	/* Other working state: */
 	MemoryContext es_query_cxt; /* per-query context in which EState lives */
 
 	struct TupleTableData        *es_tupleTable;        /* Array of TupleTableSlots */
 
-	uint64		es_processed;	/* # of tuples processed */
-	Oid			es_lastoid;		/* last oid processed (by INSERT) */
-	List	   *es_rowMarks;	/* not good place, but there is no other */
+	uint64                es_processed;        /* # of tuples processed */
+	Oid                        es_lastoid;                /* last oid processed (by INSERT) */
+	List           *es_rowMarks;        /* not good place, but there is no other */
 
 	bool                es_is_subquery;        /* true if subquery (es_query_cxt not mine) */
 
-	bool		es_instrument;	/* true requests runtime instrumentation */
-	bool		es_select_into; /* true if doing SELECT INTO */
-	bool		es_into_oids;	/* true to generate OIDs in SELECT INTO */
+	bool                es_instrument;        /* true requests runtime instrumentation */
+	bool                es_select_into; /* true if doing SELECT INTO */
+	bool                es_into_oids;        /* true to generate OIDs in SELECT INTO */
 
-	List	   *es_exprcontexts;	/* List of ExprContexts within EState */
+	List           *es_exprcontexts;        /* List of ExprContexts within EState */
 
 	/*
 	 * this ExprContext is for per-output-tuple operations, such as constraint
@@ -513,40 +513,40 @@ typedef struct EState
 
 	/* Below is to re-evaluate plan qual in READ COMMITTED mode */
 	PlannedStmt *es_plannedstmt;	/* link to top of plan tree */
-	struct evalPlanQual *es_evalPlanQual;		/* chain of PlanQual states */
-	bool	   *es_evTupleNull; /* local array of EPQ status */
-	HeapTuple  *es_evTuple;		/* shared array of EPQ substitute tuples */
-	bool		es_useEvalPlan; /* evaluating EPQ tuples? */
-
+	struct evalPlanQual *es_evalPlanQual;                /* chain of PlanQual states */
+	bool           *es_evTupleNull; /* local array of EPQ status */
+	HeapTuple  *es_evTuple;                /* shared array of EPQ substitute tuples */
+	bool                es_useEvalPlan; /* evaluating EPQ tuples? */
+        
 	/* Additions for MPP plan slicing. */
 	struct SliceTable *es_sliceTable;
-
+        
 	/* Data structure for node sharing */
-	List	  **es_sharenode;
+	List **es_sharenode;
 
-	int			active_recv_id;
-	void	   *motionlayer_context;  /* Motion Layer state */
+	int active_recv_id;
+	void *motionlayer_context;  /* Motion Layer state */
 	struct ChunkTransportState *interconnect_context; /* Interconnect state */
-
+        
 	/* MPP used resources */
-	bool		es_interconnect_is_setup;   /* is interconnect set-up?    */
+	bool es_interconnect_is_setup;   /* is interconnect set-up?    */
+        
+	bool es_got_eos;                                /* was end-of-stream recieved? */
 
-	bool		es_got_eos;			/* was end-of-stream recieved? */
+	bool cancelUnfinished;                /* when we're cleaning up, we need to make sure that we know it */
 
-	bool		cancelUnfinished;	/* when we're cleaning up, we need to make sure that we know it */
-
-	/* results from qExec processes */
+    /* results from qExec processes */
 	struct CdbDispatcherState *dispatcherState;
 
-	/* CDB: EXPLAIN ANALYZE statistics */
-	struct CdbExplain_ShowStatCtx  *showstatctx;
-
+    /* CDB: EXPLAIN ANALYZE statistics */
+    struct CdbExplain_ShowStatCtx  *showstatctx;
+        
 	/* CDB: partitioning state info */
 	PartitionState *es_partition_state;
-
+	
 	/*
 	 * The slice number for the current node that is
-	 * being processed. During the tree traversal,
+	 * being processed. During the tree traversal, 
 	 * this value is set by Motion and InitPlan nodes.
 	 *
 	 * currentSliceIdInPlan and currentExecutingSliceId
@@ -555,8 +555,8 @@ typedef struct EState
 	 * an assigned slice id in the plan, while the executing
 	 * slice id for these nodes is the root slice id.
 	 */
-	int			currentSliceIdInPlan;
-	int			currentExecutingSliceId;
+	int currentSliceIdInPlan;
+	int currentExecutingSliceId;
 
 	/*
 	 * Each subplan has its own EState. This value indicates
@@ -573,7 +573,7 @@ typedef struct EState
 	/*
 	 * The root slice id for this EState.
 	 */
-	int			rootSliceId;
+	int rootSliceId;
 
 	struct PlanState *planstate;        /* plan's state tree */
 	/*
@@ -604,7 +604,7 @@ typedef struct ExecRowMark
 
 
 /* ----------------------------------------------------------------
- *				 Tuple Hash Tables
+ *                                 Tuple Hash Tables
  *
  * All-in-memory tuple hash tables are used for a number of purposes.
  * ----------------------------------------------------------------
@@ -615,13 +615,13 @@ typedef struct TupleHashTableData *TupleHashTable;
 typedef struct TupleHashEntryData
 {
 	/* firstTuple must be the first field in this struct! */
-	struct MemTupleData *firstTuple;	/* copy of first tuple in this group */
+	struct MemTupleData *firstTuple;		/* copy of first tuple in this group */
 	/* there may be additional data beyond the end of this struct */
-} TupleHashEntryData;			/* VARIABLE LENGTH STRUCT */
+} TupleHashEntryData;                        /* VARIABLE LENGTH STRUCT */
 
 typedef struct TupleHashTableData
 {
-	HTAB	   *hashtab;		/* underlying dynahash table */
+	HTAB		*hashtab;		/* underlying dynahash table */
 	int			numCols;		/* number of columns in lookup key */
 	AttrNumber *keyColIdx;		/* attr numbers of key columns */
 	FmgrInfo   *eqfunctions;	/* lookup data for comparison functions */
@@ -641,16 +641,16 @@ typedef HASH_SEQ_STATUS TupleHashIterator;
  * explicit scan termination is needed).
  */
 #define InitTupleHashIterator(htable, iter) \
-	hash_seq_init(iter, (htable)->hashtab)
+        hash_seq_init(iter, (htable)->hashtab)
 #define TermTupleHashIterator(iter) \
-	hash_seq_term(iter)
+        hash_seq_term(iter)
 #define ResetTupleHashIterator(htable, iter) \
-	do { \
-		hash_freeze((htable)->hashtab); \
-		hash_seq_init(iter, (htable)->hashtab); \
-	} while (0)
+        do { \
+                hash_freeze((htable)->hashtab); \
+                hash_seq_init(iter, (htable)->hashtab); \
+        } while (0)
 #define ScanTupleHashTable(iter) \
-	((TupleHashEntry) hash_seq_search(iter))
+        ((TupleHashEntry) hash_seq_search(iter))
 
 /* Abstraction of different memory management calls */
 typedef struct MemoryManagerContainer
@@ -678,7 +678,7 @@ static inline void cxt_free(void *manager, void *pointer)
 }
 
 /* ----------------------------------------------------------------
- *				 Expression State Trees
+ *                                 Expression State Trees
  *
  * Each executable expression tree has a parallel ExprState tree.
  *
@@ -690,7 +690,7 @@ static inline void cxt_free(void *manager, void *pointer)
  */
 
 /* ----------------
- *		ExprState node
+ *                ExprState node
  *
  * ExprState is the common superclass for all ExprState-type nodes.
  *
@@ -705,19 +705,19 @@ static inline void cxt_free(void *manager, void *pointer)
 typedef struct ExprState ExprState;
 
 typedef Datum (*ExprStateEvalFunc) (ExprState *expression,
-												ExprContext *econtext,
-												bool *isNull,
-												ExprDoneCond *isDone);
+									ExprContext *econtext,
+									bool *isNull,
+									ExprDoneCond *isDone);
 
 struct ExprState
 {
-	NodeTag		type;
-	Expr	   *expr;			/* associated Expr node */
-	ExprStateEvalFunc evalfunc; /* routine to run to execute node */
+	NodeTag				type;
+	Expr				*expr;			/* associated Expr node */
+	ExprStateEvalFunc	evalfunc;		/* routine to run to execute node */
 };
 
 /* ----------------
- *		GenericExprState node
+ *                GenericExprState node
  *
  * This is used for Expr node types that need no local run-time state,
  * but have one child Expr node.
@@ -726,25 +726,25 @@ struct ExprState
 typedef struct GenericExprState
 {
 	ExprState	xprstate;
-	ExprState  *arg;			/* state of my child node */
+	ExprState	*arg;	/* state of my child node */
 } GenericExprState;
 
 /* ----------------
- *		AggrefExprState node
+ *                AggrefExprState node
  * ----------------
  */
 typedef struct AggrefExprState
 {
 	ExprState	xprstate;
-	List	   *args;			/* states of argument expressions */
-	List	   *inputTargets;	/* combined TargetList */
+	List		*args;	/* states of argument expressions */
+	List	   *inputTargets; /* combined TargetList */
 	List	   *inputSortClauses; /* list of SortClause */
-	int			aggno;			/* ID number for agg within its plan node */
+	int			aggno;	/* ID number for agg within its plan node */
 } AggrefExprState;
 
 /*
  * ----------------
- *		GroupingFuncExprState node
+ *  GroupingFuncExprState node
  * ----------------
  */
 typedef struct GroupingFuncExprState
@@ -772,7 +772,7 @@ typedef struct WindowRefExprState
 } WindowRefExprState;
 
 /* ----------------
- *		ArrayRefExprState node
+ *                ArrayRefExprState node
  *
  * Note: array types can be fixed-length (typlen > 0), but only when the
  * element type is itself fixed-length.  Otherwise they are varlena structures
@@ -781,19 +781,19 @@ typedef struct WindowRefExprState
  */
 typedef struct ArrayRefExprState
 {
-	ExprState	xprstate;
-	List	   *refupperindexpr;	/* states for child nodes */
-	List	   *reflowerindexpr;
+	ExprState        xprstate;
+	List           *refupperindexpr;        /* states for child nodes */
+	List           *reflowerindexpr;
 	ExprState  *refexpr;
 	ExprState  *refassgnexpr;
-	int16		refattrlength;	/* typlen of array type */
-	int16		refelemlength;	/* typlen of the array element type */
-	bool		refelembyval;	/* is the element type pass-by-value? */
-	char		refelemalign;	/* typalign of the element type */
+	int16                refattrlength;        /* typlen of array type */
+	int16                refelemlength;        /* typlen of the array element type */
+	bool                refelembyval;        /* is the element type pass-by-value? */
+	char                refelemalign;        /* typalign of the element type */
 } ArrayRefExprState;
 
 /* ----------------
- *		FuncExprState node
+ *                FuncExprState node
  *
  * Although named for FuncExpr, this is also used for OpExpr, DistinctExpr,
  * and NullIf nodes; be careful to check what xprstate.expr is actually
@@ -802,15 +802,15 @@ typedef struct ArrayRefExprState
  */
 typedef struct FuncExprState
 {
-	ExprState	xprstate;
-	List	   *args;			/* states of argument expressions */
+	ExprState        xprstate;
+	List           *args;                        /* states of argument expressions */
 
 	/*
 	 * Function manager's lookup info for the target function.  If func.fn_oid
 	 * is InvalidOid, we haven't initialized it yet (nor any of the following
 	 * fields).
 	 */
-	FmgrInfo	func;
+	FmgrInfo        func;
 
 	/*
 	 * For a set-returning function (SRF) that returns a tuplestore, we
@@ -836,14 +836,14 @@ typedef struct FuncExprState
 	 * argument values to the function again (and again, until it returns
 	 * ExprEndResult).
 	 */
-	bool		setArgsValid;
+	bool                setArgsValid;
 
 	/*
 	 * Flag to remember whether we found a set-valued argument to the
 	 * function. This causes the function result to be a set as well. Valid
 	 * only when setArgsValid is true or funcResultStore isn't NULL.
 	 */
-	bool		setHasSetArg;	/* some argument returns a set */
+	bool                setHasSetArg;        /* some argument returns a set */
 
 	/*
 	 * Flag to remember whether we have registered a shutdown callback for
@@ -851,7 +851,7 @@ typedef struct FuncExprState
 	 * has been set at least once (since all the callback is for is to release
 	 * the tuplestore or clear setArgsValid).
 	 */
-	bool		shutdown_reg;	/* a shutdown callback is registered */
+	bool                shutdown_reg;        /* a shutdown callback is registered */
 
 	/*
 	 * Current argument data for a set-valued function; contains valid data
@@ -860,13 +860,13 @@ typedef struct FuncExprState
 	FunctionCallInfoData setArgs;
 
 	/* Fast Path */
-	ExprState  *fp_arg[2];
-	Datum		fp_datum[2];
-	bool		fp_null[2];
+	ExprState *fp_arg[2];
+	Datum            fp_datum[2];
+	bool            fp_null[2];
 } FuncExprState;
 
 /* ----------------
- *		ScalarArrayOpExprState node
+ *                ScalarArrayOpExprState node
  *
  * This is a FuncExprState plus some additional data.
  * ----------------
@@ -875,183 +875,183 @@ typedef struct ScalarArrayOpExprState
 {
 	FuncExprState fxprstate;
 	/* Cached info about array element type */
-	Oid			element_type;
-	int16		typlen;
-	bool		typbyval;
-	char		typalign;
+	Oid                        element_type;
+	int16                typlen;
+	bool                typbyval;
+	char                typalign;
 
 	/* Fast path x in ('A', 'B', 'C') */
-	int			fp_n;
-	int		   *fp_len;
-	Datum	   *fp_datum;
+	int         fp_n;
+	int         *fp_len;
+	Datum         *fp_datum;
 } ScalarArrayOpExprState;
 
 /* ----------------
- *		BoolExprState node
+ *                BoolExprState node
  * ----------------
  */
 typedef struct BoolExprState
 {
-	ExprState	xprstate;
-	List	   *args;			/* states of argument expression(s) */
+        ExprState        xprstate;
+        List           *args;                        /* states of argument expression(s) */
 } BoolExprState;
 
 /* ----------------
- *		PartOidExprState node
+ *                PartOidExprState node
  * ----------------
  */
 typedef struct PartOidExprState
 {
-	ExprState	xprstate;
+	ExprState     xprstate;
 
 	/* accepted leaf PartitionConstraints for current tuple */
 	struct PartitionConstraints **acceptedLeafPart;
 } PartOidExprState;
 
 /* ----------------
- *		PartDefaultExprState node
+ *                PartDefaultExprState node
  * ----------------
  */
 typedef struct PartDefaultExprState
 {
-	ExprState	xprstate;
+	ExprState     xprstate;
 
 	/* accepted partitions for all levels */
 	struct PartitionConstraints **levelPartConstraints;
 } PartDefaultExprState;
 
 /* ----------------
- *		PartBoundExprState node
+ *                PartBoundExprState node
  * ----------------
  */
 typedef struct PartBoundExprState
 {
-	ExprState	xprstate;
+	ExprState     xprstate;
 
 	/* accepted partitions for all levels */
 	struct PartitionConstraints **levelPartConstraints;
 } PartBoundExprState;
 
 /* ----------------
- *		PartBoundInclusionExprState node
+ *                PartBoundInclusionExprState node
  * ----------------
  */
 typedef struct PartBoundInclusionExprState
 {
-	ExprState	xprstate;
+	ExprState     xprstate;
 
 	/* accepted partitions for all levels */
 	struct PartitionConstraints **levelPartConstraints;
 } PartBoundInclusionExprState;
 
 /* ----------------
- *		PartBoundOpenExprState node
+ *                PartBoundOpenExprState node
  * ----------------
  */
 typedef struct PartBoundOpenExprState
 {
-	ExprState	xprstate;
+	ExprState     xprstate;
 
 	/* accepted partitions for all levels */
 	struct PartitionConstraints **levelPartConstraints;
 } PartBoundOpenExprState;
 
 /* ----------------
- *		SubPlanState node
+ *                SubPlanState node
  * ----------------
  */
 typedef struct SubPlanState
 {
-	ExprState	xprstate;
+	ExprState        xprstate;
 	EState           *sub_estate;                /* subselect plan has its own EState */
-	struct PlanState *planstate;	/* subselect plan's state tree */
-	ExprState  *testexpr;		/* state of combining expression */
-	List	   *args;			/* states of argument expression(s) */
+	struct PlanState *planstate;        /* subselect plan's state tree */
+	ExprState  *testexpr;                /* state of combining expression */
+	List           *args;                        /* states of argument expression(s) */
 	bool                needShutdown;        /* TRUE = need to shutdown subplan */
 
-	struct MemTupleData *curTuple;                /* copy of most recent tuple from subplan */
+	struct MemTupleData *       curTuple;                /* copy of most recent tuple from subplan */
 	/* these are used when hashing the subselect's output: */
-	ProjectionInfo *projLeft;	/* for projecting lefthand exprs */
-	ProjectionInfo *projRight;	/* for projecting subselect output */
-	TupleHashTable hashtable;	/* hash table for no-nulls subselect rows */
-	TupleHashTable hashnulls;	/* hash table for rows with null(s) */
-	bool		havehashrows;	/* TRUE if hashtable is not empty */
-	bool		havenullrows;	/* TRUE if hashnulls is not empty */
+	ProjectionInfo *projLeft;        /* for projecting lefthand exprs */
+	ProjectionInfo *projRight;        /* for projecting subselect output */
+	TupleHashTable hashtable;        /* hash table for no-nulls subselect rows */
+	TupleHashTable hashnulls;        /* hash table for rows with null(s) */
+	bool                havehashrows;        /* TRUE if hashtable is not empty */
+	bool                havenullrows;        /* TRUE if hashnulls is not empty */
 
 	MemoryContext hashtablecxt;	/* memory context containing hash tables */
-	MemoryContext hashtempcxt;	/* temp memory context for hash tables */
+ 	MemoryContext hashtempcxt;	/* temp memory context for hash tables */
 	ExprContext *innerecontext; /* working context for comparisons */
-	AttrNumber *keyColIdx;		/* control data for hash tables */
+	AttrNumber *keyColIdx;                /* control data for hash tables */
 	FmgrInfo   *eqfunctions;        /* comparison functions for hash tables */
 	FmgrInfo   *hashfunctions;        /* lookup data for hash functions */
     struct StringInfoData  *cdbextratextbuf;    /* to pass text to cdbexplain */
 } SubPlanState;
 
 /* ----------------
- *		FieldSelectState node
+ *                FieldSelectState node
  * ----------------
  */
 typedef struct FieldSelectState
 {
-	ExprState	xprstate;
-	ExprState  *arg;			/* input expression */
-	TupleDesc	argdesc;		/* tupdesc for most recent input */
+        ExprState        xprstate;
+        ExprState  *arg;                        /* input expression */
+        TupleDesc        argdesc;                /* tupdesc for most recent input */
 } FieldSelectState;
 
 /* ----------------
- *		FieldStoreState node
+ *                FieldStoreState node
  * ----------------
  */
 typedef struct FieldStoreState
 {
-	ExprState	xprstate;
-	ExprState  *arg;			/* input tuple value */
-	List	   *newvals;		/* new value(s) for field(s) */
-	TupleDesc	argdesc;		/* tupdesc for most recent input */
+        ExprState        xprstate;
+        ExprState  *arg;                        /* input tuple value */
+        List           *newvals;                /* new value(s) for field(s) */
+        TupleDesc        argdesc;                /* tupdesc for most recent input */
 } FieldStoreState;
 
 /* ----------------
- *		ConvertRowtypeExprState node
+ *                ConvertRowtypeExprState node
  * ----------------
  */
 typedef struct ConvertRowtypeExprState
 {
-	ExprState	xprstate;
-	ExprState  *arg;			/* input tuple value */
-	TupleDesc	indesc;			/* tupdesc for source rowtype */
-	TupleDesc	outdesc;		/* tupdesc for result rowtype */
-	AttrNumber *attrMap;		/* indexes of input fields, or 0 for null */
-	Datum	   *invalues;		/* workspace for deconstructing source */
-	bool	   *inisnull;
-	Datum	   *outvalues;		/* workspace for constructing result */
-	bool	   *outisnull;
+        ExprState        xprstate;
+        ExprState  *arg;                        /* input tuple value */
+        TupleDesc        indesc;                        /* tupdesc for source rowtype */
+        TupleDesc        outdesc;                /* tupdesc for result rowtype */
+        AttrNumber *attrMap;                /* indexes of input fields, or 0 for null */
+        Datum           *invalues;                /* workspace for deconstructing source */
+        bool           *inisnull;
+        Datum           *outvalues;                /* workspace for constructing result */
+        bool           *outisnull;
 } ConvertRowtypeExprState;
 
 /* ----------------
- *		CaseExprState node
+ *                CaseExprState node
  * ----------------
  */
 typedef struct CaseExprState
 {
-	ExprState	xprstate;
-	ExprState  *arg;			/* implicit equality comparison argument */
-	List	   *args;			/* the arguments (list of WHEN clauses) */
-	ExprState  *defresult;		/* the default result (ELSE clause) */
+        ExprState        xprstate;
+        ExprState  *arg;                        /* implicit equality comparison argument */
+        List           *args;                        /* the arguments (list of WHEN clauses) */
+        ExprState  *defresult;                /* the default result (ELSE clause) */
 } CaseExprState;
 
 /* ----------------
- *		CaseWhenState node
+ *                CaseWhenState node
  * ----------------
  */
 typedef struct CaseWhenState
 {
-	ExprState	xprstate;
-	ExprState  *expr;			/* condition expression */
-	ExprState  *result;			/* substitution result */
+        ExprState        xprstate;
+        ExprState  *expr;                        /* condition expression */
+        ExprState  *result;                        /* substitution result */
 } CaseWhenState;
 
 /* ----------------
- *		ArrayExprState node
+ *                ArrayExprState node
  *
  * Note: ARRAY[] expressions always produce varlena arrays, never fixed-length
  * arrays.
@@ -1059,93 +1059,93 @@ typedef struct CaseWhenState
  */
 typedef struct ArrayExprState
 {
-	ExprState	xprstate;
-	List	   *elements;		/* states for child nodes */
-	int16		elemlength;		/* typlen of the array element type */
-	bool		elembyval;		/* is the element type pass-by-value? */
-	char		elemalign;		/* typalign of the element type */
+        ExprState        xprstate;
+        List           *elements;                /* states for child nodes */
+        int16                elemlength;                /* typlen of the array element type */
+        bool                elembyval;                /* is the element type pass-by-value? */
+        char                elemalign;                /* typalign of the element type */
 } ArrayExprState;
 
 /* ----------------
- *		RowExprState node
+ *                RowExprState node
  * ----------------
  */
 typedef struct RowExprState
 {
-	ExprState	xprstate;
-	List	   *args;			/* the arguments */
-	TupleDesc	tupdesc;		/* descriptor for result tuples */
+        ExprState        xprstate;
+        List           *args;                        /* the arguments */
+        TupleDesc        tupdesc;                /* descriptor for result tuples */
 } RowExprState;
 
 /* ----------------
- *		RowCompareExprState node
+ *                RowCompareExprState node
  * ----------------
  */
 typedef struct RowCompareExprState
 {
-	ExprState	xprstate;
-	List	   *largs;			/* the left-hand input arguments */
-	List	   *rargs;			/* the right-hand input arguments */
-	FmgrInfo   *funcs;			/* array of comparison function info */
+        ExprState        xprstate;
+        List           *largs;                        /* the left-hand input arguments */
+        List           *rargs;                        /* the right-hand input arguments */
+        FmgrInfo   *funcs;                        /* array of comparison function info */
 } RowCompareExprState;
 
 /* ----------------
- *		CoalesceExprState node
+ *                CoalesceExprState node
  * ----------------
  */
 typedef struct CoalesceExprState
 {
-	ExprState	xprstate;
-	List	   *args;			/* the arguments */
+        ExprState        xprstate;
+        List           *args;                        /* the arguments */
 } CoalesceExprState;
 
 /* ----------------
- *		MinMaxExprState node
+ *                MinMaxExprState node
  * ----------------
  */
 typedef struct MinMaxExprState
 {
-	ExprState	xprstate;
-	List	   *args;			/* the arguments */
-	FmgrInfo	cfunc;			/* lookup info for comparison func */
+        ExprState        xprstate;
+        List           *args;                        /* the arguments */
+        FmgrInfo        cfunc;                        /* lookup info for comparison func */
 } MinMaxExprState;
 
 /* ----------------
- *		NullTestState node
+ *                NullTestState node
  * ----------------
  */
 typedef struct NullTestState
 {
-	ExprState	xprstate;
-	ExprState  *arg;			/* input expression */
-	bool		argisrow;		/* T if input is of a composite type */
-	/* used only if argisrow: */
-	TupleDesc	argdesc;		/* tupdesc for most recent input */
+        ExprState        xprstate;
+        ExprState  *arg;                        /* input expression */
+        bool                argisrow;                /* T if input is of a composite type */
+        /* used only if argisrow: */
+        TupleDesc        argdesc;                /* tupdesc for most recent input */
 } NullTestState;
 
 /* ----------------
- *		CoerceToDomainState node
+ *                CoerceToDomainState node
  * ----------------
  */
 typedef struct CoerceToDomainState
 {
-	ExprState	xprstate;
-	ExprState  *arg;			/* input expression */
-	/* Cached list of constraints that need to be checked */
-	List	   *constraints;	/* list of DomainConstraintState nodes */
+        ExprState        xprstate;
+        ExprState  *arg;                        /* input expression */
+        /* Cached list of constraints that need to be checked */
+        List           *constraints;        /* list of DomainConstraintState nodes */
 } CoerceToDomainState;
 
 
 /* ----------------
- *		PercentileExprState node
+ *                PercentileExprState node
  * ----------------
  */
 typedef struct PercentileExprState
 {
-	ExprState	xprstate;
-	List	   *args;			/* states of argument expressions */
-	List	   *tlist;			/* combined TargetList */
-	int			aggno;			/* ID number within its plan node */
+	ExprState			xprstate;
+	List			   *args;		/* states of argument expressions */
+	List			   *tlist;		/* combined TargetList */
+	int					aggno;		/* ID number within its plan node */
 } PercentileExprState;
 
 /*
@@ -1157,21 +1157,21 @@ typedef struct PercentileExprState
  */
 typedef enum DomainConstraintType
 {
-	DOM_CONSTRAINT_NOTNULL,
-	DOM_CONSTRAINT_CHECK
+        DOM_CONSTRAINT_NOTNULL,
+        DOM_CONSTRAINT_CHECK
 } DomainConstraintType;
 
 typedef struct DomainConstraintState
 {
-	NodeTag		type;
-	DomainConstraintType constrainttype;		/* constraint type */
-	char	   *name;			/* name of constraint (for error msgs) */
-	ExprState  *check_expr;		/* for CHECK, a boolean expression */
+        NodeTag                type;
+        DomainConstraintType constrainttype;                /* constraint type */
+        char           *name;                        /* name of constraint (for error msgs) */
+        ExprState  *check_expr;                /* for CHECK, a boolean expression */
 } DomainConstraintState;
 
 
 /* ----------------------------------------------------------------
- *				 Executor State Trees
+ *                                 Executor State Trees
  *
  * An executing query has a PlanState tree paralleling the Plan tree
  * that describes the plan.
@@ -1179,7 +1179,7 @@ typedef struct DomainConstraintState
  */
 
 /* ----------------
- *		PlanState node
+ *                PlanState node
  *
  * We never actually instantiate any PlanState nodes; this is just the common
  * abstract superclass for all PlanState-type nodes.
@@ -1187,76 +1187,76 @@ typedef struct DomainConstraintState
  */
 typedef struct PlanState
 {
-	NodeTag		type;
+        NodeTag           type;
 
-	Plan	   *plan;			/* associated Plan node */
+        Plan           *plan;                        /* associated Plan node */
 
-	EState	   *state;			/* at execution time, state's of individual
-								 * nodes point to one EState for the whole
-								 * top-level plan */
+        EState           *state;                        /* at execution time, state's of individual
+                                                                 * nodes point to one EState for the whole
+                                                                 * top-level plan */
 
-	bool		fHadSentGpmon;
+        bool         fHadSentGpmon;
 
-	/*
-	 * Common structural data for all Plan types.  These links to subsidiary
-	 * state trees parallel links in the associated plan tree (except for the
-	 * subPlan list, which does not exist in the plan tree).
-	 */
-	List	   *targetlist;		/* target list to be computed at this node */
-	List	   *qual;			/* implicitly-ANDed qual conditions */
-	struct PlanState *lefttree; /* input plan tree(s) */
-	struct PlanState *righttree;
-	List	   *initPlan;		/* Init SubPlanState nodes (un-correlated expr
-								 * subselects) */
-	List	   *subPlan;		/* SubPlanState nodes in my expressions */
+        /*
+         * Common structural data for all Plan types.  These links to subsidiary
+         * state trees parallel links in the associated plan tree (except for the
+         * subPlan list, which does not exist in the plan tree).
+         */
+        List           *targetlist;                /* target list to be computed at this node */
+        List           *qual;                        /* implicitly-ANDed qual conditions */
+        struct PlanState *lefttree; /* input plan tree(s) */
+        struct PlanState *righttree;
+        List           *initPlan;                /* Init SubPlanState nodes (un-correlated expr
+                                                                 * subselects) */
+        List           *subPlan;                /* SubPlanState nodes in my expressions */
 
-	/*
-	 * State for management of parameter-change-driven rescanning
-	 */
-	Bitmapset  *chgParam;		/* set of IDs of changed Params */
+        /*
+         * State for management of parameter-change-driven rescanning
+         */
+        Bitmapset  *chgParam;                /* set of IDs of changed Params */
 
-	/*
-	 * Indicate whether it is unsafe to eager free the memory used by this node when
-	 * this node outputted its last row.
-	 *
-	 * The unsafe cases are Mark/Restore, Rescan on Material/Sort on top of a Motion.
-	 */
-	bool		delayEagerFree;
+        /*
+         * Indicate whether it is unsafe to eager free the memory used by this node when
+		 * this node outputted its last row.
+		 *
+		 * The unsafe cases are Mark/Restore, Rescan on Material/Sort on top of a Motion.
+         */
+        bool delayEagerFree;
 
-	/*
-	 * Other run-time state needed by most if not all node types.
-	 */
+        /*
+         * Other run-time state needed by most if not all node types.
+         */
         struct TupleTableSlot *ps_OuterTupleSlot;        /* slot for current "outer" tuple */
         struct TupleTableSlot *ps_ResultTupleSlot; /* slot for my result tuples */
-	ExprContext *ps_ExprContext;	/* node's expression-evaluation context */
-	ProjectionInfo *ps_ProjInfo;	/* info for doing tuple projection */
+        ExprContext *ps_ExprContext;        /* node's expression-evaluation context */
+        ProjectionInfo *ps_ProjInfo;        /* info for doing tuple projection */
 
-	/*
-	 * EXPLAIN ANALYZE statistics collection
-	 */
-	struct Instrumentation *instrument;     /* runtime stats for this node */
-	struct StringInfoData  *cdbexplainbuf;  /* EXPLAIN ANALYZE report buf */
-	void      (*cdbexplainfun)(struct PlanState *planstate, struct StringInfoData *buf);
-	/* callback before ExecutorEnd */
+        /* 
+         * EXPLAIN ANALYZE statistics collection 
+         */
+        struct Instrumentation *instrument;     /* runtime stats for this node */
+        struct StringInfoData  *cdbexplainbuf;  /* EXPLAIN ANALYZE report buf */
+        void      (*cdbexplainfun)(struct PlanState *planstate, struct StringInfoData *buf);
+        /* callback before ExecutorEnd */
 
-	/*
-	 * GpMon packet
-	 */
-	int		gpmon_plan_tick;
-	gpmon_packet_t gpmon_pkt;
+        /*
+         * GpMon packet 
+         */
+        int gpmon_plan_tick;
+        gpmon_packet_t gpmon_pkt;
 } PlanState;
 
 typedef struct Gpmon_NameUnit_MaxVal
 {
-	char	   *name;
-	char	   *unit;
-	int64		maxval;
+        char *name;
+        char *unit;
+        int64 maxval;
 } Gpmon_NameUnit_MaxVal;
 
 typedef struct Gpmon_NameVal_Text
 {
-	char	   *name;
-	char	   *value;
+        char *name;
+        char *value;
 } Gpmon_NameVal_Text;
 
 /* Gpperfmon helper functions defined in execGpmon.h */
@@ -1270,9 +1270,9 @@ extern void InitPlanNodeGpmonPkt(Plan* plan, gpmon_packet_t *gpmon_pkt, EState *
 
 extern uint64 PlanStateOperatorMemKB(const PlanState *ps);
 
-static inline void Gpmon_M_Incr(gpmon_packet_t *pkt, int nth)
+static inline void Gpmon_M_Incr(gpmon_packet_t *pkt, int nth) 
 {
-	++pkt->u.qexec.measures[nth];
+        ++pkt->u.qexec.measures[nth];
 }
 static inline void Gpmon_M_Incr_Rows_Out(gpmon_packet_t *pkt)
 {
@@ -1284,79 +1284,79 @@ static inline void Gpmon_M_Add_Rows_Out(gpmon_packet_t *pkt, int val)
 }
 static inline void Gpmon_M_Add(gpmon_packet_t *pkt, int nth, int val)
 {
-	pkt->u.qexec.measures[nth] += val;
+        pkt->u.qexec.measures[nth] += val;
 }
 static inline void Gpmon_M_Set(gpmon_packet_t *pkt, int nth, int64 val)
 {
-	pkt->u.qexec.measures[nth] = val;
+        pkt->u.qexec.measures[nth] = val;
 }
 static inline int64 Gpmon_M_Get(gpmon_packet_t *pkt, int nth)
 {
-	return pkt->u.qexec.measures[nth];
+        return pkt->u.qexec.measures[nth];
 }
 static inline void Gpmon_M_Reset(gpmon_packet_t *pkt, int nth)
 {
-	pkt->u.qexec.measures[nth] = 0;
+        pkt->u.qexec.measures[nth] = 0;
 }
 
 /* ----------------
- *	these are are defined to avoid confusion problems with "left"
- *	and "right" and "inner" and "outer".  The convention is that
- *	the "left" plan is the "outer" plan and the "right" plan is
- *	the inner plan, but these make the code more readable.
+ *        these are are defined to avoid confusion problems with "left"
+ *        and "right" and "inner" and "outer".  The convention is that
+ *        the "left" plan is the "outer" plan and the "right" plan is
+ *        the inner plan, but these make the code more readable.
  * ----------------
  */
-#define innerPlanState(node)		(((PlanState *)(node))->righttree)
-#define outerPlanState(node)		(((PlanState *)(node))->lefttree)
+#define innerPlanState(node)                (((PlanState *)(node))->righttree)
+#define outerPlanState(node)                (((PlanState *)(node))->lefttree)
 
 
 /* ----------------
- *	 ResultState information
+ *         ResultState information
  * ----------------
  */
 typedef struct ResultState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	ExprState  *resconstantqual;
-	bool		inputFullyConsumed;		/* are we done? */
-	bool		rs_checkqual;	/* do we need to check the qual? */
-	bool		isSRF;			/* state flag for processing set-valued
-								 * functions in targetlist */
+        PlanState        ps;                                /* its first field is NodeTag */
+        ExprState  *resconstantqual;
+        bool                inputFullyConsumed;                /* are we done? */
+        bool                rs_checkqual;        /* do we need to check the qual? */
+        bool                isSRF;/* state flag for processing set-valued
+                                                                 * functions in targetlist */
         ExprDoneCond		lastSRFCond; /* Applicable only if isSRF is true. Represents the last done flag */
 } ResultState;
 
 /* ----------------
- *	 RepeatState information
+ *         RepeatState information
  * ----------------
  */
 typedef struct RepeatState
 {
-	PlanState	ps;				/* its first field is NodeTag */
+        PlanState        ps;                                /* its first field is NodeTag */
 
-	bool		repeat_done;	/* are we done? */
+        bool repeat_done;           /* are we done? */
         struct TupleTableSlot *slot;       /* The current tuple */
-	int			repeat_count;	/* The number of repeats for the current tuple */
-	ExprState  *expr_state;		/* The state to evaluate the expression */
+        int repeat_count;           /* The number of repeats for the current tuple */
+        ExprState *expr_state;      /* The state to evaluate the expression */
 } RepeatState;
 
 /* ----------------
- *	 AppendState information
+ *         AppendState information
  *
- *		nplans			how many plans are in the list
- *		whichplan		which plan is being executed (0 .. n-1)
- *		firstplan		first plan to execute (usually 0)
- *		lastplan		last plan to execute (usually n-1)
+ *                nplans                        how many plans are in the list
+ *                whichplan                which plan is being executed (0 .. n-1)
+ *                firstplan                first plan to execute (usually 0)
+ *                lastplan                last plan to execute (usually n-1)
  * ----------------
  */
 typedef struct AppendState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	PlanState **appendplans;	/* array of PlanStates for my inputs */
-	int			eflags;			/* used to initialize each subplan */
-	int			as_nplans;
-	int			as_whichplan;
-	int			as_firstplan;
-	int			as_lastplan;
+        PlanState        ps;                                /* its first field is NodeTag */
+        PlanState **appendplans;        /* array of PlanStates for my inputs */
+        int eflags; /* used to initialize each subplan */
+        int                        as_nplans;
+        int                        as_whichplan;
+        int                        as_firstplan;
+        int                        as_lastplan;
 } AppendState;
 
 /*
@@ -1364,42 +1364,42 @@ typedef struct AppendState
  */
 typedef struct SequenceState
 {
-	PlanState	ps;
+	PlanState ps;
 	PlanState **subplans;
-	int			numSubplans;
+	int numSubplans;
 
 	/*
 	 * True if no subplan has been executed.
 	 */
-	bool		initState;
+	bool initState;
 } SequenceState;
 
 /* ----------------
- *	 BitmapAndState information
+ *         BitmapAndState information
  * ----------------
  */
 typedef struct BitmapAndState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	PlanState **bitmapplans;	/* array of PlanStates for my inputs */
-	int			nplans;			/* number of input plans */
-	Node	   *bitmap;			/* output stream bitmap */
+        PlanState        ps;                                /* its first field is NodeTag */
+        PlanState **bitmapplans;        /* array of PlanStates for my inputs */
+        int                        nplans;                        /* number of input plans */
+        Node           *bitmap;        /* output stream bitmap */
 } BitmapAndState;
 
 /* ----------------
- *	 BitmapOrState information
+ *         BitmapOrState information
  * ----------------
  */
 typedef struct BitmapOrState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	PlanState **bitmapplans;	/* array of PlanStates for my inputs */
-	int			nplans;			/* number of input plans */
-	Node	   *bitmap;			/* output bitmap */
+        PlanState        ps;                                /* its first field is NodeTag */
+        PlanState **bitmapplans;        /* array of PlanStates for my inputs */
+        int                        nplans;                        /* number of input plans */
+        Node            *bitmap;                        /* output bitmap */
 } BitmapOrState;
 
 /* ----------------------------------------------------------------
- *	                  Scan State Information
+ *                                 Scan State Information
  * ----------------------------------------------------------------
  */
 
@@ -1445,30 +1445,30 @@ typedef enum
 } TableType;
 
 /* ----------------
- *	 ScanState information
+ *         ScanState information
  *
- *		ScanState extends PlanState for node types that represent
- *		scans of an underlying relation.  It can also be used for nodes
- *		that scan the output of an underlying plan node --- in that case,
- *		only ScanTupleSlot is actually useful, and it refers to the tuple
- *		retrieved from the subplan.
+ *                ScanState extends PlanState for node types that represent
+ *                scans of an underlying relation.  It can also be used for nodes
+ *                that scan the output of an underlying plan node --- in that case,
+ *                only ScanTupleSlot is actually useful, and it refers to the tuple
+ *                retrieved from the subplan.
  *
- *		currentRelation    relation being scanned (NULL if none)
- *		ScanTupleSlot	   pointer to slot in tuple table holding scan tuple
- *		scan_state		   the stage of scanning
- *		tableType		   the table type of the target relation
+ *                currentRelation    relation being scanned (NULL if none)
+ *                ScanTupleSlot           pointer to slot in tuple table holding scan tuple
+ *                scan_state		the stage of scanning
+ *                tableType			the table type of the target relation
  * ----------------
  */
 typedef struct ScanState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	Relation	ss_currentRelation;
+	PlanState        ps;                                /* its first field is NodeTag */
+	Relation        ss_currentRelation;
 	struct TupleTableSlot *ss_ScanTupleSlot;
-
-	int			scan_state;
-
+	
+	int scan_state;
+	
 	/* The type of the table that is being scanned */
-	TableType	tableType;
+	TableType tableType;
 } ScanState;
 
 /*
@@ -1485,7 +1485,7 @@ typedef struct SeqScanOpaqueData
 		HeapTuple last;
 		int seen_EOS;
 	} ss_heapTupleData;
-
+	
 } SeqScanOpaqueData;
 
 /*
@@ -1505,54 +1505,54 @@ typedef struct SeqScanState
  */
 typedef struct
 {
-	ScanKey		scan_key;		/* scankey to put value into */
-	ExprState  *key_expr;		/* expr to evaluate to get value */
+        ScanKey                scan_key;                /* scankey to put value into */
+        ExprState  *key_expr;                /* expr to evaluate to get value */
 } IndexRuntimeKeyInfo;
 
 typedef struct
 {
-	ScanKey		scan_key;		/* scankey to put value into */
-	ExprState  *array_expr;		/* expr to evaluate to get array value */
-	int			next_elem;		/* next array element to use */
-	int			num_elems;		/* number of elems in current array value */
-	Datum	   *elem_values;	/* array of num_elems Datums */
-	bool	   *elem_nulls;		/* array of num_elems is-null flags */
+        ScanKey                scan_key;                /* scankey to put value into */
+        ExprState  *array_expr;                /* expr to evaluate to get array value */
+        int                        next_elem;                /* next array element to use */
+        int                        num_elems;                /* number of elems in current array value */
+        Datum           *elem_values;        /* array of num_elems Datums */
+        bool           *elem_nulls;                /* array of num_elems is-null flags */
 } IndexArrayKeyInfo;
 
 /* ----------------
- *	 IndexScanState information
+ *         IndexScanState information
  *
- *		indexqualorig	   execution state for indexqualorig expressions
- *		ScanKeys		   Skey structures to scan index rel
- *		NumScanKeys		   number of Skey structs
- *		RuntimeKeys		   info about Skeys that must be evaluated at runtime
- *		NumRuntimeKeys	   number of RuntimeKeys structs
- *		RuntimeKeysReady   true if runtime Skeys have been computed
- *		RuntimeContext	   expr context for evaling runtime Skeys
- *		RelationDesc	   index relation descriptor
- *		ScanDesc		   index scan descriptor
+ *                indexqualorig           execution state for indexqualorig expressions
+ *                ScanKeys                   Skey structures to scan index rel
+ *                NumScanKeys                   number of Skey structs
+ *                RuntimeKeys                   info about Skeys that must be evaluated at runtime
+ *                NumRuntimeKeys           number of RuntimeKeys structs
+ *                RuntimeKeysReady   true if runtime Skeys have been computed
+ *                RuntimeContext           expr context for evaling runtime Skeys
+ *                RelationDesc           index relation descriptor
+ *                ScanDesc                   index scan descriptor
  * ----------------
  */
 typedef struct IndexScanState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	List	   *indexqualorig;
-	ScanKey		iss_ScanKeys;
-	int			iss_NumScanKeys;
-	IndexRuntimeKeyInfo *iss_RuntimeKeys;
-	int			iss_NumRuntimeKeys;
-	IndexArrayKeyInfo *iss_ArrayKeys;
-	int			iss_NumArrayKeys;
-	bool		iss_RuntimeKeysReady;
-	ExprContext *iss_RuntimeContext;
-	Relation	iss_RelationDesc;
-	struct IndexScanDescData *iss_ScanDesc;
+        ScanState        ss;                                /* its first field is NodeTag */
+        List           *indexqualorig;
+        ScanKey                iss_ScanKeys;
+        int                        iss_NumScanKeys;
+        IndexRuntimeKeyInfo *iss_RuntimeKeys;
+        int                        iss_NumRuntimeKeys;
+    	IndexArrayKeyInfo *iss_ArrayKeys;
+    	int                        iss_NumArrayKeys;
+        bool                iss_RuntimeKeysReady;
+        ExprContext *iss_RuntimeContext;
+        Relation        iss_RelationDesc;
+        struct IndexScanDescData *iss_ScanDesc;
 
-	/*
+    	/*
     	 * tableOid is the oid of the partition or relation on which
     	 * our current index relation is defined.
-	 */
-	Oid			tableOid;
+    	 */
+    	Oid tableOid;
 } IndexScanState;
 
 /*
@@ -1591,30 +1591,30 @@ typedef struct DynamicIndexScanState
 
 
 /* ----------------
- *	 BitmapIndexScanState information
+ *         BitmapIndexScanState information
  * ----------------
  */
 typedef struct BitmapIndexScanState
 {
-	IndexScanState indexScanState;		/* pseudo inheritance */
-	Node            *bitmap;			/* output bitmap */
+	IndexScanState indexScanState;					/* pseudo inheritance */
+	Node            *bitmap;                        /* output bitmap */
 	MemoryContext partitionMemoryContext;
 } BitmapIndexScanState;
 
 /* ----------------
- *	 BitmapHeapScanState information
+ *         BitmapHeapScanState information
  *
- *		bitmapqualorig	   execution state for bitmapqualorig expressions
- *		tbm				   bitmap obtained from child index scan(s)
- *		tbmres			   current-page data
+ *                bitmapqualorig           execution state for bitmapqualorig expressions
+ *                tbm                                   bitmap obtained from child index scan(s)
+ *                tbmres                           current-page data
  * ----------------
  */
 typedef struct BitmapHeapScanState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	struct HeapScanDescData *ss_currentScanDesc;
-	List	   *bitmapqualorig;
-	Node	   *tbm;
+	ScanState        ss;                                /* its first field is NodeTag */
+	struct HeapScanDescData * ss_currentScanDesc;
+	List           *bitmapqualorig;
+	Node  *tbm;
 	struct TBMIterateResult *tbmres;
 } BitmapHeapScanState;
 
@@ -1643,7 +1643,7 @@ typedef struct BitmapAppendOnlyScanState
 } BitmapAppendOnlyScanState;
 
 /* ----------------
- *	 BitmapTableScanState information
+ * BitmapTableScanState information
  *
  *		scanDesc			an opaque (scan method dependent) scan descriptor
  *		bitmapqualorig		execution state for bitmapqualorig expressions
@@ -1670,133 +1670,133 @@ typedef struct BitmapTableScanState
 } BitmapTableScanState;
 
 /* ----------------
- *	 TidScanState information
+ *         TidScanState information
  *
- *		NumTids		   number of tids in this scan
- *		TidPtr		   index of currently fetched tid
- *		TidList		   evaluated item pointers (array of size NumTids)
+ *                NumTids                   number of tids in this scan
+ *                TidPtr                   index of currently fetched tid
+ *                TidList                   evaluated item pointers (array of size NumTids)
  * ----------------
  */
 typedef struct TidScanState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	List	   *tss_tidquals;	/* list of ExprState nodes */
-	int			tss_NumTids;
-	int			tss_TidPtr;
-	int			tss_MarkTidPtr;
-	ItemPointerData *tss_TidList;
-	HeapTupleData tss_htup;
+        ScanState        ss;                                /* its first field is NodeTag */
+        List           *tss_tidquals;        /* list of ExprState nodes */
+        int                        tss_NumTids;
+        int                        tss_TidPtr;
+        int                        tss_MarkTidPtr;
+        ItemPointerData *tss_TidList;
+        HeapTupleData tss_htup;
 } TidScanState;
 
 /* ----------------
- *	 SubqueryScanState information
+ *         SubqueryScanState information
  *
- *		SubqueryScanState is used for scanning a sub-query in the range table.
+ *                SubqueryScanState is used for scanning a sub-query in the range table.
  *                The sub-query will have its own EState, which we save here.
- *		ScanTupleSlot references the current output tuple of the sub-query.
+ *                ScanTupleSlot references the current output tuple of the sub-query.
  *
  *                SubEState                   exec state for sub-query
  * ----------------
  */
 typedef struct SubqueryScanState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	PlanState  *subplan;
+        ScanState        ss;                                /* its first field is NodeTag */
+        PlanState  *subplan;
         EState           *sss_SubEState;
-	bool		cdb_want_ctid;	/* true => ctid is referenced in targetlist */
-	ItemPointerData cdb_fake_ctid;
+    bool        cdb_want_ctid;  /* true => ctid is referenced in targetlist */
+    ItemPointerData cdb_fake_ctid;
 } SubqueryScanState;
 
 /* ----------------
- *	 FunctionScanState information
+ * FunctionScanState information
  *
- *		Function nodes are used to scan the results of a
- *		function appearing in FROM (typically a function returning set).
+ *    Function nodes are used to scan the results of a
+ *    function appearing in FROM (typically a function returning set).
  *
- *		tupdesc				expected return tuple description
- *		tuplestorestate		private state of tuplestore.c
- *		funcexpr			state for function expression being evaluated
- *		cdb_want_ctid		true => ctid is referenced in targetlist
- *		cdb_fake_ctid
- *		cdb_mark_ctid
+ *    tupdesc                 expected return tuple description
+ *    tuplestorestate         private state of tuplestore.c
+ *    funcexpr                state for function expression being evaluated
+ *    cdb_want_ctid           true => ctid is referenced in targetlist
+ *    cdb_fake_ctid
+ *    cdb_mark_ctid
  * ----------------
  */
 typedef struct FunctionScanState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	TupleDesc	tupdesc;
+	ScanState					 ss;	/* its first field is NodeTag */
+	TupleDesc					 tupdesc;
 	struct Tuplestorestate		*tuplestorestate;
-	ExprState  *funcexpr;
-	bool		cdb_want_ctid;
-	ItemPointerData cdb_fake_ctid;
-	ItemPointerData cdb_mark_ctid;
+	ExprState					*funcexpr;
+	bool						 cdb_want_ctid;
+	ItemPointerData				 cdb_fake_ctid;
+	ItemPointerData				 cdb_mark_ctid;
 } FunctionScanState;
 
 
 /* ----------------
  * TableFunctionState information
  *
- *   Table Function nodes are used to scan the results of a table function
+ *   Table Function nodes are used to scan the results of a table function 
  *   operating over a table as input.
  * ----------------
  */
 typedef struct TableFunctionState
 {
-	ScanState	ss;				/* Table Function is a Scan */
-	struct AnyTableData *inputscan;		/* subquery scan data */
-	TupleDesc	resultdesc;		/* Function Result descriptor */
-	HeapTupleData tuple;		/* Returned tuple */
-	FuncExprState *fcache;		/* Function Call Cache */
-	FunctionCallInfoData fcinfo;	/* Function Call Context */
-	ReturnSetInfo rsinfo;		/* Resultset Context */
-	bool		is_rowtype;		/* Function returns records */
-	bool		is_firstcall;
-	bytea	   *userdata;		/* bytea given by describe func */
+	ScanState					 ss;			/* Table Function is a Scan */
+	struct AnyTableData         *inputscan;		/* subquery scan data */
+	TupleDesc					 resultdesc;	/* Function Result descriptor */
+	HeapTupleData                tuple;			/* Returned tuple */
+	FuncExprState				*fcache;		/* Function Call Cache */
+	FunctionCallInfoData		 fcinfo;		/* Function Call Context */
+	ReturnSetInfo				 rsinfo;		/* Resultset Context */
+	bool						 is_rowtype;	/* Function returns records */
+	bool						 is_firstcall;
+	bytea						*userdata;		/* bytea given by describe func */
 } TableFunctionState;
 
 
 /* ----------------
- *	 ValuesScanState information
+ *         ValuesScanState information
  *
- *		ValuesScan nodes are used to scan the results of a VALUES list
+ *                ValuesScan nodes are used to scan the results of a VALUES list
  *
- *		rowcontext			per-expression-list context
- *		exprlists			array of expression lists being evaluated
- *		array_len			size of array
- *		curr_idx			current array index (0-based)
- *		marked_idx			marked position (for mark/restore)
+ *                rowcontext                        per-expression-list context
+ *                exprlists                        array of expression lists being evaluated
+ *                array_len                        size of array
+ *                curr_idx                        current array index (0-based)
+ *                marked_idx                        marked position (for mark/restore)
  *
- *	Note: ss.ps.ps_ExprContext is used to evaluate any qual or projection
- *	expressions attached to the node.  We create a second ExprContext,
- *	rowcontext, in which to build the executor expression state for each
- *	Values sublist.  Resetting this context lets us get rid of expression
- *	state for each row, avoiding major memory leakage over a long values list.
+ *        Note: ss.ps.ps_ExprContext is used to evaluate any qual or projection
+ *        expressions attached to the node.  We create a second ExprContext,
+ *        rowcontext, in which to build the executor expression state for each
+ *        Values sublist.  Resetting this context lets us get rid of expression
+ *        state for each row, avoiding major memory leakage over a long values list.
  * ----------------
  */
 typedef struct ValuesScanState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	ExprContext *rowcontext;
-	List	  **exprlists;
-	int			array_len;
-	int			curr_idx;
-	int			marked_idx;
-	bool		cdb_want_ctid;	/* true => ctid is referenced in targetlist */
+        ScanState        ss;                                /* its first field is NodeTag */
+        ExprContext *rowcontext;
+        List          **exprlists;
+        int                        array_len;
+        int                        curr_idx;
+        int                        marked_idx;
+    bool        cdb_want_ctid;  /* true => ctid is referenced in targetlist */
 } ValuesScanState;
 
 /* ----------------
  *         ExternalScanState information
  *
- *	 ExternalScan nodes are used to scan external tables
+ *                ExternalScan nodes are used to scan external tables
  *
- *	 ess_ScanDesc                the state of the file data scan
+ *                ess_ScanDesc                the state of the file data scan
  * ----------------
  */
 typedef struct ExternalScanState
 {
-	ScanState	ss;
+	ScanState ss;
 	struct FileScanDescData *ess_ScanDesc;
-	bool		cdb_want_ctid;
+	bool cdb_want_ctid;
 	ItemPointerData cdb_fake_ctid;
 } ExternalScanState;
 
@@ -1811,8 +1811,8 @@ typedef struct ExternalScanState
  */
 typedef struct AppendOnlyScanState
 {
-	ScanState	ss;
-	struct AppendOnlyScanDescData *aos_ScanDesc;
+        ScanState        ss;
+        struct AppendOnlyScanDescData *aos_ScanDesc;
 } AppendOnlyScanState;
 
 /*
@@ -1825,8 +1825,8 @@ typedef struct AOCSScanOpaqueData
 	/*
 	 * The array to indicate columns that are involved in the scan.
 	 */
-	bool	   *proj;
-	int			ncol;
+	bool *proj;
+	int  ncol;
 
 	struct AOCSScanDescData *scandesc;
 } AOCSScanOpaqueData;
@@ -1850,12 +1850,12 @@ typedef struct AOCSScanState
  */
 typedef struct TableScanState
 {
-	ScanState	ss;
+	ScanState ss;
 
 	/*
 	 * Opaque data that is associated with different table type.
 	 */
-	void	   *opaque;
+	void *opaque;
 	
 } TableScanState;
 
@@ -1871,7 +1871,7 @@ typedef struct DynamicTableScanState
 	 * table scan to scan.
 	 */
 	HTAB *pidIndex;
-
+	
 	/*
 	 * The status of sequentially scan the pid index.
 	 */
@@ -1915,69 +1915,69 @@ typedef struct DynamicTableScanState
 } DynamicTableScanState;
 
 /* ----------------------------------------------------------------
- *				 Join State Information
+ *                                 Join State Information
  * ----------------------------------------------------------------
  */
 
 /* ----------------
- *	 JoinState information
+ *         JoinState information
  *
- *		Superclass for state nodes of join plans.
+ *                Superclass for state nodes of join plans.
  * ----------------
  */
 typedef struct JoinState
 {
-	PlanState	ps;
-	JoinType	jointype;
-	List	   *joinqual;		/* JOIN quals (in addition to ps.qual) */
+        PlanState        ps;
+        JoinType        jointype;
+        List           *joinqual;                /* JOIN quals (in addition to ps.qual) */
 } JoinState;
 
 /* ----------------
- *	 NestLoopState information
+ *         NestLoopState information
  *
- *		NeedNewOuter	   true if need new outer tuple on next call
- *		MatchedOuter	   true if found a join match for current outer tuple
- *		NullInnerTupleSlot prepared null tuple for left outer joins
+ *                NeedNewOuter           true if need new outer tuple on next call
+ *                MatchedOuter           true if found a join match for current outer tuple
+ *                NullInnerTupleSlot prepared null tuple for left outer joins
  * ----------------
  */
 typedef struct NestLoopState
 {
-	JoinState	js;				/* its first field is NodeTag */
-	bool		nl_NeedNewOuter;
-	bool		nl_MatchedOuter;
-	bool		nl_innerSquelchNeeded;	/*CDB*/
-	bool		nl_QuitIfEmptyInner;    /*CDB*/
-	bool		shared_outer;
-	bool		prefetch_inner;
-	bool		reset_inner; /*CDB-OLAP*/
-	bool		require_inner_reset; /*CDB-OLAP*/
+        JoinState        	js;                                /* its first field is NodeTag */
+        bool                nl_NeedNewOuter;
+        bool                nl_MatchedOuter;
+        bool				nl_innerSquelchNeeded;	/*CDB*/
+        bool        		nl_QuitIfEmptyInner;    /*CDB*/
+        bool                shared_outer;
+        bool                prefetch_inner;
+        bool                reset_inner; /*CDB-OLAP*/
+        bool                require_inner_reset; /*CDB-OLAP*/
 
         struct TupleTableSlot *nl_NullInnerTupleSlot;
 
-	List	   *nl_InnerJoinKeys;        /* list of ExprState nodes */
-	List	   *nl_OuterJoinKeys;        /* list of ExprState nodes */
-	bool		nl_innerSideScanned;      /* set to true once we've scanned all inner tuples the first time */
-	bool		nl_qualResultForNull;     /* the value of the join condition when one of the sides contains a NULL */
+        List           *nl_InnerJoinKeys;        /* list of ExprState nodes */
+        List           *nl_OuterJoinKeys;        /* list of ExprState nodes */
+        bool           nl_innerSideScanned;      /* set to true once we've scanned all inner tuples the first time */
+        bool           nl_qualResultForNull;     /* the value of the join condition when one of the sides contains a NULL */
 
 } NestLoopState;
 
 /* ----------------
- *	 MergeJoinState information
+ *         MergeJoinState information
  *
- *		NumClauses		   number of mergejoinable join clauses
- *		Clauses			   info for each mergejoinable clause
- *		JoinState		   current "state" of join.  see execdefs.h
- *		FillOuter		   true if should emit unjoined outer tuples anyway
- *		FillInner		   true if should emit unjoined inner tuples anyway
- *		MatchedOuter	   true if found a join match for current outer tuple
- *		MatchedInner	   true if found a join match for current inner tuple
- *		OuterTupleSlot	   slot in tuple table for cur outer tuple
- *		InnerTupleSlot	   slot in tuple table for cur inner tuple
- *		MarkedTupleSlot    slot in tuple table for marked tuple
- *		NullOuterTupleSlot prepared null tuple for right outer joins
- *		NullInnerTupleSlot prepared null tuple for left outer joins
- *		OuterEContext	   workspace for computing outer tuple's join values
- *		InnerEContext	   workspace for computing inner tuple's join values
+ *                NumClauses                   number of mergejoinable join clauses
+ *                Clauses                           info for each mergejoinable clause
+ *                JoinState                   current "state" of join.  see execdefs.h
+ *                FillOuter                   true if should emit unjoined outer tuples anyway
+ *                FillInner                   true if should emit unjoined inner tuples anyway
+ *                MatchedOuter           true if found a join match for current outer tuple
+ *                MatchedInner           true if found a join match for current inner tuple
+ *                OuterTupleSlot           slot in tuple table for cur outer tuple
+ *                InnerTupleSlot           slot in tuple table for cur inner tuple
+ *                MarkedTupleSlot    slot in tuple table for marked tuple
+ *                NullOuterTupleSlot prepared null tuple for right outer joins
+ *                NullInnerTupleSlot prepared null tuple for left outer joins
+ *                OuterEContext           workspace for computing outer tuple's join values
+ *                InnerEContext           workspace for computing inner tuple's join values
  * ----------------
  */
 /* private in nodeMergejoin.c: */
@@ -1985,47 +1985,47 @@ typedef struct MergeJoinClauseData *MergeJoinClause;
 
 typedef struct MergeJoinState
 {
-	JoinState	js;				/* its first field is NodeTag */
-	int			mj_NumClauses;
-	MergeJoinClause mj_Clauses; /* array of length mj_NumClauses */
-	int			mj_JoinState;
-	bool		mj_FillOuter;
-	bool		mj_FillInner;
-	bool		mj_MatchedOuter;
-	bool		mj_MatchedInner;
+        JoinState        js;                                /* its first field is NodeTag */
+        int                        mj_NumClauses;
+        MergeJoinClause mj_Clauses; /* array of length mj_NumClauses */
+        int                        mj_JoinState;
+        bool                mj_FillOuter;
+        bool                mj_FillInner;
+        bool                mj_MatchedOuter;
+        bool                mj_MatchedInner;
         struct TupleTableSlot *mj_OuterTupleSlot;
         struct TupleTableSlot *mj_InnerTupleSlot;
         struct TupleTableSlot *mj_MarkedTupleSlot;
         struct TupleTableSlot *mj_NullOuterTupleSlot;
         struct TupleTableSlot *mj_NullInnerTupleSlot;
-	ExprContext *mj_OuterEContext;
-	ExprContext *mj_InnerEContext;
-	bool		prefetch_inner; /* MPP-3300 */
-	bool		mj_squelchInner; /* MPP-3300 */
+        ExprContext *mj_OuterEContext;
+        ExprContext *mj_InnerEContext;
+        bool                prefetch_inner; /* MPP-3300 */
+        bool                mj_squelchInner; /* MPP-3300 */
 } MergeJoinState;
 
 /* ----------------
- *	 HashJoinState information
+ *         HashJoinState information
  *
- *		hj_HashTable			hash table for the hashjoin
- *								(NULL if table not built yet)
- *		hj_CurHashValue			hash value for current outer tuple
- *		hj_CurBucketNo			bucket# for current outer tuple
- *		hj_CurTuple				last inner tuple matched to current outer
- *								tuple, or NULL if starting search
- *								(CurHashValue, CurBucketNo and CurTuple are
- *								 undefined if OuterTupleSlot is empty!)
- *		hj_OuterHashKeys		the outer hash keys in the hashjoin condition
- *		hj_InnerHashKeys		the inner hash keys in the hashjoin condition
- *		hj_HashOperators		the join operators in the hashjoin condition
- *		hj_OuterTupleSlot		tuple slot for outer tuples
- *		hj_HashTupleSlot		tuple slot for hashed tuples
- *		hj_NullInnerTupleSlot	prepared null tuple for left outer joins
- *		hj_FirstOuterTupleSlot	first tuple retrieved from outer plan
- *		hj_NeedNewOuter			true if need new outer tuple on next call
- *		hj_MatchedOuter			true if found a join match for current outer
- *		hj_OuterNotEmpty		true if outer relation known not empty
- *		hj_nonequijoin			true to force hash table to keep nulls
+ *                hj_HashTable                        hash table for the hashjoin
+ *                                                                (NULL if table not built yet)
+ *                hj_CurHashValue                        hash value for current outer tuple
+ *                hj_CurBucketNo                        bucket# for current outer tuple
+ *                hj_CurTuple                                last inner tuple matched to current outer
+ *                                                                tuple, or NULL if starting search
+ *                                                                (CurHashValue, CurBucketNo and CurTuple are
+ *                                                                 undefined if OuterTupleSlot is empty!)
+ *                hj_OuterHashKeys                the outer hash keys in the hashjoin condition
+ *                hj_InnerHashKeys                the inner hash keys in the hashjoin condition
+ *                hj_HashOperators                the join operators in the hashjoin condition
+ *                hj_OuterTupleSlot                tuple slot for outer tuples
+ *                hj_HashTupleSlot                tuple slot for hashed tuples
+ *                hj_NullInnerTupleSlot        prepared null tuple for left outer joins
+ *                hj_FirstOuterTupleSlot        first tuple retrieved from outer plan
+ *                hj_NeedNewOuter                        true if need new outer tuple on next call
+ *                hj_MatchedOuter                        true if found a join match for current outer
+ *                hj_OuterNotEmpty                true if outer relation known not empty
+ *                hj_nonequijoin                        true to force hash table to keep nulls
  * ----------------
  */
 
@@ -2035,26 +2035,26 @@ typedef struct HashJoinTableData *HashJoinTable;
 
 typedef struct HashJoinState
 {
-	JoinState	js;				/* its first field is NodeTag */
-	List	   *hashclauses;	/* list of ExprState nodes (hash) */
-	List	   *hashqualclauses;	/* CDB: list of ExprState nodes (match) */
-	HashJoinTable hj_HashTable;
-	uint32		hj_CurHashValue;
-	int			hj_CurBucketNo;
-	HashJoinTuple hj_CurTuple;
-	List	   *hj_OuterHashKeys;		/* list of ExprState nodes */
-	List	   *hj_InnerHashKeys;		/* list of ExprState nodes */
-	List	   *hj_HashOperators;		/* list of operator OIDs */
+        JoinState        js;                                /* its first field is NodeTag */
+        List           *hashclauses;        /* list of ExprState nodes (hash) */
+        List           *hashqualclauses;        /* CDB: list of ExprState nodes (match) */
+        HashJoinTable hj_HashTable;
+        uint32                hj_CurHashValue;
+        int                        hj_CurBucketNo;
+        HashJoinTuple hj_CurTuple;
+        List           *hj_OuterHashKeys;                /* list of ExprState nodes */
+        List           *hj_InnerHashKeys;                /* list of ExprState nodes */
+        List           *hj_HashOperators;                /* list of operator OIDs */
         struct TupleTableSlot *hj_OuterTupleSlot;
         struct TupleTableSlot *hj_HashTupleSlot;
         struct TupleTableSlot *hj_NullInnerTupleSlot;
         struct TupleTableSlot *hj_FirstOuterTupleSlot;
-	bool		hj_NeedNewOuter;
-	bool		hj_MatchedOuter;
-	bool		hj_OuterNotEmpty;
-	bool		hj_InnerEmpty;  /* set to true if inner side is empty */
-	bool		prefetch_inner;
-	bool		hj_nonequijoin;
+        bool                hj_NeedNewOuter;
+        bool                hj_MatchedOuter;
+        bool                hj_OuterNotEmpty;
+        bool                hj_InnerEmpty;  /* set to true if inner side is empty */
+        bool                prefetch_inner;
+        bool                hj_nonequijoin;
 
         /* true if found matching and usable cached workfiles */
         bool cached_workfiles_found;
@@ -2062,8 +2062,8 @@ typedef struct HashJoinState
         bool cached_workfiles_batches_buckets_loaded;
         /* set after loading cached workfiles */
         bool cached_workfiles_loaded;
-	/* set if the operator created workfiles */
-	bool workfiles_created;
+        /* set if the operator created workfiles */
+        bool workfiles_created;
         /* number of batches when we loaded from the state. -1 means not loaded yet */
         int nbatch_loaded_state;
 } HashJoinState;
@@ -2076,8 +2076,8 @@ typedef struct HashJoinState
 
 /* ----------------
  *         Generic tuplestore structure
- *	 used to communicate between ShareInputScan nodes,
- *	 Materialize and Sort
+ *                used to communicate between ShareInputScan nodes,
+ *                Materialize and Sort
  *
  * ----------------
  */
@@ -2089,48 +2089,48 @@ typedef union GenericTupStore
 } GenericTupStore;
 
 /* ----------------
- *	 MaterialState information
+ *         MaterialState information
  *
- *		materialize nodes are used to materialize the results
- *		of a subplan into a temporary file.
+ *                materialize nodes are used to materialize the results
+ *                of a subplan into a temporary file.
  *
- *		ss.ss_ScanTupleSlot refers to output of underlying plan.
+ *                ss.ss_ScanTupleSlot refers to output of underlying plan.
  * ----------------
  */
 typedef struct MaterialState
 {
-	ScanState	ss;				/* its first field is NodeTag */
+        ScanState           ss;                  /* its first field is NodeTag */
         bool                randomAccess;        /* need random access to subplan output? */
-	bool		eof_underlying; /* reached end of underlying plan? */
-	bool		ts_destroyed;	/* called destroy tuple store? */
+        bool                eof_underlying;      /* reached end of underlying plan? */
+        bool                ts_destroyed;        /* called destroy tuple store? */
 
-	GenericTupStore *ts_state;	/* private state of tuplestore.c */
-	void	   *ts_pos;
-	void	   *ts_markpos;
-	void	   *share_lk_ctxt;
+        GenericTupStore     *ts_state;            /* private state of tuplestore.c */
+        void                *ts_pos;
+        void                *ts_markpos;
+        void                *share_lk_ctxt;
 
         bool                cached_workfiles_found;  /* true if found matching and usable cached workfiles */
 } MaterialState;
 
 /* ----------------
- *	  ShareInputScanState information
+ *         ShareInputScanState information
  *
- *		State of each scanner of the ShareInput node
+ *        State of each scanner of the ShareInput node
  * ----------------
  */
 typedef struct ShareInputScanState
 {
-	ScanState	ss;
-	/*
-	 * Depends on share_type, we should have a tuplestore_state, tuplestore_pos
-	 * or tuplesort_state, tuplesort_pos
-	 */
-	GenericTupStore *ts_state;
-	void	   *ts_pos;
-	void	   *ts_markpos;
+        ScanState         ss;
+        /* 
+         * Depends on share_type, we should have a tuplestore_state, tuplestore_pos
+         * or tuplesort_state, tuplesort_pos
+         */
+        GenericTupStore      *ts_state;
+        void                 *ts_pos;
+        void                 *ts_markpos; 
 
-	void	   *share_lk_ctxt;
-	bool		freed; /* is this node already freed? */
+        void             *share_lk_ctxt;
+		bool				freed; /* is this node already freed? */
 } ShareInputScanState;
 
 /* XXX Should move into buf file */
@@ -2141,36 +2141,36 @@ extern void shareinput_writer_waitdone(void *, int share_id, int nsharer_xslice_
 extern void shareinput_create_bufname_prefix(char* p, int size, int share_id);
 
 /* ----------------
- *	 SortState information
+ *         SortState information
  * ----------------
  */
 typedef struct SortState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	bool		randomAccess;	/* need random access to sort output? */
-	bool		sort_Done;		/* sort completed yet? */
-	GenericTupStore *tuplesortstate; /* private state of tuplesort.c */
-	/* CDB */ /* limit state */
-	ExprState  *limitOffset;	/* OFFSET parameter, or NULL if none */
-	ExprState  *limitCount;		/* COUNT parameter, or NULL if none */
-	bool		noduplicates;	/* true if discard duplicate rows */
+        ScanState           ss;              /* its first field is NodeTag */
+        bool                randomAccess;    /* need random access to sort output? */
+        bool                sort_Done;       /* sort completed yet? */
+        GenericTupStore     *tuplesortstate; /* private state of tuplesort.c */
+        /* CDB */ /* limit state */                
+        ExprState           *limitOffset;    /* OFFSET parameter, or NULL if none */
+        ExprState           *limitCount;     /* COUNT parameter, or NULL if none */
+        bool                noduplicates;    /* true if discard duplicate rows */
 
-	void	   *share_lk_ctxt;
+        void                *share_lk_ctxt;
 
         bool                cached_workfiles_found; /* true if found matching and usable cached workfiles */
         bool                cached_workfiles_loaded; /* set after loading cached workfiles */
 } SortState;
 
 /* ---------------------
- *	AggState information
+ *        AggState information
  *
- *	ss.ss_ScanTupleSlot refers to output of underlying plan.
+ *        ss.ss_ScanTupleSlot refers to output of underlying plan.
  *
- *	Note: ss.ps.ps_ExprContext contains ecxt_aggvalues and
- *	ecxt_aggnulls arrays, which hold the computed agg values for the current
- *	input group during evaluation of an Agg node's output tuple(s).  We
- *	create a second ExprContext, tmpcontext, in which to evaluate input
- *	expressions and run the aggregate transition functions.
+ *        Note: ss.ps.ps_ExprContext contains ecxt_aggvalues and
+ *        ecxt_aggnulls arrays, which hold the computed agg values for the current
+ *        input group during evaluation of an Agg node's output tuple(s).  We
+ *        create a second ExprContext, tmpcontext, in which to evaluate input
+ *        expressions and run the aggregate transition functions.
  * -------------------------
  */
 /* these structs are private in nodeAgg.c: */
@@ -2179,43 +2179,43 @@ typedef struct AggStatePerGroupData *AggStatePerGroup;
 
 typedef struct AggState
 {
-	ScanState	ss;				/* its first field is NodeTag */
-	List	   *aggs;			/* all Aggref nodes in targetlist & quals */
-	int			numaggs;		/* length of list (could be zero!) */
-	FmgrInfo   *eqfunctions;	/* per-grouping-field equality fns */
-	FmgrInfo   *hashfunctions;	/* per-grouping-field hash fns */
-	AggStatePerAgg peragg;		/* per-Aggref information */
-	MemoryContext aggcontext;	/* memory context for long-lived data */
-	ExprContext *tmpcontext;	/* econtext for input expressions */
-	bool		agg_done;		/* indicates completion of Agg scan */
-	bool        has_partial_agg;/* indicate if a partial aggregate result
-								 * has been calculated in the previous call.
-								 */
+        ScanState        ss;                                /* its first field is NodeTag */
+        List           *aggs;                        /* all Aggref nodes in targetlist & quals */
+        int                        numaggs;                /* length of list (could be zero!) */
+        FmgrInfo   *eqfunctions;        /* per-grouping-field equality fns */
+        FmgrInfo   *hashfunctions;        /* per-grouping-field hash fns */
+        AggStatePerAgg peragg;                /* per-Aggref information */
+        MemoryContext aggcontext;        /* memory context for long-lived data */
+        ExprContext *tmpcontext;        /* econtext for input expressions */
+        bool                agg_done;                /* indicates completion of Agg scan */
+        bool        has_partial_agg;/* indicate if a partial aggregate result
+                                                                 * has been calculated in the previous call.
+                                                                  */
 
-	/* these fields are used in AGG_PLAIN and AGG_SORTED modes: */
-	AggStatePerGroup pergroup;	/* per-Aggref-per-group working state */
-	struct MemTupleData *grp_firstTuple; /* copy of first tuple of current group */
-	/* these fields are used in AGG_HASHED mode: */
-	TupleHashTable hashtable;	/* hash table with one entry per group */
+        /* these fields are used in AGG_PLAIN and AGG_SORTED modes: */
+        AggStatePerGroup pergroup;        /* per-Aggref-per-group working state */
+        struct MemTupleData *       grp_firstTuple; /* copy of first tuple of current group */
+        /* these fields are used in AGG_HASHED mode: */
+        TupleHashTable hashtable;        /* hash table with one entry per group */
         struct TupleTableSlot *hashslot;        /* slot for loading hash table */
-	List	   *hash_needed;	/* list of columns needed in hash table */
-	TupleHashIterator hashiter; /* for iterating through hash table */
+        List           *hash_needed;        /* list of columns needed in hash table */
+        TupleHashIterator hashiter; /* for iterating through hash table */
+        
+        /* MPP */
+        struct HashAggTable *hhashtable;
+        MemoryManagerContainer mem_manager;
 
-	/* MPP */
-	struct HashAggTable *hhashtable;
-	MemoryManagerContainer mem_manager;
+        /* ROLLUP */
+        AggStatePerGroup perpassthru; /* per-Aggref-per-pass-through-tuple working state */
 
-	/* ROLLUP */
-	AggStatePerGroup perpassthru; /* per-Aggref-per-pass-through-tuple working state */
-
-	/*
-	 * The following are used to define how to modify input tuples to
-	 * satisfy the rollup level of this Agg node.
-	 */
-	int			num_attrs;	/* number of grouping attributes for the Agg node */
-	Datum	   *replValues;
-	bool	   *replIsnull;
-	bool	   *doReplace;
+        /*
+         * The following are used to define how to modify input tuples to
+         * satisfy the rollup level of this Agg node.
+         */
+        int num_attrs;                /* number of grouping attributes for the Agg node */
+        Datum *replValues;
+        bool *replIsnull;
+        bool *doReplace;
 	List	   *percs;			/* all PercentileExpr nodes in targetlist & quals */
 
 	/* true if found matching and usable cached workfiles */
@@ -2223,7 +2223,7 @@ typedef struct AggState
 	/* set after loading cached workfiles */
 	bool cached_workfiles_loaded;
 	/* set if the operator created workfiles */
-	bool		workfiles_created;
+	bool workfiles_created;
 
 } AggState;
 
@@ -2238,111 +2238,111 @@ typedef struct WindowInputBufferData *WindowInputBuffer;
 
 typedef struct WindowState
 {
-	PlanState	ps;			/* its first field is NodeTag */
-	List	   *wrxstates;	/* all WindowRefExprState nodes in targetlist */
-	FmgrInfo   *eqfunctions; /* equality fns for partition key */
+        PlanState        ps;                                /* its first field is NodeTag */
+        List           *wrxstates;                /* all WindowRefExprState nodes in targetlist */        
+        FmgrInfo   *eqfunctions;        /* equality fns for partition key */
         struct TupleTableSlot *priorslot;        /* place for prior tuple */
         struct TupleTableSlot *curslot;        /* current tuple */
         struct TupleTableSlot *spare;        /* current tuple */
         struct TupleTableSlot *saveslot; /* convenient place holder */
 
-	/* meta data about the current slot */
-	bool		cur_slot_is_new;	/* is this a slot from a buffer or outer plan */
-	bool		cur_slot_part_break; /* slot breaks the partition key */
-	int			cur_slot_key_break; /* break level of the key in the slot */
+        /* meta data about the current slot */
+        bool cur_slot_is_new; /* is this a slot from a buffer or outer plan */
+        bool cur_slot_part_break; /* slot breaks the partition key */
+        int cur_slot_key_break; /* break level of the key in the slot */
         
-	/* Array of working states per distinct window function */
-	int			numfuncs;
-	WindowStatePerFunction func_state;
+        /* Array of working states per distinct window function */
+        int                        numfuncs;
+        WindowStatePerFunction  func_state;
         
-	/* Per row state */
-	int64		row_index;
+        /* Per row state */
+        int64                row_index;
 
-	int			numlevels;
+        int                        numlevels;
 
-	WindowStatePerLevel level_state;
+        WindowStatePerLevel level_state;
 
-	/* memory context for transition value processing */
-	/* XXX: we should probably have one context per level, so that we can
-	 * reset it when there's a key change at that level
-	 */
-	MemoryContext transcontext;
-	MemoryManagerContainer mem_manager;
+        /* memory context for transition value processing */
+        /* XXX: we should probably have one context per level, so that we can
+         * reset it when there's a key change at that level
+         */
+        MemoryContext transcontext;
+        MemoryManagerContainer mem_manager;
 
-	/*
-	 * context for comparing datums immediately.
-	 * we need reset this context every time we run comparison,
-	 * since window frame may contain unlimited number of rows.
-	 */
-	MemoryContext cmpcontext;
+        /*
+         * context for comparing datums immediately.
+         * we need reset this context every time we run comparison,
+         * since window frame may contain unlimited number of rows.
+         */
+        MemoryContext cmpcontext;
 
-	/* framed window functions need access to their frames */
-	WindowStatePerFunction cur_funcstate;
+        /* framed window functions need access to their frames */
+        WindowStatePerFunction cur_funcstate;
 
-	/* input buffer */
-	WindowInputBuffer input_buffer;
+        /* input buffer */
+        WindowInputBuffer input_buffer;
 
-	/* Indicate if any function need a peer count. */
-	bool		need_peercount;
+        /* Indicate if any function need a peer count. */
+        bool need_peercount;
 } WindowState;
 
 /* ----------------
- *	 UniqueState information
+ *         UniqueState information
  *
- *		Unique nodes are used "on top of" sort nodes to discard
- *		duplicate tuples returned from the sort phase.	Basically
- *		all it does is compare the current tuple from the subplan
- *		with the previously fetched tuple (stored in its result slot).
- *		If the two are identical in all interesting fields, then
- *		we just fetch another tuple from the sort and try again.
+ *                Unique nodes are used "on top of" sort nodes to discard
+ *                duplicate tuples returned from the sort phase.        Basically
+ *                all it does is compare the current tuple from the subplan
+ *                with the previously fetched tuple (stored in its result slot).
+ *                If the two are identical in all interesting fields, then
+ *                we just fetch another tuple from the sort and try again.
  * ----------------
  */
 typedef struct UniqueState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	FmgrInfo   *eqfunctions;	/* per-field lookup data for equality fns */
-	MemoryContext tempContext;	/* short-term context for comparisons */
+        PlanState        ps;                                /* its first field is NodeTag */
+        FmgrInfo   *eqfunctions;        /* per-field lookup data for equality fns */
+        MemoryContext tempContext;        /* short-term context for comparisons */
 } UniqueState;
 
 /* ----------------
- *	 HashState information
+ *         HashState information
  * ----------------
  */
 typedef struct HashState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	HashJoinTable hashtable;	/* hash table for the hashjoin */
-	List	   *hashkeys;		/* list of ExprState nodes */
-	bool		hs_keepnull;	/* Keep nulls */
-	bool		hs_quit_if_hashkeys_null;	/* quit building hash table if hashkeys are all null */
-	bool		hs_hashkeys_null;	/* found an instance wherein hashkeys are all null */
-	/* hashkeys is same as parent's hj_InnerHashKeys */
+        PlanState        ps;                /* its first field is NodeTag */
+        HashJoinTable hashtable;        /* hash table for the hashjoin */
+        List           *hashkeys;                /* list of ExprState nodes */
+        bool         hs_keepnull;                /* Keep nulls */
+        bool		hs_quit_if_hashkeys_null;	/* quit building hash table if hashkeys are all null */
+        bool		hs_hashkeys_null;				 /* found an instance wherein hashkeys are all null */
+        /* hashkeys is same as parent's hj_InnerHashKeys */
 } HashState;
 
 /* ----------------
- *	 SetOpState information
+ *         SetOpState information
  *
- *		SetOp nodes are used "on top of" sort nodes to discard
- *		duplicate tuples returned from the sort phase.	These are
- *		more complex than a simple Unique since we have to count
- *		how many duplicates to return.
+ *                SetOp nodes are used "on top of" sort nodes to discard
+ *                duplicate tuples returned from the sort phase.        These are
+ *                more complex than a simple Unique since we have to count
+ *                how many duplicates to return.
  * ----------------
  */
 typedef struct SetOpState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	FmgrInfo   *eqfunctions;	/* per-field lookup data for equality fns */
-	bool		subplan_done;	/* has subplan returned EOF? */
-	long		numLeft;		/* number of left-input dups of cur group */
-	long		numRight;		/* number of right-input dups of cur group */
-	long		numOutput;		/* number of dups left to output */
+        PlanState        ps;                                /* its first field is NodeTag */
+        FmgrInfo   *eqfunctions;        /* per-field lookup data for equality fns */
+        bool                subplan_done;        /* has subplan returned EOF? */
+        long                numLeft;                /* number of left-input dups of cur group */
+        long                numRight;                /* number of right-input dups of cur group */
+        long                numOutput;                /* number of dups left to output */
 } SetOpState;
 
 /* ----------------
- *	 LimitState information
+ *         LimitState information
  *
- *		Limit nodes are used to enforce LIMIT/OFFSET clauses.
- *		They just select the desired subrange of their subplan's output.
+ *                Limit nodes are used to enforce LIMIT/OFFSET clauses.
+ *                They just select the desired subrange of their subplan's output.
  *
  * offset is the number of initial tuples to skip (0 does nothing).
  * count is the number of tuples to return after skipping the offset tuples.
@@ -2352,28 +2352,28 @@ typedef struct SetOpState
  */
 typedef enum
 {
-	LIMIT_INITIAL,				/* initial state for LIMIT node */
-	LIMIT_EMPTY,				/* there are no returnable rows */
-	LIMIT_INWINDOW,				/* have returned a row in the window */
-	LIMIT_SUBPLANEOF,			/* at EOF of subplan (within window) */
-	LIMIT_WINDOWEND,			/* stepped off end of window */
-	LIMIT_WINDOWSTART			/* stepped off beginning of window */
+        LIMIT_INITIAL,                                /* initial state for LIMIT node */
+        LIMIT_EMPTY,                                /* there are no returnable rows */
+        LIMIT_INWINDOW,                                /* have returned a row in the window */
+        LIMIT_SUBPLANEOF,                        /* at EOF of subplan (within window) */
+        LIMIT_WINDOWEND,                        /* stepped off end of window */
+        LIMIT_WINDOWSTART                        /* stepped off beginning of window */
 } LimitStateCond;
 
 typedef struct LimitState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	ExprState  *limitOffset;	/* OFFSET parameter, or NULL if none */
-	ExprState  *limitCount;		/* COUNT parameter, or NULL if none */
-	int64		offset;			/* current OFFSET value */
-	int64		count;			/* current COUNT, if any */
-	bool		noCount;		/* if true, ignore count */
-	LimitStateCond lstate;		/* state machine status, as above */
-	int64		position;		/* 1-based index of last tuple returned */
+        PlanState        ps;                                /* its first field is NodeTag */
+        ExprState  *limitOffset;        /* OFFSET parameter, or NULL if none */
+        ExprState  *limitCount;                /* COUNT parameter, or NULL if none */
+        int64                offset;                        /* current OFFSET value */
+        int64                count;                        /* current COUNT, if any */
+        bool                noCount;                /* if true, ignore count */
+        LimitStateCond lstate;                /* state machine status, as above */
+        int64                position;                /* 1-based index of last tuple returned */
         struct TupleTableSlot *subSlot;        /* tuple last obtained from subplan */
 } LimitState;
 
-/*
+/* 
  * DML Operations
  */
 
@@ -2404,7 +2404,7 @@ typedef struct DMLState
 typedef struct SplitUpdateState
 {
 	
-	PlanState	ps;
+	PlanState		ps;
 	bool			processInsert;		/* flag that specifies the operator's next action. */
 	struct TupleTableSlot	*insertTuple;	/* tuple to Insert */
 	struct TupleTableSlot   *deleteTuple;	/* tuple to Delete */
@@ -2417,7 +2417,7 @@ typedef struct SplitUpdateState
  * to execute.
  */
 typedef struct AssertOpState
-{
+{	
 	PlanState	ps;
 	
 } AssertOpState;
@@ -2429,7 +2429,7 @@ typedef struct AssertOpState
  */
 typedef struct RowTriggerState
 {
-	PlanState	ps;
+ 	PlanState				ps;
  	struct TupleTableSlot 	*newTuple;	/* stores new values */
  	struct TupleTableSlot 	*oldTuple;	/* stores old values */
  	struct TupleTableSlot 	*triggerTuple;  /* stores returned values by the trigger */
@@ -2442,8 +2442,8 @@ typedef enum MotionStateType
         MOTIONSTATE_NONE,           /* The motion state is not decided, or non active in a slice
                                      * (neither send nor recv)
                                      */
-	MOTIONSTATE_SEND,			/* The motion is sender */
-	MOTIONSTATE_RECV,			/* The motion is recver */
+        MOTIONSTATE_SEND,           /* The motion is sender */
+        MOTIONSTATE_RECV,           /* The motion is recver */
 } MotionStateType;
 
 /* ----------------
@@ -2452,41 +2452,41 @@ typedef enum MotionStateType
  */
 typedef struct MotionState
 {
-	PlanState	ps;				/* its first field is NodeTag */
-	MotionStateType mstype;		/* Motion state type */
-	bool		stopRequested;	/* set when we want transfer to stop */
+        PlanState ps;               /* its first field is NodeTag */
+        MotionStateType mstype;     /* Motion state type */
+        bool stopRequested;         /* set when we want transfer to stop */
 
-	/* For motion send */
-	bool		sentEndOfStream;	/* set when end-of-stream has successfully been sent */
-	List	   *hashExpr;		/* state struct used for evaluating the hash expressions */
-	struct CdbHash *cdbhash;	/* hash api object */
+        /* For motion send */
+        bool sentEndOfStream;       /* set when end-of-stream has successfully been sent */
+        List *hashExpr;             /* state struct used for evaluating the hash expressions */
+        struct CdbHash *cdbhash;    /* hash api object */
 
-	/* For Motion recv */
-	void	   *tupleheap;		/* data structure for match merge in sorted motion node */
-	int			routeIdNext;	/* for a sorted motion node, the routeId to get next (same as
-								 * the routeId last returned ) */
-	bool		tupleheapReady; /* for a sorted motion node, false until we have a tuple from 
-								 * each source segindex */
+        /* For Motion recv */
+        void *tupleheap;            /* data structure for match merge in sorted motion node */
+        int routeIdNext;            /* for a sorted motion node, the routeId to get next (same as 
+                                     * the routeId last returned ) */
+        bool tupleheapReady;        /* for a sorted motion node, false until we have a tuple from 
+                                     * each source segindex */
 
-	/* The following can be used for debugging, usage stats, etc.  */
-	int			numTuplesFromChild;	/* Number of tuples received from child */
-	int			numTuplesToAMS;		/* Number of tuples from child that were sent to AMS */
-	int			numTuplesFromAMS;	/* Number of tuples received from AMS */
-	int			numTuplesToParent;	/* Number of tuples either from child or AMS that were sent to parent */
+        /* The following can be used for debugging, usage stats, etc.  */
+        int numTuplesFromChild;     /* Number of tuples received from child */
+        int numTuplesToAMS;         /* Number of tuples from child that were sent to AMS */
+        int numTuplesFromAMS;       /* Number of tuples received from AMS */
+        int numTuplesToParent;      /* Number of tuples either from child or AMS that were sent to parent */
+        
+        struct timeval otherTime;   /* time accumulator used in sending motion node to keep track of time
+                                     * spent getting the next tuple (not sending). this could mean time spent
+                                     * in another motion node receiving. */
+                                                        
+        struct timeval motionTime;  /* time accumulator for time spent in motion node.  For sending motion node
+                                     * it is just the amount of time actually sending the tuple thru the
+                                     * interconnect.  For receiving motion node, it is the time spent waiting
+                                     * and processing of the next incoming tuple.
+                                     */
+                
+        Oid *outputFunArray;        /* output functions for each column (debug only) */
 
-	struct timeval otherTime;   /* time accumulator used in sending motion node to keep track of time
-								 * spent getting the next tuple (not sending). this could mean time spent
-								 * in another motion node receiving. */
-
-	struct timeval motionTime;  /* time accumulator for time spent in motion node.  For sending motion node
-								 * it is just the amount of time actually sending the tuple thru the
-								 * interconnect.  For receiving motion node, it is the time spent waiting
-								 * and processing of the next incoming tuple.
-								 */
-
-	Oid		   *outputFunArray;	/* output functions for each column (debug only) */
-
-	int			numInputSegs;	/* the number of segments on the sending slice */
+        int numInputSegs;           /* the number of segments on the sending slice */
 } MotionState;
 
 /*
@@ -2504,7 +2504,7 @@ typedef struct PartitionSelectorState
 	List *levelExprStates;                              /* ExprState for general expressions for all levels */
 	ExprState *residualPredicateExprState;              /* ExprState for evaluating residual predicate */
 	ExprState *propagationExprState;                    /* ExprState for evaluating propagation expression */
-	struct SelectedParts *prevSelParts;						/* Selected parts during the last run */
+
 } PartitionSelectorState;
 
 extern void sendInitGpmonPkts(Plan *node, EState *estate);
