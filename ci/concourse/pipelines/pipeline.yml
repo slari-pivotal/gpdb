@@ -317,7 +317,7 @@ resources:
     bucket: gpdb-windows-ccl
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: greenplum-clients-4.3.11.0-WinXP-x86_32.msi
+    versioned_file: greenplum-clients-4.3.11.1-WinXP-x86_32.msi
 
 - name: bin_gpdb_windows_connectivity
   type: s3
@@ -326,7 +326,7 @@ resources:
     bucket: gpdb-windows-ccl
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: greenplum-connectivity-4.3.11.0-WinXP-x86_32.msi
+    versioned_file: greenplum-connectivity-4.3.11.1-WinXP-x86_32.msi
 
 - name: bin_gpdb_windows_loaders
   type: s3
@@ -335,7 +335,7 @@ resources:
     bucket: gpdb-windows-ccl
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: greenplum-loaders-4.3.11.0-WinXP-x86_32.msi
+    versioned_file: greenplum-loaders-4.3.11.1-WinXP-x86_32.msi
 
 - name: sync_tools_gpdb_sles
   type: s3
@@ -354,7 +354,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: gpdb_src_archive/greenplum-db-4.3.11.0-src.tar.gz
+    versioned_file: gpdb_src_archive/greenplum-db-4.3.11.1-src.tar.gz
 
 - name: installer_rhel5_gpdb_rc
   type: s3-week-long-urls
@@ -364,7 +364,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-db-4.3.11.1-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_rc_md5
   type: s3
@@ -373,7 +373,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-db-4.3.11.1-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_rhel5_gpdb_clients
   type: s3
@@ -382,7 +382,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.11.0-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-clients-4.3.11.1-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_clients_md5
   type: s3
@@ -391,7 +391,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-clients-4.3.11.1-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_rc
   type: s3-week-long-urls
@@ -401,7 +401,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip
+    versioned_file: deliverables/greenplum-db-4.3.11.1-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_rc_md5
   type: s3
@@ -410,7 +410,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-db-4.3.11.1-build-1-sles11-x86_64.zip.md5
 
 - name: installer_appliance_rhel5_gpdb_rc
   type: s3
@@ -419,7 +419,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-db-appliance-4.3.11.1-build-1-rhel5-x86_64.zip
 
 - name: installer_appliance_rhel5_gpdb_rc_md5
   type: s3
@@ -428,7 +428,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-db-appliance-4.3.11.1-build-1-rhel5-x86_64.zip.md5
 
 - name: qautils_rhel5_tarball
   type: s3-week-long-urls
@@ -457,7 +457,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.11.0-build-1-sles11-x86_64.zip
+    versioned_file: deliverables/greenplum-clients-4.3.11.1-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_clients_md5
   type: s3
@@ -466,7 +466,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.11.0-build-1-sles11-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-clients-4.3.11.1-build-1-sles11-x86_64.zip.md5
 
 - name: installer_rhel5_gpdb_connectivity
   type: s3
@@ -475,7 +475,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.11.0-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-connectivity-4.3.11.1-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_connectivity_md5
   type: s3
@@ -484,7 +484,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-connectivity-4.3.11.1-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_connectivity
   type: s3
@@ -493,7 +493,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.11.0-build-1-sles11-x86_64.zip
+    versioned_file: deliverables/greenplum-connectivity-4.3.11.1-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_connectivity_md5
   type: s3
@@ -502,7 +502,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.11.0-build-1-sles11-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-connectivity-4.3.11.1-build-1-sles11-x86_64.zip.md5
 
 - name: installer_rhel5_gpdb_loaders
   type: s3
@@ -511,7 +511,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.11.0-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-loaders-4.3.11.1-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_loaders_md5
   type: s3
@@ -520,7 +520,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-loaders-4.3.11.1-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_loaders
   type: s3
@@ -529,7 +529,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.11.0-build-1-sles11-x86_64.zip
+    versioned_file: deliverables/greenplum-loaders-4.3.11.1-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_loaders_md5
   type: s3
@@ -538,7 +538,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.11.0-build-1-sles11-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-loaders-4.3.11.1-build-1-sles11-x86_64.zip.md5
 
 - name: postgis_rhel5_gppkg
   type: s3
@@ -1248,7 +1248,7 @@ jobs:
         packaged_gpdb: packaged_gpdb_rc
       params:
         INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-rhel5-gpdb.sh
-        INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip
+        INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.11.1-build-1-rhel5-x86_64.zip
         ADD_README_INSTALL: true
     - task: gpdb_appliance_rhel5_rc_packaging
       file: gpdb_src/ci/concourse/gpdb_packaging.yml
@@ -1259,20 +1259,20 @@ jobs:
         packaged_gpdb: packaged_gpdb_appliance_rc
       params:
         INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-appliance-header-rhel5-gpdb.sh
-        INSTALLER_ZIP: packaged_gpdb/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip
+        INSTALLER_ZIP: packaged_gpdb/greenplum-db-appliance-4.3.11.1-build-1-rhel5-x86_64.zip
   - aggregate:
     - put: installer_rhel5_gpdb_rc
       params:
-        file: packaged_gpdb_rc/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip
+        file: packaged_gpdb_rc/greenplum-db-4.3.11.1-build-1-rhel5-x86_64.zip
     - put: installer_rhel5_gpdb_rc_md5
       params:
-        file: packaged_gpdb_rc/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+        file: packaged_gpdb_rc/greenplum-db-4.3.11.1-build-1-rhel5-x86_64.zip.md5
     - put: installer_appliance_rhel5_gpdb_rc
       params:
-        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip
+        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.11.1-build-1-rhel5-x86_64.zip
     - put: installer_appliance_rhel5_gpdb_rc_md5
       params:
-        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.11.1-build-1-rhel5-x86_64.zip.md5
     - put: qautils_rhel5_tarball
       params:
         file: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
@@ -1302,14 +1302,14 @@ jobs:
       bin_gpdb: rc_bin_gpdb
     params:
       INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11-gpdb.sh
-      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip
+      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.11.1-build-1-sles11-x86_64.zip
       ADD_README_INSTALL: true
   - put: installer_sles11_gpdb_rc
     params:
-      file: packaged_gpdb/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip
+      file: packaged_gpdb/greenplum-db-4.3.11.1-build-1-sles11-x86_64.zip
   - put: installer_sles11_gpdb_rc_md5
     params:
-      file: packaged_gpdb/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip.md5
+      file: packaged_gpdb/greenplum-db-4.3.11.1-build-1-sles11-x86_64.zip.md5
   - put: qautils_sles11_tarball
     params:
       file: rc_bin_gpdb/QAUtils-sles11-x86_64.tar.gz
@@ -1335,10 +1335,10 @@ jobs:
     file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
     image: centos-gpdb-dev-5
     params:
-      GPDB_SRC_TAR_GZ: gpdb_src_archive/greenplum-db-4.3.11.0-src.tar.gz
+      GPDB_SRC_TAR_GZ: gpdb_src_archive/greenplum-db-4.3.11.1-src.tar.gz
   - put: gpdb_src_archive
     params:
-      file: gpdb_src_archive/greenplum-db-4.3.11.0-src.tar.gz
+      file: gpdb_src_archive/greenplum-db-4.3.11.1-src.tar.gz
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
 - name: gpdb_sync_to_dist
@@ -1426,7 +1426,7 @@ jobs:
       input_mapping:
         artifact_to_upload: gpdb_src_archive
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-src.tar.gz
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.1-src.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_sync_to_dist_rc
@@ -1435,7 +1435,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.1-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_sync_to_dist_rc_md5
@@ -1444,7 +1444,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.1-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist_rc
@@ -1453,7 +1453,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_appliance_rhel5_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.11.1-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist_rc_md5
@@ -1462,7 +1462,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_appliance_rhel5_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.11.1-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_clients_sync_to_dist
@@ -1471,7 +1471,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_clients
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.0-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.1-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_clients_sync_to_dist_md5
@@ -1480,7 +1480,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_clients_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.1-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_connectivity_sync_to_dist
@@ -1489,7 +1489,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_connectivity
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.0-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.1-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_connectivity_sync_to_dist_md5
@@ -1498,7 +1498,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_connectivity_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.1-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_loaders_sync_to_dist
@@ -1507,7 +1507,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_loaders
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.0-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.1-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_loaders_sync_to_dist_md5
@@ -1516,7 +1516,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_loaders_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.0-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.1-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: postgis_rhel5_gppkg_sync_to_dist
@@ -1588,7 +1588,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.1-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles_sync_to_dist_rc_md5
@@ -1597,7 +1597,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.1-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_clients_sync_to_dist
@@ -1606,7 +1606,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_clients
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.0-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.1-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_clients_sync_to_dist_md5
@@ -1615,7 +1615,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_clients_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.0-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.1-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_connectivity_sync_to_dist
@@ -1624,7 +1624,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_connectivity
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.0-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.1-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_connectivity_sync_to_dist_md5
@@ -1633,7 +1633,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_connectivity_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.0-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.1-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_loaders_sync_to_dist
@@ -1642,7 +1642,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_loaders
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.0-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.1-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_loaders_sync_to_dist_md5
@@ -1651,7 +1651,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_loaders_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.0-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.1-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: postgis_sles11_gppkg_sync_to_dist
