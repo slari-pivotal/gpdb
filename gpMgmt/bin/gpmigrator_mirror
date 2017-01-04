@@ -1075,12 +1075,48 @@ class GPUpgrade(GPUpgradeBase):
             runfile = "%s/share/postgresql/upgrade/upg2_catupgrade.sql" % self.newhome
             self.ExecuteSQLFileOnAllDBs(runfile)
             self.Shutdown()
-            self.Startup(self.newenv, False, False)
+            try:
+                self.Startup(self.newenv, False, False)
+            except:
+                logger.error(traceback.format_exc())
+                logger.info('Encountered error while trying to restart the database after the catalog upgrade')
+                logger.info('NOTE: You can either choose to rollback the changes or examine the system')
+                logger.info('NOTE: Choosing \'yes\' will halt the upgrade process in its current state')
+                logger.info('NOTE: Choosing \'no\' will rollback the upgrade')
+                examine_system = ask_yesno('', 'Do you wish to examine the system now?', 'Y')
+                if examine_system:
+                    return "ExamineSystem"
+                raise
             self.PerformPostUpgrade()
         except:
             logger.error(traceback.format_exc())
             return "RevertMasterCopyAndCatVersion"
         
+        return "RecoverMirror"
+
+    #------------------------------------------------------------
+    def ExamineSystem(self):
+        self.mirror_upgrade_state_file.write('RecoverFromExamineSystem\n')
+        self.mirror_upgrade_state_file.flush()
+        self.mirror_upgrade_state_file.close()
+        sys.exit(0)
+
+    #------------------------------------------------------------
+    def RecoverFromExamineSystem(self):
+        logger.info('NOTE: The upgrade was halted so that the system could be manually examined')
+        logger.info('NOTE: You can either choose to continue from the last upgrade or rollback')
+        logger.info('NOTE: Choosing \'yes\' will continue to the next steps of the upgrade process')
+        logger.info('NOTE: Choose \'yes\' only if you are sure that the system is in an upgradeable state')
+        logger.info('NOTE: Choosing \'no\' will cause upgrade to rollback')
+        continue_upgrade = ask_yesno('', 'Do you wish to continue the upgrade?', 'N')
+        if not continue_upgrade:
+            return "RevertMasterCopyAndCatVersion"
+        env = self.CheckUp(tryconn=True)
+        self.dbup = [env, False]
+        version = self.Select("select version()")[0]
+        if 'Greenplum Database 4.3' not in version:
+            raise UpgradeError('Must upgrade to Greenplum Database 4.3 version')
+        self.PerformPostUpgrade()
         return "RecoverMirror"
 
     #------------------------------------------------------------
@@ -1220,6 +1256,10 @@ class GPUpgrade(GPUpgradeBase):
                 self.mirror_upgrade_state = self.TurnOffMirror()
             elif (self.mirror_upgrade_state == "CatUpgrade"):
                 self.mirror_upgrade_state = self.CatUpgrade()
+            elif (self.mirror_upgrade_state == "ExamineSystem"):
+                self.mirror_upgrade_state = self.ExamineSystem()
+            elif (self.mirror_upgrade_state == "RecoverFromExamineSystem"):
+                self.mirror_upgrade_state = self.RecoverFromExamineSystem()
             elif (self.mirror_upgrade_state == "RecoverMirror"):
                 self.mirror_upgrade_state = self.RecoverMirror()
             elif (self.mirror_upgrade_state == "DeleteMasterCatalogCopy"):
