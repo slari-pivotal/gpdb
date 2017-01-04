@@ -244,13 +244,13 @@ def create_database(context, dbname=None, host=None, port=0, user=None):
 
 def clear_all_saved_data_verify_files(context):
     current_dir = os.getcwd()
-    data_dir = os.path.join(current_dir, './gppylib/test/data')
+    data_dir = os.path.join(current_dir, './test/data')
     cmd = 'rm %s/*' % data_dir
     run_command(context, cmd)
 
 def get_table_data_to_file(filename, tablename, dbname):
     current_dir = os.getcwd()
-    filename = os.path.join(current_dir, './gppylib/test/data', filename)
+    filename = os.path.join(current_dir, './test/data', filename)
     order_sql = """
                     select string_agg(a, ',')
                         from (
@@ -292,10 +292,10 @@ def validate_restore_data(context, tablename, dbname, backedup_table=None):
     get_table_data_to_file(filename, tablename, dbname)
     current_dir = os.getcwd()
     if backedup_table != None:
-        backup_file = os.path.join(current_dir, './gppylib/test/data', backedup_table.strip() + "_backup")
+        backup_file = os.path.join(current_dir, './test/data', backedup_table.strip() + "_backup")
     else:
-        backup_file = os.path.join(current_dir, './gppylib/test/data', tablename.strip() + "_backup")
-    restore_file = os.path.join(current_dir, './gppylib/test/data', tablename.strip() + "_restore")
+        backup_file = os.path.join(current_dir, './test/data', tablename.strip() + "_backup")
+    restore_file = os.path.join(current_dir, './test/data', tablename.strip() + "_restore")
     diff_backup_restore_data(context, backup_file, restore_file)
 
 def validate_restore_data_in_file(context, tablename, dbname, file_name, backedup_table=None):
@@ -303,10 +303,10 @@ def validate_restore_data_in_file(context, tablename, dbname, file_name, backedu
     get_table_data_to_file(filename, tablename, dbname)
     current_dir = os.getcwd()
     if backedup_table != None:
-        backup_file = os.path.join(current_dir, './gppylib/test/data', backedup_table.strip() + "_backup")
+        backup_file = os.path.join(current_dir, './test/data', backedup_table.strip() + "_backup")
     else:
-        backup_file = os.path.join(current_dir, './gppylib/test/data', file_name + "_backup")
-    restore_file = os.path.join(current_dir, './gppylib/test/data', file_name + "_restore")
+        backup_file = os.path.join(current_dir, './test/data', file_name + "_backup")
+    restore_file = os.path.join(current_dir, './test/data', file_name + "_restore")
     diff_backup_restore_data(context, backup_file, restore_file)
 
 def validate_db_data(context, dbname, expected_table_count):
@@ -807,7 +807,7 @@ def get_dist_policy_to_file(filename, dbname):
             ORDER BY c.relname"
 
     current_dir = os.getcwd()
-    filename = os.path.join(current_dir, './gppylib/test/data', filename)
+    filename = os.path.join(current_dir, './test/data', filename)
     data_sql = "COPY (%s) TO '%s'" %(dist_policy_sql, filename)
 
     with dbconn.connect(dbconn.DbURL(dbname=dbname)) as conn:
@@ -818,8 +818,8 @@ def validate_distribution_policy(context, dbname):
     filename = dbname.strip() + "_dist_policy_restore"
     get_dist_policy_to_file(filename, dbname)
     current_dir = os.getcwd()
-    backup_file = os.path.join(current_dir, './gppylib/test/data', dbname.strip() + "_dist_policy_backup")
-    restore_file = os.path.join(current_dir, './gppylib/test/data', dbname.strip() + "_dist_policy_restore")
+    backup_file = os.path.join(current_dir, './test/data', dbname.strip() + "_dist_policy_backup")
+    restore_file = os.path.join(current_dir, './test/data', dbname.strip() + "_dist_policy_restore")
     diff_backup_restore_data(context, backup_file, restore_file)
 
 def check_row_count(tablename, dbname, nrows):
