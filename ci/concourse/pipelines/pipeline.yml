@@ -660,21 +660,6 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
 
-- name: nightly-trigger-pulse
-  type: time
-  source:
-    location: America/Los_Angeles
-    start: 1:00 AM
-    stop: 2:00 AM
-
-- name: weekly-trigger-pulse
-  type: time
-  source:
-    location: America/Los_Angeles
-    days: [Sunday]
-    start: 1:00 AM
-    stop: 2:00 AM
-
 ## ======================================================================
 ## jobs
 ## ======================================================================
@@ -1830,8 +1815,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -1865,8 +1848,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -1900,8 +1881,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -1935,8 +1914,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -1970,8 +1947,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2005,8 +1980,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2040,8 +2013,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2075,8 +2046,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2110,8 +2079,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2145,8 +2112,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: false
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2180,8 +2145,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: false
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2215,8 +2178,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: false
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2250,8 +2211,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2285,8 +2244,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2320,8 +2277,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2355,8 +2310,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2390,8 +2343,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2425,8 +2376,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2460,8 +2409,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2495,8 +2442,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2530,8 +2475,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2565,8 +2508,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2600,8 +2541,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2635,8 +2574,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2670,8 +2607,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2705,8 +2640,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2740,8 +2673,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2775,8 +2706,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
@@ -2810,8 +2739,6 @@ jobs:
   public: true
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
