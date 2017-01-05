@@ -2,7 +2,7 @@
 
 shared.ci.eng.pivotal.io/pipelines/gpdb4
 
-Click the upper-left icon to reveal other pipelines, such as gpdb4.3.9.0
+Click the upper-left icon to reveal other pipelines, such as gpdb4.3.11.1
 
 ## Deploying the shared, source of truth Concourse CI pipeline for GPDB4
 
