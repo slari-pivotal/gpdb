@@ -21,11 +21,11 @@ This document describes the steps required to produce a release specific to Morg
 
 	Note: getversion is updated from current GPDB version, and MS scripts are updated from last MS release number on 4.3_STABLE
 
-	The artifact names in Concourse are hardcoded because the way the pipeline is currently configured has directory structure in the same variable as the filename.
+	Background Info: The artifact names in Concourse are hardcoded because the way the pipeline is currently configured has directory structure in the same variable as the filename.
 	In different parts of the pipeline, the directory structure for the local context is different (S3 bucket, mounted into a container volume, etc.)
 	We attempted to refactor the pipelines to unblock this but ran into issues.
 1. Create the pre-requisites as required by the pipeline
-   * Ensure that a new bucket is created to avoid overwriting the artifacts, and enable AWS S3 "versioning" on the bucket
+   * Ensure that a new bucket is created to avoid overwriting the artifacts, and enable AWS S3 "versioning" on the bucket: e.g.: gpdb-4.3.11.1ms31-concourse
    * Create the credential file by copying from the corresponding release branch file in [gpdb-ci-deployments](https://www.github.com/greenplum-db/gpdb-ci-deployments). It will have many extraneous values, but should be the most up-to-date starting point ` $ cp gpdb-4.3.9.0-ci-secrets.yml gpdb-4.3.9.0MS27-ci-secrets.yml`
    * Add in this line to the bottom of the file `noarch-toolchain-snowflakes-bucket: noarch-toolchain-snowflakes`.  This configures where to get the Madlib gppkg from.
    * Change the `gpdb-git-branch` and `bucket-name` fields in the credentials file
