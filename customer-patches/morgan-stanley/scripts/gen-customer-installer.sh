@@ -59,7 +59,7 @@ extract_std_gppkg(){
 
 ## ======================================================================
 
-RELEASE=4.3.9.1MS28
+RELEASE=4.3.11.1MS31
 BASE_DIR=`pwd`
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -71,7 +71,7 @@ LOADERS_INSTALLER_FILE=${LOADERS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpd
 PGCRYPTO_GPPKG_FILE=${PGCRYPTO_GPPKG_FILE:=${BASE_DIR}/pgcrypto_rhel5_gppkg/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg}
 PLR_GPPKG_FILE=${PLR_GPPKG_FILE:=${BASE_DIR}/plr_rhel5_gppkg/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg}
 PLJAVA_GPPKG_FILE=${PLJAVA_GPPKG_FILE:=${BASE_DIR}/pljava_rhel5_gppkg/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg}
-MADLIB_GPPKG_FILE=${MADLIB_GPPKG_FILE:=${BASE_DIR}/madlib_rhel5_gppkg/madlib-ossv1.9_pv1.9.5_gpdb4.3orca-rhel5-x86_64.gppkg}
+MADLIB_GPPKG_FILE=${MADLIB_GPPKG_FILE:=${BASE_DIR}/madlib_rhel5_gppkg/madlib-ossv1.9.1_pv1.9.6_gpdb4.3orca-rhel5-x86_64.gppkg}
 
 JDBC_DRIVER_FILE=${JDBC_DRIVER_FILE:=${BASE_DIR}/greenplum_jdbc_zip/greenplum_jdbc_5.1.1.zip}
 GPSUPPORT_FILE=${GPSUPPORT_FILE:=${BASE_DIR}/gpsupport_package/gpsupport-1.2.0.0.gz}
@@ -201,6 +201,9 @@ ln -s "Versions/$(get_madlib_version)" Current
 ln -s Current/bin bin
 ln -s Current/doc doc
 popd > /dev/null
+
+MADLIB_FIX_BIN="$BASE_DIR/gpdb_src/ci/concourse/scripts/fix_madpack.sh"
+$MADLIB_FIX_BIN --prefix usr/local/madlib
 
 mv usr/local/madlib ../greenplum-db
 mv *.gppkg ..
