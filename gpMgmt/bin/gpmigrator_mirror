@@ -1004,25 +1004,30 @@ class GPUpgrade(GPUpgradeBase):
     def RecoverPrimary(self):
         self.ForceShutDown()
         self.Startup(self.oldenv)
-        logger.info("Running gprecoverseg to recover primary....")
-        
-        cmd = "$GPHOME/bin/gprecoverseg -a -F -l %s" % self.logdir
-        p = subprocess.Popen(cmd, shell = True,
-                            close_fds = True,
-                            stdout = subprocess.PIPE,
-                            stderr = subprocess.PIPE,
-                            env=self.oldenv)
-        result = p.communicate()
-        if p.returncode != 0:
-            logger.debug(result[0])
-            logger.warn("****************************************************")
-            logger.warn("Recovering Primary Failed...!!!!")
-            logger.warn("   Please examine the log in %s" % self.logdir)
-            logger.warn("   fix the problem and gprecoverseg -F to recover the primary")
-            logger.warn("****************************************************")
-        
-        return "AbortMirrorUpgrade"
 
+        logger.info('NOTE: Would you like the utility to run gprecoverseg and perform the next steps in the abort process?')
+        logger.info('NOTE: Choosing \'yes\' will run a full gprecoverseg and continue the abort process')
+        logger.info('NOTE: Choosing \'no\' will allow you to debug the failure. You must then run a full gprecoverseg manually')
+        continue_abort_gprecoverseg = ask_yesno('', 'Do you wish to continue the abort?', 'Y')
+
+        if continue_abort_gprecoverseg:
+            logger.info("Running gprecoverseg to recover primary....")
+            cmd = "$GPHOME/bin/gprecoverseg -a -F -l %s" % self.logdir
+            p = subprocess.Popen(cmd, shell = True,
+                                close_fds = True,
+                                stdout = subprocess.PIPE,
+                                stderr = subprocess.PIPE,
+                                env=self.oldenv)
+            result = p.communicate()
+            if p.returncode != 0:
+                logger.debug(result[0])
+                logger.warn("****************************************************")
+                logger.warn("Recovering Primary Failed...!!!!")
+                logger.warn("   Please examine the log in %s" % self.logdir)
+                logger.warn("   fix the problem and gprecoverseg -F to recover the primary")
+                logger.warn("****************************************************")
+
+        return "AbortMirrorUpgrade"
 
     #------------------------------------------------------------
     def DeleteMasterDataDirCopy(self):
@@ -1082,6 +1087,8 @@ class GPUpgrade(GPUpgradeBase):
                 logger.info('Encountered error while trying to restart the database after the catalog upgrade')
                 logger.info('NOTE: You can either choose to rollback the changes or examine the system')
                 logger.info('NOTE: Choosing \'yes\' will halt the upgrade process in its current state')
+                logger.info('NOTE: If you choose \'yes\' please make sure to run \'gpstart -a\'')
+                logger.info('NOTE: before re-running upgrade')
                 logger.info('NOTE: Choosing \'no\' will rollback the upgrade')
                 examine_system = ask_yesno('', 'Do you wish to examine the system now?', 'Y')
                 if examine_system:
