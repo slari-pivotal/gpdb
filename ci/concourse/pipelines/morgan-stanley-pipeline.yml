@@ -216,6 +216,15 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: morganstanleydeliverables/greenplum-clients-4.3.11.1MS31-build-1-rhel5-x86_64.zip.md5
 
+- name: ccache_gpdb_centos5
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_centos5/ccache_gpdb.tar.gz
+
 ## ======================================================================
 ## jobs
 ## ======================================================================
@@ -230,6 +239,9 @@ jobs:
     - get: gpdb_src
       trigger: true
     - get: centos-gpdb-dev-5
+    - get: ccache_snapshot
+      resource: ccache_gpdb_centos5
+      trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
     image: centos-gpdb-dev-5
@@ -572,3 +584,14 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.1MS31-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
+
+- name: bootstrap-ccache
+  plan:
+  - get: gpdb_src
+  - aggregate:
+    - do:
+      - task: centos5
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_centos5}
+      - put: ccache_gpdb_centos5
+        params: {file: ccache_gpdb_centos5/ccache_gpdb.tar.gz}
