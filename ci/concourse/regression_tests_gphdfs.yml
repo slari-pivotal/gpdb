@@ -1,0 +1,7 @@
+platform: linux
+inputs:
+  - name: gpdb_src
+  - name: bin_gpdb
+  - name: sync_tools_gpdb
+run:
+  path: gpdb_src/ci/concourse/scripts/regression_tests_gphdfs.bash
