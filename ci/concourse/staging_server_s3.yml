@@ -2,14 +2,16 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: gpdbunitedockers2/centos511-gcc442-s3
+    repository: pivotaldata/centos511-java7-gpdb-dev-image
     username:
     password:
     email:
 inputs:
   - name: gpdb_src
-run:
-  path: gpdb_src/ci/concourse/scripts/stage_s3.bash
+  - name: bin_gpdb
+  - name: sync_tools_gpdb
 params:
   EC2_PRIVATE_KEY:
   EC2_INSTANCE_IP:
+run:
+  path: gpdb_src/ci/concourse/scripts/staging_server_s3.bash

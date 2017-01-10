@@ -9,12 +9,17 @@ groups:
   - compile_gpdb_centos6
   - compile_gpdb_centos7
   - compile_gpdb_sles
+  - cs-fts_centos
+  - cs-storage_centos
+  - cs-subtransaction_centos
+  - cs-uao_centos
   - icb_orca_centos
   - icb_planner_centos
   - icg_orca_centos
   - icg_orca_sles
   - icg_planner_centos
   - icg_planner_sles
+  - regression_tests_s3_centos
   - MU_check_centos
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging
@@ -29,6 +34,35 @@ groups:
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
+  - pulse_MU_BehaveBackupRestore
+  - pulse_MU_BehaveGPCheckcat
+  - pulse_MU_BehaveGPRecoverseg
+  - pulse_MU_BehaveGptransfer43xTo43x
+  - pulse_MU_BehaveNetBackup
+  - pulse_MU_BehaveNetBackup76
+  - pulse_MU_DDBOOST_Full
+  - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_Gpexpand
+  - pulse_MU_Kerberos-jdbc-no-scm
+  - pulse_MU_Kerberos-smoke
+  - pulse_MU_MFR-TINC
+  - pulse_MU_OpenBAR
+  - pulse_cs-aoco-compression
+  - pulse_cs-bin-swap
+  - pulse_cs-filerep-schema-topology-crashrecov
+  - pulse_cs-filerep-end-to-end
+  - pulse_cs-pg-two-phase
+  - pulse_cs-walrepl-multinode
+  - pulse_QP_memory-accounting
+  - pulse_QP_optimizer-functional
+  - pulse_Gppkg
+  - pulse_Gppkg-redhat6
+  - pulse_CCLE
+  - pulse_CCLE-sles11sp4
+  - pulse_mpp-interconnect
+  - pulse_mpp-interconnect-sles
+  - compile_gpdb_windows_ccl
+
 - name: CentOS/RHEL
   jobs:
   - compile_gpdb_centos
@@ -38,6 +72,7 @@ groups:
   - icb_planner_centos
   - icg_orca_centos
   - icg_planner_centos
+  - regression_tests_s3_centos
   - MU_check_centos
   - gpdb_rc_packaging_centos
   - gpdb_sync_to_dist_centos6
@@ -49,6 +84,7 @@ groups:
   - manual_testing_on_pulse_centos
   - manual_appliance_testing_centos
   - push_to_pivnet_manually_centos
+  - pulse_mpp-interconnect
 - name: SLES
   jobs:
   - compile_gpdb_sles
@@ -58,6 +94,89 @@ groups:
   - gpdb_sync_to_dist
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_sles
+  - pulse_mpp-interconnect-sles
+- name: Pulse
+  jobs:
+  - gpdb_sync_to_dist
+  - pulse_MU_BehaveBackupRestore
+  - pulse_MU_BehaveGPCheckcat
+  - pulse_MU_BehaveGPRecoverseg
+  - pulse_MU_BehaveGptransfer43xTo43x
+  - pulse_MU_BehaveNetBackup
+  - pulse_MU_BehaveNetBackup76
+  - pulse_MU_DDBOOST_Full
+  - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_Gpexpand
+  - pulse_MU_Kerberos-jdbc-no-scm
+  - pulse_MU_Kerberos-smoke
+  - pulse_MU_MFR-TINC
+  - pulse_MU_OpenBAR
+  - pulse_cs-aoco-compression
+  - pulse_cs-bin-swap
+  - pulse_cs-filerep-schema-topology-crashrecov
+  - pulse_cs-filerep-end-to-end
+  - pulse_cs-persistent-tables
+  - pulse_cs-pg-two-phase
+  - pulse_cs-walrepl-multinode
+  - pulse_QP_memory-accounting
+  - pulse_QP_optimizer-functional
+  - pulse_Gppkg
+  - pulse_Gppkg-redhat6
+  - pulse_CCLE
+  - pulse_CCLE-sles11sp4
+  - pulse_mpp-interconnect
+  - pulse_mpp-interconnect-sles
+- name: CS
+  jobs:
+  - cs-fts_centos
+  - cs-storage_centos
+  - cs-subtransaction_centos
+  - cs-uao_centos
+  - gpdb_rc_packaging_centos
+  - gpdb_sync_to_dist
+  - pulse_cs-aoco-compression
+  - pulse_cs-bin-swap
+  - pulse_cs-filerep-schema-topology-crashrecov
+  - pulse_cs-filerep-end-to-end
+  - pulse_cs-persistent-tables
+  - pulse_cs-pg-two-phase
+  - pulse_cs-walrepl-multinode
+- name: Pulse_QP
+  jobs:
+  - pulse_QP_memory-accounting
+  - pulse_QP_optimizer-functional
+- name: Pulse_MU
+  jobs:
+  - pulse_MU_BehaveBackupRestore
+  - pulse_MU_BehaveGPCheckcat
+  - pulse_MU_BehaveGPRecoverseg
+  - pulse_MU_BehaveGptransfer43xTo43x
+  - pulse_MU_BehaveNetBackup
+  - pulse_MU_BehaveNetBackup76
+  - pulse_MU_DDBOOST_Full
+  - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_Gpexpand
+  - pulse_MU_Kerberos-jdbc-no-scm
+  - pulse_MU_Kerberos-smoke
+  - pulse_MU_MFR-TINC
+  - pulse_MU_OpenBAR
+- name: Windows
+  jobs:
+  - compile_gpdb_windows_ccl
+
+- name: Bootstrap
+  jobs:
+  - bootstrap-ccache
+
+## ======================================================================
+## resource types
+## ======================================================================
+
+resource_types:
+- name: s3-week-long-urls
+  type: docker-image
+  source:
+    repository: pivotaldata/s3-resource
 
 ## ======================================================================
 ## resources
@@ -71,33 +190,50 @@ resources:
     private_key: {{gpdb-git-key}}
     uri: {{gpdb-git-remote}}
 
-- name: centos511-java7-gpdb-dev-image
+- name: centos-gpdb-dev-5
   type: docker-image
   source:
-    repository: pivotaldata/centos511-java7-gpdb-dev-image
+    repository: pivotaldata/centos-gpdb-dev
+    tag: '5'
     username: {{docker_username}}
     password: {{docker_password}}
 
-- name: centos67-java7-gpdb-dev-image
+- name: centos-mingw
   type: docker-image
   source:
-    repository: pivotaldata/centos67-java7-gpdb-dev-image
+    repository: pivotaldata/centos-mingw
     username: {{docker_username}}
     password: {{docker_password}}
 
-- name: centos72-java7-gpdb-dev-image
+- name: centos-gpdb-dev-6
   type: docker-image
   source:
-    repository: pivotaldata/centos72-java7-gpdb-dev-image
+    repository: pivotaldata/centos-gpdb-dev
+    tag: '6'
     username: {{docker_username}}
     password: {{docker_password}}
 
-- name: sles11-toolchain
+- name: centos-gpdb-dev-7
   type: docker-image
   source:
-    repository: pivotaldata/sles11sp4-toolchain
+    repository: pivotaldata/centos-gpdb-dev
+    tag: '7'
     username: {{docker_username}}
     password: {{docker_password}}
+
+- name: sles-gpdb-dev
+  type: docker-image
+  source:
+    repository: pivotaldata/sles-gpdb-dev
+    tag: '11'
+    username: {{docker_username}}
+    password: {{docker_password}}
+
+- name: pulse-api-image
+  type: docker-image
+  source:
+    repository: ruby
+    tag: 2-slim
 
 - name: bin_gpdb_centos
   type: s3
@@ -126,6 +262,78 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: sync_tools_gpdb_centos/sync_tools_gpdb.tar.gz
 
+- name: ccache_empty
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_empty/ccache_gpdb.tar.gz
+
+- name: ccache_gpdb_centos5
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_centos5/ccache_gpdb.tar.gz
+
+- name: ccache_gpdb_centos6
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_centos6/ccache_gpdb.tar.gz
+
+- name: ccache_gpdb_centos7
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_centos7/ccache_gpdb.tar.gz
+
+- name: ccache_gpdb_sles11
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: ccache_gpdb_sles11/ccache_gpdb.tar.gz
+
+- name: bin_gpdb_windows_clients
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: windows-ccl-alpha/greenplum-clients-4.3.11.0-WinXP-x86_32.msi
+
+- name: bin_gpdb_windows_connectivity
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: windows-ccl-alpha/greenplum-connectivity-4.3.11.0-WinXP-x86_32.msi
+
+- name: bin_gpdb_windows_loaders
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: windows-ccl-alpha/greenplum-loaders-4.3.11.0-WinXP-x86_32.msi
+
 - name: sync_tools_gpdb_sles
   type: s3
   source:
@@ -136,22 +344,24 @@ resources:
     versioned_file: sync_tools_gpdb_sles/sync_tools_gpdb.tar.gz
 
 - name: gpdb_src_archive
-  type: s3
+  type: s3-week-long-urls
   source:
+    private: true
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: gpdb_src_archive/greenplum-db-4.3.9.1CCB3-src.tar.gz
+    versioned_file: gpdb_src_archive/greenplum-db-4.3.11.0-src.tar.gz
 
 - name: installer_rhel5_gpdb_rc
-  type: s3
+  type: s3-week-long-urls
   source:
+    private: true
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_rc_md5
   type: s3
@@ -160,7 +370,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_rhel5_gpdb_clients
   type: s3
@@ -169,7 +379,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-clients-4.3.11.0-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_clients_md5
   type: s3
@@ -178,16 +388,17 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-clients-4.3.11.0-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_rc
-  type: s3
+  type: s3-week-long-urls
   source:
+    private: true
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+    versioned_file: deliverables/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_rc_md5
   type: s3
@@ -196,7 +407,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip.md5
 
 - name: installer_appliance_rhel5_gpdb_rc
   type: s3
@@ -205,7 +416,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-appliance-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip
 
 - name: installer_appliance_rhel5_gpdb_rc_md5
   type: s3
@@ -214,11 +425,12 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-appliance-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip.md5
 
 - name: qautils_rhel5_tarball
-  type: s3
+  type: s3-week-long-urls
   source:
+    private: true
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
@@ -226,8 +438,9 @@ resources:
     versioned_file: deliverables/QAUtils-rhel5-x86_64.tar.gz
 
 - name: qautils_sles11_tarball
-  type: s3
+  type: s3-week-long-urls
   source:
+    private: true
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
@@ -241,7 +454,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+    versioned_file: deliverables/greenplum-clients-4.3.11.0-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_clients_md5
   type: s3
@@ -250,7 +463,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-clients-4.3.11.0-build-1-sles11-x86_64.zip.md5
 
 - name: installer_rhel5_gpdb_connectivity
   type: s3
@@ -259,7 +472,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-connectivity-4.3.11.0-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_connectivity_md5
   type: s3
@@ -268,7 +481,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-connectivity-4.3.11.0-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_connectivity
   type: s3
@@ -277,7 +490,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+    versioned_file: deliverables/greenplum-connectivity-4.3.11.0-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_connectivity_md5
   type: s3
@@ -286,7 +499,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-connectivity-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-connectivity-4.3.11.0-build-1-sles11-x86_64.zip.md5
 
 - name: installer_rhel5_gpdb_loaders
   type: s3
@@ -295,7 +508,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+    versioned_file: deliverables/greenplum-loaders-4.3.11.0-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_loaders_md5
   type: s3
@@ -304,7 +517,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-loaders-4.3.11.0-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_loaders
   type: s3
@@ -313,7 +526,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+    versioned_file: deliverables/greenplum-loaders-4.3.11.0-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_loaders_md5
   type: s3
@@ -322,7 +535,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-loaders-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-loaders-4.3.11.0-build-1-sles11-x86_64.zip.md5
 
 - name: postgis_rhel5_gppkg
   type: s3
@@ -450,6 +663,22 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
 
+- name: nightly-trigger-pulse
+  type: time
+  source:
+    location: America/Los_Angeles
+    days: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday]
+    start: 5:00 AM
+    stop: 6:00 AM
+
+- name: weekly-trigger-pulse
+  type: time
+  source:
+    location: America/Los_Angeles
+    days: [Sunday]
+    start: 1:00 PM
+    stop: 2:00 PM
+
 ## ======================================================================
 ## jobs
 ## ======================================================================
@@ -458,19 +687,25 @@ resources:
 
 jobs:
 - name: compile_gpdb_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: centos511-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-5
+    - get: ccache_snapshot
+      resource: ccache_gpdb_centos5
+      trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: centos511-java7-gpdb-dev-image
+    image: centos-gpdb-dev-5
     params:
       TARGET_OS: centos
       TARGET_OS_VERSION: 5
       BLD_TARGETS: clients connectivity loaders
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
   - aggregate:
     - put: bin_gpdb_centos
       params:
@@ -513,20 +748,58 @@ jobs:
         file: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg
     - put: sync_tools_gpdb_centos
       params:
-        file: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+        file: gpdb_artifacts/sync_tools_gpdb.tar.gz
+    - put: ccache_gpdb_centos5
+      params:
+        file: gpdb_artifacts/ccache_gpdb.tar.gz
 
-- name: compile_gpdb_sles
-  public: true
+- name: compile_gpdb_windows_ccl
   plan:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: sles11-toolchain
+    - get: centos-mingw
+    - get: ccache_snapshot
+      resource: ccache_empty
+  - task: compile_gpdb
+    file: gpdb_src/ci/concourse/compile_gpdb.yml
+    image: centos-mingw
+    params:
+      TARGET_OS: win32
+      TARGET_OS_VERSION:
+      BLD_TARGETS: clients connectivity loaders
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
+  - aggregate:
+    - put: bin_gpdb_windows_clients
+      params:
+        file: gpdb_artifacts/greenplum-clients-*-WinXP-x86_32.msi
+    - put: bin_gpdb_windows_connectivity
+      params:
+        file: gpdb_artifacts/greenplum-connectivity-*-WinXP-x86_32.msi
+    - put: bin_gpdb_windows_loaders
+      params:
+        file: gpdb_artifacts/greenplum-loaders-*-WinXP-x86_32.msi
+
+- name: compile_gpdb_sles
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      trigger: true
+    - get: sles-gpdb-dev
+    - get: ccache_snapshot
+      resource: ccache_gpdb_sles11
+      trigger: false
   - task: build_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: sles11-toolchain
-    privileged: true
+    image: sles-gpdb-dev
     params:
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
       TARGET_OS: sles
       TARGET_OS_VERSION: 11
       BLD_TARGETS: clients connectivity loaders
@@ -572,47 +845,68 @@ jobs:
         file: gpdb_artifacts/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
     - put: sync_tools_gpdb_sles
       params:
-        file: sync_tools_gpdb/sync_tools_gpdb.tar.gz
+        file: gpdb_artifacts/sync_tools_gpdb.tar.gz
+    - put: ccache_gpdb_sles11
+      params:
+        file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 # Compile gpdb and plperl on centos6
 - name: compile_gpdb_centos6
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: centos67-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-6
+    - get: ccache_snapshot
+      resource: ccache_gpdb_centos6
+      trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: centos67-java7-gpdb-dev-image
+    image: centos-gpdb-dev-6
     params:
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
       TARGET_OS: centos
       TARGET_OS_VERSION: 6
       BLD_TARGETS: ""
   - put: plperl_rhel6_gppkg
     params:
       file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
+  - put: ccache_gpdb_centos6
+    params:
+      file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 # Compile gpdb and plperl on centos7
 - name: compile_gpdb_centos7
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: centos72-java7-gpdb-dev-image
+    - get: centos-gpdb-dev-7
+    - get: ccache_snapshot
+      resource: ccache_gpdb_centos7
+      trigger: false
   - task: compile_gpdb
     file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: centos72-java7-gpdb-dev-image
+    image: centos-gpdb-dev-7
     params:
+      IVYREPO_HOST: {{ivyrepo_host}}
+      IVYREPO_REALM: {{ivyrepo_realm}}
+      IVYREPO_USER: {{ivyrepo_user}}
+      IVYREPO_PASSWD: {{ivyrepo_passwd}}
       TARGET_OS: centos
       TARGET_OS_VERSION: 7
       BLD_TARGETS: ""
   - put: plperl_rhel7_gppkg
     params:
       file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel7-x86_64.gppkg
+  - put: ccache_gpdb_centos7
+    params:
+      file: gpdb_artifacts/ccache_gpdb.tar.gz
 
-# Stage 2: Installcheck and Python Unit Tests
+# Stage 2: Installcheck, Python unit, and local TINC tests
 
 # If a new test is added to this stage, add the name of the job to the list of
 # stage 2 jobs under the following line in the first job in the stage 3 section:
@@ -620,7 +914,6 @@ jobs:
 #     passed: &Stage2JobsCentos
 
 - name: icb_orca_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -632,15 +925,16 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
-      BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
       TEST_OS: centos
 
 - name: icb_planner_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -652,15 +946,16 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
-      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
       TEST_OS: centos
 
 - name: icg_orca_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -672,15 +967,16 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
       TEST_OS: centos
 
 - name: icg_orca_sles
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -692,17 +988,16 @@ jobs:
       resource: bin_gpdb_sles
       passed: [compile_gpdb_sles]
       trigger: true
-    - get: sles11-toolchain
+    - get: sles-gpdb-dev
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
-    image: sles11-toolchain
+    image: sles-gpdb-dev
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: optimizer=on
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
       TEST_OS: sles
 
 - name: icg_planner_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -714,15 +1009,16 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
       TEST_OS: centos
 
 - name: icg_planner_sles
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -734,17 +1030,16 @@ jobs:
       resource: bin_gpdb_sles
       passed: [compile_gpdb_sles]
       trigger: true
-    - get: sles11-toolchain
+    - get: sles-gpdb-dev
   - task: ic_gpdb
     file: gpdb_src/ci/concourse/ic_gpdb.yml
-    image: sles11-toolchain
+    image: sles-gpdb-dev
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
       TEST_OS: sles
 
-- name: MU_check_centos
-  public: true
+- name: regression_tests_s3_centos
   plan:
   - aggregate:
     - get: gpdb_src
@@ -756,16 +1051,171 @@ jobs:
       resource: bin_gpdb_centos
       passed: [compile_gpdb_centos]
       trigger: true
+    - get: centos-gpdb-dev-5
+  - task: regression_tests_s3
+    file: gpdb_src/ci/concourse/regression_tests_s3.yml
+    image: centos-gpdb-dev-5
+    params:
+      s3conf: {{s3_configuration_file}}
+      TEST_OS: centos
+
+- name: MU_check_centos
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-5
   - task: MU_check_centos
     file: gpdb_src/ci/concourse/gpMgmt_check_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
+      TEST_OS: centos
+
+- name: cs-fts_centos
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-5
+  - aggregate:
+    - task: fts_transitions_part01
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: fts_transitions_part01
+        BLDWRAP_POSTGRES_CONF_ADDONS: "gp_segment_connect_timeout=10 gp_fts_probe_interval=20"
+        TEST_OS: centos
+    - task: fts_transitions_part02
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: fts_transitions_part02
+        BLDWRAP_POSTGRES_CONF_ADDONS: "gp_segment_connect_timeout=10 gp_fts_probe_interval=20"
+        TEST_OS: centos
+    - task: fts_transitions_part03
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: fts_transitions_part03
+        BLDWRAP_POSTGRES_CONF_ADDONS: "gp_segment_connect_timeout=10 gp_fts_probe_interval=20"
+        TEST_OS: centos
+
+- name: cs-storage_centos
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-5
+  - aggregate:
+    - task: aocoalter_catalog_loaders
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: aocoalter_catalog_loaders
+        TEST_OS: centos
+    - task: storage_persistent_filerep_accessmethods_and_vacuum
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: storage_persistent_filerep_accessmethods_and_vacuum
+        TEST_OS: centos
+    - task: filerep_end_to_end_xlog_ctlog_cons
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: filerep_end_to_end_xlog_ctlog_cons
+        TEST_OS: centos
+    - task: storage_queryfinish_and_transactionmanagement
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: storage_queryfinish_and_transactionmanagement
+        TEST_OS: centos
+    - task: storage_vacuum_xidlimits
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: storage_vacuum_xidlimits
+        TEST_OS: centos
+
+- name: cs-subtransaction_centos
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-5
+  - task: sub_transaction_limit_removal
+    timeout: 3h
+    file: gpdb_src/ci/concourse/tinc_gpdb.yml
+    image: centos-gpdb-dev-5
+    params:
+      MAKE_TEST_COMMAND: sub_transaction_limit_removal
+      TEST_OS: centos
+
+- name: cs-uao_centos
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-5
+  - task: uao_orca_both_regression
+    timeout: 2h
+    file: gpdb_src/ci/concourse/tinc_gpdb.yml
+    image: centos-gpdb-dev-5
+    params:
+      MAKE_TEST_COMMAND: uao_orca_both_regression
       TEST_OS: centos
 
 # Stage 3: Packaging of installer file
 # Stage 3a: Packaging the Release Candidate (rc)
 
 - name: gpdb_rc_packaging_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -777,51 +1227,55 @@ jobs:
       - icb_planner_centos
       - icg_orca_centos
       - icg_planner_centos
+      - regression_tests_s3_centos
       - MU_check_centos
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: separate_qautils_files_for_rc
     file: gpdb_src/ci/concourse/separate_qautils_files_for_rc.yml
+    image: centos-gpdb-dev-5
     params:
       QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
   - aggregate:
     - task: gpdb_rc_packaging_centos
       file: gpdb_src/ci/concourse/gpdb_packaging.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         bin_gpdb: rc_bin_gpdb
       output_mapping:
         packaged_gpdb: packaged_gpdb_rc
       params:
         INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-rhel5-gpdb.sh
-        INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip
         ADD_README_INSTALL: true
     - task: gpdb_appliance_rhel5_rc_packaging
       file: gpdb_src/ci/concourse/gpdb_packaging.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         bin_gpdb: rc_bin_gpdb
       output_mapping:
         packaged_gpdb: packaged_gpdb_appliance_rc
       params:
         INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-appliance-header-rhel5-gpdb.sh
-        INSTALLER_ZIP: packaged_gpdb/greenplum-db-appliance-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        INSTALLER_ZIP: packaged_gpdb/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip
   - aggregate:
     - put: installer_rhel5_gpdb_rc
       params:
-        file: packaged_gpdb_rc/greenplum-db-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        file: packaged_gpdb_rc/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip
     - put: installer_rhel5_gpdb_rc_md5
       params:
-        file: packaged_gpdb_rc/greenplum-db-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+        file: packaged_gpdb_rc/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip.md5
     - put: installer_appliance_rhel5_gpdb_rc
       params:
-        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip
     - put: installer_appliance_rhel5_gpdb_rc_md5
       params:
-        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip.md5
     - put: qautils_rhel5_tarball
       params:
         file: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
 
 - name: gpdb_rc_packaging_sles
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -832,31 +1286,33 @@ jobs:
       - icg_orca_sles
       - icg_planner_sles
       trigger: true
+    - get: sles-gpdb-dev
   - task: separate_qautils_files_for_rc
     file: gpdb_src/ci/concourse/separate_qautils_files_for_rc.yml
+    image: sles-gpdb-dev
     params:
       QAUTILS_TARBALL: rc_bin_gpdb/QAUtils-sles11-x86_64.tar.gz
   - task: gpdb_rc_packaging_sles
     file: gpdb_src/ci/concourse/gpdb_packaging.yml
+    image: sles-gpdb-dev
     input_mapping:
       bin_gpdb: rc_bin_gpdb
     params:
       INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11-gpdb.sh
-      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+      INSTALLER_ZIP: packaged_gpdb/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip
       ADD_README_INSTALL: true
   - put: installer_sles11_gpdb_rc
     params:
-      file: packaged_gpdb/greenplum-db-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+      file: packaged_gpdb/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip
   - put: installer_sles11_gpdb_rc_md5
     params:
-      file: packaged_gpdb/greenplum-db-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+      file: packaged_gpdb/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip.md5
   - put: qautils_sles11_tarball
     params:
       file: rc_bin_gpdb/QAUtils-sles11-x86_64.tar.gz
 
 # Stage 3b: Packaging of source code
 - name: gpdb_src_packaging
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
@@ -865,25 +1321,29 @@ jobs:
       - icb_planner_centos
       - icg_orca_centos
       - icg_planner_centos
+      - regression_tests_s3_centos
       - MU_check_centos
       - icg_orca_sles
       - icg_planner_sles
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: gpdb_src_packaging
     file: gpdb_src/ci/concourse/gpdb_src_packaging.yml
+    image: centos-gpdb-dev-5
     params:
-      GPDB_SRC_TAR_GZ: gpdb_src_archive/greenplum-db-4.3.9.1CCB3-src.tar.gz
+      GPDB_SRC_TAR_GZ: gpdb_src_archive/greenplum-db-4.3.11.0-src.tar.gz
   - put: gpdb_src_archive
     params:
-      file: gpdb_src_archive/greenplum-db-4.3.9.1CCB3-src.tar.gz
+      file: gpdb_src_archive/greenplum-db-4.3.11.0-src.tar.gz
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
 - name: gpdb_sync_to_dist
-  public: true
   serial: true
   plan:
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_rc_packaging_centos]
     - get: gpdb_src_archive
       passed: [gpdb_src_packaging]
       trigger: true
@@ -953,97 +1413,110 @@ jobs:
       passed: [compile_gpdb_sles]
     - get: qautils_sles11_tarball
       passed: [gpdb_rc_packaging_sles]
+    - get: centos-gpdb-dev-5
   - aggregate:
     - task: gpdb_src_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: gpdb_src_archive
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1CCB3-src.tar.gz
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-src.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_sync_to_dist_rc
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_sync_to_dist_rc_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist_rc
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_appliance_rhel5_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist_rc_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_appliance_rhel5_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-4.3.11.0-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_clients_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_clients
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.0-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_clients_sync_to_dist_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_clients_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.0-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_connectivity_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_connectivity
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.0-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_connectivity_sync_to_dist_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_connectivity_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.0-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_loaders_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_loaders
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.9.1CCB3-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.0-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_loaders_sync_to_dist_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_loaders_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.9.1CCB3-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.0-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: postgis_rhel5_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: postgis_rhel5_gppkg
       params:
@@ -1052,6 +1525,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: pljava_rhel5_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: pljava_rhel5_gppkg
       params:
@@ -1060,6 +1534,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: plperl_rhel5_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: plperl_rhel5_gppkg
       params:
@@ -1068,6 +1543,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: ddboost_rhel5_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: ddboost_rhel5_gppkg
       params:
@@ -1076,6 +1552,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: plr_rhel5_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: plr_rhel5_gppkg
       params:
@@ -1084,6 +1561,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: pgcrypto_rhel5_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: pgcrypto_rhel5_gppkg
       params:
@@ -1092,6 +1570,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: qautils_rhel5_tarball_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: qautils_rhel5_tarball
       params:
@@ -1100,70 +1579,79 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles_sync_to_dist_rc
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles_sync_to_dist_rc_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.11.0-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_clients_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_clients
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.0-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_clients_sync_to_dist_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_clients_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.11.0-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_connectivity_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_connectivity
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.0-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_connectivity_sync_to_dist_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_connectivity_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-4.3.11.0-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_loaders_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_loaders
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.9.1CCB3-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.0-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_loaders_sync_to_dist_md5
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_loaders_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.9.1CCB3-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-4.3.11.0-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: postgis_sles11_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: postgis_sles11_gppkg
       params:
@@ -1172,6 +1660,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: pljava_sles11_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: pljava_sles11_gppkg
       params:
@@ -1180,6 +1669,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: plperl_sles11_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: plperl_sles11_gppkg
       params:
@@ -1188,6 +1678,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: ddboost_sles11_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: ddboost_sles11_gppkg
       params:
@@ -1196,6 +1687,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: plr_sles11_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: plr_sles11_gppkg
       params:
@@ -1204,6 +1696,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: pgcrypto_sles11_gppkg_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: pgcrypto_sles11_gppkg
       params:
@@ -1212,6 +1705,7 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
     - task: qautils_sles11_tarball_sync_to_dist
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+      image: centos-gpdb-dev-5
       input_mapping:
         artifact_to_upload: qautils_sles11_tarball
       params:
@@ -1220,16 +1714,18 @@ jobs:
         SSH_KEY: {{dist-ssh-key}}
 
 - name: gpdb_sync_to_dist_centos6
-  public: true
   plan:
   - aggregate:
     - get: plperl_rhel6_gppkg
       passed: [compile_gpdb_centos6]
       trigger: true
     - get: gpdb_src
+      params: {submodules: none}
       passed: [compile_gpdb_centos6]
+    - get: centos-gpdb-dev-5
   - task: plperl_rhel6_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    image: centos-gpdb-dev-5
     input_mapping:
       artifact_to_upload: plperl_rhel6_gppkg
     params:
@@ -1238,16 +1734,18 @@ jobs:
       SSH_KEY: {{dist-ssh-key}}
 
 - name: gpdb_sync_to_dist_centos7
-  public: true
   plan:
   - aggregate:
     - get: plperl_rhel7_gppkg
       passed: [compile_gpdb_centos7]
       trigger: true
     - get: gpdb_src
+      params: {submodules: none}
       passed: [compile_gpdb_centos7]
+    - get: centos-gpdb-dev-5
   - task: plperl_rhel7_gppkg_sync_to_dist
     file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
+    image: centos-gpdb-dev-5
     input_mapping:
       artifact_to_upload: plperl_rhel7_gppkg
     params:
@@ -1275,40 +1773,1023 @@ jobs:
 # and tag is the tag passed to behave.
 
 - name: MU_backup_smoke_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_rc_packaging_centos]
     - get: bin_gpdb
       resource: bin_gpdb_centos
       passed: &Stage3JobsCentos
       - gpdb_rc_packaging_centos
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: MU_backup_smoke_centos
     file: gpdb_src/ci/concourse/behave_tests.yml
+    image: centos-gpdb-dev-5
     params:
       BEHAVE_TAGS: backupsmoke
       TEST_OS: centos
 
 - name: MU_backup_centos
-  public: true
   plan:
   - aggregate:
     - get: gpdb_src
+      params: {submodules: none}
       passed: [gpdb_rc_packaging_centos]
     - get: bin_gpdb
       resource: bin_gpdb_centos
       passed: *Stage3JobsCentos
       trigger: true
+    - get: centos-gpdb-dev-5
   - task: MU_backup_centos
     file: gpdb_src/ci/concourse/behave_tests.yml
+    image: centos-gpdb-dev-5
     params:
       BEHAVE_TAGS: backup
       TEST_OS: centos
 
+- name: pulse_MU_BehaveBackupRestore
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveBackupRestore"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveBackupRestore"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_BehaveGPCheckcat
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPCheckcat"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPCheckcat"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_BehaveGPRecoverseg
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPRecoverseg"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPRecoverseg"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_BehaveGptransfer43xTo43x
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE_behave_gptransfer_43x_to_43x"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE_behave_gptransfer_43x_to_43x"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_BehaveNetBackup
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveNetBackup"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveNetBackup"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_BehaveNetBackup76
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveNetBackup76"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveNetBackup76"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_Kerberos-jdbc-no-scm
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-kerberos_jdbc-no-scm"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-kerberos_jdbc-no-scm"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_Kerberos-smoke
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-kerberos_smoke"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-kerberos_smoke"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_OpenBAR
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-OpenBAR"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-OpenBAR"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_DDBOOST_Full
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Full"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Full"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_DDBOOST_Incremental
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Incremental"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Incremental"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_MFR-TINC
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_Gpexpand
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gpexpand"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gpexpand"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_cs-aoco-compression
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-aoco-compression"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-aoco-compression"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_cs-bin-swap
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-bin-swap"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-bin-swap"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_cs-filerep-schema-topology-crashrecov
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-filerep-schema-topology-crashrecov"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-filerep-schema-topology-crashrecov"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_cs-filerep-end-to-end
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-filerep-end-to-end"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-filerep-end-to-end"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_cs-persistent-tables
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-persistent-tables"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-persistent-tables"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_cs-pg-two-phase
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-pg-two-phase"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-pg-two-phase"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_cs-walrepl-multinode
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-walrepl-multinode"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "cs-walrepl-multinode"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_QP_memory-accounting
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "QP_memory-accounting"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "QP_memory-accounting"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_QP_optimizer-functional
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "QP_optimizer-functional"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "QP_optimizer-functional"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_Gppkg
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_Gppkg-redhat6
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg-redhat6"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg-redhat6"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_CCLE
+  plan:
+  - get: pulse-api-image
+  - get: weekly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_CCLE-sles11sp4
+  plan:
+  - get: pulse-api-image
+  - get: weekly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_sles11_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_sles11_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE-sles11sp4"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE-sles11sp4"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_mpp-interconnect
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "mpp-interconnect"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "mpp-interconnect"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_mpp-interconnect-sles
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_sles11_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_sles11_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "mpp-interconnect-sles"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: "mpp-interconnect-sles"
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
 - name: manual_testing_on_pulse_centos
-  public: true
   plan:
   - get: installer_rhel5_gpdb_rc
     passed: [gpdb_sync_to_dist]
@@ -1319,7 +2800,6 @@ jobs:
         path: /bin/false
 
 - name: manual_appliance_testing_centos
-  public: true
   plan:
   - get: installer_appliance_rhel5_gpdb_rc
     passed: [gpdb_sync_to_dist]
@@ -1330,7 +2810,6 @@ jobs:
         path: /bin/false
 
 - name: manual_testing_on_pulse_sles
-  public: true
   plan:
   - get: installer_sles11_gpdb_rc
     passed: [gpdb_sync_to_dist]
@@ -1341,7 +2820,6 @@ jobs:
         path: /bin/false
 
 - name: push_to_pivnet_manually_centos
-  public: true
   plan:
   - get: installer_rhel5_gpdb_rc
     passed: [gpdb_rc_packaging_centos]
@@ -1354,7 +2832,6 @@ jobs:
         path: /bin/false
 
 - name: push_to_pivnet_manually_sles
-  public: true
   plan:
   - get: installer_sles11_gpdb_rc
     passed: [gpdb_rc_packaging_sles]
@@ -1363,3 +2840,38 @@ jobs:
       platform: linux
       run:
         path: /bin/false
+
+- name: bootstrap-ccache
+  plan:
+  - get: gpdb_src
+  - aggregate:
+    - do:
+      - task: centos5
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_centos5}
+      - put: ccache_gpdb_centos5
+        params: {file: ccache_gpdb_centos5/ccache_gpdb.tar.gz}
+    - do:
+      - task: centos6
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_centos6}
+      - put: ccache_gpdb_centos6
+        params: {file: ccache_gpdb_centos6/ccache_gpdb.tar.gz}
+    - do:
+      - task: centos7
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_centos7}
+      - put: ccache_gpdb_centos7
+        params: {file: ccache_gpdb_centos7/ccache_gpdb.tar.gz}
+    - do:
+      - task: sles11
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_gpdb_sles11}
+      - put: ccache_gpdb_sles11
+        params: {file: ccache_gpdb_sles11/ccache_gpdb.tar.gz}
+    - do:
+      - task: empty
+        file: gpdb_src/ci/concourse/bootstrap-ccache.yml
+        output_mapping: {ccache_tar: ccache_empty}
+      - put: ccache_empty
+        params: {file: ccache_empty/ccache_gpdb.tar.gz}

@@ -26,7 +26,7 @@ function scp_zip_src() {
   local remote_path
   local ssh_key_file
   remote_path="$REMOTE_DIRECTORY/$(basename "$FILE_TO_UPLOAD")"
-  ssh_key_file="$(mktemp -t ssh_key)"
+  ssh_key_file="$(mktemp -t ssh_key.XXXXX)"
   echo "$SSH_KEY" > "$ssh_key_file"
 
   # We do not use mkdir -p in order to prevent the user from accidentally creating

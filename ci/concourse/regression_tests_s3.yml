@@ -3,8 +3,8 @@ inputs:
   - name: gpdb_src
   - name: bin_gpdb
   - name: sync_tools_gpdb
-outputs:
 params:
-  TEST_OS: ""
+  s3conf:
+  TEST_OS:
 run:
-  path: gpdb_src/ci/concourse/scripts/gpMgmt_check_gpdb.bash
+  path: gpdb_src/ci/concourse/scripts/regression_tests_s3.bash

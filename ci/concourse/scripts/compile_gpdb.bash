@@ -1,6 +1,7 @@
 #!/bin/bash -l
 set -exo pipefail
 
+CONCURRENCY="--jobs=8 --load-average=16"
 GREENPLUM_INSTALL_DIR=/usr/local/greenplum-db-devel
 export GPDB_ARTIFACTS_DIR
 GPDB_ARTIFACTS_DIR=$(pwd)/$OUTPUT_ARTIFACT_DIR
@@ -8,82 +9,34 @@ GPDB_ARTIFACTS_DIR=$(pwd)/$OUTPUT_ARTIFACT_DIR
 CWDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${CWDIR}/common.bash"
 
-function prep_env_for_centos() {
-  case "$TARGET_OS_VERSION" in
-    5)
-      BLDARCH=rhel5_x86_64
-      export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.39.x86_64
-      source /opt/gcc_env.sh
-      ;;
-
-    6)
-      BLDARCH=rhel6_x86_64
-      export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.39.x86_64
-      ;;
-
-    7)
-      BLDARCH=rhel7_x86_64
-      alternatives --set java /usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64/jre/bin/java
-      export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64
-      ln -sf /usr/bin/xsubpp /usr/share/perl5/ExtUtils/xsubpp
-      source /opt/gcc_env.sh
-      ;;
-
-    *)
-    echo "TARGET_OS_VERSION not set or recognized for Centos/RHEL"
-    exit 1
-    ;;
-  esac
-
-  ln -sf /$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/python-2.6.2 /opt/python-2.6.2
-  export PATH=${JAVA_HOME}/bin:${PATH}
-}
-
 function prep_env_for_sles() {
-  ln -sf "$(pwd)/gpdb_src/gpAux/ext/sles11_x86_64/python-2.6.2" /opt
+  BLDARCH=sles11_x86_64
+  ln -sf "$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/python-2.6.2" /opt
   export JAVA_HOME=/usr/lib64/jvm/java-1.6.0-openjdk-1.6.0
   export PATH=${JAVA_HOME}/bin:${PATH}
   source /opt/gcc_env.sh
 }
 
-function generate_build_number() {
-  pushd gpdb_src
-    #Only if its git repro, add commit SHA as build number
-    # BUILD_NUMBER file is used by getversion file in GPDB to append to version
-    if [ -d .git ] ; then
-      echo "commit:`git rev-parse HEAD`" > BUILD_NUMBER
-    fi
-  popd
-}
-
-function make_sync_tools() {
-  pushd gpdb_src/gpAux
-    make sync_tools
-    tar -czf ../../sync_tools_gpdb/sync_tools_gpdb.tar.gz ext
-  popd
-}
-
-
 function build_gpdb() {
   pushd gpdb_src/gpAux
     if [ -n "$1" ]; then
-      make "$1" GPROOT=/usr/local dist
+      make $CONCURRENCY "$1" GPROOT=/usr/local dist
     else
-      make GPROOT=/usr/local dist
+      make $CONCURRENCY GPROOT=/usr/local dist
     fi
   popd
 }
 
 function build_gppkg() {
   pushd gpdb_src/gpAux
-    make gppkg BLD_TARGETS="gppkg" INSTLOC="$GREENPLUM_INSTALL_DIR" GPPKGINSTLOC="$GPDB_ARTIFACTS_DIR" RELENGTOOLS=/opt/releng/tools
+    make $CONCURRENCY gppkg BLD_TARGETS="gppkg" INSTLOC="$GREENPLUM_INSTALL_DIR" GPPKGINSTLOC="$GPDB_ARTIFACTS_DIR" RELENGTOOLS=/opt/releng/tools
   popd
 }
 
 function unittest_check_gpdb() {
   pushd gpdb_src/gpAux
     source $GREENPLUM_INSTALL_DIR/greenplum_path.sh
-    make GPROOT=/usr/local unittest-check
+    make $CONCURRENCY GPROOT=/usr/local unittest-check
   popd
 }
 
@@ -99,12 +52,29 @@ function export_gpdb() {
 
 function export_gpdb_extensions() {
   pushd gpdb_src/gpAux
-    if ls greenplum-*zip* 1>/dev/null 2>&1; then
+    if ls greenplum-*zip* >/dev/null 2>&1 ; then
       chmod 755 greenplum-*zip*
       cp greenplum-*zip* "$GPDB_ARTIFACTS_DIR"/
     fi
-    chmod 755 "$GPDB_ARTIFACTS_DIR"/*.gppkg
+    if ls "$GPDB_ARTIFACTS_DIR"/*.gppkg >/dev/null 2>&1 ; then
+      chmod 755 "$GPDB_ARTIFACTS_DIR"/*.gppkg
+    fi
   popd
+}
+
+function export_gpdb_win32_ccl() {
+  pushd gpdb_src/gpAux
+    if [ -f "$(find . -maxdepth 1 -name 'greenplum-*.msi' -print -quit)" ] ; then
+      cp greenplum-*.msi "$GPDB_ARTIFACTS_DIR"/
+    fi
+  popd
+}
+
+function export_ccache() {
+  [ -d ccache ] || return 0
+  TARBALL="$GPDB_ARTIFACTS_DIR"/ccache_gpdb.tar.gz
+  print_ccache_stats
+  tar -czf $TARBALL ccache
 }
 
 function _main() {
@@ -115,14 +85,19 @@ function _main() {
     sles)
       prep_env_for_sles
       ;;
+    win32)
+      export BLD_ARCH=win32
+      ;;
     *)
-      echo "only centos and sles are supported TARGET_OS'es"
+      echo "only centos, sles and win32 are supported TARGET_OS'es"
       false
       ;;
   esac
 
   generate_build_number
   make_sync_tools
+  prep_ccache
+
   # By default, only GPDB Server binary is build.
   # Use BLD_TARGETS flag with appropriate value string to generate client, loaders
   # connectors binaries
@@ -133,9 +108,15 @@ function _main() {
   fi
   build_gpdb "${BLD_TARGET_OPTION[@]}"
   build_gppkg
-  unittest_check_gpdb
+  if [ "$TARGET_OS" != "win32" ] ; then
+    # Don't unit test when cross compiling. Tests don't build because they
+    # require `./configure --with-zlib`.
+    unittest_check_gpdb
+  fi
   export_gpdb
   export_gpdb_extensions
+  export_gpdb_win32_ccl
+  export_ccache
 }
 
 _main "$@"

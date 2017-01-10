@@ -2,13 +2,11 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: gpdbunitedockers2/centos511-gcc442-s3
+    repository: pivotaldata/centos72-java7-gpdb-dev-image
     username:
     password:
     email:
 inputs:
   - name: gpdb_src
 run:
-  path: gpdb_src/ci/concourse/scripts/regression_test_s3.bash
-params:
-  s3conf:
+  path: gpdb_src/ci/concourse/scripts/unit_tests_s3.bash
