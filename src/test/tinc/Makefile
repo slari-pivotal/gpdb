@@ -104,7 +104,9 @@ storage_persistent_filerep_accessmethods_and_vacuum:
 
 filerep_end_to_end_xlog_ctlog_cons:
 	$(TESTER) $(DISCOVER) -t tincrepo \
-	-s tincrepo/mpp/gpdb/tests/storage/filerep/mpp23631
+	-s tincrepo/mpp/gpdb/tests/storage/filerep/mpp23631 \
+	-s tincrepo/mpp/gpdb/tests/storage/persistent_tables \
+	-q "class!=PersistentTables"
 
 # GPDB-O2-Walrepl-multinode-no-scm 
 # The following targets are pulled from:

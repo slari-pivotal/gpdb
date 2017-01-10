@@ -115,7 +115,6 @@ groups:
   - pulse_cs-bin-swap
   - pulse_cs-filerep-schema-topology-crashrecov
   - pulse_cs-filerep-end-to-end
-  - pulse_cs-persistent-tables
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
   - pulse_QP_memory-accounting
@@ -138,7 +137,6 @@ groups:
   - pulse_cs-bin-swap
   - pulse_cs-filerep-schema-topology-crashrecov
   - pulse_cs-filerep-end-to-end
-  - pulse_cs-persistent-tables
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
 - name: Pulse_QP
@@ -2401,41 +2399,6 @@ jobs:
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: "cs-filerep-end-to-end"
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_cs-persistent-tables
-  plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    trigger: true
-  - aggregate:
-    - get: gpdb_src
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-persistent-tables"
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-persistent-tables"
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
