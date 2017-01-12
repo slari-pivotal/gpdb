@@ -2,20 +2,32 @@
 
 set -euxo pipefail
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 function echo_expected_env_variables() {
-  echo "$INSTALL_SCRIPT_SRC"
-  echo "$GPDB_TARGZ"
-  echo "$INSTALLER_ZIP"
+  set +e
+  vars=(
+    # passed-in vars
+    INSTALL_SCRIPT_SRC
+    GPDB_TARGZ
+    OS
+    # derived vars
+    GP_VERSION
+    INSTALLER_ZIP
+  )
+  for v in "${vars[@]}" ; do
+    echo "$v=${!v}"
+  done
+  set -e
 }
 
 function _main() {
-  echo_expected_env_variables
   local installer_bin
-  installer_bin=$( echo "$INSTALLER_ZIP" | sed "s/.zip/.bin/" | xargs basename)
+  installer_bin=$(basename "$INSTALLER_ZIP" .zip).bin
 
   GP_VERSION=$("$DIR/../../../getversion" --short)
+  INSTALLER_ZIP=packaged_gpdb/greenplum-db-${GP_VERSION}-${OS}.zip
+  echo_expected_env_variables
   sed -i \
       -e "s:\(installPath=/usr/local/GP-\).*:\1$GP_VERSION:" \
       -e "s:\(installPath=/usr/local/greenplum-db-\).*:\1$GP_VERSION:" \

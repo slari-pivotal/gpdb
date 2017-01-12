@@ -2,16 +2,23 @@
 
 set -euo pipefail
 
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 REMOTE_USER="build"
 REMOTE_HOST="artifacts.ci.eng.pivotal.io"
 REMOTE_DIRECTORY="/data/dist/GPDB/builds_from_concourse/$BUCKET_NAME"
 
-function echo_paths() {
+substitute_GP_VERSION() {
+  GP_VERSION=$("$DIR/../../../getversion" --short)
+  FILE_TO_UPLOAD=${FILE_TO_UPLOAD//@GP_VERSION@/${GP_VERSION}}
+}
+
+echo_paths() {
   echo "Target remote directory: $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIRECTORY"
   echo "Local file to upload: $FILE_TO_UPLOAD"
 }
 
-function validate_remote_dir() {
+validate_remote_dir() {
   # To prevent accidental creation of weird directories or arbitrary command
   # execution by the user, we validate the remote directory.
   # For example, paths like "/opt" and "/data/dist/GPDB/../../../opt" are not allowed.
@@ -22,7 +29,7 @@ function validate_remote_dir() {
   echo " validated"
 }
 
-function scp_zip_src() {
+scp_zip_src() {
   local remote_path
   local ssh_key_file
   remote_path="$REMOTE_DIRECTORY/$(basename "$FILE_TO_UPLOAD")"
@@ -47,7 +54,7 @@ function scp_zip_src() {
       "$REMOTE_USER@$REMOTE_HOST" "mv $remote_path.new $remote_path" > /dev/null
 }
 
-function echo_completion() {
+echo_completion() {
   # Remove '/data' off of the remote directory as not present in the URL
   local remote_dir_url=${REMOTE_DIRECTORY:5}
   # artifacts and artifacts-cache are mirrored, but we show the user
@@ -58,13 +65,11 @@ function echo_completion() {
   echo "Uploaded file: http://${remote_host_cache}${remote_dir_url}/$(basename "$FILE_TO_UPLOAD")"
 }
 
-function _main() {
+_main() {
+  substitute_GP_VERSION
   echo_paths
-
   validate_remote_dir
-
   scp_zip_src
-
   echo_completion
 }
 
