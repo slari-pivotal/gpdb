@@ -10,7 +10,7 @@ function echo_expected_env_variables() {
 
 function _main() {
   GP_VERSION=$("$DIR/../../../getversion" --short)
-  GPDB_SRC_TAR_GZ=gpdb_src_archive/greenplum-db-${GP_VERSION}_src.tar.gz
+  GPDB_SRC_TAR_GZ=gpdb_src_archive/greenplum-db-${GP_VERSION}-src.tar.gz
   echo_expected_env_variables
   cd gpdb_src
 

@@ -22,12 +22,13 @@ function echo_expected_env_variables() {
 }
 
 function _main() {
+  GP_VERSION=$("$DIR/../../../getversion" --short)
+  INSTALLER_ZIP=packaged_gpdb/greenplum-db-${GP_VERSION}-${OS}.zip
   local installer_bin
   installer_bin=$(basename "$INSTALLER_ZIP" .zip).bin
 
-  GP_VERSION=$("$DIR/../../../getversion" --short)
-  INSTALLER_ZIP=packaged_gpdb/greenplum-db-${GP_VERSION}-${OS}.zip
   echo_expected_env_variables
+
   sed -i \
       -e "s:\(installPath=/usr/local/GP-\).*:\1$GP_VERSION:" \
       -e "s:\(installPath=/usr/local/greenplum-db-\).*:\1$GP_VERSION:" \
