@@ -1340,7 +1340,10 @@ jobs:
   - aggregate:
     - get: gpdb_src
       params: {submodules: none}
-      passed: [gpdb_rc_packaging_centos]
+      passed:
+      - gpdb_src_packaging
+      - gpdb_rc_packaging_centos
+      - gpdb_rc_packaging_sles
     - get: gpdb_src_archive
       passed: [gpdb_src_packaging]
       trigger: true
