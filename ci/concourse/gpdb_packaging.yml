@@ -9,4 +9,4 @@ run:
 params:
   INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/REPLACE_IN_PIPELINE_installer-header-foraspecificOS.sh
   GPDB_TARGZ: bin_gpdb/bin_gpdb.tar.gz
-  OS: REPLACE_IN_PIPELINE-os-arch
+  INSTALLER_ZIP: packaged_gpdb/greenplum-db-@GP_VERSION@-OS-x86_64.zip

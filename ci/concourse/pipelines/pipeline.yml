@@ -1244,7 +1244,7 @@ jobs:
         packaged_gpdb: packaged_gpdb_rc
       params:
         INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-rhel5-gpdb.sh
-        OS: rhel5-x86_64
+        INSTALLER_ZIP: packaged_gpdb/greenplum-db-@GP_VERSION@-rhel5-x86_64.zip
         ADD_README_INSTALL: true
     - task: gpdb_appliance_rhel5_rc_packaging
       file: gpdb_src/ci/concourse/gpdb_packaging.yml
@@ -1255,7 +1255,7 @@ jobs:
         packaged_gpdb: packaged_gpdb_appliance_rc
       params:
         INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-appliance-header-rhel5-gpdb.sh
-        OS: rhel5-x86_64
+        INSTALLER_ZIP: packaged_gpdb/greenplum-db-appliance-@GP_VERSION@-rhel5-x86_64.zip
   - aggregate:
     - put: installer_rhel5_gpdb_rc
       params:
