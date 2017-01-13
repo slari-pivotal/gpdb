@@ -1,0 +1,7 @@
+#!/usr/bin/python2.7
+import sys
+import gpdb
+
+if __name__ == "__main__":
+  sys.exit(gpdb.main(sys.argv))
+
