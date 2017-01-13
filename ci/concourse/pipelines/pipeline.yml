@@ -1297,7 +1297,7 @@ jobs:
       bin_gpdb: rc_bin_gpdb
     params:
       INSTALL_SCRIPT_SRC: gpdb_src/gpAux/releng/bin/installer-header-sles11-gpdb.sh
-      OS: sles11-x86_64
+      INSTALLER_ZIP: packaged_gpdb/greenplum-db-@GP_VERSION@-sles11-x86_64.zip
       ADD_README_INSTALL: true
   - put: installer_sles11_gpdb_rc
     params:
@@ -1418,6 +1418,7 @@ jobs:
       input_mapping:
         artifact_to_upload: gpdb_src_archive
       params:
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-@GP_VERSION@-src.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_sync_to_dist_rc
