@@ -41,7 +41,7 @@ autom4te.cache
 configure.lineno
 .config.log.swp
 Debug
-Release
+/Release
 pgsql.sln
 cscope.*
 
