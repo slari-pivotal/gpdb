@@ -13,8 +13,6 @@ groups:
   - MU_check_centos
   - gpdb_rc_packaging_centos
   - apply_morgan_stanley_specific_patches
-  - MU_backup_smoke_centos
-  - MU_backup_centos
   - gpdb_sync_to_dist
 
 - name: Bootstrap
@@ -206,7 +204,7 @@ resources:
     bucket: {{noarch-toolchain-snowflakes-bucket}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: gpmt_1.0.5/gpmt.gz
+    versioned_file: gpmt_1.1.1/gpmt.gz
 
 - name: ms_installer_rhel5_gpdb_rc
   type: s3
@@ -505,41 +503,6 @@ jobs:
     - put: ms_installer_rhel5_gpdb_bundled_clients_md5
       params:
         file: ms_installer_rhel5_gpdb_bundled_clients/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
-
-- name: MU_backup_smoke_centos
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      passed: [gpdb_rc_packaging_centos]
-    - get: bin_gpdb
-      resource: bin_gpdb_centos
-      passed: &Stage3JobsCentos
-      - gpdb_rc_packaging_centos
-      trigger: true
-    - get: centos-gpdb-dev-5
-  - task: MU_backup_smoke_centos
-    file: gpdb_src/ci/concourse/behave_tests.yml
-    image: centos-gpdb-dev-5
-    params:
-      BEHAVE_TAGS: backupsmoke
-      TEST_OS: centos
-
-- name: MU_backup_centos
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      passed: [gpdb_rc_packaging_centos]
-    - get: bin_gpdb
-      resource: bin_gpdb_centos
-      passed: *Stage3JobsCentos
-      trigger: true
-    - get: centos-gpdb-dev-5
-  - task: MU_backup_centos
-    file: gpdb_src/ci/concourse/behave_tests.yml
-    image: centos-gpdb-dev-5
-    params:
-      BEHAVE_TAGS: backup
-      TEST_OS: centos
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
 - name: gpdb_sync_to_dist
