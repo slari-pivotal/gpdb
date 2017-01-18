@@ -378,7 +378,7 @@ void analyzeStmt(VacuumStmt *stmt, List *relids)
 		lRelOids = analyzableRelations(stmt->rootonly);
 		if (stmt->rootonly && NIL == lRelOids)
 		{
-			ereport(WARNING,
+			ereport(NOTICE,
 					(errmsg("there are no partitioned tables in database to ANALYZE ROOTPARTITION")));
 		}
 	}
