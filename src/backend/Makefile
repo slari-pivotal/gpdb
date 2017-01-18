@@ -64,15 +64,10 @@ LIBS := $(LIBS) -L$(top_builddir)/src/backend/libpq/bsafe_wrapper \
 endif
 
 # Add ORCA libraries
-ifeq ($(enable_orca),yes)
-LIBS := $(LIBS) -L$(LIBGPOS)/$(OBJDIR_DEFAULT)
-LIBS := $(LIBS) -L$(OPTIMIZER)/libnaucrates/$(OBJDIR_DEFAULT)
-LIBS := $(LIBS) -L$(OPTIMIZER)/libgpdbcost/$(OBJDIR_DEFAULT)
-LIBS := $(LIBS) -L$(OPTIMIZER)/libgpopt/$(OBJDIR_DEFAULT)
-LIBS := $(LIBS) -L$(XERCES_LIBDIR)
-
+#
 # The order of the libraries is significant, when building against static
 # ORCA libraries.
+ifeq ($(enable_orca),yes)
 LIBS := $(LIBS) -lgpopt -lnaucrates -lgpdbcost -lgpos
 LIBS := $(LIBS) -lxerces-c-3.1
 endif
