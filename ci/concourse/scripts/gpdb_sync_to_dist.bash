@@ -2,15 +2,13 @@
 
 set -euo pipefail
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 REMOTE_USER="build"
 REMOTE_HOST="artifacts.ci.eng.pivotal.io"
 REMOTE_DIRECTORY="/data/dist/GPDB/builds_from_concourse/$BUCKET_NAME"
 
-substitute_GP_VERSION() {
-  GP_VERSION=$("$DIR/../../../getversion" --short)
-  FILE_TO_UPLOAD=${FILE_TO_UPLOAD//@GP_VERSION@/${GP_VERSION}}
+expand_globs() {
+  FILE_TO_UPLOAD=($FILE_TO_UPLOAD)
+  FILE_TO_UPLOAD="${FILE_TO_UPLOAD[0]}"
 }
 
 echo_paths() {
@@ -66,7 +64,7 @@ echo_completion() {
 }
 
 _main() {
-  substitute_GP_VERSION
+  expand_globs
   echo_paths
   validate_remote_dir
   scp_zip_src

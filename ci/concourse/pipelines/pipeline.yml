@@ -1421,7 +1421,7 @@ jobs:
       input_mapping:
         artifact_to_upload: gpdb_src_archive
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-@GP_VERSION@-src.tar.gz
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-src.tar.gz
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_sync_to_dist_rc
@@ -1430,7 +1430,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-@GP_VERSION@-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_sync_to_dist_rc_md5
@@ -1439,7 +1439,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-@GP_VERSION@-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist_rc
@@ -1448,7 +1448,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_appliance_rhel5_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-@GP_VERSION@-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-*-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist_rc_md5
@@ -1457,7 +1457,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_appliance_rhel5_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-@GP_VERSION@-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-*-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_clients_sync_to_dist
@@ -1466,7 +1466,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_clients
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-@GP_VERSION@-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_clients_sync_to_dist_md5
@@ -1475,7 +1475,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_clients_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-@GP_VERSION@-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_connectivity_sync_to_dist
@@ -1484,7 +1484,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_connectivity
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-@GP_VERSION@-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_connectivity_sync_to_dist_md5
@@ -1493,7 +1493,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_connectivity_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-@GP_VERSION@-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_loaders_sync_to_dist
@@ -1502,7 +1502,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_loaders
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-@GP_VERSION@-build-1-rhel5-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_loaders_sync_to_dist_md5
@@ -1511,7 +1511,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_rhel5_gpdb_loaders_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-@GP_VERSION@-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-rhel5-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: postgis_rhel5_gppkg_sync_to_dist
@@ -1583,7 +1583,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_rc
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-@GP_VERSION@-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles_sync_to_dist_rc_md5
@@ -1592,7 +1592,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_rc_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-@GP_VERSION@-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_clients_sync_to_dist
@@ -1601,7 +1601,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_clients
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-@GP_VERSION@-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_clients_sync_to_dist_md5
@@ -1610,7 +1610,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_clients_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-@GP_VERSION@-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_connectivity_sync_to_dist
@@ -1619,7 +1619,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_connectivity
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-@GP_VERSION@-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_connectivity_sync_to_dist_md5
@@ -1628,7 +1628,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_connectivity_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-@GP_VERSION@-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_loaders_sync_to_dist
@@ -1637,7 +1637,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_loaders
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-@GP_VERSION@-build-1-sles11-x86_64.zip
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_loaders_sync_to_dist_md5
@@ -1646,7 +1646,7 @@ jobs:
       input_mapping:
         artifact_to_upload: installer_sles11_gpdb_loaders_md5
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-@GP_VERSION@-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-sles11-x86_64.zip.md5
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: postgis_sles11_gppkg_sync_to_dist
