@@ -94,7 +94,6 @@ function _main() {
       ;;
   esac
 
-  generate_build_number
   make_sync_tools
   prep_ccache
 
