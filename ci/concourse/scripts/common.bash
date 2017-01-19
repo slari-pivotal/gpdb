@@ -56,13 +56,13 @@ function prep_env_for_centos() {
   case "$TARGET_OS_VERSION" in
     5)
       BLDARCH=rhel5_x86_64
-      export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.40.x86_64
+      export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk.x86_64
       source /opt/gcc_env.sh
       ;;
 
     6)
       BLDARCH=rhel6_x86_64
-      export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.40.x86_64
+      export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk.x86_64
       ;;
 
     7)
