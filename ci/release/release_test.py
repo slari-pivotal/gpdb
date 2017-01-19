@@ -3,6 +3,7 @@ import os.path
 import shutil
 import tempfile
 import unittest
+import json
 
 import release
 from release import Environment
@@ -158,13 +159,28 @@ class EnvironmentTest(unittest.TestCase):
     assert_that(environment.check_has_file('outside_file', os_path_exists=exists), equal_to(False))
 
 
+# class AwsTest(unittest.TestCase):
+#   class MockBucketExists(object):
+#     def load():
+#       pass
+
+#   class MockBucketDoesntExist(object):
+#     def load():
+#       # throw the botocore 404 exception
+#       pass
+
+#   def TestBucketExistsItDoes(self):
+#     bucket = MockBucket()
+#     aws = Aws(
+
+
 class ReleaseTest(unittest.TestCase):
   class MockCommandRunner(object):
     def __init__(self, cwd='/proper/git/directory'):
       self.cwd = cwd
       self.subprocess_mock_outputs = {}
       self.respond_to_command_with(
-          ('git', 'rev-parse', 'HEAD'), exit_code=0)
+          ('git', 'rev-parse', '--verify', '--quiet', 'HEAD'), exit_code=0)
 
     def respond_to_command_with(self, cmd, output=None, exit_code=0):
       self.subprocess_mock_outputs[cmd] = (output, exit_code)
@@ -175,16 +191,108 @@ class ReleaseTest(unittest.TestCase):
     def subprocess_is_successful(self, cmd):
       return 0 == self.subprocess_mock_outputs[cmd][1]
 
+  class MockBucket(object):
+    class MockPolicy(object):
+
+      def __init__(self):
+        self.policy_json = None
+
+      def put(self, Policy=None):
+        self.policy_json = Policy
+
+    class MockVersioning(object):
+
+      def __init__(self):
+        self.status = None
+
+      def enable(self):
+        self.status = 'Enabled'
+
+    def __init__(self, name, exists_in_s3 = False):
+      self.name = name
+      self.was_created = False
+      self.exists_in_s3 = exists_in_s3
+      self.bucket_policy = self.MockPolicy()
+      self.bucket_versioning = self.MockVersioning()
+
+    def create(self, **kwargs):
+      self.region = kwargs.get('CreateBucketConfiguration', {}).get('LocationConstraint')
+      if self.exists_in_s3:
+        raise StandardError('MockBucket: already exists: ' + self.name)
+      self.was_created = True
+
+    def Policy(self):
+      return self.bucket_policy
+
+    def Versioning(self):
+      return self.bucket_versioning
+
+  class MockAWS(object):
+    def __init__(self, *buckets):
+      self.buckets = buckets
+
+    def get_botobucket(self, bucket_name):
+      return next((b for b in self.buckets if b.name == bucket_name), None)
+
+    def bucket_exists(self, bucket):
+      return bucket.exists_in_s3
+
   def test_check_rev(self):
-    good_release = release.Release('1.2.3', 'HEAD')
+    release_with_good_rev = release.Release('1.2.3', 'HEAD', command_runner=self.MockCommandRunner())
+    assert_that(release_with_good_rev.check_rev())
 
-    assert_that(good_release.check_rev())
+  def test_check_bad_rev(self):
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+          ('git', 'rev-parse', '--verify', '--quiet', 'DEADBEEF'), exit_code=1)
 
-  def test_check_rev(self):
-    good_release = release.Release('1.2.3', 'HEAD')
+    release_with_bad_rev = release.Release('1.2.3', 'DEADBEEF', command_runner=command_runner)
+    assert_that(release_with_bad_rev.check_rev(), equal_to(False))
 
-    assert_that(good_release.check_rev())
+  def test_create_release_bucket(self):
+    bucket = self.MockBucket('gpdb-4.3.10.0-concourse')
+    aws = self.MockAWS(bucket)
+    release_with_good_aws = release.Release('4.3.10.0', '123abc', aws=aws)
 
+    release_with_good_aws.create_release_bucket()
+    assert_that(bucket.was_created, equal_to(True))
+    assert_that(bucket.region, equal_to('us-west-2'))
+
+  def test_create_release_bucket_when_exists_in_s3_does_not_call_create(self):
+    bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
+    aws = self.MockAWS(bucket)
+    release_with_bad_aws = release.Release('4.3.10.0', '123abc', aws=aws)
+
+    release_with_bad_aws.create_release_bucket()
+    assert_that(bucket.was_created, equal_to(False))
+
+  def test_set_bucket_policy(self):
+    bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
+    aws = self.MockAWS(bucket)
+    release_with_aws = release.Release('4.3.10.0', '123abc', aws=aws)
+
+    release_with_aws.set_bucket_policy()
+    policy = json.loads(bucket.bucket_policy.policy_json)
+    expected_policy = self.aws_policy('arn:aws:s3:::gpdb-4.3.10.0-concourse/*', 'arn:aws:iam::118837423556:root')
+    assert_that(policy, equal_to(expected_policy))
+
+  def aws_policy(self, resource, principal):
+    return {
+      u'Version': u'2008-10-17',
+      u'Statement': [{
+        u'Action': [u's3:GetObject', u's3:GetObjectVersion'],
+        u'Resource': resource,
+        u'Effect': u'Allow',
+        u'Principal': {u'AWS': principal}
+      }]}
+
+  def test_set_bucket_versioning(self):
+    bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
+    aws = self.MockAWS(bucket)
+    release_with_aws = release.Release('4.3.10.0', '123abc', aws=aws)
+
+    release_with_aws.set_bucket_versioning()
+    assert_that(bucket.bucket_versioning.status, equal_to('Enabled'))
 
 class Spy(object):
   def __init__(self, returns=None):
@@ -200,24 +308,6 @@ class Spy(object):
 class MockPrinter(object):
   def print_msg(self, msg):
     pass
-
-class MockDirectory(object):
-  def __init__(self, path, exists=True):
-    self.exists = exists
-    self.path = path
-
-  def is_dir(self):
-    return self.exists
-
-class SecretsDirIsPresentTest(unittest.TestCase):
-  def test_secrets_dir_is_present(self):
-    good_dir = MockDirectory('/good/path')
-    assert_that(release.secrets_dir_is_present(good_dir))
-
-  def test_secrets_dir_is_not_present(self):
-    bad_dir = MockDirectory('/bad/path', exists=False)
-    result = release.secrets_dir_is_present(bad_dir)
-    assert_that(result, equal_to(False))
 
 
 class CheckEnvironmentsTest(unittest.TestCase):

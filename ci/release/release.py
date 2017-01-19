@@ -14,10 +14,13 @@
 #
 # 1. Upload to PivNet
 
+import json
 import os
 import re
 import sys
 import subprocess
+import boto3
+import botocore
 from distutils.version import StrictVersion
 
 class CommandRunner(object):
@@ -69,8 +72,24 @@ class Environment(object):
     return os_path_exists(os.path.join(self.command_runner.cwd, path))
 
 
+class Aws(object):
+  def __init__(self):
+    self.s3 = boto3.resource('s3')
+
+  def get_botobucket(self, bucket_name):
+    return self.s3.Bucket(bucket_name)
+
+  def bucket_exists(self, bucket):
+    try:
+      bucket.load()
+      return True
+    except botocore.exceptions.ClientError as e:
+      if e.response['Error']['Code'] == '404':
+        return False
+      raise e
+
 class Release(object):
-  def __init__(self, version, rev, command_runner=None):
+  def __init__(self, version, rev, command_runner=None, aws=None):
     self.version = version
     self.rev = rev
     self.rev_sha = rev  # TODO
@@ -79,21 +98,37 @@ class Release(object):
     self.release_bucket = 'gpdb-%s-concourse' % self.version
     self.release_secrets_file = 'gpdb-%s-ci-secrets.yml' % self.version
     self.command_runner = command_runner or CommandRunner()
+    self.aws = aws or Aws()
 
   def check_rev(self):
-    return True
+    return self.command_runner.subprocess_is_successful(
+        ('git', 'rev-parse', '--verify', '--quiet', self.rev))
+
+  def create_release_bucket(self):
+    bucket = self.aws.get_botobucket(self.release_bucket)
+    if not self.aws.bucket_exists(bucket):
+      bucket.create(CreateBucketConfiguration={'LocationConstraint': 'us-west-2'})
+
+  def set_bucket_policy(self):
+    bucket = self.aws.get_botobucket(self.release_bucket)
+    policy = {
+      u'Version': u'2008-10-17',
+      u'Statement': [{
+        u'Action': [u's3:GetObject', u's3:GetObjectVersion'],
+        u'Resource': 'arn:aws:s3:::%s/*' % self.release_bucket,
+        u'Effect': u'Allow',
+        u'Principal': {u'AWS': 'arn:aws:iam::118837423556:root'} # the `pivotal` data-directors account, into which Pulse Cloud provisions
+      }]}
+    bucket.Policy().put(Policy=json.dumps(policy))
+
+  def set_bucket_versioning(self):
+    bucket = self.aws.get_botobucket(self.release_bucket)
+    bucket.Versioning().enable()
+
 
 class Printer(object):
   def print_msg(self, msg):
     print msg
-
-
-class Directory(object):
-  def __init__(self, path):
-    self.path = path
-
-  def is_dir(self):
-    return os.path.is_dir(self.path)
 
 
 def secrets_dir_is_present(directory):
@@ -155,4 +190,10 @@ def main(argv):
   rev = argv[2]
   release = Release(version, rev)
   if not release.check_rev():
+    print 'revision not found'
     return 3
+  release.create_release_bucket()
+  release.set_bucket_policy()
+
+  #u'{"Version":"2008-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"arn:aws:iam::118837423556:root"},"Action":["s3:GetObject","s3:GetObjectVersion"],"Resource":"arn:aws:s3:::gpdb-4.3.11.0-concourse/*"}]}'
+
