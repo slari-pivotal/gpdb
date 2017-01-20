@@ -94,17 +94,19 @@ class Aws(object):
       raise e
 
 class Release(object):
-  def __init__(self, version, rev, secrets_environment, command_runner=None, aws=None, printer=None):
+  def __init__(self, version, rev, gpdb_environment, secrets_environment, command_runner=None, aws=None, printer=None):
     self.version = version
     self.rev = rev
-    self.release_pipeline = 'gpdb-' + self.version
-    self.release_branch = 'release-' + self.version
-    self.release_bucket = 'gpdb-%s-concourse' % self.version
+    self.gpdb_environment = gpdb_environment
     self.secrets_environment = secrets_environment
-    self.release_secrets_file = 'gpdb-%s-ci-secrets.yml' % self.version
     self.command_runner = command_runner or CommandRunner()
     self.aws = aws or Aws()
     self.printer = printer or Printer()
+
+    self.release_pipeline = 'gpdb-' + self.version
+    self.release_branch = 'release-' + self.version
+    self.release_bucket = 'gpdb-%s-concourse' % self.version
+    self.release_secrets_file = 'gpdb-%s-ci-secrets.yml' % self.version
 
   def check_rev(self):
     return self.command_runner.subprocess_is_successful(
@@ -144,8 +146,19 @@ class Release(object):
   def tag_branch_point(self): # TODO
     return True
 
-  def edit_getversion_file(self): # TODO
-    return True
+  def edit_getversion_file(self):
+    replaced = False
+    content = []
+    with open(self.gpdb_environment.path('getversion'), 'r') as f:
+      for line in f:
+        if line.startswith('GP_VERSION='):
+          line = 'GP_VERSION=%s\n' % self.version
+          replaced = True
+        content.append(line)
+    with open(self.gpdb_environment.path('getversion'), 'w') as f:
+      f.writelines(content)
+    return replaced
+
 
   def write_secrets_file(self):
     template_secrets_file = self.secrets_environment.path(SECRETS_FILE_43_STABLE)
@@ -244,6 +257,5 @@ def main(argv):
   exec_step(release.set_bucket_policy,        'Failed to fully configure the S3 bucket')
   exec_step(release.create_release_branch,    'Failed to create release branch locally with git')
   exec_step(release.tag_branch_point,         'TODO: Failed to tag where we created the branch point')
-  exec_step(release.edit_getversion_file,     'TODO: Failed to create release branch locally with git')
-
+  exec_step(release.edit_getversion_file,     'Failed to edit the getversion file')
   exec_step(release.write_secrets_file,       'Failed to write pipeline secrets file')

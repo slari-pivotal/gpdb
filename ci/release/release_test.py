@@ -8,13 +8,6 @@ import json
 import release
 from release import Environment
 
-# GETVERSION_TEMPLATE = """\
-# #!/bin/bash
-# GP_VERSION=%(version)s
-
-# %(tail)s
-# """
-
 
 class EnvironmentTest(unittest.TestCase):
   class MockCommandRunner(object):
@@ -245,7 +238,7 @@ class ReleaseTest(unittest.TestCase):
     command_runner = self.MockCommandRunner()
     command_runner.respond_to_command_with(
         ('git', 'rev-parse', '--verify', '--quiet', 'HEAD'), exit_code=0)
-    release_with_good_rev = release.Release('1.2.3', 'HEAD', secrets_environment=None, command_runner=command_runner)
+    release_with_good_rev = release.Release('1.2.3', 'HEAD', gpdb_environment=None, secrets_environment=None, command_runner=command_runner)
     assert_that(release_with_good_rev.check_rev())
 
   def test_check_bad_rev(self):
@@ -253,13 +246,13 @@ class ReleaseTest(unittest.TestCase):
     command_runner.respond_to_command_with(
           ('git', 'rev-parse', '--verify', '--quiet', 'DEADBEEF'), exit_code=1)
 
-    release_with_bad_rev = release.Release('1.2.3', 'DEADBEEF', secrets_environment=None, command_runner=command_runner)
+    release_with_bad_rev = release.Release('1.2.3', 'DEADBEEF', gpdb_environment=None, secrets_environment=None, command_runner=command_runner)
     assert_that(release_with_bad_rev.check_rev(), equal_to(False))
 
   def test_create_release_bucket(self):
     bucket = self.MockBucket('gpdb-4.3.10.0-concourse')
     aws = self.MockAWS(bucket)
-    release_with_good_aws = release.Release('4.3.10.0', '123abc', secrets_environment=None, aws=aws)
+    release_with_good_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
     release_with_good_aws.create_release_bucket()
     assert_that(bucket.was_created, equal_to(True))
@@ -268,7 +261,7 @@ class ReleaseTest(unittest.TestCase):
   def test_create_release_bucket_when_exists_in_s3_does_not_call_create(self):
     bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
     aws = self.MockAWS(bucket)
-    release_with_bad_aws = release.Release('4.3.10.0', '123abc', secrets_environment=None, aws=aws)
+    release_with_bad_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
     release_with_bad_aws.create_release_bucket()
     assert_that(bucket.was_created, equal_to(False))
@@ -276,7 +269,7 @@ class ReleaseTest(unittest.TestCase):
   def test_set_bucket_policy(self):
     bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
     aws = self.MockAWS(bucket)
-    release_with_aws = release.Release('4.3.10.0', '123abc', secrets_environment=None, aws=aws)
+    release_with_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
     release_with_aws.set_bucket_policy()
     policy = json.loads(bucket.bucket_policy.policy_json)
@@ -296,7 +289,7 @@ class ReleaseTest(unittest.TestCase):
   def test_set_bucket_versioning(self):
     bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
     aws = self.MockAWS(bucket)
-    release_with_aws = release.Release('4.3.10.0', '123abc', secrets_environment=None, aws=aws)
+    release_with_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
     release_with_aws.set_bucket_versioning()
     assert_that(bucket.bucket_versioning.status, equal_to('Enabled'))
@@ -308,7 +301,7 @@ class ReleaseTest(unittest.TestCase):
     command_runner.respond_to_command_with(
         ('git', 'branch', 'release-4.3.25.3', '123abc'), exit_code=0)
 
-    release_making_branch = release.Release('4.3.25.3', '123abc', secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
+    release_making_branch = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
     result = release_making_branch.create_release_branch()
     assert_that(result, equal_to(True))
 
@@ -321,7 +314,7 @@ class ReleaseTest(unittest.TestCase):
     command_runner.respond_to_command_with(
         ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output='sha-other-than-123abc', exit_code=0)
 
-    release_making_branch = release.Release('4.3.25.3', '123abc', secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
+    release_making_branch = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
     result = release_making_branch.create_release_branch()
     assert_that(result, equal_to(False))
 
@@ -334,17 +327,61 @@ class ReleaseTest(unittest.TestCase):
     command_runner.respond_to_command_with(
         ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output='123abc456deadbeef', exit_code=0)
 
-    release_making_branch = release.Release('4.3.25.3', '123abc', secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
+    release_making_branch = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
     result = release_making_branch.create_release_branch()
     assert_that(result, equal_to(True))
 
   def test_tag_branch_point(self):
-    release_for_tagging = release.Release('4.3.25.3', '123abc', secrets_environment=None)
+    release_for_tagging = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None)
     assert_that(release_for_tagging.tag_branch_point())
 
+
+GETVERSION_TEMPLATE = """\
+#!/bin/bash
+GP_VERSION=%(version)s
+
+%(tail)s
+"""
+
+
+class ReleaseTest_GpdbDirectory(unittest.TestCase):
+  class FakeEnvironment(object):
+    def __init__(self, directory):
+      self.directory = directory
+
+    def path(self, *path_segments):
+      return os.path.join(self.directory, *path_segments)
+
+  def setUp(self):
+    self.gpdb_environment = self.FakeEnvironment(tempfile.mkdtemp())
+
+  def tearDown(self):
+    shutil.rmtree(self.gpdb_environment.directory)
+
   def test_edit_getversion_file(self):
-    release_edit_getversion = release.Release('4.3.25.3', '123abc', secrets_environment=None)
+    self.edits_getversion_file("4.3.9.0", "4.3.10.0", "other contents")
+    self.edits_getversion_file("4.4.4.3", "4.4.4.4", "more stuff")
+
+  def edits_getversion_file(self, original_version, version, other_contents):
+    with open(self.gpdb_environment.path('getversion'), 'w') as f:
+      f.write(GETVERSION_TEMPLATE % {"version": original_version, "tail": other_contents})
+
+    release_edit_getversion = release.Release(version, '123abc', self.gpdb_environment, secrets_environment=None)
     assert_that(release_edit_getversion.edit_getversion_file())
+
+    with open(self.gpdb_environment.path('getversion'), 'r') as f:
+      edited_getversion_contents = f.read()
+    assert_that(edited_getversion_contents, equal_to(GETVERSION_TEMPLATE % {"version": version, "tail": other_contents}))
+
+  def test_edit_getversion_file_no_GP_VERSION_to_edit(self):
+    with open(self.gpdb_environment.path('getversion'), 'w') as f:
+      f.write('nothing to see here\nmove along\nmove along\n')
+
+    release_edit_getversion = release.Release('4.3.12.12', '123abc', self.gpdb_environment, secrets_environment=None)
+    assert_that(release_edit_getversion.edit_getversion_file(), equal_to(False))
+    with open(self.gpdb_environment.path('getversion'), 'r') as f:
+      edited_getversion_contents = f.read()
+    assert_that(edited_getversion_contents, equal_to('nothing to see here\nmove along\nmove along\n'))
 
 
 class ReleaseTest_SecretsDirectory(unittest.TestCase):
@@ -372,7 +409,7 @@ class ReleaseTest_SecretsDirectory(unittest.TestCase):
         '  -----END KEY-----',
         'bucket-name: gpdb-4.3-stable-concourse'
       ])
-    release_secrets_file = release.Release('4.3.25.3', '123abc', secrets_environment=self.secrets_environment)
+    release_secrets_file = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=self.secrets_environment)
 
     assert_that(release_secrets_file.write_secrets_file())
 
@@ -391,7 +428,7 @@ class ReleaseTest_SecretsDirectory(unittest.TestCase):
         'pgdb-bat-grinch:4.3_STABLE',
         'bucket-name: gpdb-4.3-stable-concourse'
       ])
-    release_secrets_file = release.Release('4.3.25.8', '123abc', secrets_environment=self.secrets_environment, printer=MockPrinter())
+    release_secrets_file = release.Release('4.3.25.8', '123abc', gpdb_environment=None, secrets_environment=self.secrets_environment, printer=MockPrinter())
 
     assert_that(release_secrets_file.write_secrets_file(), equal_to(False))
     assert_that(os.path.isfile(self.secrets_environment.path('gpdb-4.3.25.8-ci-secrets.yml')), equal_to(False))
@@ -402,7 +439,7 @@ class ReleaseTest_SecretsDirectory(unittest.TestCase):
         'bucket-name: "gpdb-git-branch:"',
         'gpdb-git-branch: ewfoiwevo',
       ])
-    release_secrets_file = release.Release('4.3.25.8', '123abc', secrets_environment=self.secrets_environment, printer=MockPrinter())
+    release_secrets_file = release.Release('4.3.25.8', '123abc', gpdb_environment=None, secrets_environment=self.secrets_environment, printer=MockPrinter())
 
     assert_that(release_secrets_file.write_secrets_file())
     assert_that(os.path.isfile(self.secrets_environment.path('gpdb-4.3.25.8-ci-secrets.yml')))
