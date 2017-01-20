@@ -7,6 +7,29 @@ Feature: Validate command line arguments
         Then gpcrondump should print no such option: -X error message
         And gpcrondump should return a return code of 2
 
+    # This test deletes the gpAdminLogs/gpcrondump_*.log files, so it should stay at the top of this file
+    @wip
+    Scenario: Full Backup with -B and -l option
+        Given the test is initialized
+        And the user runs command "rm ~/gpAdminLogs/gpcrondump_*.log"
+        And the user runs command "ls ~/gpAdminLogs/gpcrondump_*.log"
+        Then ls should return a return code of 1
+        And there is a "heap" table "public.heap_table" in "bkdb" with data
+        When the user runs "gpcrondump -a -x bkdb -B 100 -l /tmp/"
+        Then gpcrondump should return a return code of 0
+        Then verify that a log was created by gpcrondump in the "/tmp" directory
+        And the user runs command "ls ~/gpAdminLogs/gpcrondump_*.log"
+        Then ls should return a return code of 1
+        When the user runs "gpcrondump -a -x bkdb -B 20 -l /tmp/foo"
+        Then gpcrondump should return a return code of 0
+        Then verify that a log was created by gpcrondump in the "/tmp/foo" directory
+        And the user runs command "ls ~/gpAdminLogs/gpcrondump_*.log"
+        Then ls should return a return code of 1
+        When the user runs "gpcrondump -a -x bkdb -B 1"
+        Then gpcrondump should return a return code of 0
+        And the user runs command "ls ~/gpAdminLogs/gpcrondump_*.log"
+        And ls should print gpcrondump_*.log to stdout
+
     @backupfire
     Scenario: Valid option combinations for incremental backup
         Given the test is initialized
@@ -3628,6 +3651,96 @@ Feature: Validate command line arguments
         And verify that "optimizer=on" appears in the datconfig for database "bkdb"
         And verify that "appendonly=true" appears in the datconfig for database "bkdb"
         And verify that "blocksize=65536" appears in the datconfig for database "bkdb"
+
+    Scenario: Backup with all GUC (system settings) set to defaults will succeed
+        Given the test is initialized
+        # set guc defaults
+        And the user runs "psql bkdb -c "Alter database bkdb set gp_default_storage_options='appendonly=true, orientation=row, blocksize=65536, checksum=false, compresslevel=4, compresstype=none'""
+        Then psql should return a return code of 0
+        And there is a "heap" table "public.default_guc" in "bkdb" with data
+
+        # create a role that has different gucs
+        And a role "dsp_role" is created
+        And the user runs "psql bkdb -c "Alter role dsp_role set gp_default_storage_options='appendonly=true, orientation=column, compresstype=zlib'""
+        Then psql should return a return code of 0
+        # connect as different role create a table with the role's gucs
+        And the user runs command "export PGPASSWORD=dsprolepwd && psql bkdb -f test/behave/mgmt_utils/steps/data/gpcrondump/guc_role_create_table.sql"
+        Then export should return a return code of 0
+
+        # change guc to non-default for just current session and create session_guc_table
+        And the user runs "psql bkdb -f test/behave/mgmt_utils/steps/data/gpcrondump/guc_session_only.sql"
+
+        # backup and restore
+        When the user runs command "gpcrondump -a -x bkdb"
+        Then gpcrondump should return a return code of 0
+        And the timestamp from gpcrondump is stored
+        When the user runs gpdbrestore with the stored timestamp
+        Then gpdbrestore should return a return code of 0
+
+        # verify that gucs are set to previous defaults
+        And verify that "appendonly=true" appears in the datconfig for database "bkdb"
+        And verify that "orientation=row" appears in the datconfig for database "bkdb"
+        And verify that "blocksize=65536" appears in the datconfig for database "bkdb"
+        And verify that "checksum=false" appears in the datconfig for database "bkdb"
+        And verify that "compresslevel=4" appears in the datconfig for database "bkdb"
+        And verify that "compresstype=none" appears in the datconfig for database "bkdb"
+
+        # verify that my_default table has default gucs
+        When execute following sql in db "bkdb" and store result in the context
+            """
+            select relstorage,
+            reloptions,compresstype,columnstore,compresslevel,checksum from
+            pg_class c , pg_appendonly a where c.relfilenode=a.relid and
+            c.relname='default_guc'
+            """
+        Then validate that following rows are in the stored rows
+          | relstorage | reloptions                                       | compresstype | columnstore | compresslevel | checksum |
+          | a          | {appendonly=true,blocksize=65536,checksum=false} |              | f           | 0             | f        |
+
+        # verify that my_role_table has gucs from role
+        When execute following sql in db "bkdb" and store result in the context
+            """
+            select relstorage,
+            reloptions,compresstype,columnstore,compresslevel,checksum from
+            pg_class c , pg_appendonly a where c.relfilenode=a.relid and
+            c.relname='role_guc_table'
+            """
+        Then validate that following rows are in the stored rows
+          | relstorage | reloptions                                             | compresstype | columnstore | compresslevel | checksum |
+          | c          | {appendonly=true,compresstype=zlib,orientation=column} | zlib         | t           | 1             | t        |
+
+        # verify that session_gucs has gucs from session
+        When execute following sql in db "bkdb" and store result in the context
+            """
+            select relstorage,
+            reloptions,compresstype,columnstore,compresslevel,checksum from
+            pg_class c , pg_appendonly a where c.relfilenode=a.relid and
+            c.relname='session_guc_table'
+            """
+        Then validate that following rows are in the stored rows
+          | relstorage | reloptions                           | compresstype | columnstore | compresslevel | checksum |
+          | c          | {appendonly=true,orientation=column} |              | t           | 0             | t        |
+
+
+    Scenario: Incremental backup with no-privileges
+        Given the test is initialized
+        And there is a "heap" table "public.heap_table" in "bkdb" with data
+        And the user runs "psql -c 'CREATE ROLE temprole; GRANT ALL ON public.heap_table TO temprole;' bkdb"
+        Then psql should return a return code of 0
+        When the user runs "gpcrondump -a -x bkdb --no-privileges"
+        Then gpcrondump should return a return code of 0
+        And the timestamp from gpcrondump is stored
+        Then verify the metadata dump file does not contain "GRANT"
+        Then verify the metadata dump file does not contain "REVOKE"
+
+    Scenario: Incremental backup with use-set-session-authorization
+        Given the test is initialized
+        And there is a "heap" table "public.heap_table" in "bkdb" with data
+        When the user runs "gpcrondump -a -x bkdb --use-set-session-authorization"
+        Then gpcrondump should return a return code of 0
+        And the timestamp from gpcrondump is stored
+        Then verify the metadata dump file does contain "SESSION AUTHORIZATION"
+        Then verify the metadata dump file does not contain "ALTER TABLE * OWNER TO"
 
     # THIS SHOULD BE THE LAST TEST
     @backupfire
