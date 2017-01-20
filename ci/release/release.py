@@ -89,16 +89,16 @@ class Aws(object):
       raise e
 
 class Release(object):
-  def __init__(self, version, rev, command_runner=None, aws=None):
+  def __init__(self, version, rev, command_runner=None, aws=None, printer=None):
     self.version = version
     self.rev = rev
-    self.rev_sha = rev  # TODO
     self.release_pipeline = 'gpdb-' + self.version
     self.release_branch = 'release-' + self.version
     self.release_bucket = 'gpdb-%s-concourse' % self.version
     self.release_secrets_file = 'gpdb-%s-ci-secrets.yml' % self.version
     self.command_runner = command_runner or CommandRunner()
     self.aws = aws or Aws()
+    self.printer = printer or Printer()
 
   def check_rev(self):
     return self.command_runner.subprocess_is_successful(
@@ -124,6 +124,22 @@ class Release(object):
   def set_bucket_versioning(self):
     bucket = self.aws.get_botobucket(self.release_bucket)
     bucket.Versioning().enable()
+
+  def create_release_branch(self):
+    commit = self.command_runner.get_subprocess_output(('git', 'show-ref', '-s', 'refs/heads/' + self.release_branch))
+    if commit is None:
+      return self.command_runner.subprocess_is_successful(('git', 'branch', self.release_branch, self.rev))
+    rev_sha = self.command_runner.get_subprocess_output(('git', 'rev-parse', '--verify', '--quiet', self.rev))
+    if commit == rev_sha:
+      return True
+    self.printer.print_msg("Branch %s exists, but points to a different revision: %s" % (self.release_branch, commit))
+    return False
+
+  def tag_branch_point(self): # TODO
+    return True
+
+  def edit_getversion_file(self): # TODO
+    return True
 
 
 class Printer(object):
@@ -167,6 +183,10 @@ def check_environments(gpdb_environment, secrets_environment, printer=Printer())
 
   return overall_return
 
+def exec_step(step, fail_message):
+  if not step():
+    print fail_message
+    sys.exit(4)
 
 def main(argv):
   if len(argv) < 3:
@@ -189,11 +209,11 @@ def main(argv):
   version = argv[1]
   rev = argv[2]
   release = Release(version, rev)
-  if not release.check_rev():
-    print 'revision not found'
-    return 3
-  release.create_release_bucket()
-  release.set_bucket_policy()
 
-  #u'{"Version":"2008-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"arn:aws:iam::118837423556:root"},"Action":["s3:GetObject","s3:GetObjectVersion"],"Resource":"arn:aws:s3:::gpdb-4.3.11.0-concourse/*"}]}'
+  exec_step(release.check_rev,                'Invalid git revision provided: ' + rev)
+  exec_step(release.create_release_bucket,    'Failed to create release bucket in S3')
+  exec_step(release.set_bucket_policy,        'Failed to fully configure the S3 bucket')
+  exec_step(release.create_release_branch,    'Failed to create release branch locally with git')
+  exec_step(release.tag_branch_point,         'TODO: Failed to tag where we created the branch point')
+  exec_step(release.edit_getversion_file,     'TODO: Failed to create release branch locally with git')
 

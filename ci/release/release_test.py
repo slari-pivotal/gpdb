@@ -179,17 +179,21 @@ class ReleaseTest(unittest.TestCase):
     def __init__(self, cwd='/proper/git/directory'):
       self.cwd = cwd
       self.subprocess_mock_outputs = {}
-      self.respond_to_command_with(
-          ('git', 'rev-parse', '--verify', '--quiet', 'HEAD'), exit_code=0)
 
-    def respond_to_command_with(self, cmd, output=None, exit_code=0):
-      self.subprocess_mock_outputs[cmd] = (output, exit_code)
+    def respond_to_command_with(self, cmd, output=None, exit_code=0, allowed=True):
+      self.subprocess_mock_outputs[cmd] = (output, exit_code, allowed)
 
     def get_subprocess_output(self, cmd):
+      self.abort_if_command_is_not_allowed(cmd)
       return self.subprocess_mock_outputs[cmd][0]
 
     def subprocess_is_successful(self, cmd):
+      self.abort_if_command_is_not_allowed(cmd)
       return 0 == self.subprocess_mock_outputs[cmd][1]
+
+    def abort_if_command_is_not_allowed(self, cmd):
+      if not self.subprocess_mock_outputs[cmd][2]:
+        raise StandardError('Command is not allowed to be called: ' + str(cmd))
 
   class MockBucket(object):
     class MockPolicy(object):
@@ -238,7 +242,10 @@ class ReleaseTest(unittest.TestCase):
       return bucket.exists_in_s3
 
   def test_check_rev(self):
-    release_with_good_rev = release.Release('1.2.3', 'HEAD', command_runner=self.MockCommandRunner())
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+        ('git', 'rev-parse', '--verify', '--quiet', 'HEAD'), exit_code=0)
+    release_with_good_rev = release.Release('1.2.3', 'HEAD', command_runner=command_runner)
     assert_that(release_with_good_rev.check_rev())
 
   def test_check_bad_rev(self):
@@ -293,6 +300,52 @@ class ReleaseTest(unittest.TestCase):
 
     release_with_aws.set_bucket_versioning()
     assert_that(bucket.bucket_versioning.status, equal_to('Enabled'))
+
+  def test_create_release_branch_when_branch_doesnt_exist(self):
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+        ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output=None, exit_code=1)
+    command_runner.respond_to_command_with(
+        ('git', 'branch', 'release-4.3.25.3', '123abc'), exit_code=0)
+
+    release_making_branch = release.Release('4.3.25.3', '123abc', command_runner=command_runner, printer=MockPrinter())
+    result = release_making_branch.create_release_branch()
+    assert_that(result, equal_to(True))
+
+  def test_create_release_branch_when_branch_exists_and_is_different(self):
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+        ('git', 'rev-parse', '--verify', '--quiet', '123abc'), output='123abc456deadbeef')
+    command_runner.respond_to_command_with(
+        ('git', 'branch', 'release-4.3.25.3', '123abc'), allowed=False)
+    command_runner.respond_to_command_with(
+        ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output='sha-other-than-123abc', exit_code=0)
+
+    release_making_branch = release.Release('4.3.25.3', '123abc', command_runner=command_runner, printer=MockPrinter())
+    result = release_making_branch.create_release_branch()
+    assert_that(result, equal_to(False))
+
+  def test_create_release_branch_when_branch_exists_and_is_same(self):
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+        ('git', 'rev-parse', '--verify', '--quiet', '123abc'), output='123abc456deadbeef')
+    command_runner.respond_to_command_with(
+        ('git', 'branch', 'release-4.3.25.3', '123abc'), allowed=False)
+    command_runner.respond_to_command_with(
+        ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output='123abc456deadbeef', exit_code=0)
+
+    release_making_branch = release.Release('4.3.25.3', '123abc', command_runner=command_runner, printer=MockPrinter())
+    result = release_making_branch.create_release_branch()
+    assert_that(result, equal_to(True))
+
+  def test_tag_branch_point(self):
+    release_for_tagging = release.Release('4.3.25.3', '123abc')
+    assert_that(release_for_tagging.tag_branch_point())
+
+  def test_edit_getversion_file(self):
+    release_edit_getversion = release.Release('4.3.25.3', '123abc')
+    assert_that(release_edit_getversion.edit_getversion_file())
+
 
 class Spy(object):
   def __init__(self, returns=None):
