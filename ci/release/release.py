@@ -146,19 +146,45 @@ class Release(object):
   def tag_branch_point(self): # TODO
     return True
 
-  def edit_getversion_file(self):
-    replaced = False
-    content = []
-    with open(self.gpdb_environment.path('getversion'), 'r') as f:
-      for line in f:
-        if line.startswith('GP_VERSION='):
-          line = 'GP_VERSION=%s\n' % self.version
-          replaced = True
-        content.append(line)
-    with open(self.gpdb_environment.path('getversion'), 'w') as f:
-      f.writelines(content)
-    return replaced
+  def _edit_file(self, in_filename, out_filename, replacements):
+    """Edit |in_filename|, writing to |out_filename|, while applying the
+    edits specified in |replacements|.
 
+    |in_filename| and |out_filename| may be the same file.
+    When this method returns, |replacements| will have been modified to contain
+    only replacements that were not applied. Each replacement is only applied
+    once.
+
+    Args:
+      in_filename: string, filename of file to read.
+      out_filename: string, filename of file to write.
+      replacements: dict, keys are strings to match at the beginning of lines,
+          values are the literal replacement lines.
+    Returns:
+      True iff all replacements were made. If False is returned, replacements
+      contains the unapplied replacements. Otherwise, replacements will be
+      empty.
+    """
+    content = []
+    with open(in_filename, 'r') as fin:
+      for line in fin:
+        for key, replacement in replacements.iteritems():
+          if line.startswith(key):
+            del replacements[key]
+            content.append(replacement)
+            break
+        else:
+          content.append(line)
+    with open(out_filename, 'w') as fout:
+      fout.writelines(content)
+    success = not bool(replacements)
+    return success
+
+  def edit_getversion_file(self):
+    return self._edit_file(
+        self.gpdb_environment.path('getversion'),
+        self.gpdb_environment.path('getversion'),
+        {'GP_VERSION=': 'GP_VERSION=%s\n' % self.version})
 
   def write_secrets_file(self):
     template_secrets_file = self.secrets_environment.path(SECRETS_FILE_43_STABLE)
@@ -167,16 +193,7 @@ class Release(object):
         'gpdb-git-branch:': 'gpdb-git-branch: %s\n' % self.release_branch,
         'bucket-name:':     'bucket-name: %s\n' % self.release_bucket,
     }
-    with open(template_secrets_file, 'r') as fin, open(output_secrets_file, 'w') as fout:
-      for line in fin:
-        for key, replacement in replacements.iteritems():
-          if line.startswith(key):
-            del replacements[key]
-            fout.write(replacement)
-            break
-        else:
-          fout.write(line)
-    success = not bool(replacements)
+    success = self._edit_file(template_secrets_file, output_secrets_file, replacements)
     if not success:
       os.remove(output_secrets_file)
       self.printer.print_msg('tried to create new secrets file at: ' + output_secrets_file)
