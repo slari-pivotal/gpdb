@@ -645,3 +645,7 @@ FROM
 drop schema qp_subquery cascade;
 -- end_ignore
 
+--
+-- Window query with a function scan that has non-correlated subquery.
+--
+SELECT rank() over (partition by min(c) order by min(c)) AS p_rank FROM (SELECT d AS c FROM (values(1)) d1, generate_series(0,(SELECT 2)) AS d) tt GROUP BY c;
