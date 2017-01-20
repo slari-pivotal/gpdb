@@ -862,7 +862,6 @@ CTranslatorDXLToScalar::TranslateSubplanParams
         for (ULONG ul = 0; ul < ulSize; ul++)
         {
                 CDXLColRef *pdxlcr = (*pdrgdxlcrOuterRefs)[ul];
-                ULONG ulColId = pdxlcr->UlID();
                 pdxlcr->AddRef();
                 const CMappingElementColIdParamId *pmecolidparamid = pdxltrctx->Pmecolidparamid(pdxlcr->UlID());
 

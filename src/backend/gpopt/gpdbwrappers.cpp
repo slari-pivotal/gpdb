@@ -1472,7 +1472,7 @@ gpdb::PlcListTail
 	return NULL;
 }
 
-int
+uint32
 gpdb::UlListLength
 	(
 	List *l

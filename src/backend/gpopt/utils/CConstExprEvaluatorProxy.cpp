@@ -79,7 +79,6 @@ CConstExprEvaluatorProxy::PdxlnEvaluateExpr
 	)
 {
 	// Translate DXL -> GPDB Expr
-	int resultNodeTag = -1;
 	Expr *pexpr = m_trdxl2scalar.PexprFromDXLNodeScalar(pdxlnExpr, &m_emptymapcidvar);
 	GPOS_ASSERT(NULL != pexpr);
 
@@ -89,7 +88,7 @@ CConstExprEvaluatorProxy::PdxlnEvaluateExpr
 	if (!IsA(pexprResult, Const))
 	{
 		#ifdef GPOS_DEBUG
-		elog(NOTICE, "Expression did not evaluate to Const, but to an expression of type %d", resultNodeTag);
+		elog(NOTICE, "Expression did not evaluate to Const, but to an expression of type %d", pexprResult->type);
 		#endif
 		GPOS_RAISE(gpdxl::ExmaConstExprEval, gpdxl::ExmiConstExprEvalNonConst);
 	}
