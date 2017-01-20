@@ -23,6 +23,8 @@ import boto3
 import botocore
 from distutils.version import StrictVersion
 
+SECRETS_FILE_43_STABLE = 'gpdb-4.3_STABLE-ci-secrets.yml'
+
 class CommandRunner(object):
   def __init__(self, cwd=None):
     self.cwd = cwd or os.getcwd()
@@ -71,6 +73,9 @@ class Environment(object):
   def check_has_file(self, path, os_path_exists=os.path.exists):
     return os_path_exists(os.path.join(self.command_runner.cwd, path))
 
+  def path(self, *path_segments):
+    return os.path.join(self.command_runner.cwd, *path_segments)
+
 
 class Aws(object):
   def __init__(self):
@@ -89,12 +94,13 @@ class Aws(object):
       raise e
 
 class Release(object):
-  def __init__(self, version, rev, command_runner=None, aws=None, printer=None):
+  def __init__(self, version, rev, secrets_environment, command_runner=None, aws=None, printer=None):
     self.version = version
     self.rev = rev
     self.release_pipeline = 'gpdb-' + self.version
     self.release_branch = 'release-' + self.version
     self.release_bucket = 'gpdb-%s-concourse' % self.version
+    self.secrets_environment = secrets_environment
     self.release_secrets_file = 'gpdb-%s-ci-secrets.yml' % self.version
     self.command_runner = command_runner or CommandRunner()
     self.aws = aws or Aws()
@@ -141,6 +147,29 @@ class Release(object):
   def edit_getversion_file(self): # TODO
     return True
 
+  def write_secrets_file(self):
+    template_secrets_file = self.secrets_environment.path(SECRETS_FILE_43_STABLE)
+    output_secrets_file = self.secrets_environment.path(self.release_secrets_file)
+    replacements = {
+        'gpdb-git-branch:': 'gpdb-git-branch: %s\n' % self.release_branch,
+        'bucket-name:':     'bucket-name: %s\n' % self.release_bucket,
+    }
+    with open(template_secrets_file, 'r') as fin, open(output_secrets_file, 'w') as fout:
+      for line in fin:
+        for key, replacement in replacements.iteritems():
+          if line.startswith(key):
+            del replacements[key]
+            fout.write(replacement)
+            break
+        else:
+          fout.write(line)
+    success = not bool(replacements)
+    if not success:
+      os.remove(output_secrets_file)
+      self.printer.print_msg('tried to create new secrets file at: ' + output_secrets_file)
+      self.printer.print_msg('but unable to find & replace the following keys: ' + ', '.join(replacements.keys()))
+    return success
+
 
 class Printer(object):
   def print_msg(self, msg):
@@ -153,7 +182,7 @@ def secrets_dir_is_present(directory):
 
 def check_environments(gpdb_environment, secrets_environment, printer=Printer()):
   def check_has_43_secrets():
-    return secrets_environment.check_has_file('gpdb-4.3_STABLE-ci-secrets.yml')
+    return secrets_environment.check_has_file(SECRETS_FILE_43_STABLE)
 
   checks_to_run = [
       ('overall dependencies', gpdb_environment.check_dependencies),
@@ -208,7 +237,7 @@ def main(argv):
 
   version = argv[1]
   rev = argv[2]
-  release = Release(version, rev)
+  release = Release(version, rev, secrets_environment)
 
   exec_step(release.check_rev,                'Invalid git revision provided: ' + rev)
   exec_step(release.create_release_bucket,    'Failed to create release bucket in S3')
@@ -217,3 +246,4 @@ def main(argv):
   exec_step(release.tag_branch_point,         'TODO: Failed to tag where we created the branch point')
   exec_step(release.edit_getversion_file,     'TODO: Failed to create release branch locally with git')
 
+  exec_step(release.write_secrets_file,       'Failed to write pipeline secrets file')
