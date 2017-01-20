@@ -15,9 +15,6 @@ top_builddir = ../..
 include $(top_builddir)/src/Makefile.global
 
 BLD_TOP = $(top_builddir)/gpAux
-ifeq ($(enable_orca),yes)
-include $(BLD_TOP)/releng/releng.mk
-endif
 
 SUBDIRS = access bootstrap catalog parser commands executor foreign \
 	fts lib libpq gp_libpq_fe main nodes optimizer port postmaster regex \
