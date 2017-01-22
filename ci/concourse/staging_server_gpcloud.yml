@@ -11,6 +11,7 @@ inputs:
   - name: bin_gpdb
   - name: sync_tools_gpdb
 params:
-  s3conf:
+  EC2_PRIVATE_KEY:
+  EC2_INSTANCE_IP:
 run:
-  path: gpdb_src/ci/concourse/scripts/gpcheckcloud_tests_s3.bash
+  path: gpdb_src/ci/concourse/scripts/staging_server_gpcloud.bash

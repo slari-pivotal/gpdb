@@ -12,10 +12,10 @@ function gen_env(){
 	source /opt/gcc_env.sh
 	source /usr/local/greenplum-db-devel/greenplum_path.sh
 
-	cd "\${1}/gpdb_src/gpAux/extensions/gps3ext"
+	cd "\${1}/gpdb_src/gpAux/extensions/gpcloud"
 	make -B gpcheckcloud
 
-	cd "\${1}/gpdb_src/gpAux/extensions/gps3ext/regress"
+	cd "\${1}/gpdb_src/gpAux/extensions/gpcloud/regress"
 	bash gpcheckcloud_regress.sh
 	EOF
 

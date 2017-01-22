@@ -19,7 +19,7 @@ groups:
   - icg_orca_sles
   - icg_planner_centos
   - icg_planner_sles
-  - regression_tests_s3_centos
+  - regression_tests_gpcloud_centos
   - MU_check_centos
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging
@@ -73,7 +73,7 @@ groups:
   - icb_planner_centos
   - icg_orca_centos
   - icg_planner_centos
-  - regression_tests_s3_centos
+  - regression_tests_gpcloud_centos
   - MU_check_centos
   - gpdb_rc_packaging_centos
   - gpdb_sync_to_dist_centos6
@@ -1036,7 +1036,7 @@ jobs:
       BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
       TEST_OS: sles
 
-- name: regression_tests_s3_centos
+- name: regression_tests_gpcloud_centos
   plan:
   - aggregate:
     - get: gpdb_src
@@ -1049,8 +1049,8 @@ jobs:
       passed: [compile_gpdb_centos]
       trigger: true
     - get: centos-gpdb-dev-5
-  - task: regression_tests_s3
-    file: gpdb_src/ci/concourse/regression_tests_s3.yml
+  - task: regression_tests_gpcloud
+    file: gpdb_src/ci/concourse/regression_tests_gpcloud.yml
     image: centos-gpdb-dev-5
     params:
       s3conf: {{s3_configuration_file}}
@@ -1224,7 +1224,7 @@ jobs:
       - icb_planner_centos
       - icg_orca_centos
       - icg_planner_centos
-      - regression_tests_s3_centos
+      - regression_tests_gpcloud_centos
       - MU_check_centos
       trigger: true
     - get: centos-gpdb-dev-5
@@ -1318,7 +1318,7 @@ jobs:
       - icb_planner_centos
       - icg_orca_centos
       - icg_planner_centos
-      - regression_tests_s3_centos
+      - regression_tests_gpcloud_centos
       - MU_check_centos
       - icg_orca_sles
       - icg_planner_sles

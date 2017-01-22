@@ -1,14 +1,14 @@
 ## ======================================================================
-## Pipeline for GPDB s3ext
+## Pipeline for GPDB gpcloud
 ## ======================================================================
 
 resources:
 - name: gpdb_src
   type: git
   source:
-    branch: {{s3ext-git-branch}}
+    branch: {{gpcloud-git-branch}}
     private_key: {{gpdb-git-key}}
-    uri: {{s3ext-git-remote}}
+    uri: {{gpcloud-git-remote}}
 - name: centos511-java7-gpdb-dev-image
   type: docker-image
   source:
@@ -39,7 +39,7 @@ resources:
     versioned_file: sync_tools_gpdb_centos/sync_tools_gpdb.tar.gz
 
 jobs:
-- name: unit_tests_s3_centos
+- name: unit_tests_gpcloud_centos
   public: true
   plan:
   - aggregate:
@@ -47,16 +47,16 @@ jobs:
       trigger: true
       params: {submodules: none}
     - get: centos72-java7-gpdb-dev-image
-  - task: unit_tests_s3
-    file: gpdb_src/ci/concourse/unit_tests_s3.yml
+  - task: unit_tests_gpcloud
+    file: gpdb_src/ci/concourse/unit_tests_gpcloud.yml
     image: centos72-java7-gpdb-dev-image
 
-- name: regression_tests_s3_centos
+- name: regression_tests_gpcloud_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [unit_tests_s3_centos]
+      passed: [unit_tests_gpcloud_centos]
       trigger: true
       params: {submodules: none}
     - get: sync_tools_gpdb
@@ -64,19 +64,19 @@ jobs:
     - get: bin_gpdb
       resource: bin_gpdb_centos
     - get: centos511-java7-gpdb-dev-image
-  - task: regression_tests_s3
-    file: gpdb_src/ci/concourse/regression_tests_s3.yml
+  - task: regression_tests_gpcloud
+    file: gpdb_src/ci/concourse/regression_tests_gpcloud.yml
     image: centos511-java7-gpdb-dev-image
     params:
       s3conf: {{s3_configuration_file}}
       TEST_OS: centos
 
-- name: gpcheckcloud_tests_s3_centos
+- name: gpcheckcloud_tests_gpcloud_centos
   public: true
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [unit_tests_s3_centos]
+      passed: [unit_tests_gpcloud_centos]
       trigger: true
       params: {submodules: none}
     - get: sync_tools_gpdb
@@ -84,13 +84,13 @@ jobs:
     - get: bin_gpdb
       resource: bin_gpdb_centos
     - get: centos511-java7-gpdb-dev-image
-  - task: gpcheckcloud_tests_s3
-    file: gpdb_src/ci/concourse/gpcheckcloud_tests_s3.yml
+  - task: gpcheckcloud_tests_gpcloud
+    file: gpdb_src/ci/concourse/gpcheckcloud_tests_gpcloud.yml
     image: centos511-java7-gpdb-dev-image
     params:
       s3conf: {{s3_configuration_file}}
 
-- name: staging_server_s3_centos
+- name: staging_server_gpcloud_centos
   public: true
   plan:
   - aggregate:
@@ -98,15 +98,15 @@ jobs:
       trigger: false
       params: {submodules: none}
       passed:
-            - regression_tests_s3_centos
-            - gpcheckcloud_tests_s3_centos
+            - regression_tests_gpcloud_centos
+            - gpcheckcloud_tests_gpcloud_centos
     - get: sync_tools_gpdb
       resource: sync_tools_gpdb_centos
     - get: bin_gpdb
       resource: bin_gpdb_centos
     - get: centos511-java7-gpdb-dev-image
-  - task: staging_server_s3
-    file: gpdb_src/ci/concourse/staging_server_s3.yml
+  - task: staging_server_gpcloud
+    file: gpdb_src/ci/concourse/staging_server_gpcloud.yml
     image: centos511-java7-gpdb-dev-image
     params:
       EC2_PRIVATE_KEY: {{ec2_key}}

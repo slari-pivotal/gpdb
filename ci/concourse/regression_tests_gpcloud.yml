@@ -7,4 +7,4 @@ params:
   s3conf:
   TEST_OS:
 run:
-  path: gpdb_src/ci/concourse/scripts/regression_tests_s3.bash
+  path: gpdb_src/ci/concourse/scripts/regression_tests_gpcloud.bash

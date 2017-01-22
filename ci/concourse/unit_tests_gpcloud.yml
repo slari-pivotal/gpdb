@@ -9,4 +9,4 @@ image_resource:
 inputs:
   - name: gpdb_src
 run:
-  path: gpdb_src/ci/concourse/scripts/unit_tests_s3.bash
+  path: gpdb_src/ci/concourse/scripts/unit_tests_gpcloud.bash

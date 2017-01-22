@@ -15,10 +15,10 @@ function gen_env(){
 	cd "\${1}/gpdb_src/gpAux"
 	source gpdemo/gpdemo-env.sh
 
-	cd "\${1}/gpdb_src/gpAux/extensions/gps3ext"
+	cd "\${1}/gpdb_src/gpAux/extensions/gpcloud"
 	make -B install
 
-	cd "\${1}/gpdb_src/gpAux/extensions/gps3ext/regress"
+	cd "\${1}/gpdb_src/gpAux/extensions/gpcloud/regress"
 	make installcheck pgxs_dir=/usr/local/greenplum-db-devel/lib/postgresql/pgxs
 
 	[ -s regression.diffs ] && cat regression.diffs && exit 1
