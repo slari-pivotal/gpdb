@@ -362,7 +362,7 @@ define BUILD_STEPS
 	cd $(BUILDDIR) && $(MAKE) $(parallelexec_opts) install
 	#@$(MAKE) greenplum_path INSTLOC=$(INSTLOC)
 	#@$(MAKE) groupSession INSTLOC=$(INSTLOC)
-	@$(MAKE) mkgps3ext INSTLOC=$(INSTLOC)
+	@$(MAKE) mkgpcloud INSTLOC=$(INSTLOC)
 	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
 	#@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
 	@$(MAKE) mkpgbouncer INSTLOC=$(INSTLOC) BUILDDIR=$(BUILDDIR)
@@ -1023,8 +1023,8 @@ set_scripts_version :
 groupSession:
 	@cd $(GPMGMT)/bin && $(MAKE)
 
-mkgps3ext:
-	@cd extensions && $(MAKE) mks3ext OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
+mkgpcloud:
+	@cd extensions && $(MAKE) mkgpcloud OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
 
 mkgphdfs:
 	@cd extensions && $(MAKE) mkgphdfs OPT="$(INSTCFLAGS)" INSTLOC=$(INSTLOC)
