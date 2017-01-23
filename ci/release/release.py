@@ -267,7 +267,7 @@ def main(argv):
 
   version = argv[1]
   rev = argv[2]
-  release = Release(version, rev, secrets_environment)
+  release = Release(version, rev, gpdb_environment, secrets_environment)
 
   exec_step(release.check_rev,                'Invalid git revision provided: ' + rev)
   exec_step(release.create_release_bucket,    'Failed to create release bucket in S3')
