@@ -1400,6 +1400,18 @@ drop role unpriv;
 drop table can_set_tag_target;
 drop table can_set_tag_audit;
 
+-- TVF accepts ANYELEMENT, ANYELEMENT returns ANYARRAY
+CREATE FUNCTION func_element(ANYELEMENT, ANYELEMENT) RETURNS TABLE(a ANYARRAY)
+AS $$ SELECT ARRAY[$1, $2] $$ LANGUAGE SQL STABLE;
+SELECT * FROM func_element(12,13);
+DROP FUNCTION IF EXISTS func_element(ANYELEMENT, ANYELEMENT);
+
+-- TVF accepts ANYELEMENT, ANYARRAY returns ANYARRAY, ANYELEMENT
+CREATE FUNCTION func_element_array(ANYELEMENT, ANYARRAY) RETURNS TABLE(a ANYARRAY, b ANYELEMENT)
+AS $$ SELECT ARRAY[$1], $2[1]$$ LANGUAGE SQL STABLE;
+SELECT * FROM func_element_array('red', ARRAY['blue']);
+DROP FUNCTION IF EXISTS func_element_array(ANYELEMENT, ANYARRAY);
+
 -- start_ignore
 create language plpythonu;
 -- end_ignore
