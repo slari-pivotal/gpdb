@@ -205,7 +205,7 @@ class ReleaseTest(unittest.TestCase):
       def enable(self):
         self.status = 'Enabled'
 
-    def __init__(self, name, exists_in_s3 = False):
+    def __init__(self, name, exists_in_s3=False):
       self.name = name
       self.was_created = False
       self.exists_in_s3 = exists_in_s3
@@ -254,24 +254,26 @@ class ReleaseTest(unittest.TestCase):
     aws = self.MockAWS(bucket)
     release_with_good_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
-    release_with_good_aws.create_release_bucket()
+    command_return = release_with_good_aws.create_release_bucket()
+    assert_that(command_return, equal_to(True))
     assert_that(bucket.was_created, equal_to(True))
     assert_that(bucket.region, equal_to('us-west-2'))
 
   def test_create_release_bucket_when_exists_in_s3_does_not_call_create(self):
-    bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
-    aws = self.MockAWS(bucket)
-    release_with_bad_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
+    bucket_already_there = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
+    aws = self.MockAWS(bucket_already_there)
+    release_with_bucket_already_there = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
-    release_with_bad_aws.create_release_bucket()
-    assert_that(bucket.was_created, equal_to(False))
+    command_return = release_with_bucket_already_there.create_release_bucket()
+    assert_that(command_return, equal_to(True))
+    assert_that(bucket_already_there.was_created, equal_to(False))
 
   def test_set_bucket_policy(self):
     bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
     aws = self.MockAWS(bucket)
     release_with_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
-    release_with_aws.set_bucket_policy()
+    assert_that(release_with_aws.set_bucket_policy())
     policy = json.loads(bucket.bucket_policy.policy_json)
     expected_policy = self.aws_policy('arn:aws:s3:::gpdb-4.3.10.0-concourse/*', 'arn:aws:iam::118837423556:root')
     assert_that(policy, equal_to(expected_policy))
@@ -291,7 +293,7 @@ class ReleaseTest(unittest.TestCase):
     aws = self.MockAWS(bucket)
     release_with_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
-    release_with_aws.set_bucket_versioning()
+    assert_that(release_with_aws.set_bucket_versioning())
     assert_that(bucket.bucket_versioning.status, equal_to('Enabled'))
 
   def test_create_release_branch_when_branch_doesnt_exist(self):

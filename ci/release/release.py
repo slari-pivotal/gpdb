@@ -116,6 +116,7 @@ class Release(object):
     bucket = self.aws.get_botobucket(self.release_bucket)
     if not self.aws.bucket_exists(bucket):
       bucket.create(CreateBucketConfiguration={'LocationConstraint': 'us-west-2'})
+    return True # failures will be raised as exceptions
 
   def set_bucket_policy(self):
     bucket = self.aws.get_botobucket(self.release_bucket)
@@ -128,10 +129,12 @@ class Release(object):
         u'Principal': {u'AWS': 'arn:aws:iam::118837423556:root'} # the `pivotal` data-directors account, into which Pulse Cloud provisions
       }]}
     bucket.Policy().put(Policy=json.dumps(policy))
+    return True # failures will be raised as exceptions
 
   def set_bucket_versioning(self):
     bucket = self.aws.get_botobucket(self.release_bucket)
     bucket.Versioning().enable()
+    return True # failures will be raised as exceptions
 
   def create_release_branch(self):
     commit = self.command_runner.get_subprocess_output(('git', 'show-ref', '-s', 'refs/heads/' + self.release_branch))
