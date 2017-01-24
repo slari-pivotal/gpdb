@@ -27,7 +27,7 @@ chmod 600 ~/.ssh/config
 echo '
 #for gpdb4 compilation
 source /opt/gcc_env.sh
-export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.40.x86_64
+export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk.x86_64
 export PATH=${JAVA_HOME}/bin:${PATH}
 export IVYREPO_HOST=repo.pivotal.io
 export IVYREPO_REALM="Artifactory Realm"
