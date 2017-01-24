@@ -16,4 +16,7 @@ include $(top_builddir)/src/backend/gpopt/gpopt.mk
 
 OBJS = COptTasks.o CCatalogUtils.o CConstExprEvaluatorProxy.o nodeutils.o funcs.o
 
+funcs.o: funcs.cpp
+	$(COMPILE.cpp) -fPIC $(OUTPUT_OPTION) $<
+
 include $(top_srcdir)/src/backend/common.mk
