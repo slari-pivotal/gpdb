@@ -868,7 +868,7 @@ jobs:
       IVYREPO_PASSWD: {{ivyrepo_passwd}}
       TARGET_OS: centos
       TARGET_OS_VERSION: 6
-      BLD_TARGETS: ""
+      BLD_TARGETS: ''
   - put: plperl_rhel6_gppkg
     params:
       file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel6-x86_64.gppkg
@@ -896,7 +896,7 @@ jobs:
       IVYREPO_PASSWD: {{ivyrepo_passwd}}
       TARGET_OS: centos
       TARGET_OS_VERSION: 7
-      BLD_TARGETS: ""
+      BLD_TARGETS: ''
   - put: plperl_rhel7_gppkg
     params:
       file: gpdb_artifacts/plperl-ossv5.12.4_pv1.3_gpdb4.3orca-rhel7-x86_64.gppkg
@@ -905,11 +905,6 @@ jobs:
       file: gpdb_artifacts/ccache_gpdb.tar.gz
 
 # Stage 2: Installcheck, Python unit, and local TINC tests
-
-# If a new test is added to this stage, add the name of the job to the list of
-# stage 2 jobs under the following line in the first job in the stage 3 section:
-#
-#     passed: &Stage2JobsCentos
 
 - name: icb_orca_centos
   plan:
@@ -929,7 +924,7 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
-      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
+      BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off optimizer=on
       TEST_OS: centos
 
 - name: icb_planner_centos
@@ -950,7 +945,7 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-bugbuster
-      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
+      BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
       TEST_OS: centos
 
 - name: icg_orca_centos
@@ -971,7 +966,7 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
+      BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off optimizer=on
       TEST_OS: centos
 
 - name: icg_orca_sles
@@ -992,7 +987,7 @@ jobs:
     image: sles-gpdb-dev
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off optimizer=on"
+      BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off optimizer=on
       TEST_OS: sles
 
 - name: icg_planner_centos
@@ -1013,7 +1008,7 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
+      BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
       TEST_OS: centos
 
 - name: icg_planner_sles
@@ -1034,7 +1029,7 @@ jobs:
     image: sles-gpdb-dev
     params:
       MAKE_TEST_COMMAND: installcheck-good
-      BLDWRAP_POSTGRES_CONF_ADDONS: "fsync=off"
+      BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
       TEST_OS: sles
 
 - name: regression_tests_s3_centos
@@ -1097,7 +1092,7 @@ jobs:
       image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: fts_transitions_part01
-        BLDWRAP_POSTGRES_CONF_ADDONS: "gp_segment_connect_timeout=10 gp_fts_probe_interval=20"
+        BLDWRAP_POSTGRES_CONF_ADDONS: gp_segment_connect_timeout=10 gp_fts_probe_interval=20
         TEST_OS: centos
     - task: fts_transitions_part02
       timeout: 3h
@@ -1105,7 +1100,7 @@ jobs:
       image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: fts_transitions_part02
-        BLDWRAP_POSTGRES_CONF_ADDONS: "gp_segment_connect_timeout=10 gp_fts_probe_interval=20"
+        BLDWRAP_POSTGRES_CONF_ADDONS: gp_segment_connect_timeout=10 gp_fts_probe_interval=20
         TEST_OS: centos
     - task: fts_transitions_part03
       timeout: 3h
@@ -1113,7 +1108,7 @@ jobs:
       image: centos-gpdb-dev-5
       params:
         MAKE_TEST_COMMAND: fts_transitions_part03
-        BLDWRAP_POSTGRES_CONF_ADDONS: "gp_segment_connect_timeout=10 gp_fts_probe_interval=20"
+        BLDWRAP_POSTGRES_CONF_ADDONS: gp_segment_connect_timeout=10 gp_fts_probe_interval=20
         TEST_OS: centos
 
 - name: cs-storage_centos
@@ -1220,7 +1215,7 @@ jobs:
       passed: [icg_planner_centos]
     - get: bin_gpdb
       resource: bin_gpdb_centos
-      passed: &Stage2JobsCentos
+      passed:
       - icb_orca_centos
       - icb_planner_centos
       - icg_orca_centos
@@ -1280,7 +1275,7 @@ jobs:
       passed: [icg_planner_sles]
     - get: bin_gpdb
       resource: bin_gpdb_sles
-      passed: &Stage2JobsSles
+      passed:
       - icg_orca_sles
       - icg_planner_sles
       trigger: true
@@ -1831,7 +1826,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveBackupRestore"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -1840,7 +1835,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveBackupRestore"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -1866,7 +1861,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPCheckcat"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPCheckcat
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -1875,7 +1870,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPCheckcat"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPCheckcat
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -1901,7 +1896,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPRecoverseg"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPRecoverseg
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -1910,7 +1905,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveGPRecoverseg"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPRecoverseg
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -1936,7 +1931,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE_behave_gptransfer_43x_to_43x"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE_behave_gptransfer_43x_to_43x
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -1945,7 +1940,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE_behave_gptransfer_43x_to_43x"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE_behave_gptransfer_43x_to_43x
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -1971,7 +1966,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveNetBackup"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -1980,7 +1975,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveNetBackup"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2006,7 +2001,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveNetBackup76"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2015,7 +2010,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-BehaveNetBackup76"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2041,7 +2036,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-kerberos_jdbc-no-scm"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-kerberos_jdbc-no-scm
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2050,7 +2045,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-kerberos_jdbc-no-scm"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-kerberos_jdbc-no-scm
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2076,7 +2071,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-kerberos_smoke"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-kerberos_smoke
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2085,7 +2080,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-kerberos_smoke"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-kerberos_smoke
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2111,7 +2106,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-OpenBAR"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-OpenBAR
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2120,7 +2115,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-OpenBAR"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-OpenBAR
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2146,7 +2141,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Full"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Full
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2155,7 +2150,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Full"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Full
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2181,7 +2176,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Incremental"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2190,7 +2185,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-DDBOOST_Incremental"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2216,7 +2211,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-MFR-TINC
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2225,7 +2220,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-MFR-TINC"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-MFR-TINC
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2251,7 +2246,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gpexpand"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-gpexpand
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2260,7 +2255,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gpexpand"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-gpexpand
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2286,7 +2281,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-aoco-compression"
+      PULSE_PROJECT_NAME: cs-aoco-compression
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2295,7 +2290,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-aoco-compression"
+      PULSE_PROJECT_NAME: cs-aoco-compression
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2321,7 +2316,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-bin-swap"
+      PULSE_PROJECT_NAME: cs-bin-swap
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2330,7 +2325,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-bin-swap"
+      PULSE_PROJECT_NAME: cs-bin-swap
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2356,7 +2351,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-filerep-schema-topology-crashrecov"
+      PULSE_PROJECT_NAME: cs-filerep-schema-topology-crashrecov
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2365,7 +2360,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-filerep-schema-topology-crashrecov"
+      PULSE_PROJECT_NAME: cs-filerep-schema-topology-crashrecov
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2391,7 +2386,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-filerep-end-to-end"
+      PULSE_PROJECT_NAME: cs-filerep-end-to-end
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2400,7 +2395,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-filerep-end-to-end"
+      PULSE_PROJECT_NAME: cs-filerep-end-to-end
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2426,7 +2421,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-pg-two-phase"
+      PULSE_PROJECT_NAME: cs-pg-two-phase
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2435,7 +2430,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-pg-two-phase"
+      PULSE_PROJECT_NAME: cs-pg-two-phase
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2461,7 +2456,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-walrepl-multinode"
+      PULSE_PROJECT_NAME: cs-walrepl-multinode
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2470,7 +2465,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "cs-walrepl-multinode"
+      PULSE_PROJECT_NAME: cs-walrepl-multinode
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2496,7 +2491,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "QP_memory-accounting"
+      PULSE_PROJECT_NAME: QP_memory-accounting
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2505,7 +2500,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "QP_memory-accounting"
+      PULSE_PROJECT_NAME: QP_memory-accounting
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2531,7 +2526,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "QP_optimizer-functional"
+      PULSE_PROJECT_NAME: QP_optimizer-functional
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2540,7 +2535,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "QP_optimizer-functional"
+      PULSE_PROJECT_NAME: QP_optimizer-functional
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2566,7 +2561,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-gppkg
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2575,7 +2570,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-gppkg
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2601,7 +2596,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg-redhat6"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-gppkg-redhat6
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2610,7 +2605,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-TINC-gppkg-redhat6"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-gppkg-redhat6
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2636,7 +2631,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-CCLE
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2645,7 +2640,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-CCLE
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2671,7 +2666,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE-sles11sp4"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-CCLE-sles11sp4
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2680,7 +2675,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "GPDB-43_STABLE-CCLE-sles11sp4"
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-CCLE-sles11sp4
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2706,7 +2701,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "mpp-interconnect"
+      PULSE_PROJECT_NAME: mpp-interconnect
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2715,7 +2710,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "mpp-interconnect"
+      PULSE_PROJECT_NAME: mpp-interconnect
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2741,7 +2736,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "mpp-interconnect-sles"
+      PULSE_PROJECT_NAME: mpp-interconnect-sles
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -2750,7 +2745,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: "mpp-interconnect-sles"
+      PULSE_PROJECT_NAME: mpp-interconnect-sles
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
