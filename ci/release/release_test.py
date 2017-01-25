@@ -346,6 +346,91 @@ GP_VERSION=%(version)s
 """
 
 
+PIPELINE_STARTING_CONTENTS = """\
+jobs:
+- name: pulse_ON_aNightlyTrigger
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    gpdb_release: delete
+    trigger: true
+  - aggregate:
+    - get: gpdb_src
+      gpdb_release: add_trigger
+      params: {}
+      passed: []
+
+# resources group comment
+resources:
+- name: seecrits
+  type: git
+  source:
+    repository: {{seecrits-repository}}
+    password: {{seecrits-password}}
+- name: nest_fetcher
+  source:
+    gulls:
+      sea: squak
+      gpdb_release: delete
+    hawks:
+      sea: richard_sherman   # go niners
+# These go last to catch edit-in-place bugs.
+- name: chivalrous   # you know... "knightly"
+  gpdb_release: delete
+  type: time
+  source:
+    location: Camelot # a place I'd like to go
+    time: '5:15'
+- name: fortnightly
+  gpdb_release: delete
+  type: time
+  source:
+    location: Aqaba # a place I'd like to go
+    time: '5:15'
+
+groups:
+- name: all
+  jobs:
+  - first
+  - second
+  - 'gpdb_release: delete'
+  - fourth
+"""
+
+
+EXPECTED_CHANGED_PIPELINE = """\
+jobs:
+- name: pulse_ON_aNightlyTrigger
+  plan:
+  - get: pulse-api-image
+  - aggregate:
+    - get: gpdb_src
+      trigger: true
+      params: {}
+      passed: []
+
+# resources group comment
+resources:
+- name: seecrits
+  type: git
+  source:
+    repository: {{seecrits-repository}}
+    password: {{seecrits-password}}
+- name: nest_fetcher
+  source:
+    hawks:
+      sea: richard_sherman   # go niners
+
+groups:
+- name: all
+  jobs:
+  - first
+  - second
+  - 'gpdb_release: delete'
+  - fourth
+"""
+
+
 class ReleaseTest_GpdbDirectory(unittest.TestCase):
   class FakeEnvironment(object):
     def __init__(self, directory):
@@ -356,6 +441,7 @@ class ReleaseTest_GpdbDirectory(unittest.TestCase):
 
   def setUp(self):
     self.gpdb_environment = self.FakeEnvironment(tempfile.mkdtemp())
+    os.makedirs(self.gpdb_environment.path('ci', 'concourse', 'pipelines'))
 
   def tearDown(self):
     shutil.rmtree(self.gpdb_environment.directory)
@@ -384,6 +470,14 @@ class ReleaseTest_GpdbDirectory(unittest.TestCase):
     with open(self.gpdb_environment.path('getversion'), 'r') as f:
       edited_getversion_contents = f.read()
     assert_that(edited_getversion_contents, equal_to('nothing to see here\nmove along\nmove along\n'))
+
+  def test_edit_pipeline_for_release(self):
+    with open(self.gpdb_environment.path('ci/concourse/pipelines/pipeline.yml'), 'w') as f:
+      f.write(PIPELINE_STARTING_CONTENTS)
+    release_pipeline_changer = release.Release('4.3.1.1', '321cab', self.gpdb_environment, secrets_environment=None)
+    assert_that(release_pipeline_changer.edit_pipeline_for_release())
+    with open(self.gpdb_environment.path('ci/concourse/pipelines/pipeline.yml'), 'r') as f:
+      assert_that(f.read(), equal_to(EXPECTED_CHANGED_PIPELINE))
 
 
 class ReleaseTest_SecretsDirectory(unittest.TestCase):

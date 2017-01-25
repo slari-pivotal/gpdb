@@ -1,2 +1,3 @@
 pyhamcrest
 boto3
+ruamel.yaml

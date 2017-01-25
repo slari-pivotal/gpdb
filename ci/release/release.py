@@ -21,6 +21,7 @@ import sys
 import subprocess
 import boto3
 import botocore
+import ruamel.yaml
 from distutils.version import StrictVersion
 
 SECRETS_FILE_43_STABLE = 'gpdb-4.3_STABLE-ci-secrets.yml'
@@ -107,6 +108,7 @@ class Release(object):
     self.release_branch = 'release-' + self.version
     self.release_bucket = 'gpdb-%s-concourse' % self.version
     self.release_secrets_file = 'gpdb-%s-ci-secrets.yml' % self.version
+    self.pipeline_file = 'ci/concourse/pipelines/pipeline.yml'
 
   def check_rev(self):
     return self.command_runner.subprocess_is_successful(
@@ -203,6 +205,48 @@ class Release(object):
       self.printer.print_msg('but unable to find & replace the following keys: ' + ', '.join(replacements.keys()))
     return success
 
+  def edit_pipeline_for_release(self):
+    with open(self.gpdb_environment.path('ci/concourse/pipelines/pipeline.yml'), 'r') as fin:
+      pipeline_before = fin.read()
+      pipeline_with_interpolation_braces_quoted = re.sub(r'({{.*}})', r"'\1'", pipeline_before)
+      pipeline = ruamel.yaml.load(pipeline_with_interpolation_braces_quoted, ruamel.yaml.RoundTripLoader)
+
+    self.walk_and_edit_pipeline(pipeline)
+
+    with open(self.gpdb_environment.path('ci/concourse/pipelines/pipeline.yml'), 'w') as fout:
+      pipeline_after_ruamel_processing = ruamel.yaml.dump(pipeline, Dumper=ruamel.yaml.RoundTripDumper)
+      pipeline_with_interpolation_brace_quoting_removed = re.sub('["\']' r'({{.*}})' '[\'"]', r"\1", pipeline_after_ruamel_processing)
+      fout.write(pipeline_with_interpolation_brace_quoting_removed)
+
+    return True
+
+  def walk_and_edit_pipeline(self, pipeline_hunk):
+
+    if isinstance(pipeline_hunk, list):
+      pipeline_hunk[:] = [item for item in pipeline_hunk if not self.should_delete(item)]
+      for item in pipeline_hunk:
+        self.maybe_add_trigger(item)
+        self.walk_and_edit_pipeline(item)
+
+    elif isinstance(pipeline_hunk, dict):
+      for key, value in pipeline_hunk.items():
+        if self.should_delete(value):
+          del pipeline_hunk[key]
+        else:
+          self.maybe_add_trigger(value)
+          self.walk_and_edit_pipeline(value)
+
+  def should_delete(self, node):
+    if isinstance(node, dict):
+      return node.get('gpdb_release') == 'delete'
+    return False
+
+  def maybe_add_trigger(self, node):
+    if isinstance(node, dict):
+      if node.get('gpdb_release') == 'add_trigger':
+        del node['gpdb_release']
+        node.insert(1, 'trigger', True)
+
 
 class Printer(object):
   def print_msg(self, msg):
@@ -280,3 +324,4 @@ def main(argv):
   exec_step(release.tag_branch_point,         'TODO: Failed to tag where we created the branch point')
   exec_step(release.edit_getversion_file,     'Failed to edit the getversion file')
   exec_step(release.write_secrets_file,       'Failed to write pipeline secrets file')
+  exec_step(release.edit_pipeline_for_release,'Editing pipeline failed')

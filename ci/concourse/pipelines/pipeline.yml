@@ -662,6 +662,7 @@ resources:
     versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
 
 - name: nightly-trigger-pulse
+  gpdb_release: delete
   type: time
   source:
     location: America/Los_Angeles
@@ -670,6 +671,7 @@ resources:
     stop: 6:00 AM
 
 - name: weekly-trigger-pulse
+  gpdb_release: delete
   type: time
   source:
     location: America/Los_Angeles
@@ -1808,9 +1810,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -1843,9 +1847,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -1878,9 +1884,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -1913,9 +1921,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -1948,9 +1958,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -1983,9 +1995,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2018,9 +2032,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2053,9 +2069,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2088,9 +2106,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2123,9 +2143,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: false
   - aggregate:
     - get: gpdb_src
+      gpdb_release: MU_team_manual_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2158,9 +2180,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: false
   - aggregate:
     - get: gpdb_src
+      gpdb_release: MU_team_manual_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2193,9 +2217,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: false
   - aggregate:
     - get: gpdb_src
+      gpdb_release: MU_team_manual_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2228,9 +2254,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2263,9 +2291,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2298,9 +2328,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2333,9 +2365,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2368,9 +2402,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2403,9 +2439,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2438,9 +2476,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2473,9 +2513,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2508,9 +2550,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2543,9 +2587,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2578,9 +2624,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2613,9 +2661,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2648,9 +2698,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2683,9 +2735,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
@@ -2718,9 +2772,11 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
+    gpdb_release: delete
     trigger: true
   - aggregate:
     - get: gpdb_src
+      gpdb_release: add_trigger
       params: {submodules: none}
       passed: [gpdb_sync_to_dist]
     - get: gpdb_src_archive
