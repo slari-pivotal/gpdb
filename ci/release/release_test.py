@@ -1,21 +1,51 @@
+import collections
+import datetime
 from hamcrest import *
+import json
 import os.path
 import shutil
 import tempfile
 import unittest
-import json
 
 import release
 from release import Environment
 
 
+class Error(Exception):
+  pass
+
+
+class MockCommandRunner(object):
+
+  CommandResponse = collections.namedtuple('CommandResponse', 'output, exit_code, allowed')
+
+  def __init__(self, cwd=None):
+    self.cwd = cwd
+    self.subprocess_mock_outputs = {}
+
+  def respond_to_command_with(self, cmd, output=None, exit_code=0, allowed=True):
+    self.subprocess_mock_outputs[cmd] = self.CommandResponse(output, exit_code, allowed)
+
+  def get_subprocess_output(self, cmd):
+    self._abort_if_command_is_not_allowed(cmd)
+    return self.subprocess_mock_outputs[cmd].output
+
+  def subprocess_is_successful(self, cmd):
+    self._abort_if_command_is_not_allowed(cmd)
+    return 0 == self.subprocess_mock_outputs[cmd].exit_code
+
+  def _abort_if_command_is_not_allowed(self, cmd):
+    if not self.subprocess_mock_outputs[cmd].allowed:
+      raise Error('Command is not allowed to be called: ' + str(cmd))
+
 class EnvironmentTest(unittest.TestCase):
-  class MockCommandRunner(object):
+  class MockCommandRunner(MockCommandRunner):
     def __init__(self, cwd='/proper/git/directory'):
-      self.cwd = cwd
-      self.subprocess_mock_outputs = {}
+      super(EnvironmentTest.MockCommandRunner, self).__init__(cwd)
       self.respond_to_command_with(
           ('git', '--version'), output='git version 2.10.2')
+      self.respond_to_command_with(
+          ('fly', '--version'), output='2.6.0')
       self.respond_to_command_with(
           ('git', 'status', '--porcelain'), output='')
       self.respond_to_command_with(
@@ -25,16 +55,7 @@ class EnvironmentTest(unittest.TestCase):
       self.respond_to_command_with(
           ('git', 'rev-parse', 'HEAD'), output='abc123def456a78912323434')
       self.respond_to_command_with(
-          ('git', 'ls-remote', 'origin', '2>/dev/null'), exit_code=0)
-
-    def respond_to_command_with(self, cmd, output=None, exit_code=0):
-      self.subprocess_mock_outputs[cmd] = (output, exit_code)
-
-    def get_subprocess_output(self, cmd):
-      return self.subprocess_mock_outputs[cmd][0]
-
-    def subprocess_is_successful(self, cmd):
-      return 0 == self.subprocess_mock_outputs[cmd][1]
+          ('git', 'ls-remote', 'origin', 'refs/connectivity-test'), exit_code=0)
 
   def test_check_dependencies(self):
     environment = Environment(command_runner=self.MockCommandRunner())
@@ -50,6 +71,15 @@ class EnvironmentTest(unittest.TestCase):
     result = environment.check_dependencies()
     assert_that(result, equal_to(False))
 
+  def test_check_dependencies_when_fly_too_old(self):
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+        ('fly', '--version'), output='2.5.999')
+
+    environment = Environment(command_runner=command_runner)
+    result = environment.check_dependencies()
+    assert_that(result, equal_to(False))
+
   def test_check_git_can_pull(self):
     environment = Environment(command_runner=self.MockCommandRunner())
     result = environment.check_git_can_pull()
@@ -58,7 +88,7 @@ class EnvironmentTest(unittest.TestCase):
   def test_check_git_can_pull_fails(self):
     command_runner = self.MockCommandRunner()
     command_runner.respond_to_command_with(
-        ('git', 'ls-remote', 'origin', '2>/dev/null'), exit_code=128)
+        ('git', 'ls-remote', 'origin', 'refs/connectivity-test'), exit_code=128)
 
     environment = Environment(command_runner=command_runner)
     result = environment.check_git_can_pull()
@@ -152,42 +182,7 @@ class EnvironmentTest(unittest.TestCase):
     assert_that(environment.check_has_file('outside_file', os_path_exists=exists), equal_to(False))
 
 
-# class AwsTest(unittest.TestCase):
-#   class MockBucketExists(object):
-#     def load():
-#       pass
-
-#   class MockBucketDoesntExist(object):
-#     def load():
-#       # throw the botocore 404 exception
-#       pass
-
-#   def TestBucketExistsItDoes(self):
-#     bucket = MockBucket()
-#     aws = Aws(
-
-
 class ReleaseTest(unittest.TestCase):
-  class MockCommandRunner(object):
-    def __init__(self, cwd='/proper/git/directory'):
-      self.cwd = cwd
-      self.subprocess_mock_outputs = {}
-
-    def respond_to_command_with(self, cmd, output=None, exit_code=0, allowed=True):
-      self.subprocess_mock_outputs[cmd] = (output, exit_code, allowed)
-
-    def get_subprocess_output(self, cmd):
-      self.abort_if_command_is_not_allowed(cmd)
-      return self.subprocess_mock_outputs[cmd][0]
-
-    def subprocess_is_successful(self, cmd):
-      self.abort_if_command_is_not_allowed(cmd)
-      return 0 == self.subprocess_mock_outputs[cmd][1]
-
-    def abort_if_command_is_not_allowed(self, cmd):
-      if not self.subprocess_mock_outputs[cmd][2]:
-        raise StandardError('Command is not allowed to be called: ' + str(cmd))
-
   class MockBucket(object):
     class MockPolicy(object):
 
@@ -235,14 +230,14 @@ class ReleaseTest(unittest.TestCase):
       return bucket.exists_in_s3
 
   def test_check_rev(self):
-    command_runner = self.MockCommandRunner()
+    command_runner = MockCommandRunner()
     command_runner.respond_to_command_with(
         ('git', 'rev-parse', '--verify', '--quiet', 'HEAD'), exit_code=0)
     release_with_good_rev = release.Release('1.2.3', 'HEAD', gpdb_environment=None, secrets_environment=None, command_runner=command_runner)
     assert_that(release_with_good_rev.check_rev())
 
   def test_check_bad_rev(self):
-    command_runner = self.MockCommandRunner()
+    command_runner = MockCommandRunner()
     command_runner.respond_to_command_with(
           ('git', 'rev-parse', '--verify', '--quiet', 'DEADBEEF'), exit_code=1)
 
@@ -297,7 +292,7 @@ class ReleaseTest(unittest.TestCase):
     assert_that(bucket.bucket_versioning.status, equal_to('Enabled'))
 
   def test_create_release_branch_when_branch_doesnt_exist(self):
-    command_runner = self.MockCommandRunner()
+    command_runner = MockCommandRunner()
     command_runner.respond_to_command_with(
         ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output=None, exit_code=1)
     command_runner.respond_to_command_with(
@@ -308,7 +303,7 @@ class ReleaseTest(unittest.TestCase):
     assert_that(result, equal_to(True))
 
   def test_create_release_branch_when_branch_exists_and_is_different(self):
-    command_runner = self.MockCommandRunner()
+    command_runner = MockCommandRunner()
     command_runner.respond_to_command_with(
         ('git', 'rev-parse', '--verify', '--quiet', '123abc'), output='123abc456deadbeef')
     command_runner.respond_to_command_with(
@@ -321,7 +316,7 @@ class ReleaseTest(unittest.TestCase):
     assert_that(result, equal_to(False))
 
   def test_create_release_branch_when_branch_exists_and_is_same(self):
-    command_runner = self.MockCommandRunner()
+    command_runner = MockCommandRunner()
     command_runner.respond_to_command_with(
         ('git', 'rev-parse', '--verify', '--quiet', '123abc'), output='123abc456deadbeef')
     command_runner.respond_to_command_with(
@@ -336,6 +331,17 @@ class ReleaseTest(unittest.TestCase):
   def test_tag_branch_point(self):
     release_for_tagging = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None)
     assert_that(release_for_tagging.tag_branch_point())
+
+
+class FakeEnvironment(object):
+  def __init__(self, directory, command_runner=None):
+    self.directory = directory
+    self.command_runner = command_runner
+    if self.command_runner:
+      self.command_runner.cwd = directory
+
+  def path(self, *path_segments):
+    return os.path.join(self.directory, *path_segments)
 
 
 GETVERSION_TEMPLATE = """\
@@ -432,15 +438,8 @@ groups:
 
 
 class ReleaseTest_GpdbDirectory(unittest.TestCase):
-  class FakeEnvironment(object):
-    def __init__(self, directory):
-      self.directory = directory
-
-    def path(self, *path_segments):
-      return os.path.join(self.directory, *path_segments)
-
   def setUp(self):
-    self.gpdb_environment = self.FakeEnvironment(tempfile.mkdtemp())
+    self.gpdb_environment = FakeEnvironment(tempfile.mkdtemp())
     os.makedirs(self.gpdb_environment.path('ci', 'concourse', 'pipelines'))
 
   def tearDown(self):
@@ -481,15 +480,8 @@ class ReleaseTest_GpdbDirectory(unittest.TestCase):
 
 
 class ReleaseTest_SecretsDirectory(unittest.TestCase):
-  class FakeEnvironment(object):
-    def __init__(self, directory):
-      self.directory = directory
-
-    def path(self, *path_segments):
-      return os.path.join(self.directory, *path_segments)
-
   def setUp(self):
-    self.secrets_environment = self.FakeEnvironment(tempfile.mkdtemp())
+    self.secrets_environment = FakeEnvironment(tempfile.mkdtemp())
 
   def tearDown(self):
     shutil.rmtree(self.secrets_environment.directory)
@@ -539,6 +531,52 @@ class ReleaseTest_SecretsDirectory(unittest.TestCase):
 
     assert_that(release_secrets_file.write_secrets_file())
     assert_that(os.path.isfile(self.secrets_environment.path('gpdb-4.3.25.8-ci-secrets.yml')))
+
+
+class ReleaseTest_Fly(unittest.TestCase):
+  class MockDatetime(object):
+    def __init__(self, fake_utcnow):
+      self.fake_utcnow = fake_utcnow
+
+    def utcnow(self):
+      return self.fake_utcnow
+
+  def setUp(self):
+    self.gpdb_environment = FakeEnvironment(tempfile.mkdtemp(), command_runner=MockCommandRunner())
+    os.makedirs(self.gpdb_environment.path('ci', 'concourse', 'pipelines'))
+    self.secrets_environment = FakeEnvironment(tempfile.mkdtemp())
+    targets_output = (
+        "sharded  https://shared.ci.eng.pivotal.io     Thu, 26 Jan 2217 22:47:46 UTC\n"
+        "shared   http://not-shared.ci.eng.pivotal.io  Thu, 26 Jan 2217 22:47:46 UTC\n"
+        "shared   https://shared.ci.eng.pivotal.io     Thu, 26 Jan 2017 22:47:46 UTC\n"
+    )
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', 'targets'), output=targets_output)
+
+  def tearDown(self):
+    shutil.rmtree(self.gpdb_environment.directory)
+    shutil.rmtree(self.secrets_environment.directory)
+
+  def test_fly_ensure_logged_in_expired(self):
+    mock_datetime = self.MockDatetime(datetime.datetime(2018, 2, 27, 22, 47, 45, 999999))
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), exit_code=0)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, self.secrets_environment)
+    assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime))
+
+  def test_fly_ensure_logged_in_already(self):
+    mock_datetime = self.MockDatetime(datetime.datetime(2017, 1, 26, 22, 47, 45, 999999))
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), allowed=False)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, self.secrets_environment)
+    assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime))
+
+  def test_fly_ensure_logged_in_fly_errors(self):
+    mock_datetime = self.MockDatetime(datetime.datetime(2018, 2, 27, 22, 47, 45, 999999))
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), exit_code=1)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, self.secrets_environment)
+    assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime), equal_to(False))
 
 
 class Spy(object):

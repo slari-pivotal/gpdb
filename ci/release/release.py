@@ -14,15 +14,16 @@
 #
 # 1. Upload to PivNet
 
+import boto3
+import botocore
+import datetime
+from distutils.version import StrictVersion
 import json
 import os
 import re
+import ruamel.yaml
 import sys
 import subprocess
-import boto3
-import botocore
-import ruamel.yaml
-from distutils.version import StrictVersion
 
 SECRETS_FILE_43_STABLE = 'gpdb-4.3_STABLE-ci-secrets.yml'
 
@@ -48,12 +49,16 @@ class Environment(object):
   def check_dependencies(self):
     git_version_output = self.command_runner.get_subprocess_output(
         ('git', '--version'))
-    version = git_version_output.split()[2]
-    return StrictVersion(version) > StrictVersion('1.9.9')
+    git_version = git_version_output.split()[2]
+    fly_version = self.command_runner.get_subprocess_output(
+        ('fly', '--version'))
+    return (
+        StrictVersion(git_version) > StrictVersion('1.9.9') and
+        StrictVersion(fly_version) >= StrictVersion('2.6.0'))
 
   def check_git_can_pull(self):
     result = self.command_runner.subprocess_is_successful(
-        ('git', 'ls-remote', 'origin', '2>/dev/null'))
+        ('git', 'ls-remote', 'origin', 'refs/connectivity-test'))
     return result
 
   def check_git_status(self):
@@ -247,6 +252,25 @@ class Release(object):
         del node['gpdb_release']
         node.insert(1, 'trigger', True)
 
+  def fly_ensure_logged_in(self, datetime=datetime.datetime):
+    shared_url = 'https://shared.ci.eng.pivotal.io'
+
+    targets = self.gpdb_environment.command_runner.get_subprocess_output(
+        ('fly', 'targets'))
+
+    for line in targets.splitlines():
+      target, url, expiry = line.split(None, 2)
+      if target == 'shared' and url == shared_url:
+        if self._parse_expiry(expiry) > datetime.utcnow():
+          return True
+
+    return self.gpdb_environment.command_runner.subprocess_is_successful(
+        ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', shared_url))
+
+  @staticmethod
+  def _parse_expiry(expiry):
+    return datetime.datetime.strptime(expiry, '%a, %d %b %Y %H:%M:%S UTC')
+
 
 class Printer(object):
   def print_msg(self, msg):
@@ -317,6 +341,7 @@ def main(argv):
   release = Release(version, rev, gpdb_environment, secrets_environment)
 
   exec_step(release.check_rev,                'Invalid git revision provided: ' + rev)
+  exec_step(release.fly_ensure_logged_in,     'Could not log in to Shared Concourse with fly')
   exec_step(release.create_release_bucket,    'Failed to create release bucket in S3')
   exec_step(release.set_bucket_versioning,    'Failed to enable versioning on the S3 bucket')
   exec_step(release.set_bucket_policy,        'Failed to configure the S3 bucket access policy')
