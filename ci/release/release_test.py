@@ -47,6 +47,8 @@ class EnvironmentTest(unittest.TestCase):
       self.respond_to_command_with(
           ('fly', '--version'), output='2.6.0')
       self.respond_to_command_with(
+          ('pip', 'install', '-r', 'ci/release/requirements.txt'), exit_code=0)
+      self.respond_to_command_with(
           ('git', 'status', '--porcelain'), output='')
       self.respond_to_command_with(
           ('git', 'rev-parse', '--show-toplevel'), output='/proper/git/directory')
@@ -75,6 +77,15 @@ class EnvironmentTest(unittest.TestCase):
     command_runner = self.MockCommandRunner()
     command_runner.respond_to_command_with(
         ('fly', '--version'), output='2.5.999')
+
+    environment = Environment(command_runner=command_runner)
+    result = environment.check_dependencies()
+    assert_that(result, equal_to(False))
+
+  def test_chek_dependencies_when_pip_fails(self):
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+          ('pip', 'install', '-r', 'ci/release/requirements.txt'), exit_code=1)
 
     environment = Environment(command_runner=command_runner)
     result = environment.check_dependencies()
@@ -219,7 +230,7 @@ class ReleaseTest(unittest.TestCase):
     def Versioning(self):
       return self.bucket_versioning
 
-  class MockAWS(object):
+  class MockAws(object):
     def __init__(self, *buckets):
       self.buckets = buckets
 
@@ -246,7 +257,7 @@ class ReleaseTest(unittest.TestCase):
 
   def test_create_release_bucket(self):
     bucket = self.MockBucket('gpdb-4.3.10.0-concourse')
-    aws = self.MockAWS(bucket)
+    aws = self.MockAws(bucket)
     release_with_good_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
     command_return = release_with_good_aws.create_release_bucket()
@@ -256,7 +267,7 @@ class ReleaseTest(unittest.TestCase):
 
   def test_create_release_bucket_when_exists_in_s3_does_not_call_create(self):
     bucket_already_there = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
-    aws = self.MockAWS(bucket_already_there)
+    aws = self.MockAws(bucket_already_there)
     release_with_bucket_already_there = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
     command_return = release_with_bucket_already_there.create_release_bucket()
@@ -265,7 +276,7 @@ class ReleaseTest(unittest.TestCase):
 
   def test_set_bucket_policy(self):
     bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
-    aws = self.MockAWS(bucket)
+    aws = self.MockAws(bucket)
     release_with_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
     assert_that(release_with_aws.set_bucket_policy())
@@ -285,7 +296,7 @@ class ReleaseTest(unittest.TestCase):
 
   def test_set_bucket_versioning(self):
     bucket = self.MockBucket('gpdb-4.3.10.0-concourse', exists_in_s3 = True)
-    aws = self.MockAWS(bucket)
+    aws = self.MockAws(bucket)
     release_with_aws = release.Release('4.3.10.0', '123abc', gpdb_environment=None, secrets_environment=None, aws=aws)
 
     assert_that(release_with_aws.set_bucket_versioning())
@@ -624,12 +635,17 @@ class CheckEnvironmentsTest(unittest.TestCase):
       self.check_git_head_is_latest = Spy(returns=True)
       self.check_has_file = Spy(returns=True)
 
+  class MockAws(object):
+    def __init__(self):
+      self.check_iam_user_within_account = Spy(returns=True)
+
   def setUp(self):
     self.gpdb_environment = self.MockEnvironment()
     self.secrets_environment = self.MockEnvironment()
+    self.aws = self.MockAws()
 
   def test_checks_both_git_repositories(self):
-    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter())
+    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter(), aws=self.aws)
     assert_that(ret)
 
     assert_that(self.gpdb_environment.check_dependencies.calls, greater_than(0))
@@ -640,6 +656,7 @@ class CheckEnvironmentsTest(unittest.TestCase):
     assert_that(self.secrets_environment.check_git_head_is_latest.calls, greater_than(0))
     assert_that(self.secrets_environment.check_has_file.calls, equal_to(1))
     assert_that(self.secrets_environment.check_has_file.last_args[0], equal_to('gpdb-4.3_STABLE-ci-secrets.yml'))
+    assert_that(self.aws.check_iam_user_within_account.last_args[0], equal_to('189358390367'))
 
   def test_one_fails_but_still_runs_all(self):
     for i, failing_method in enumerate((
@@ -649,7 +666,7 @@ class CheckEnvironmentsTest(unittest.TestCase):
       try:
         failing_method.returns = False
 
-        ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter())
+        ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter(), aws=self.aws)
         assert_that(ret, equal_to(False))
 
         assert_that(self.gpdb_environment.check_dependencies.calls, equal_to(i+1))
@@ -662,18 +679,18 @@ class CheckEnvironmentsTest(unittest.TestCase):
     self.gpdb_environment.check_dependencies.returns = False
     self.secrets_environment.check_git_status.returns = False
 
-    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter())
+    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter(), aws=self.aws)
     assert_that(ret, equal_to(False))
 
   def test_checks_for_template_secrets_file(self):
-    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter())
+    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter(), aws=self.aws)
     assert_that(ret, equal_to(True))
     assert_that(self.secrets_environment.check_has_file.calls, equal_to(1))
     assert_that(self.secrets_environment.check_has_file.last_args[0], equal_to('gpdb-4.3_STABLE-ci-secrets.yml'))
 
   def test_checks_for_template_secrets_file_missing(self):
     self.secrets_environment.check_has_file.returns = False
-    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter())
+    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer=MockPrinter(), aws=self.aws)
     assert_that(ret, equal_to(False))
     assert_that(self.secrets_environment.check_has_file.calls, equal_to(1))
     assert_that(self.secrets_environment.check_has_file.last_args[0], equal_to('gpdb-4.3_STABLE-ci-secrets.yml'))

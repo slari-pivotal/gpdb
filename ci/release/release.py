@@ -26,6 +26,21 @@ import sys
 import subprocess
 
 SECRETS_FILE_43_STABLE = 'gpdb-4.3_STABLE-ci-secrets.yml'
+SHARED_CONCOURSE_AWS_ACCOUNT_NUMBER = '189358390367'
+
+SECRETS_NOT_FOUND_ERROR = u"""\
+Error. gpdb-ci-deployments (the secrets repo) not found. Two possible reasons:
+  1. You are running this script from a subdirectory of the gpdb4 repo
+     Currently, you must run this from the root of the gpdb4 repo
+  2. You do not have the gpdb-ci-deployments repo cloned down.
+     Please have gpdb-ci-deployments (the secrets repo) as a sibling directory at ../gpdb-ci-deployments
+     so that your tree looks like:
+
+\u2514\u2500\u2500 workspace   #or similar
+    \u2514\u2500\u2500 gpdb-ci-deployments
+    \u2514\u2500\u2500 gpdb4
+"""
+
 
 class CommandRunner(object):
   def __init__(self, cwd=None):
@@ -52,9 +67,13 @@ class Environment(object):
     git_version = git_version_output.split()[2]
     fly_version = self.command_runner.get_subprocess_output(
         ('fly', '--version'))
+    pip_install_success = self.command_runner.subprocess_is_successful(
+        ('pip', 'install', '-r', 'ci/release/requirements.txt'))
+
     return (
         StrictVersion(git_version) > StrictVersion('1.9.9') and
-        StrictVersion(fly_version) >= StrictVersion('2.6.0'))
+        StrictVersion(fly_version) >= StrictVersion('2.6.0') and
+        pip_install_success)
 
   def check_git_can_pull(self):
     result = self.command_runner.subprocess_is_successful(
@@ -86,6 +105,7 @@ class Environment(object):
 class Aws(object):
   def __init__(self):
     self.s3 = boto3.resource('s3')
+    self.iam = boto3.client('iam')
 
   def get_botobucket(self, bucket_name):
     return self.s3.Bucket(bucket_name)
@@ -98,6 +118,9 @@ class Aws(object):
       if e.response['Error']['Code'] == '404':
         return False
       raise e
+
+  def check_iam_user_within_account(self, expected_account):
+    return expected_account in self.iam.get_user()['User']['Arn']
 
 class Release(object):
   def __init__(self, version, rev, gpdb_environment, secrets_environment, command_runner=None, aws=None, printer=None):
@@ -287,9 +310,12 @@ def secrets_dir_is_present(directory):
   return directory.is_dir()
 
 
-def check_environments(gpdb_environment, secrets_environment, printer=Printer()):
+def check_environments(gpdb_environment, secrets_environment, printer=Printer(), aws=Aws()):
   def check_has_43_secrets():
     return secrets_environment.check_has_file(SECRETS_FILE_43_STABLE)
+
+  def check_iam_user():
+    return aws.check_iam_user_within_account(SHARED_CONCOURSE_AWS_ACCOUNT_NUMBER)
 
   checks_to_run = [
       ('overall dependencies', gpdb_environment.check_dependencies),
@@ -299,7 +325,9 @@ def check_environments(gpdb_environment, secrets_environment, printer=Printer())
       ('can git pull in gpdb-ci-deployments (the secrets repo)', secrets_environment.check_git_can_pull),
       ('gpdb-ci-deployments (the secrets repo) is clean', secrets_environment.check_git_status),
       ('gpdb-ci-deployments (the secrets repo) is up to date', secrets_environment.check_git_head_is_latest),
-      ('template secrets file exists', check_has_43_secrets)
+      ('template secrets file exists', check_has_43_secrets),
+
+      ('AWS IAM user configured and part of correct account (contact the Toolsmiths if you need an account)', check_iam_user)
   ]
 
   overall_return = True
@@ -307,8 +335,10 @@ def check_environments(gpdb_environment, secrets_environment, printer=Printer())
 
   for name, check in checks_to_run:
     ret = check()
-    if not ret:
-      printer.print_msg("^^^^ %s failed; output, if any, is above ^^^^\n" % name)
+    if ret:
+      printer.print_msg("^^^^ passed check: %s ^^^^" % name)
+    else:
+      printer.print_msg("^^^^ FAILED check: %s. Output, if any, is above ^^^^\n" % name)
       failed_checks.append(name)
       overall_return = False
 
@@ -333,9 +363,7 @@ def main(argv):
 
   secrets_dir='../gpdb-ci-deployments'
   if not os.path.isdir(secrets_dir):
-    print 'Please have gpdb-ci-deployments (the secrets repo) as a sibling directory at ' + secrets_dir
-    print ''
-    print 'Until we parameterize the location of the secrets repo, best to run this from the root of the gpdb repo'
+    print SECRETS_NOT_FOUND_ERROR
     return 2
   secrets_environment = Environment(CommandRunner(cwd=secrets_dir))
 
