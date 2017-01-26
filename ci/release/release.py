@@ -271,6 +271,12 @@ class Release(object):
   def _parse_expiry(expiry):
     return datetime.datetime.strptime(expiry, '%a, %d %b %Y %H:%M:%S UTC')
 
+  def fly_set_pipeline(self):
+    return self.gpdb_environment.command_runner.subprocess_is_successful(
+      ('fly', '-t', 'shared', 'set-pipeline', '--non-interactive',
+       '-p', self.release_pipeline,
+       '-c', self.gpdb_environment.path(self.pipeline_file),
+       '-l', self.secrets_environment.path(self.release_secrets_file)))
 
 class Printer(object):
   def print_msg(self, msg):
@@ -350,3 +356,4 @@ def main(argv):
   exec_step(release.edit_getversion_file,     'Failed to edit the getversion file')
   exec_step(release.write_secrets_file,       'Failed to write pipeline secrets file')
   exec_step(release.edit_pipeline_for_release,'Editing pipeline failed')
+  exec_step(release.fly_set_pipeline,         'Failed to set pipeline')

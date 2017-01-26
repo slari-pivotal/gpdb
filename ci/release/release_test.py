@@ -561,22 +561,42 @@ class ReleaseTest_Fly(unittest.TestCase):
     mock_datetime = self.MockDatetime(datetime.datetime(2018, 2, 27, 22, 47, 45, 999999))
     self.gpdb_environment.command_runner.respond_to_command_with(
         ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), exit_code=0)
-    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, self.secrets_environment)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
     assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime))
 
   def test_fly_ensure_logged_in_already(self):
     mock_datetime = self.MockDatetime(datetime.datetime(2017, 1, 26, 22, 47, 45, 999999))
     self.gpdb_environment.command_runner.respond_to_command_with(
         ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), allowed=False)
-    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, self.secrets_environment)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
     assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime))
 
   def test_fly_ensure_logged_in_fly_errors(self):
     mock_datetime = self.MockDatetime(datetime.datetime(2018, 2, 27, 22, 47, 45, 999999))
     self.gpdb_environment.command_runner.respond_to_command_with(
         ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), exit_code=1)
-    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, self.secrets_environment)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
     assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime), equal_to(False))
+
+  def test_fly_set_pipeline(self):
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'set-pipeline', '--non-interactive',
+         '-p', 'gpdb-4.3.29.7',
+         '-c', self.gpdb_environment.path('ci/concourse/pipelines/pipeline.yml'),
+         '-l', self.secrets_environment.path('gpdb-4.3.29.7-ci-secrets.yml')),
+        exit_code=0)
+    release_fly = release.Release('4.3.29.7', 'cab234', self.gpdb_environment, self.secrets_environment)
+    assert_that(release_fly.fly_set_pipeline())
+
+  def test_fly_set_pipeline_errors(self):
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'set-pipeline', '--non-interactive',
+         '-p', 'gpdb-4.3.28.7',
+         '-c', self.gpdb_environment.path('ci/concourse/pipelines/pipeline.yml'),
+         '-l', self.secrets_environment.path('gpdb-4.3.28.7-ci-secrets.yml')),
+        exit_code=1)
+    release_fly = release.Release('4.3.28.7', 'cab234', self.gpdb_environment, self.secrets_environment)
+    assert_that(release_fly.fly_set_pipeline(), equal_to(False))
 
 
 class Spy(object):
