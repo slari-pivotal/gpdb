@@ -86,6 +86,7 @@ CCTEListEntry::CCTEListEntry
 	{
 		CDXLNode *pdxlnCTEProducer = (*pdrgpdxln)[ul];
 		CommonTableExpr *pcte = (CommonTableExpr*) gpdb::PvListNth(plCTE, ul);
+
 		Query *pqueryCTE = (Query*) pcte->ctequery;
 		
 #ifdef GPOS_DEBUG

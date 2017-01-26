@@ -59,10 +59,10 @@ CQueryMutators::FNeedsPrLNormalization
 
 	SContextTLWalker ctxTLWalker(pquery->targetList, pquery->groupClause);
 
-	const ULONG ulArity = gpdb::UlListLength(pquery->targetList);
-	for (ULONG ul = 0; ul < ulArity; ul++)
+	ListCell *plc = NULL;
+	ForEach (plc, pquery->targetList)
 	{
-		TargetEntry *pte  = (TargetEntry*) gpdb::PvListNth(pquery->targetList, ul);
+		TargetEntry *pte  = (TargetEntry*) lfirst(plc);
 
 		if (FNeedsToFallback((Node *) pte->expr, &ctxTLWalker))
 		{
@@ -1602,10 +1602,10 @@ CQueryMutators::FNeedsWindowPrLNormalization
 		return false;
 	}
 
-	const ULONG ulArity = gpdb::UlListLength(pquery->targetList);
-	for (ULONG ul = 0; ul < ulArity; ul++)
+	ListCell *plc = NULL;
+	ForEach (plc, pquery->targetList)
 	{
-		TargetEntry *pte  = (TargetEntry*) gpdb::PvListNth(pquery->targetList, ul);
+		TargetEntry *pte  = (TargetEntry*) lfirst(plc);
 
 		if (!CTranslatorUtils::FWindowSpec( (Node *) pte->expr, pquery->windowClause, pquery->targetList) && !IsA(pte->expr, WindowRef) && !IsA(pte->expr, Var))
 		{
