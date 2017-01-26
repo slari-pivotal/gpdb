@@ -274,7 +274,8 @@ def main(argv):
 
   exec_step(release.check_rev,                'Invalid git revision provided: ' + rev)
   exec_step(release.create_release_bucket,    'Failed to create release bucket in S3')
-  exec_step(release.set_bucket_policy,        'Failed to fully configure the S3 bucket')
+  exec_step(release.set_bucket_versioning,    'Failed to enable versioning on the S3 bucket')
+  exec_step(release.set_bucket_policy,        'Failed to configure the S3 bucket access policy')
   exec_step(release.create_release_branch,    'Failed to create release branch locally with git')
   exec_step(release.tag_branch_point,         'TODO: Failed to tag where we created the branch point')
   exec_step(release.edit_getversion_file,     'Failed to edit the getversion file')
