@@ -46,4 +46,8 @@ s/Table "pg_temp_\d+.temp/Table "pg_temp_#####/
 # Mask out Log & timestamp for orca message that has feature not supported.
 m/^LOG.*\"Feature/
 s/^LOG.*\"Feature/\"Feature/
+
+# Mask out timestamp and whoami message for gpfaultinjector
+m/^\d+.*gpfaultinjector.*-\[INFO\]:-/
+s/^\d+.*gpfaultinjector.*-\[INFO\]:-//
 -- end_matchsubs
