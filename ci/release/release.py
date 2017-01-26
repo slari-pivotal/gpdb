@@ -169,10 +169,10 @@ class Release(object):
   def create_release_branch(self):
     commit = self.command_runner.get_subprocess_output(('git', 'show-ref', '-s', 'refs/heads/' + self.release_branch))
     if commit is None:
-      return self.command_runner.subprocess_is_successful(('git', 'branch', self.release_branch, self.rev))
+      return self.command_runner.subprocess_is_successful(('git', 'checkout', '-b', self.release_branch, self.rev))
     rev_sha = self.command_runner.get_subprocess_output(('git', 'rev-parse', '--verify', '--quiet', self.rev))
     if commit == rev_sha:
-      return True
+      return self.command_runner.subprocess_is_successful(('git', 'checkout', self.release_branch))
     self.printer.print_msg("Branch %s exists, but points to a different revision: %s" % (self.release_branch, commit))
     return False
 

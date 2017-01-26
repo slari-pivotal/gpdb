@@ -21,10 +21,12 @@ class MockCommandRunner(object):
 
   def __init__(self, cwd=None):
     self.cwd = cwd
+    self.branch_changed = False
     self.subprocess_mock_outputs = {}
 
-  def respond_to_command_with(self, cmd, output=None, exit_code=0, allowed=True):
+  def respond_to_command_with(self, cmd, output=None, exit_code=0, allowed=True, branch_changed=False):
     self.subprocess_mock_outputs[cmd] = self.CommandResponse(output, exit_code, allowed)
+    self.branch_changed |= branch_changed
 
   def get_subprocess_output(self, cmd):
     self._abort_if_command_is_not_allowed(cmd)
@@ -307,37 +309,44 @@ class ReleaseTest(unittest.TestCase):
     command_runner.respond_to_command_with(
         ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output=None, exit_code=1)
     command_runner.respond_to_command_with(
-        ('git', 'branch', 'release-4.3.25.3', '123abc'), exit_code=0)
+        ('git', 'checkout', '-b', 'release-4.3.25.3', '123abc'), exit_code=0, branch_changed=True)
 
     release_making_branch = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
     result = release_making_branch.create_release_branch()
     assert_that(result, equal_to(True))
+    assert_that(command_runner.branch_changed, equal_to(True))
 
   def test_create_release_branch_when_branch_exists_and_is_different(self):
     command_runner = MockCommandRunner()
     command_runner.respond_to_command_with(
         ('git', 'rev-parse', '--verify', '--quiet', '123abc'), output='123abc456deadbeef')
     command_runner.respond_to_command_with(
-        ('git', 'branch', 'release-4.3.25.3', '123abc'), allowed=False)
+        ('git', 'checkout', '-b', 'release-4.3.25.3', '123abc'), allowed=False)
+    command_runner.respond_to_command_with(
+        ('git', 'checkout', 'release-4.3.25.3'), allowed=False)
     command_runner.respond_to_command_with(
         ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output='sha-other-than-123abc', exit_code=0)
 
     release_making_branch = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
     result = release_making_branch.create_release_branch()
     assert_that(result, equal_to(False))
+    assert_that(command_runner.branch_changed, equal_to(False))
 
   def test_create_release_branch_when_branch_exists_and_is_same(self):
     command_runner = MockCommandRunner()
     command_runner.respond_to_command_with(
         ('git', 'rev-parse', '--verify', '--quiet', '123abc'), output='123abc456deadbeef')
     command_runner.respond_to_command_with(
-        ('git', 'branch', 'release-4.3.25.3', '123abc'), allowed=False)
+        ('git', 'checkout', '-b', 'release-4.3.25.3', '123abc'), allowed=False)
+    command_runner.respond_to_command_with(
+        ('git', 'checkout', 'release-4.3.25.3'), exit_code=0, branch_changed=True)
     command_runner.respond_to_command_with(
         ('git', 'show-ref', '-s', 'refs/heads/release-4.3.25.3'), output='123abc456deadbeef', exit_code=0)
 
     release_making_branch = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None, command_runner=command_runner, printer=MockPrinter())
     result = release_making_branch.create_release_branch()
     assert_that(result, equal_to(True))
+    assert_that(command_runner.branch_changed, equal_to(True))
 
   def test_tag_branch_point(self):
     release_for_tagging = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None)
