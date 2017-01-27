@@ -100,6 +100,9 @@ test: uaocs_compaction/index_stats
 test: uaocs_compaction/index
 test: uaocs_compaction/drop_column
 
+# deadlock tests run separately - because we don't know which one gets stuck.
+test: deadlock
+
 # This test will change the gp_workfile_limit_per_segment and will need to restart the DB.
 # It will also use faultinjector - so it needs to be in a group by itself.
 test: segspace_setup
