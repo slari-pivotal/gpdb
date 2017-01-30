@@ -1740,8 +1740,7 @@ IndexBuildHeapScan(Relation heapRelation,
 					Assert(!(heapTuple->t_data->t_infomask & HEAP_XMAX_IS_MULTI));
 					if (!TransactionIdIsCurrentTransactionId(
 								   HeapTupleHeaderGetXmax(heapTuple->t_data))
-						&& !IsSystemRelation(heapRelation)
-						&& (!RelationIsBitmapIndex(indexRelation)))
+						&& !IsSystemRelation(heapRelation))
 						elog(ERROR, "concurrent delete in progress");
 					indexIt = true;
 					tupleIsAlive = false;
