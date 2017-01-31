@@ -12,7 +12,7 @@ This document describes the steps required to produce a release specific to Morg
 	```
 	$ git fetch
 	$ #git checkout -b <new_branch> origin/<base_branch>
-	$ git checkout -b 4.3.9.0MS27 origin/4.3.9.0 
+	$ git checkout -b release-4.3.9.0MS27 origin/release-4.3.9.0 
 	```
 1. Update the release number in the below files. The artifacts name are hardcoded in the scripts as required by Concourse, so we need to update them with every release:
 	* ci/concourse/pipelines/morgan-stanley-pipeline.yml
