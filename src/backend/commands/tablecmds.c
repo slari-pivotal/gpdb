@@ -3274,6 +3274,7 @@ renameatt(Oid myrelid,
 void
 renamerel(Oid myrelid, const char *newrelname, RenameStmt *stmt)
 {
+	Relation		targetrelation;
 	Relation		pg_class_desc;
 	HeapTuple		tuple;
 	Oid				typeId;
@@ -3285,6 +3286,17 @@ renamerel(Oid myrelid, const char *newrelname, RenameStmt *stmt)
 	bool			isSystemRelation;
 	cqContext		cqc;
 	cqContext	   *pcqCtx;
+
+	/*
+	 * Grab an exclusive lock on the target table, index, sequence, or view,
+	 * which we will NOT release until end of transaction.
+	 *
+	 * The GUC is provided to bypass the validation (and locking) of the
+	 * relation when a catalog corruption would prevent such validation.  This
+	 * GUC is for Support's use only.
+	 */
+	if (!gp_allow_rename_relation_without_lock)
+		targetrelation = relation_open(myrelid, AccessExclusiveLock);
 
 	/* if this is a child table of a partitioning configuration, complain */
 	if (stmt && rel_is_child_partition(myrelid) && !stmt->bAllowPartn)
@@ -3466,6 +3478,10 @@ renamerel(Oid myrelid, const char *newrelname, RenameStmt *stmt)
 						   GetUserId(),
 						   "ALTER", "RENAME"
 				);
+
+	/* Close the relation if it was opened under the GUC. */
+	if (!gp_allow_rename_relation_without_lock)
+		relation_close(targetrelation, NoLock);
 }
 
 static bool

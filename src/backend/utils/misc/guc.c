@@ -639,6 +639,7 @@ bool gp_upgrade_mode;
 bool gp_maintenance_mode;
 bool gp_maintenance_conn;
 bool allow_segment_DML;
+bool gp_allow_rename_relation_without_lock = false;
 static char *allow_system_table_mods_str;
 
 /* ignore EXCLUDE clauses in window spec for backwards compatibility */
@@ -1067,6 +1068,16 @@ static struct config_bool ConfigureNamesBool[] =
 			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
 		},
 		&allow_segment_DML,
+		false, NULL, NULL
+	},
+
+	{
+		{"gp_allow_rename_relation_without_lock", PGC_USERSET, CUSTOM_OPTIONS,
+			gettext_noop("Allow ALTER TABLE RENAME without AccessExclusiveLock"),
+			NULL,
+			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+		},
+		&gp_allow_rename_relation_without_lock,
 		false, NULL, NULL
 	},
 
