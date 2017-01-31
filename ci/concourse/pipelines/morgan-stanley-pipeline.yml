@@ -204,7 +204,7 @@ resources:
     bucket: {{noarch-toolchain-snowflakes-bucket}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: gpmt_1.1.1/gpmt.gz
+    versioned_file: gpmt_1.1.2/gpmt.gz
 
 - name: ms_installer_rhel5_gpdb_rc
   type: s3
