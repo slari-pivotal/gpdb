@@ -19,9 +19,7 @@ This document describes the steps required to produce a release specific to Morg
 	* customer-patches/morgan-stanley/scripts/gen-customer-installer.sh
 	* getversion
 
-	Note: getversion is updated from current GPDB version, and MS scripts are updated from last MS release number on 4.3_STABLE
-
-	Background Info: The artifact names in Concourse are hardcoded because the way the pipeline is currently configured has directory structure in the same variable as the filename.
+	Background Info: getversion is updated from current GPDB version, and MS scripts are updated from last MS release number on 4.3_STABLE.  The artifact names in Concourse are hardcoded because the way the pipeline is currently configured has directory structure in the same variable as the filename.
 	In different parts of the pipeline, the directory structure for the local context is different (S3 bucket, mounted into a container volume, etc.)
 	We attempted to refactor the pipelines to unblock this but ran into issues.
 1. Create the pre-requisites as required by the pipeline
