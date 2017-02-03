@@ -56,10 +56,7 @@ void
 InsertInitialFastSequenceEntries(Oid objid)
 {
 	Relation gp_fastsequence_rel;
-	ScanKeyData scankey[2];
-	SysScanDesc scan;
 	TupleDesc tupleDesc;
-	int natts = 0;
 	Datum *values;
 	bool *nulls;
 	HeapTuple tuple = NULL;
@@ -105,9 +102,6 @@ InsertFastSequenceEntry(Oid objid, int64 objmod, int64 lastSequence)
 {
 	Relation gp_fastsequence_rel;
 	TupleDesc tupleDesc;
-	int natts = 0;
-	Datum *values;
-	bool *nulls;
 	HeapTuple tuple = NULL;
 	cqContext	 cqc;
 	
