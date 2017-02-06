@@ -40,6 +40,40 @@ BLD_TYPE=opt
 
 GREP_SED_VAR = $(BLD_TOP)/releng/make/dependencies/ivy.xml | sed -e 's|\(.*\)rev="\(.*\)"[ \t]*conf\(.*\)|\2|'
 
+LIBSTDC++_BASEDIR = $(BLD_TOP)/ext/$(BLD_ARCH)
+
+ifeq (Darwin, $(UNAME))
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib
+endif
+
+ifeq "$(BLD_ARCH)" "rhel5_x86_32"
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib
+endif
+
+ifeq "$(BLD_ARCH)" "rhel5_x86_64"
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib64
+endif
+
+ifeq "$(BLD_ARCH)" "rhel6_x86_32"
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib
+endif
+
+ifeq "$(BLD_ARCH)" "rhel6_x86_64"
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib64
+endif
+
+ifeq "$(BLD_ARCH)" "sles11_x86_64"
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib64
+endif
+
+ifeq "$(BLD_ARCH)" "sol10_x86_32"
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib
+endif
+
+ifeq "$(BLD_ARCH)" "sol10_x86_64"
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib/amd64
+endif
+
 ## ---------------------------------------
 ## R-Project support
 ## ---------------------------------------

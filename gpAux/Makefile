@@ -1265,6 +1265,9 @@ ifeq "$(BLD_ARCH)" "win32"
 	cp -rp $(BLD_TOP)/ext/win32/kfw-3-2-2/lib/*dll $(INSTLOC)/lib/
 endif
 
+	# Copy libstdc++
+	cd $(LIBSTDC++_LIBDIR); tar cvf - * | (cd $(INSTLOC)/lib; tar xfp -)
+
 ## ----------------------------------------------------------------------
 ## Copy Optimizer (orca) specific libraries to INSTLOC.  It must be
 ## called after the clients and connectivity targets have been
@@ -1277,8 +1280,6 @@ endif
 copyoptimizerlibs :
 ifneq "$(BLD_GPDB_BUILDSET)" "partial"
 ifeq "$(ORCA_CONFIG)" "--enable-orca"
-	cd $(LIBSTDC++_LIBDIR); tar cvf - * | (cd $(INSTLOC)/lib; tar xfp -)
-
 	# Create GP Optimizer UDFs library  
 	echo "Create GP Optimizer UDFs library";
 	rm -f $(INSTLOC)/lib/libgpoptudf.$(LDSFX);
