@@ -707,7 +707,7 @@ CTranslatorRelcacheToDXL::Pdrgpmdcol
 	{
 		BOOL fAOTable = IMDRelation::ErelstorageAppendOnlyRows == erelstorage ||
 				IMDRelation::ErelstorageAppendOnlyCols == erelstorage;
-		AddSystemColumns(pmp, pdrgpmdcol, rel, fAOTable);
+		AddSystemColumns(pmp, pdrgpmdcol, rel->rd_att->tdhasoid, fAOTable);
 	}
 
 	return pdrgpmdcol;
@@ -878,13 +878,10 @@ CTranslatorRelcacheToDXL::AddSystemColumns
 	(
 	IMemoryPool *pmp,
 	DrgPmdcol *pdrgpmdcol,
-	Relation rel,
+	BOOL fHasOid,
 	BOOL fAOTable
 	)
 {
-	BOOL fHasOid = rel->rd_att->tdhasoid;
-	fAOTable = fAOTable || gpdb::FAppendOnlyPartitionTable(rel->rd_id);
-
 	for (INT i= SelfItemPointerAttributeNumber; i > FirstLowInvalidHeapAttributeNumber; i--)
 	{
 		AttrNumber attno = AttrNumber(i);
@@ -894,13 +891,13 @@ CTranslatorRelcacheToDXL::AddSystemColumns
 		{
 			continue;
 		}
-
+		
 		if (FTransactionVisibilityAttribute(i) && fAOTable)
 		{
 			// skip transaction attrbutes like xmin, xmax, cmin, cmax for AO tables
 			continue;
 		}
-
+		
 		// get system name for that attribute
 		const CWStringConst *pstrSysColName = CTranslatorUtils::PstrSystemColName(attno);
 		GPOS_ASSERT(NULL != pstrSysColName);

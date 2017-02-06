@@ -321,7 +321,7 @@ namespace gpdxl
 
 			// add system columns (oid, tid, xmin, etc) in table descriptors
 			static
-			void AddSystemColumns(IMemoryPool *pmp, DrgPmdcol *pdrgpmdcol, Relation rel, BOOL fAOTable);
+			void AddSystemColumns(IMemoryPool *pmp, DrgPmdcol *pdrgpmdcol, BOOL fhasOid, BOOL fAOTable);
 
 			// retrieve an index from the relcache
 			static
