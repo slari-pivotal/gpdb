@@ -1,6 +1,6 @@
 result
-gnet-1.0-javadoc.tar
-gnet-1.1-javadoc.tar
+gnet-1.0-javadoc*
+gnet-1.1-javadoc*
 gphdfs.so
 *.o
 build
