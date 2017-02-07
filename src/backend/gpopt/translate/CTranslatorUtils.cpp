@@ -307,7 +307,14 @@ CTranslatorUtils::Pdxltabdesc
 {
 	// generate an MDId for the table desc.
 	OID oidRel = prte->relid;
-	
+
+	if (gpdb::FHasExternalPartition(oidRel))
+	{
+		// fall back to the planner for queries with partition tables that has an external table in one of its leaf
+		// partitions.
+		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Query over external partitions"));
+	}
+
 	CMDIdGPDB *pmdid = CDXLUtils::Pmdid(pmp, oidRel);
 
 	const IMDRelation *pmdrel = pmda->Pmdrel(pmdid);
@@ -319,8 +326,9 @@ CTranslatorUtils::Pdxltabdesc
 	CDXLTableDescr *pdxltabdesc = GPOS_NEW(pmp) CDXLTableDescr(pmp, pmdid, pmdnameTbl, prte->checkAsUser);
 
 	const ULONG ulLen = pmdrel->UlColumns();
-	
+
 	IMDRelation::Ereldistrpolicy ereldist = pmdrel->Ereldistribution();
+
 	if (NULL != pfDistributedTable &&
 		(IMDRelation::EreldistrHash == ereldist || IMDRelation::EreldistrRandom == ereldist))
 	{
@@ -334,6 +342,7 @@ CTranslatorUtils::Pdxltabdesc
 
 			GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Queries on master-only tables"));
 		}
+
 	// add columns from md cache relation object to table descriptor
 	for (ULONG ul = 0; ul < ulLen; ul++)
 	{
