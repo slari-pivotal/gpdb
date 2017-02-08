@@ -54,7 +54,7 @@ groups:
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
   - pulse_QP_memory-accounting
-  - pulse_QP_optimizer-functional
+  - QP_optimizer-functional
   - pulse_Gppkg
   - pulse_Gppkg-redhat6
   - pulse_CCLE
@@ -119,7 +119,6 @@ groups:
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
   - pulse_QP_memory-accounting
-  - pulse_QP_optimizer-functional
   - pulse_Gppkg
   - pulse_Gppkg-redhat6
   - pulse_CCLE
@@ -140,10 +139,10 @@ groups:
   - pulse_cs-filerep-end-to-end
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
-- name: Pulse_QP
+- name: QP
   jobs:
   - pulse_QP_memory-accounting
-  - pulse_QP_optimizer-functional
+  - QP_optimizer-functional
 - name: Pulse_MU
   jobs:
   - pulse_MU_BehaveBackupRestore
@@ -2548,42 +2547,37 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_QP_optimizer-functional
+- name: QP_optimizer-functional
   plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate:
     - get: gpdb_src
-      gpdb_release: add_trigger
       params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: QP_optimizer-functional
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: QP_optimizer-functional
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: sync_tools_gpdb
+      passed: [compile_gpdb_centos]
+      resource: sync_tools_gpdb_centos
+    - get: centos-gpdb-dev-5
+  - aggregate:
+    - task: optimizer_functional_part1
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: optimizer_functional_part1
+        BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off optimizer_disable_missing_stats_collection=on
+        TEST_OS: centos
+    - task: optimizer_functional_part2
+      timeout: 3h
+      file: gpdb_src/ci/concourse/tinc_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: optimizer_functional_part2
+        BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off optimizer_disable_missing_stats_collection=on
+        TEST_OS: centos
 
 - name: pulse_Gppkg
   plan:

@@ -344,3 +344,22 @@ crash_recovery_schema_topology:
 	-s tincrepo/mpp/gpdb/tests/storage/crashrecovery \
 	-p test_crash_recovery_schema_topology.py \
 	-p test_reindex_pg_class.py
+
+# Optimizer functional tests
+optimizer_functional_part1:
+	$(TESTER) $(DISCOVER) \
+	-s partitioning \
+	-s query \
+	-s ddl \
+	-q tags=ORCA \
+	-q tags!=FEATURE_BRANCH_ONLY \
+	-q tags!=dpe
+
+optimizer_functional_part2:
+	$(TESTER) $(DISCOVER) \
+	-s dml \
+	-s functions \
+	-s olap \
+	-q tags=ORCA \
+	-q tags!=FEATURE_BRANCH_ONLY \
+	-q tags!=dpe
