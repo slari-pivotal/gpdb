@@ -133,6 +133,7 @@ typedef struct FileScanDescData
 	FmgrInfo   *in_functions;
 	Oid		   *typioparams;
 	Oid			in_func_oid;
+	ErrorContextCallback errcontext;
 	
 	/* current file scan state */
 	bool		fs_inited;		/* false = scan not init'd yet */

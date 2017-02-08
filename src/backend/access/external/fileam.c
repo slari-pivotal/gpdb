@@ -400,11 +400,6 @@ external_endscan(FileScanDesc scan)
 		scan->fs_pstate = NULL;
 	}
 
-	/*
-	 * clean up error context
-	 */
-	error_context_stack = error_context_stack->previous;
-
 	PG_TRY();
 	{
 		/*
@@ -1195,6 +1190,7 @@ externalgettup(FileScanDesc scan,
 {
 	CopyState	pstate = scan->fs_pstate;
 	bool		custom = pstate->custom;
+	HeapTuple	tup = NULL;
 	ErrorContextCallback externalscan_error_context;
 
 	Assert(ScanDirectionIsForward(dir));
@@ -1217,10 +1213,14 @@ externalgettup(FileScanDesc scan,
 	}
 
 	if (!custom)
-		return externalgettup_defined(scan);	/* text/csv */
+		tup = externalgettup_defined(scan);	/* text/csv */
 	else
-		return externalgettup_custom(scan);		/* custom	*/
+		tup = externalgettup_custom(scan);		/* custom	*/
 
+	/* Restore the previous error callback */
+	error_context_stack = externalscan_error_context.previous;
+
+	return tup;
 }
 
 /*
