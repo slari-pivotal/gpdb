@@ -7715,9 +7715,22 @@ dumpExternal(TableInfo *tbinfo, PQExpBuffer query, PQExpBuffer q, PQExpBuffer de
 			locations[strlen(locations) - 1] = '\0';
 			locations++;
 			location = nextToken(&locations, ",");
+
+			/* the URI of custom protocol will contains \"\" and need to be removed */
+			if (location[0] == '\"')
+			{
+				location++;
+				location[strlen(location) - 1] = '\0';
+			}
 			appendPQExpBuffer(q, " LOCATION (\n    '%s'", location);
+
 			for (; (location = nextToken(&locations, ",")) != NULL;)
 			{
+				if (location[0] == '\"')
+				{
+					location++;
+					location[strlen(location) - 1] = '\0';
+				}
 				appendPQExpBuffer(q, ",\n    '%s'", location);
 			}
 			appendPQExpBuffer(q, "\n) ");
