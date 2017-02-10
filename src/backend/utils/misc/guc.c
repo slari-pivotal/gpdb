@@ -263,6 +263,8 @@ static const char *assign_password_hash_algorithm(const char *newval,
 												  bool doit, GucSource source);
 static const char *assign_gp_default_storage_options(
 		const char *newval, bool doit, GucSource source);
+
+static bool assign_pljava_classpath_insecure(bool newval, bool doit, GucSource source);
 /*
  * GUC option variables that are exported from this module
  */
@@ -4523,7 +4525,15 @@ static struct config_bool ConfigureNamesBool[] =
 		&vmem_process_interrupt,
 		false, NULL, NULL
 	},
-
+	{
+		{"pljava_classpath_insecure", PGC_POSTMASTER, CUSTOM_OPTIONS,
+			gettext_noop("Allow pljava_classpath to be set by user per session"),
+			NULL,
+			GUC_SUPERUSER_ONLY | GUC_NOT_IN_SAMPLE
+		},
+		&pljava_classpath_insecure,
+		false, assign_pljava_classpath_insecure, NULL
+	},
 	/* End-of-list marker */
 	{
 		{NULL, 0, 0, NULL, NULL}, NULL, false, NULL, NULL
@@ -7961,7 +7971,6 @@ static struct config_string ConfigureNamesString[] =
 		&pljava_classpath,
 		"", NULL, NULL
 	},
-
 	{
 		{"gp_resqueue_memory_policy", PGC_SUSET, RESOURCES_MGM,
 			gettext_noop("Sets the policy for memory allocation of queries."),
@@ -13033,7 +13042,16 @@ assign_transaction_read_only(bool newval, bool doit, GucSource source)
 	}
 	return true;
 }
-
+static bool
+assign_pljava_classpath_insecure(bool newval, bool doit, GucSource source)
+{
+	if ( newval == true )
+	{
+		struct config_generic *pljava_cp = find_option("pljava_classpath", ERROR);
+		pljava_cp->context &= PGC_USERSET;
+	}
+	return true;
+}
 static const char *
 assign_canonical_path(const char *newval, bool doit, GucSource source)
 {
