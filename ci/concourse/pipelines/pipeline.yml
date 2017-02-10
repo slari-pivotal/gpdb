@@ -378,7 +378,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-clients-4.(.*)-rhel5-x86_64.zip
+    regexp: deliverables/greenplum-clients-4.(.*)-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_clients_md5
   type: s3
@@ -387,7 +387,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-clients-4.(.*)-rhel5-x86_64.zip.md5
+    regexp: deliverables/greenplum-clients-4.(.*)-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_rc
   type: s3-week-long-urls
@@ -453,7 +453,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-clients-4.(.*)-sles11-x86_64.zip
+    regexp: deliverables/greenplum-clients-4.(.*)-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_clients_md5
   type: s3
@@ -462,7 +462,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-clients-4.(.*)-sles11-x86_64.zip.md5
+    regexp: deliverables/greenplum-clients-4.(.*)-build-1-sles11-x86_64.zip.md5
 
 - name: installer_rhel5_gpdb_connectivity
   type: s3
@@ -471,7 +471,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-connectivity-4.(.*)-rhel5-x86_64.zip
+    regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_connectivity_md5
   type: s3
@@ -480,7 +480,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-connectivity-4.(.*)-rhel5-x86_64.zip.md5
+    regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_connectivity
   type: s3
@@ -489,7 +489,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-connectivity-4.(.*)-sles11-x86_64.zip
+    regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_connectivity_md5
   type: s3
@@ -498,7 +498,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-connectivity-4.(.*)-sles11-x86_64.zip.md5
+    regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-sles11-x86_64.zip.md5
 
 - name: installer_rhel5_gpdb_loaders
   type: s3
@@ -507,7 +507,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-loaders-4.(.*)-rhel5-x86_64.zip
+    regexp: deliverables/greenplum-loaders-4.(.*)-build-1-rhel5-x86_64.zip
 
 - name: installer_rhel5_gpdb_loaders_md5
   type: s3
@@ -516,7 +516,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-loaders-4.(.*)-rhel5-x86_64.zip.md5
+    regexp: deliverables/greenplum-loaders-4.(.*)-build-1-rhel5-x86_64.zip.md5
 
 - name: installer_sles11_gpdb_loaders
   type: s3
@@ -525,7 +525,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-loaders-4.(.*)-sles11-x86_64.zip
+    regexp: deliverables/greenplum-loaders-4.(.*)-build-1-sles11-x86_64.zip
 
 - name: installer_sles11_gpdb_loaders_md5
   type: s3
@@ -534,7 +534,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-loaders-4.(.*)-sles11-x86_64.zip.md5
+    regexp: deliverables/greenplum-loaders-4.(.*)-build-1-sles11-x86_64.zip.md5
 
 - name: postgis_rhel5_gppkg
   type: s3
