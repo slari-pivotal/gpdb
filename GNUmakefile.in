@@ -99,6 +99,7 @@ clean:
 	$(MAKE) -C gpAux/extensions $@
 # Garbage from autoconf:
 	@rm -rf autom4te.cache/
+	@rm -f VERSION
 
 # Important: distclean `src' last, otherwise Makefile.global
 # will be gone too soon.
