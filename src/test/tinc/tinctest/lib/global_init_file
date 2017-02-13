@@ -45,6 +45,9 @@ s/^--.*//
 m/^Checksum:.*/
 s/^Checksum:.*//
 
+# Remove (CTranslatorUtils.cpp:<line #>)
+m/\(CTranslatorUtils\.cpp:\d+\)/
+s/\s\(CTranslatorUtils\.cpp:\d+\)//
 -- end_matchsubs
 
 -- start_matchignore
