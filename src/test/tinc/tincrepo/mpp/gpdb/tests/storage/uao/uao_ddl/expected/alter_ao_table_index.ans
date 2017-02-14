@@ -41,15 +41,23 @@ select count(*)  AS invisi_and_visi_tups from sto_alt_uao3_idx;
 
 set gp_select_invisible = false;
 SET
--- Alter table cluster on indexname
+-- Verify that alter table cluster on indexname is not allowed
 Create index sto_alt_uao3_idx_idx on sto_alt_uao3_idx(bigint_col);
 CREATE INDEX
 Alter table sto_alt_uao3_idx cluster on sto_alt_uao3_idx_idx;
+ERROR:  cannot cluster append-only table "sto_alt_uao3_idx": not supported
+select indisclustered from pg_index where indexrelid='sto_alt_uao3_idx_idx'::regclass;
+ indisclustered
+----------------
+ f
+(1 row)
+
+Alter table sto_alt_uao3_idx set without cluster;
 ALTER TABLE
-select * from sto_alt_uao3_idx order by bigint_col;
- text_col | bigint_col | char_vary_col | numeric_col 
-----------+------------+---------------+-------------
- 1_zero   |          1 | 1_zero        |         100
+select indisclustered from pg_index where indexrelid='sto_alt_uao3_idx_idx'::regclass;
+ indisclustered
+----------------
+ f
 (1 row)
 
 update sto_alt_uao3_idx set numeric_col = 111 where text_col = '1_zero';

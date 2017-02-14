@@ -16,10 +16,12 @@ select count(*) AS only_visi_tups from sto_alt_uao3_idx;
 set gp_select_invisible = true;
 select count(*)  AS invisi_and_visi_tups from sto_alt_uao3_idx;
 set gp_select_invisible = false;
--- Alter table cluster on indexname
+-- Verify that alter table cluster on indexname is not allowed
 Create index sto_alt_uao3_idx_idx on sto_alt_uao3_idx(bigint_col);
 Alter table sto_alt_uao3_idx cluster on sto_alt_uao3_idx_idx;
-select * from sto_alt_uao3_idx order by bigint_col;
+select indisclustered from pg_index where indexrelid='sto_alt_uao3_idx_idx'::regclass;
+Alter table sto_alt_uao3_idx set without cluster;
+select indisclustered from pg_index where indexrelid='sto_alt_uao3_idx_idx'::regclass;
 
 update sto_alt_uao3_idx set numeric_col = 111 where text_col = '1_zero';
 select * from sto_alt_uao3_idx order by bigint_col;
