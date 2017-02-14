@@ -1113,8 +1113,10 @@ cdbdisp_dispatchDtxProtocolCommand(DtxProtocolCommand dtxProtocolCommand,
 
 	if (primaryGang->dispatcherActive)
 	{
-		elog(LOG, "cdbdisp_dispatchDtxProtocolCommand: primary gang marked active re-marking");
-		primaryGang->dispatcherActive = false;
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("query plan with multiple segworker groups is not supported"),
+				 errhint("dispatching DTX commands to a busy gang")));
 	}
 	
 	dtxProtocolParms.primary_gang_id = primaryGang->gang_id;
