@@ -254,9 +254,6 @@ ExecWorkFile_Write(ExecWorkFile *workfile,
 				workfile->size = new_size;
 				WorkfileDiskspace_Commit( (new_size - current_size), size, true /* update_query_size */);
 
-				int64 size_evicted = workfile_mgr_evict(MIN_EVICT_SIZE);
-				elog(gp_workfile_caching_loglevel, "Hit out of disk space, evicted " INT64_FORMAT " bytes", size_evicted);
-
 				PG_RE_THROW();
 			}
 			PG_END_TRY();
@@ -283,9 +280,6 @@ ExecWorkFile_Write(ExecWorkFile *workfile,
 			{
 				Assert(WorkfileDiskspace_IsFull());
 				WorkfileDiskspace_Commit(0, size, true /* update_query_size */);
-
-				int64 size_evicted = workfile_mgr_evict(MIN_EVICT_SIZE);
-				elog(gp_workfile_caching_loglevel, "Hit out of disk space, evicted " INT64_FORMAT " bytes", size_evicted);
 
 				PG_RE_THROW();
 			}
