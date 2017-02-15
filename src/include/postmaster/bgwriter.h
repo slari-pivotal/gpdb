@@ -29,4 +29,11 @@ extern void AbsorbFsyncRequests(void);
 extern Size BgWriterShmemSize(void);
 extern void BgWriterShmemInit(void);
 
+/*
+ * Special values for the segno arg to RememberFsyncRequest and
+ * ForwardFsyncRequest
+ */
+#define FORGET_RELATION_FSYNC	(InvalidBlockNumber)
+#define FORGET_DATABASE_FSYNC	(InvalidBlockNumber-1)
+
 #endif   /* _BGWRITER_H */

@@ -2,8 +2,10 @@ subdir=src/backend/postmaster
 top_builddir=../../../..
 include $(top_builddir)/src/Makefile.global
 
-TARGETS=backoff syslogger
+TARGETS=backoff syslogger bgwriter
 
 include $(top_builddir)/src/backend/mock.mk
 
 backoff.t: $(MOCK_DIR)/backend/utils/error/assert_mock.o
+
+bgwriter.t: $(MOCK_DIR)/backend/storage/lmgr/lwlock_mock.o

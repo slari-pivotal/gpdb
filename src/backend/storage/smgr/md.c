@@ -42,10 +42,6 @@
 /* interval for calling AbsorbFsyncRequests in mdsync */
 #define FSYNCS_PER_ABSORB		10
 
-/* special values for the segno arg to RememberFsyncRequest */
-#define FORGET_RELATION_FSYNC	(InvalidBlockNumber)
-#define FORGET_DATABASE_FSYNC	(InvalidBlockNumber-1)
-
 /*
  * On Windows, we have to interpret EACCES as possibly meaning the same as
  * ENOENT, because if a file is unlinked-but-not-yet-gone on that platform,
@@ -2079,22 +2075,22 @@ ForgetRelationFsyncRequests(RelFileNode rnode)
 	}
 	else if (IsUnderPostmaster)
 	{
+
 		/*
-		 * Notify the bgwriter about it.  If we fail to queue the revoke
-		 * message, we have to sleep and try again ... ugly, but hopefully
-		 * won't happen often.
-		 *
-		 * XXX should we CHECK_FOR_INTERRUPTS in this loop?  Escaping with
-		 * an error would leave the no-longer-used file still present on
-		 * disk, which would be bad, so I'm inclined to assume that the
-		 * bgwriter will always empty the queue soon.
+		 * We get here if we are a backend process other than
+		 * checkpointer and we are about to unlink a heap relfile.
+		 * Note that unlink a file involves persistent table update
+		 * and it must happen after recording the transaction's
+		 * commit/abort record in xlog.  Therefore, we must be holding
+		 * CheckpointStartLock.
 		 */
-		while (!ForwardFsyncRequest(rnode, FORGET_RELATION_FSYNC))
-			pg_usleep(10000L);	/* 10 msec seems a good number */
+		Insist(LWLockHeldByMe(CheckpointStartLock));
 		/*
-		 * Note we don't wait for the bgwriter to actually absorb the
-		 * revoke message; see mdsync() for the implications.
+		 * No need to check return code.  If bgwriter's requests queue
+		 * is full, this remove entries belonging to rnode from the
+		 * quque.
 		 */
+		ForwardFsyncRequest(rnode, FORGET_RELATION_FSYNC);
 	}
 }
 
@@ -2118,8 +2114,8 @@ ForgetDatabaseFsyncRequests(Oid tblspc, Oid dbid)
 	else if (IsUnderPostmaster)
 	{
 		/* see notes in ForgetRelationFsyncRequests */
-		while (!ForwardFsyncRequest(rnode, FORGET_DATABASE_FSYNC))
-			pg_usleep(10000L);	/* 10 msec seems a good number */
+		Insist(LWLockHeldByMe(CheckpointStartLock));
+		ForwardFsyncRequest(rnode, FORGET_DATABASE_FSYNC);
 	}
 }
 
