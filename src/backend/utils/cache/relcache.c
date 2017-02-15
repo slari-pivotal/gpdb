@@ -3096,6 +3096,12 @@ RelationCacheInitializePhase3(void)
 	bool		needNewCacheFile = !criticalSharedRelcachesBuilt;
 
 	/*
+	 * Relation cache initialization or any sort of heap access is
+	 * dangerous before recovery is finished.
+	 */
+	Assert (IsBootstrapProcessingMode() || !RecoveryInProgress());
+
+	/*
 	 * switch to cache memory context
 	 */
 	oldcxt = MemoryContextSwitchTo(CacheMemoryContext);
