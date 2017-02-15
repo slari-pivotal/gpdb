@@ -1540,6 +1540,8 @@ FileRepPrimary_StartVerification(void)
 			pg_usleep(50000L); /* 50 ms */
 		}
 
+		FileRepSubProcess_InitHeapAccess();
+
 		/* If we just had a state transition ( either starting up for the first
 		 * time or a state transition while we are running) then we need check 
 		 * if we have an inprogress token file indicating there was
