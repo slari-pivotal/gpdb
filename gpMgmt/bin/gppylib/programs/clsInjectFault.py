@@ -417,6 +417,7 @@ class GpInjectFaultProgram:
                   "opt_relcache_translator_catalog_access (inject fault while translating relcache entries), " \
 			      "external_insert_finish (inject fault at the end of external insert), " \
 			      "interconnect_stop_ack_is_lost (inject fault in interconnect to skip sending the stop ack), " \
+			      "before_transaction_id_commit (inject fault before commit status is recorded in clog), " \
 			      "all (affects all faults injected, used for 'status' and 'reset'), ") 
         addTo.add_option("-c", "--ddl_statement", dest="ddlStatement", type="string",
                          metavar="ddlStatement",

@@ -316,6 +316,8 @@ FaultInjectorIdentifierEnumToString[] = {
 	_("external_insert_finish"),
 		/* inject fault at the end of external insert */
 	_("interconnect_stop_ack_is_lost"),
+		/* inject fault before commit status is recorded in clog */
+	_("before_transaction_id_commit"),
 		/* inject fault in interconnect to skip sending the stop ack */
 	_("not recognized"),
 };

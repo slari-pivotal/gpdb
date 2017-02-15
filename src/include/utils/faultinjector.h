@@ -147,8 +147,8 @@ typedef enum FaultInjectorIdentifier_e {
 
 	DtmInit,
 	
-        EndPreparedTwoPhaseSleep,
-	       /* sleep after creating two phase files */
+	EndPreparedTwoPhaseSleep,
+	/* sleep after creating two phase files */
 
 	SegmentTransitionRequest,
 
@@ -212,6 +212,8 @@ typedef enum FaultInjectorIdentifier_e {
 	ExternalInsertFinish,
 
 	InterconnectStopAckIsLost,
+
+	BeforeTransactionIdCommit,
 
 	/* INSERT has to be done before that line */
 	FaultInjectorIdMax,

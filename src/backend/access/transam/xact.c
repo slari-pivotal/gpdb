@@ -1318,6 +1318,8 @@ RecordTransactionCommit(void)
 										/* isRedo */ false);
 			}
 
+			SIMPLE_FAULT_INJECTOR(BeforeTransactionIdCommit);
+
 			TransactionIdCommit(xid);
 			/* to avoid race conditions, the parent must commit first */
 			TransactionIdCommitTree(nchildren, children);
