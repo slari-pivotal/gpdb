@@ -23,7 +23,7 @@
 typedef struct ExternalInsertDescData
 {
 	Relation	ext_rel;
-	FILE	   *ext_file;
+	URL_FILE   *ext_file;
 	char	   *ext_uri;		/* "command:<cmd>" or "tablespace:<path>" */
 	bool		ext_noop;		/* no op. this segdb needs to do nothing (e.g.
 								 * mirror seg) */
@@ -61,8 +61,6 @@ extern ExternalInsertDesc external_insert_init(Relation rel);
 extern Oid	external_insert(ExternalInsertDesc extInsertDesc, HeapTuple instup);
 extern void external_insert_finish(ExternalInsertDesc extInsertDesc);
 extern void external_set_env_vars(extvar_t *extvar, char *uri, bool csv, char *escape, char *quote, bool header, uint32 scancounter);
-extern void AtEOXact_ExtTables(bool isCommit);
-extern void AtEOXact_ResetDataSourceCtx(void);
 extern char *linenumber_atoi(char buffer[20], int64 linenumber);
 
 #endif   /* FILEAM_H */
