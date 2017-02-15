@@ -1,6 +1,6 @@
 DROP DATABASE IF EXISTS reindexdb;
 DROP
-CREATE DATABASE reindexdb;
+create database reindexdb template template0;
 CREATE
 1: @db_name reindexdb:BEGIN;
 BEGIN

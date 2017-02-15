@@ -2,7 +2,7 @@
 SET gp_create_table_random_default_distribution=off;
 -- end_ignore
 DROP DATABASE IF EXISTS reindexdb;
-CREATE DATABASE reindexdb;
+create database reindexdb template template0;
 1: @db_name reindexdb:BEGIN;
 1: drop table if exists reindex_tab_with_dropdb;
 1: create table reindex_tab_with_dropdb (a int , b int) with (appendonly=true, orientation=column);

@@ -9,7 +9,7 @@ DROP database IF EXISTS reindexdb2;
 1: CREATE ROLE test1 WITH login;
 1: CREATE ROLE test2 WITH login CREATEDB;
 1: SET role = test2;
-1: CREATE database reindexdb2;
+1: create database reindexdb2 template template0;
 2: @db_name reindexdb2: BEGIN;
 2: SET role = test1;
 2: CREATE TABLE mytab1_heap(a int, b int);

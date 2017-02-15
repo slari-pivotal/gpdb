@@ -15,7 +15,7 @@ CREATE
 CREATE
 1: SET role = test2;
 SET
-1: CREATE database reindexdb2;
+1: create database reindexdb2 template template0;
 CREATE
 2: @db_name reindexdb2: BEGIN;
 BEGIN
