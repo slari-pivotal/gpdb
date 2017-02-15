@@ -1296,13 +1296,17 @@ void PersistentStore_ReadTuple(
 	Buffer			buffer;
 
 	bool *nulls;
-	
+	READ_PERSISTENT_STATE_ORDERED_LOCK_DECLARE;
+
 #ifdef USE_ASSERT_CHECKING
 	if (storeSharedData == NULL ||
 		!PersistentStoreSharedData_EyecatcherIsValid(storeSharedData))
 		elog(ERROR, "Persistent store shared-memory not valid");
 #endif
-	
+
+                /* Any reads of the storeSharedData should be done under lock */
+	READ_PERSISTENT_STATE_ORDERED_LOCK;
+
 	if (Debug_persistent_store_print)
 		elog(PersistentStore_DebugPrintLevel(), 
 			 "PersistentStore_ReadTuple: Going to read tuple at TID %s ('%s', shared data %p)",
@@ -1374,6 +1378,8 @@ void PersistentStore_ReadTuple(
 	}
 
 	pfree(nulls);
+
+	READ_PERSISTENT_STATE_ORDERED_UNLOCK;
 }
 
 /*
