@@ -51,6 +51,7 @@ groups:
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
   - pulse_QP_memory-accounting
+  - QP_runaway-query
   - QP_optimizer-functional
   - pulse_Gppkg
   - pulse_Gppkg-redhat6
@@ -136,6 +137,7 @@ groups:
 - name: QP
   jobs:
   - pulse_QP_memory-accounting
+  - QP_runaway-query
   - QP_optimizer-functional
 - name: Pulse_MU
   jobs:
@@ -2465,6 +2467,28 @@ jobs:
       PULSE_PROJECT_NAME: QP_memory-accounting
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
+
+- name: QP_runaway-query
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      passed: [compile_gpdb_centos]
+      resource: sync_tools_gpdb_centos
+    - get: bin_gpdb
+      passed: [compile_gpdb_centos]
+      resource: bin_gpdb_centos
+      trigger: true
+    - get: centos-gpdb-dev-5
+  - task: runaway-query
+    timeout: 3h
+    file: gpdb_src/ci/concourse/tinc_gpdb.yml
+    image: centos-gpdb-dev-5
+    params:
+      MAKE_TEST_COMMAND: runaway_query
+      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      TEST_OS: "centos"
 
 - name: QP_optimizer-functional
   plan:

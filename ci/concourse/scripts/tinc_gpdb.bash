@@ -19,7 +19,9 @@ function gen_env(){
 		exit 1
 		}
 
+		if [ -f /opt/gcc_env.sh ]; then
 		source /opt/gcc_env.sh
+		fi
 		source /usr/local/greenplum-db-devel/greenplum_path.sh
 		cd "\${1}/gpdb_src/gpAux"
 		source gpdemo/gpdemo-env.sh
