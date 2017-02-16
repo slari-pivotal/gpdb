@@ -1371,7 +1371,7 @@ static int writeToDDFile(FILE *fp, char *ddBoostFileName, char *ddboost_storage_
         {
             mpp_err_msg(logError, progname, "ddboost write failed on %s with err %d\n", path1.path_name, err);
             err = -1;
-            break;
+            goto cleanup;
         }
 
         total_bytes += ret_count;
