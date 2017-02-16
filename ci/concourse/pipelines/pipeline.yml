@@ -27,8 +27,6 @@ groups:
   - gpdb_sync_to_dist_centos6
   - gpdb_sync_to_dist_centos7
   - gpdb_sync_to_dist
-  - MU_backup_smoke_centos
-  - MU_backup_centos
   - manual_testing_on_pulse_centos
   - manual_appliance_testing_centos
   - manual_testing_on_pulse_sles
@@ -46,7 +44,6 @@ groups:
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
   - pulse_MU_MFR-TINC
-  - pulse_MU_OpenBAR
   - pulse_cs-aoco-compression
   - pulse_cs-bin-swap
   - pulse_cs-filerep-schema-topology-crashrecov
@@ -80,8 +77,6 @@ groups:
   - gpdb_sync_to_dist_centos7
   - gpdb_src_packaging
   - gpdb_sync_to_dist
-  - MU_backup_smoke_centos
-  - MU_backup_centos
   - manual_testing_on_pulse_centos
   - manual_appliance_testing_centos
   - push_to_pivnet_manually_centos
@@ -111,7 +106,6 @@ groups:
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
   - pulse_MU_MFR-TINC
-  - pulse_MU_OpenBAR
   - pulse_cs-aoco-compression
   - pulse_cs-bin-swap
   - pulse_cs-filerep-schema-topology-crashrecov
@@ -157,7 +151,6 @@ groups:
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
   - pulse_MU_MFR-TINC
-  - pulse_MU_OpenBAR
 - name: Windows
   jobs:
   - compile_gpdb_windows_ccl
@@ -1770,43 +1763,6 @@ jobs:
 # initials of the team that owns the suite (e.g. MU = Management Utilities)
 # and tag is the tag passed to behave.
 
-- name: MU_backup_smoke_centos
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      params: {submodules: none}
-      passed: [gpdb_rc_packaging_centos]
-    - get: bin_gpdb
-      resource: bin_gpdb_centos
-      passed: &Stage3JobsCentos
-      - gpdb_rc_packaging_centos
-      trigger: true
-    - get: centos-gpdb-dev-5
-  - task: MU_backup_smoke_centos
-    file: gpdb_src/ci/concourse/behave_tests.yml
-    image: centos-gpdb-dev-5
-    params:
-      BEHAVE_TAGS: backupsmoke
-      TEST_OS: centos
-
-- name: MU_backup_centos
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      params: {submodules: none}
-      passed: [gpdb_rc_packaging_centos]
-    - get: bin_gpdb
-      resource: bin_gpdb_centos
-      passed: *Stage3JobsCentos
-      trigger: true
-    - get: centos-gpdb-dev-5
-  - task: MU_backup_centos
-    file: gpdb_src/ci/concourse/behave_tests.yml
-    image: centos-gpdb-dev-5
-    params:
-      BEHAVE_TAGS: backup
-      TEST_OS: centos
-
 - name: pulse_MU_BehaveBackupRestore
   plan:
   - get: pulse-api-image
@@ -2100,43 +2056,6 @@ jobs:
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-kerberos_smoke
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_MU_OpenBAR
-  plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-OpenBAR
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-OpenBAR
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
