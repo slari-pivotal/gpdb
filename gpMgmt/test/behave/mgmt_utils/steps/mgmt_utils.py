@@ -2117,7 +2117,8 @@ def impl(context):
 
                 if isinstance(stored_row[i], bool):
                     value = str(True if row[i] == 't' else False)
-
+                if value == '':
+                    value = 'None'
                 if value != str(stored_row[i]):
                     match_this_row = False
                     break
