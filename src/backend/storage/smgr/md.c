@@ -176,9 +176,9 @@ mdinit(void)
 	 * Create pending-operations hashtable if we need it.  Currently, we need
 	 * it if we are standalone (not under a postmaster) OR if we are a
 	 * bootstrap-mode subprocess of a postmaster (that is, a startup or
-	 * bgwriter process).
+	 * checkpointer process).
 	 */
-	if (!IsUnderPostmaster || IsBootstrapProcessingMode())
+	if (!IsUnderPostmaster || AmStartupProcess() || AmCheckpointerProcess())
 	{
 		HASHCTL		hash_ctl;
 
@@ -1976,13 +1976,6 @@ void
 RememberFsyncRequest(RelFileNode rnode, BlockNumber segno)
 {
 	Assert(pendingOpsTable);
-
-	/*
-	 * bgwriter don't do fsync after we import checkpointer process,
-	 * so we don't add anything into it's hash table.
-	 */
-	if (AmBackgroundWriterProcess())
-		return;
 
 	if (segno == FORGET_RELATION_FSYNC)
 	{

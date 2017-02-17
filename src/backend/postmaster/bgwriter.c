@@ -103,7 +103,6 @@ static volatile sig_atomic_t shutdown_requested = false;
 /*
  * Private state
  */
-static bool am_bg_writer = false;
 static time_t last_xlog_switch_time;
 
 static void BgSigHupHandler(SIGNAL_ARGS);
@@ -124,7 +123,6 @@ BackgroundWriterMain(void)
 
 	Assert(BgWriterShmem != NULL);
 	BgWriterShmem->bgwriter_pid = MyProcPid;
-	am_bg_writer = true;
 
 	/*
 	 * If possible, make this process a group leader, so that the postmaster
@@ -291,11 +289,6 @@ BackgroundWriterMain(void)
             ""); // tableName
 #endif
 #endif
-		/*
-		 * Process any requests or signals received recently.
-		 */
-		AbsorbFsyncRequests();
-
 		if (got_SIGHUP)
 		{
 			got_SIGHUP = false;
@@ -328,10 +321,6 @@ BackgroundWriterMain(void)
 			proc_exit(0);		/* done */
 		}
 
-		/*
-		 * Do a checkpoint smgrcloseall if requested, otherwise do one cycle of
-		 * dirty-buffer writing.
-		 */
 		if (do_checkpoint_smgrcloseall)
 		{
 			/*
@@ -340,8 +329,9 @@ BackgroundWriterMain(void)
 			 */
 			smgrcloseall();
 		}
-		else
-			BgBufferSync();
+
+		/* Perform a cycle of dirty buffer writing. */
+		BgBufferSync();
 
 		/*
 		 * Check for archive_timeout, if so, switch xlog files.  First we do a
@@ -396,7 +386,6 @@ BackgroundWriterMain(void)
 		 * sleep into 1-second increments, and check for interrupts after each
 		 * nap.
 		 *
-		 * We absorb pending requests after each short sleep.
 		 */
 		if ((bgwriter_all_percent > 0.0 && bgwriter_all_maxpages > 0) ||
 			(bgwriter_lru_percent > 0.0 && bgwriter_lru_maxpages > 0))
@@ -411,7 +400,6 @@ BackgroundWriterMain(void)
 			if (got_SIGHUP || checkpoint_smgrcloseall_requested || shutdown_requested)
 				break;
 			pg_usleep(1000000L);
-			AbsorbFsyncRequests();
 			udelay -= 1000000L;
 		}
 
@@ -577,8 +565,7 @@ AbsorbFsyncRequests(void)
 	BgWriterRequest *request;
 	int			n;
 
-	if (!am_bg_writer)
-		return;
+	Insist(!IsUnderPostmaster || AmStartupProcess() || AmCheckpointerProcess());
 
 	/*
 	 * We have to PANIC if we fail to absorb all the pending requests (eg,
@@ -612,9 +599,4 @@ AbsorbFsyncRequests(void)
 		pfree(requests);
 
 	END_CRIT_SECTION();
-}
-
-bool AmBackgroundWriterProcess()
-{
-	return am_bg_writer;
 }

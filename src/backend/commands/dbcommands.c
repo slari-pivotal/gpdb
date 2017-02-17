@@ -1051,7 +1051,7 @@ createdb_int(CreatedbStmt *stmt, CdbDispatcherState *ds)
 	 * up-to-date for the copy.  (We really only need to flush buffers for the
 	 * source database, but bufmgr.c provides no API for that.)
 	 */
-	BufferSync();
+	RequestCheckpoint(true, false);
 
 	CHECK_FOR_INTERRUPTS();
 	
