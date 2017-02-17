@@ -1287,6 +1287,7 @@ get_rel_oids(List *relids, const RangeVar *vacrel, const char *stmttype,
 		HeapTuple	tuple;
 		cqContext	cqc;
 		cqContext  *pcqCtx;
+		Oid 		candidateOid;
 
 		/* NOTE: force heapscan in caql */
 		pcqCtx = caql_beginscan(
@@ -1313,6 +1314,8 @@ get_rel_oids(List *relids, const RangeVar *vacrel, const char *stmttype,
 					classForm->relstorage == RELSTORAGE_VIRTUAL))
 				continue;
 
+			 candidateOid = HeapTupleGetOid(tuple);
+
 			/* Skip persistent tables. Vacuum lazy is harmless, but also no
 			 * benefit to perform. Vacuum full could turn out dangerous as it
 			 * has potential to move tuples around causing the TIDs for tuples
@@ -1320,12 +1323,25 @@ get_rel_oids(List *relids, const RangeVar *vacrel, const char *stmttype,
 			 * gp_relation_node. One scenario where this can happen is zero-page
 			 * due to failure between page extension and page initialization.
 			 */
-			 if (GpPersistent_IsPersistentRelation(HeapTupleGetOid(tuple)))
+			 if (GpPersistent_IsPersistentRelation(candidateOid))
 				 continue;
+
+			 /* Skip non root partition tables if ANALYZE ROOTPARTITION ALL is executed */
+			 if (rootonly && !rel_is_partitioned(candidateOid))
+			 {
+				 continue;
+			 }
+
+			 // skip mid-level partition tables if we have disabled collecting statistics for them
+			 PartStatus ps = rel_part_status(candidateOid);
+			 if (!optimizer_analyze_midlevel_partition && ps == PART_STATUS_INTERIOR)
+			 {
+				 continue;
+			 }
 
 			/* Make a relation list entry for this guy */
 			oldcontext = MemoryContextSwitchTo(vac_context);
-			oid_list = lappend_oid(oid_list, HeapTupleGetOid(tuple));
+			oid_list = lappend_oid(oid_list, candidateOid);
 			MemoryContextSwitchTo(oldcontext);
 		}
 

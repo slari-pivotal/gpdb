@@ -414,12 +414,13 @@ void analyzeStmt(VacuumStmt *stmt, List *relids)
 			if (!stmt->rootonly)
 			{
 				lRelOids = all_leaf_partition_relids(pn); /* all leaves */
+				if (optimizer_analyze_midlevel_partition)
+				{
+					lRelOids = list_concat(lRelOids, all_interior_partition_relids(pn)); /* interior partitions */
+				}
 			}
 			lRelOids = lappend_oid(lRelOids, relationOid); /* root partition */
-			if (optimizer_analyze_midlevel_partition)
-			{
-				lRelOids = list_concat(lRelOids, all_interior_partition_relids(pn)); /* interior partitions */
-			}
+
 		}
 		else if (ps == PART_STATUS_INTERIOR) /* analyze an interior partition directly */
 		{
@@ -748,6 +749,12 @@ static List* analyzableRelations(bool rootonly)
 	{
 		Oid candidateOid = HeapTupleGetOid(tuple);
 		if (rootonly && !rel_is_partitioned(candidateOid))
+		{
+			continue;
+		}
+		// skip mid-level partition tables if we have disabled collecting statistics for them
+		PartStatus ps = rel_part_status(candidateOid);
+		if (!optimizer_analyze_midlevel_partition && ps == PART_STATUS_INTERIOR)
 		{
 			continue;
 		}
