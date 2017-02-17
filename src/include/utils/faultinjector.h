@@ -214,6 +214,7 @@ typedef enum FaultInjectorIdentifier_e {
 	InterconnectStopAckIsLost,
 
 	BeforeTransactionIdCommit,
+	FsyncCounter,
 
 	/* INSERT has to be done before that line */
 	FaultInjectorIdMax,

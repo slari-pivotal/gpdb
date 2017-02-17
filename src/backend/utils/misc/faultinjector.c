@@ -319,6 +319,8 @@ FaultInjectorIdentifierEnumToString[] = {
 		/* inject fault before commit status is recorded in clog */
 	_("before_transaction_id_commit"),
 		/* inject fault in interconnect to skip sending the stop ack */
+	_("fsync_counter"),
+		/* inject fault to count buffers fsync'ed by checkpoint process */
 	_("not recognized"),
 };
 
@@ -988,6 +990,7 @@ FaultInjector_NewHashEntry(
 		switch (entry->faultInjectorIdentifier)
 		{
 			case Checkpoint:
+			case FsyncCounter:
 			case ChangeTrackingDisable:
 			case FileRepVerification:
 
