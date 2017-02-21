@@ -2433,40 +2433,25 @@ jobs:
 
 - name: pulse_QP_memory-accounting
   plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate:
     - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      passed: [compile_gpdb_centos]
+      resource: sync_tools_gpdb_centos
+    - get: bin_gpdb
+      passed: [compile_gpdb_centos]
+      resource: bin_gpdb_centos
+      trigger: true
+    - get: centos-gpdb-dev-5
+  - task: memory-accounting
+    timeout: 3h
+    file: gpdb_src/ci/concourse/tinc_gpdb.yml
+    image: centos-gpdb-dev-5
     params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: QP_memory-accounting
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: QP_memory-accounting
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
+      MAKE_TEST_COMMAND: memory_accounting
+      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      TEST_OS: "centos"
 
 - name: QP_runaway-query
   plan:

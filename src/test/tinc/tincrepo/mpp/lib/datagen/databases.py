@@ -56,7 +56,7 @@ __databases__['ptidx'] = TINCTestDatabase(database_name='ptidx')
 __databases__['queryfinish'] = DispatchSkewDatabase()
 
 # Database for Memory Accounting Tests
-__databases__['memory_accounting'] = DataSetDatabase(database_name='memory_accounting')
+__databases__['memory_accounting'] = TPCHDatabase(database_name='memory_accounting', scale_factor=0.4)
 
 # Database for Runaway query termination
 __databases__['runaway_query'] = DataSetDatabase(database_name='runaway_query')
