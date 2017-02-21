@@ -33,13 +33,17 @@ groups:
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
   - pulse_MU_BehaveBackupRestore
+  - pulse_MU_BehaveBackupRestore_filename_compatibility
   - pulse_MU_BehaveGPCheckcat
   - pulse_MU_BehaveGPRecoverseg
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_BehaveNetBackup76_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_DDBOOST_Full_filename_compatibility
+  - pulse_MU_DDBOOST_Incremental_filename_compatibility
   - pulse_MU_Gpexpand
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
@@ -96,13 +100,17 @@ groups:
   jobs:
   - gpdb_sync_to_dist
   - pulse_MU_BehaveBackupRestore
+  - pulse_MU_BehaveBackupRestore_filename_compatibility
   - pulse_MU_BehaveGPCheckcat
   - pulse_MU_BehaveGPRecoverseg
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_BehaveNetBackup76_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_DDBOOST_Full_filename_compatibility
+  - pulse_MU_DDBOOST_Incremental_filename_compatibility
   - pulse_MU_Gpexpand
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
@@ -142,13 +150,17 @@ groups:
 - name: Pulse_MU
   jobs:
   - pulse_MU_BehaveBackupRestore
+  - pulse_MU_BehaveBackupRestore_filename_compatibility
   - pulse_MU_BehaveGPCheckcat
   - pulse_MU_BehaveGPRecoverseg
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_BehaveNetBackup76_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
+  - pulse_MU_DDBOOST_Full_filename_compatibility
+  - pulse_MU_DDBOOST_Incremental_filename_compatibility
   - pulse_MU_Gpexpand
   - pulse_MU_Kerberos-jdbc-no-scm
   - pulse_MU_Kerberos-smoke
@@ -1802,6 +1814,43 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
+- name: pulse_MU_BehaveBackupRestore_filename_compatibility
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    gpdb_release: delete
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      gpdb_release: MU_team_manual_trigger
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore_filename_compatibility
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore_filename_compatibility
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
 - name: pulse_MU_BehaveGPCheckcat
   plan:
   - get: pulse-api-image
@@ -1987,6 +2036,43 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
+- name: pulse_MU_BehaveNetBackup76_filename_compatibility
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    gpdb_release: delete
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      gpdb_release: MU_team_manual_trigger
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76_filename_compatibility
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76_filename_compatibility
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
 - name: pulse_MU_Kerberos-jdbc-no-scm
   plan:
   - get: pulse-api-image
@@ -2098,6 +2184,43 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
+- name: pulse_MU_DDBOOST_Full_filename_compatibility
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    gpdb_release: delete
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      gpdb_release: MU_team_manual_trigger
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Full_filename_compatibility
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Full_filename_compatibility
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
 - name: pulse_MU_DDBOOST_Incremental
   plan:
   - get: pulse-api-image
@@ -2132,6 +2255,43 @@ jobs:
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_DDBOOST_Incremental_filename_compatibility
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    gpdb_release: delete
+    trigger: false
+  - aggregate:
+    - get: gpdb_src
+      gpdb_release: MU_team_manual_trigger
+      params: {submodules: none}
+      passed: [gpdb_sync_to_dist]
+    - get: gpdb_src_archive
+      passed: [gpdb_sync_to_dist]
+    - get: installer_gpdb_rc
+      resource: installer_rhel5_gpdb_rc
+      passed: [gpdb_sync_to_dist]
+    - get: qautils_tarball
+      resource: qautils_rhel5_tarball
+      passed: [gpdb_sync_to_dist]
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental_filename_compatibility
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental_filename_compatibility
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
