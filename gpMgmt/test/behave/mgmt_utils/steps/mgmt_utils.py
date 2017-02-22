@@ -4202,22 +4202,3 @@ def store_timestamp_in_old_format(context, directory = None, prefix = ""):
 @when('the timestamp will be stored in json format')
 def impl(context):
     context.is_timestamp_stored_as_json = True
-
-@given('a role "{role_name}" is created')
-@when('a role "{role_name}" is created')
-@then('a role "{role_name}" is created')
-def impl(context, role_name):
-    with dbconn.connect(dbconn.DbURL(dbname='template1')) as conn:
-        pghba = PgHba()
-        new_entry = Entry(entry_type='local',
-                          database='all',
-                          user=role_name,
-                          authmethod="password")
-        pghba.add_entry(new_entry)
-        pghba.write()
-
-        dbconn.execSQL(conn, "Drop role if exists dsp_role")
-
-        dbconn.execSQL(conn, "Create role %s with login password 'dsprolepwd'" % role_name)
-        dbconn.execSQL(conn, "select pg_reload_conf()")
-        conn.commit()
