@@ -1733,7 +1733,7 @@ mdsync(void)
 	 * occur in processes that have created a pendingOpsTable.
 	 */
 	if (!pendingOpsTable)
-		return false;
+		elog(ERROR, "cannot sync without a pendingOpsTable");
 
 	/*
 	 * If we are in the bgwriter, the sync had better include all fsync
