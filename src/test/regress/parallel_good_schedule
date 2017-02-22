@@ -112,3 +112,5 @@ test: segspace_cleanup
 # This test use faultinjector to cause a PANIC and recovery process.
 # So it needs to be in a group by itself.
 test: relcache_init_before_xlog_redo
+
+test: caqlcov

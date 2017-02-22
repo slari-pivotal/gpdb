@@ -639,7 +639,7 @@ PersistentBuild_BuildDb(
 	 * GUC, lets do a checkpoint to force out all buffer pool pages so we never
 	 * try to redo those XLOG records in Crash Recovery.
 	 */
-	CreateCheckPoint(false, true);
+	RequestCheckpoint(true, false);
 
 	return count;
 }
