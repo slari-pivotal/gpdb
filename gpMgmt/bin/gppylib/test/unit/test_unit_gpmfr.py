@@ -29,7 +29,7 @@ class GpMfrTestCase(GpTestCase):
         # load subject after setting env vars
         gpmfr_path = os.path.abspath(os.path.dirname(__file__) + "/../../../gpmfr.py")
         # GOOD_MOCK_EXAMPLE of environment variables
-        with patch.dict('os.environ', values = {'GPHOME': 'foo'}):
+        with patch.dict('os.environ', values = {'GPHOME': 'foo', 'HOME': '/home/gpadmin'}):
             self.subject = imp.load_source('gpmfr', gpmfr_path)
 
         self.subject.logger = Mock(spec=['log', 'info', 'debug', 'error', 'warn'])
