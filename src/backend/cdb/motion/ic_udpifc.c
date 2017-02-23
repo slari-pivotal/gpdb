@@ -597,6 +597,10 @@ struct UnackQueueRing
  */
 static UnackQueueRing unack_queue_ring = {0, 0, 0};
 
+static int UDPIFCSenderSocketFd = -1;
+static uint16 UDPIFCSenderPort = 0;
+static int UDPIFCSenderFamily = 0;
+
 /*
  * AckSendParam
  *
@@ -1404,8 +1408,9 @@ InitMotionUDPIFC(int *listenerSocketFd, uint16 *listenerPort)
 					errmsg("failed to initialize connection htab for startup cache")));
 
 	/*
-	 * setup listening socket.
+	 * setup listening socket and sending socket for Interconnect.
 	 */
+	setupUDPListeningSocket(&UDPIFCSenderSocketFd, &UDPIFCSenderPort, &UDPIFCSenderFamily);
 	setupUDPListeningSocket(listenerSocketFd, listenerPort, &txFamily);
 
 #if defined(__darwin__) && !defined(IC_USE_PTHREAD_SYNCHRONIZATION)
@@ -1503,6 +1508,12 @@ CleanupMotionUDPIFC(void)
 	snd_control_info.ackBuffer = NULL;
 
 	MemoryContextDelete(ic_control_info.memContext);
+
+	if (UDPIFCSenderSocketFd >= 0)
+		closesocket(UDPIFCSenderSocketFd);
+	UDPIFCSenderSocketFd = -1;
+	UDPIFCSenderPort = 0;
+	UDPIFCSenderFamily = 0;
 
 #if defined(__darwin__) && !defined(IC_USE_PTHREAD_SYNCHRONIZATION)
 	destroyUDPSignal(&ic_control_info.usig);
@@ -2987,10 +2998,9 @@ startOutgoingUDPConnections(ChunkTransportState *transportStates,
 		conn++;
 	}
 
-	pEntry->txfd = -1;
-	pEntry->txport = 0;
-	setupUDPListeningSocket(&pEntry->txfd, &port, &pEntry->txfd_family);
-	pEntry->txport = port;
+	pEntry->txfd = UDPIFCSenderSocketFd;
+	pEntry->txport = UDPIFCSenderPort;
+	pEntry->txfd_family = UDPIFCSenderFamily;
 
 	return pEntry;
 
@@ -3709,11 +3719,6 @@ TeardownUDPIFCInterconnect_Internal(ChunkTransportState *transportStates,
     	{
     		/* now it is safe to remove. */
     		pEntry = removeChunkTransportState(transportStates, mySlice->sliceIndex);
-
-    		if (pEntry->txfd >= 0)
-    			closesocket(pEntry->txfd);
-    		pEntry->txfd = -1;
-    		pEntry->txfd_family = 0;
 
     		/* connection array allocation may fail in interconnect setup. */
     		if (pEntry->conns)
