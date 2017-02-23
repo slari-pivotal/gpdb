@@ -143,26 +143,3 @@ class DeltaUpgradeTestCase(ScenarioTestCase, UpgradeTestCase):
         '''
         self.backup_432_restore_43(checksum=True)
 
-    def test_backup_43_restore_432(self):
-
-        self.binary_swap_to = '4.3.2.0 1 sp'
-        (self.old_gpdb, self.new_gpdb) = self.get_gpdbpath_info(self.binary_swap_to)
-
-        test_case_list0 = []
-        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.install_GPDB', [self.binary_swap_to]))
-
-        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.setup_upgrade', {'old_version':self.binary_swap_to, 'master_port': self.db_port, 'mirror_enabled' : True, 'fresh_db': True}))
-
-        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.run_workload', ['test_delta'], {'db_port': self.db_port}))
-        
-        mdd = self.upgrade_home + '/gpdb_%s/' % self.get_product_version()[1] + 'master/gpseg-1'
-        test_case_list0.append(('mpp.gpdb.tests.utilities.upgrade.UpgradeHelperClass.backup_db',[self.new_gpdb,self.db_port, 'dldb'], {'new_gpdb': self.new_gpdb,'mdd': mdd}))
-
-        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.run_swap',[self.new_gpdb, self.old_gpdb, self.db_port], {'mdd':mdd, 'swap_back' : True}))
-
-        test_case_list0.append(('mpp.gpdb.tests.utilities.upgrade.UpgradeHelperClass.restore_db',[self.new_gpdb, self.old_gpdb + '/greenplum-db', self.db_port, 'dldb'], {'mdd': mdd}))
-
-        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.validate_workload', ['test_delta'], {'db_port': self.db_port}))
-        test_case_list0.append(('.gpdb_upgrade.UpgradeTestCase.cleanup_upgrade', [self.new_gpdb, self.old_gpdb, self.db_port, self.test_method], {'fresh_db' : True}))
-        self.test_case_scenario.append(test_case_list0, serial=True)
-
