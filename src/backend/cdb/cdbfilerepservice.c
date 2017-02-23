@@ -627,6 +627,7 @@ FileRepSubProcess_InitHeapAccess(void)
 	if (heapAccessInitialized)
 		return;
 
+
 	/* heap access requires the rel-cache */
 	RelationCacheInitialize();
 	InitCatalogCache();
@@ -861,7 +862,6 @@ FileRepSubProcess_Main()
 
 		case FileRepProcessTypeResyncManager:
 			FileRepSubProcess_InitProcess();
-			FileRepSubProcess_InitHeapAccess();
 			FileRepPrimary_StartResyncManager();
 			
 			ResourceOwnerRelease(CurrentResourceOwner,
@@ -873,9 +873,7 @@ FileRepSubProcess_Main()
 		case FileRepProcessTypeResyncWorker2:
 		case FileRepProcessTypeResyncWorker3:
 		case FileRepProcessTypeResyncWorker4:
-
 			FileRepSubProcess_InitProcess();
-			FileRepSubProcess_InitHeapAccess();
 			FileRepPrimary_StartResyncWorker();
 			
 			ResourceOwnerRelease(CurrentResourceOwner,
