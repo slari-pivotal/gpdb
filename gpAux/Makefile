@@ -362,7 +362,6 @@ define BUILD_STEPS
 	cd $(BUILDDIR) && $(MAKE) $(parallelexec_opts) install
 	#@$(MAKE) greenplum_path INSTLOC=$(INSTLOC)
 	#@$(MAKE) groupSession INSTLOC=$(INSTLOC)
-	@$(MAKE) mkgpcloud INSTLOC=$(INSTLOC)
 	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
 	#@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
 	@$(MAKE) mkpgbouncer INSTLOC=$(INSTLOC) BUILDDIR=$(BUILDDIR)
@@ -370,6 +369,7 @@ define BUILD_STEPS
 	@$(MAKE) mkgpperfmon INSTLOC=$(INSTLOC) BUILDDIR=$(BUILDDIR)
 	@$(MAKE) mkplatform INSTLOC=$(INSTLOC)
 	if [ "$(findstring $(BLD_ARCH),$(SERVER_PLATFORMS))" != "" ]; then \
+	  $(MAKE) mkgpcloud INSTLOC=$(INSTLOC) && \
 	  $(MAKE) mkgphdfs INSTLOC=$(INSTLOC) && \
 	  $(MAKE) mkorafce INSTLOC=$(INSTLOC) && \
 	  (cd extensions/gpsnmpd/ && $(MAKE) install) && \
