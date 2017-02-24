@@ -26,7 +26,7 @@ class GpConfig(GpTestCase):
         #   self.subject = gpconfig
         gpconfig_file = os.path.abspath(os.path.dirname(__file__) + "/../../../gpconfig")
         self.subject = imp.load_source('gpconfig', gpconfig_file)
-        self.subject.logger = Mock(spec=['log', 'warn', 'info', 'debug', 'error', 'warning'])
+        self.subject.logger = Mock(spec=['log', 'warn', 'info', 'debug', 'error', 'warning', 'fatal'])
 
         self.conn = Mock()
         self.rows = []
@@ -37,12 +37,12 @@ class GpConfig(GpTestCase):
         self.gparray = self.createGpArrayWith2Primary2Mirrors()
         self.host_cache = Mock()
 
-        host = GpHost('localhost')
+        self.host = GpHost('localhost')
         seg = Segment()
         db = self.gparray.master
         seg.addPrimary(db)
-        host.addDB(seg)
-        self.host_cache.get_hosts.return_value = [host]
+        self.host.addDB(seg)
+        self.host_cache.get_hosts.return_value = [self.host]
         self.host_cache.ping_hosts.return_value = []
 
         self.master_read_config = Mock()
@@ -132,6 +132,11 @@ class GpConfig(GpTestCase):
 
         self.subject.do_main()
 
+        self.pool.addCommand.assert_called_once_with(self.master_read_config)
+        self.pool.join.assert_called_once_with()
+        self.pool.check_results.assert_called_once_with()
+        self.pool.haltWork.assert_called_once_with()
+        self.pool.joinWorkers.assert_called_once_with()
         self.assertEqual(self.subject.logger.error.call_count, 0)
         self.assertIn("foo", mock_stdout.getvalue())
 
@@ -156,12 +161,33 @@ class GpConfig(GpTestCase):
         another_segment_read_config.get_seg_id.return_value = 1
         self.pool.getCompletedItems.return_value.append(another_segment_read_config)
 
+        self.host_cache.get_hosts.return_value.extend([self.host, self.host])
+
         self.subject.do_main()
 
+        self.assertEqual(self.pool.addCommand.call_count, 3)
         self.assertEqual(self.subject.logger.error.call_count, 0)
         self.assertIn("WARNING: GUCS ARE OUT OF SYNC", mock_stdout.getvalue())
         self.assertIn("bar", mock_stdout.getvalue())
         self.assertIn("baz", mock_stdout.getvalue())
+
+    def test_option_change_value_masteronly_succeed(self):
+        entry = 'my_property_name'
+        sys.argv = ["gpconfig", "-c", entry, "-v", "100", "-m", "20"]
+        # 'SELECT name, setting, unit, short_desc, context, vartype, min_val, max_val FROM pg_settings'
+        self.rows.extend([['my_property_name', 'setting', 'unit', 'short_desc',
+                         'context', 'vartype', 'min_val', 'max_val']])
+        self.subject.do_main()
+
+
+    def test_option_change_value_masteronly_fail_not_valid_guc(self):
+        sys.argv = ["gpconfig", "-c", "my_property_name", "-v", "100", "-m", "20"]
+
+        with self.assertRaises(SystemExit) as cm:
+            self.subject.do_main()
+
+            self.assertEqual(self.subject.logger.fatal.call_count, 1)
+            self.assertEqual(cm.exception.code, 1)
 
 
 if __name__ == '__main__':
