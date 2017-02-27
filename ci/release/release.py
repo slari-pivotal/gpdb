@@ -282,7 +282,7 @@ class Release(object):
         ('fly', 'targets'))
 
     for line in targets.splitlines():
-      target, url, expiry = line.split(None, 2)
+      target, url, team, expiry = line.split(None, 3)
       if target == 'shared' and url == shared_url:
         if self._parse_expiry(expiry) > datetime.utcnow():
           return True
