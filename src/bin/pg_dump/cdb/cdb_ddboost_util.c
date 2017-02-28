@@ -2433,6 +2433,8 @@ copyFilesFromDir(const char *fromDir, char *toDir, ddp_conn_desc_t ddp_conn, cha
 
             /* File full_path is closed in the callee */
 			err = readFromDDFile(fp, full_path, ddboost_storage_unit);
+			fclose(fp);
+			fp = NULL;
 		}
 	}
 
@@ -2965,6 +2967,8 @@ syncFilesFromDDBoostTimestamp(struct ddboost_options *dd_options, ddp_conn_desc_
 
             /* Close both files in the called function */
             err = readFromDDFile(fp, ddboostPath, dd_options->ddboost_storage_unit);
+			fclose(fp);
+			fp = NULL;
             if (err)
             {
                 mpp_err_msg(logError, progname, "Copy failed from DDboost file %s to GPDB file %s\n", ddboostPath, gpdbPath);
