@@ -64,7 +64,6 @@ groups:
   - pulse_mpp-interconnect
   - pulse_mpp-interconnect-sles
   - compile_gpdb_windows_ccl
-  - release_script
 
 - name: CentOS/RHEL
   jobs:
@@ -171,7 +170,6 @@ groups:
 
 - name: Bootstrap
   jobs:
-  - release_script
   - bootstrap-ccache
 
 ## ======================================================================
@@ -2940,22 +2938,6 @@ jobs:
       platform: linux
       run:
         path: /bin/false
-
-- name: release_script
-  plan:
-  - get: gpdb_src
-    trigger: true
-  - task: unit_tests
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: python
-          tag: '2.7'
-      inputs: [name: gpdb_src]
-      run:
-        path: gpdb_src/ci/release/test
 
 - name: bootstrap-ccache
   plan:
