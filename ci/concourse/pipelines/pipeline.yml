@@ -21,6 +21,7 @@ groups:
   - icg_planner_sles
   - regression_tests_gpcloud_centos
   - MU_check_centos
+  - pt-rebuild
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging
   - gpdb_rc_packaging_sles
@@ -76,6 +77,7 @@ groups:
   - icg_planner_centos
   - regression_tests_gpcloud_centos
   - MU_check_centos
+  - pt-rebuild
   - gpdb_rc_packaging_centos
   - gpdb_sync_to_dist_centos6
   - gpdb_sync_to_dist_centos7
@@ -1077,6 +1079,29 @@ jobs:
     file: gpdb_src/ci/concourse/gpMgmt_check_gpdb.yml
     image: centos-gpdb-dev-5
     params:
+      TEST_OS: centos
+
+- name: pt-rebuild
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      params: {submodules: none}
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-5
+  - task: persistent_table_rebuild
+    timeout: 1h
+    file: gpdb_src/ci/concourse/behave_tests.yml
+    image: centos-gpdb-dev-5
+    params:
+      BEHAVE_TAGS: persistent_rebuild
+      BLDWRAP_POSTGRES_CONF_ADDONS: ""
       TEST_OS: centos
 
 - name: cs-fts_centos
