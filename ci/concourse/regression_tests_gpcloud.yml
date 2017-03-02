@@ -5,6 +5,7 @@ inputs:
   - name: sync_tools_gpdb
 params:
   s3conf:
+  overwrite_gpcloud:
   TEST_OS:
 run:
   path: gpdb_src/ci/concourse/scripts/regression_tests_gpcloud.bash

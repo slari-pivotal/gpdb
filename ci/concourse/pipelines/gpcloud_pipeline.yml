@@ -71,6 +71,7 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       s3conf: {{s3_configuration_file}}
+      overwrite_gpcloud: true
       TEST_OS: centos
 
 - name: gpcheckcloud_tests_gpcloud_centos
@@ -90,6 +91,7 @@ jobs:
     file: gpdb_src/ci/concourse/gpcheckcloud_tests_gpcloud.yml
     image: centos-gpdb-dev-5
     params:
+      overwrite_gpcloud: true
       s3conf: {{s3_configuration_file}}
 
 - name: staging_server_gpcloud_centos

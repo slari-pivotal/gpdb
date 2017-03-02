@@ -1060,6 +1060,7 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       s3conf: {{s3_configuration_file}}
+      overwrite_gpcloud: false
       TEST_OS: centos
 
 - name: MU_check_centos
