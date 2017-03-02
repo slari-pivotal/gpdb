@@ -266,7 +266,9 @@ CONFIGFLAGS+= $(CONFIG_ADDITIONS)
 RECONFIG :
 	rm -f Debug/GNUmakefile
 	rm -f Release/GNUmakefile
-	rm -f $(GPPGDIR)/GNUmakefile
+	if [ -f $(GPPGDIR)/config.status ]; then \
+		cd $(GPPGDIR) && ./config.status GNUmakefile; \
+	fi;
 
 # avoid AIX's restricted shell
 aix5_ppc_64_CONFIG_SHELL=/usr/bin/bash
