@@ -66,7 +66,7 @@ pygresql:
 	if [ `uname -s` = 'HP-UX' ]; then \
 	    cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" LDFLAGS="-L../../../../gpAux/ext/hpux_ia64/python-2.5.6/lib" python setup.py build; \
 	else \
-	    cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" python setup.py build; \
+	    cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" $(PYTHON) setup.py build; \
 	fi
 
 	mkdir -p $(PYLIB_DIR)/pygresql
