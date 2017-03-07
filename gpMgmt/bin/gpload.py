@@ -2349,8 +2349,12 @@ class gpload:
                 else:
                     queryStr = "select cmdtime, count(*) from gp_read_error_log('%s') group by cmdtime order by cmdtime desc limit 1" %self.extTableName
                     results = self.db.query(queryStr.encode('utf-8')).getresult()
-                    self.lastcmdtime = (results[0])[0]
                     global NUM_WARN_ROWS
+                    if len(results) == 0:
+                        NUM_WARN_ROWS = 0
+                        return 0
+
+                    self.lastcmdtime = (results[0])[0]
                     NUM_WARN_ROWS = (results[0])[1]
                     return (results[0])[1];
         return 0
