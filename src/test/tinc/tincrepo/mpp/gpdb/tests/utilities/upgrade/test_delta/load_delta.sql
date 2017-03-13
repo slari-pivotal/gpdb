@@ -2,6 +2,7 @@ Drop database dldb;
 Create database dldb;
 
 \c dldb
+set time zone PST8PDT;
 
 Drop table if exists delta_t1;
 
