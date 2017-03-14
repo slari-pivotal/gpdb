@@ -256,7 +256,7 @@ CREATE FUNCTION
 select pltest.PLPERLoutpara_unname_83(pltest.tableTIMESTAMPTZ.key) AS ID from pltest.tableTIMESTAMPTZ ORDER BY ID;
             id             
 ---------------------------
- 2011-08-12 10:00:52.14-07
+ 2011-08-12 10:00:52.14+00
  
 (2 rows)
 
@@ -265,7 +265,7 @@ SELECT 2
 select * from pltest.tableTIMESTAMPTZ1 ORDER BY ID;
             id             
 ---------------------------
- 2011-08-12 10:00:52.14-07
+ 2011-08-12 10:00:52.14+00
  
 (2 rows)
 
@@ -274,7 +274,7 @@ DROP TABLE
 select pltest.PLPERLoutpara_unname_83('2011-08-12 10:00:52.14'::TIMESTAMPTZ);
   plperloutpara_unname_83  
 ---------------------------
- 2011-08-12 10:00:52.14-07
+ 2011-08-12 10:00:52.14+00
 (1 row)
 
 select pltest.PLPERLoutpara_unname_83(NULL);
@@ -286,7 +286,7 @@ select pltest.PLPERLoutpara_unname_83(NULL);
 select * from pltest.PLPERLoutpara_unname_83('2011-08-12 10:00:52.14'::TIMESTAMPTZ);
   plperloutpara_unname_83  
 ---------------------------
- 2011-08-12 10:00:52.14-07
+ 2011-08-12 10:00:52.14+00
 (1 row)
 
 select * from pltest.PLPERLoutpara_unname_83(NULL);
@@ -1620,7 +1620,7 @@ CREATE FUNCTION
 select pltest.PLPERLoutpara_unname_110(pltest.tableTIMETZ.key) AS ID from pltest.tableTIMETZ ORDER BY ID;
        id       
 ----------------
- 10:00:52.14-07
+ 10:00:52.14+00
  
 (2 rows)
 
@@ -1629,7 +1629,7 @@ SELECT 2
 select * from pltest.tableTIMETZ1 ORDER BY ID;
        id       
 ----------------
- 10:00:52.14-07
+ 10:00:52.14+00
  
 (2 rows)
 
@@ -1638,7 +1638,7 @@ DROP TABLE
 select pltest.PLPERLoutpara_unname_110('2011-08-12 10:00:52.14'::TIMETZ);
  plperloutpara_unname_110 
 --------------------------
- 10:00:52.14-07
+ 10:00:52.14+00
 (1 row)
 
 select pltest.PLPERLoutpara_unname_110(NULL);
@@ -1650,7 +1650,7 @@ select pltest.PLPERLoutpara_unname_110(NULL);
 select * from pltest.PLPERLoutpara_unname_110('2011-08-12 10:00:52.14'::TIMETZ);
  plperloutpara_unname_110 
 --------------------------
- 10:00:52.14-07
+ 10:00:52.14+00
 (1 row)
 
 select * from pltest.PLPERLoutpara_unname_110(NULL);
@@ -1825,7 +1825,7 @@ CREATE FUNCTION
 select pltest.PLPERLoutpara_unname_116(pltest.tableTIMETZarray.key) AS ID from pltest.tableTIMETZarray ORDER BY ID;
           id           
 -----------------------
- {10:00:52.14-07,NULL}
+ {10:00:52.14+00,NULL}
 (1 row)
 
 create table pltest.tableTIMETZarray1 as select pltest.PLPERLoutpara_unname_116(pltest.tableTIMETZarray.key) AS ID from pltest.tableTIMETZarray DISTRIBUTED randomly;
@@ -1833,7 +1833,7 @@ SELECT 1
 select * from pltest.tableTIMETZarray1 ORDER BY ID;
           id           
 -----------------------
- {10:00:52.14-07,NULL}
+ {10:00:52.14+00,NULL}
 (1 row)
 
 drop table pltest.tableTIMETZarray1;
@@ -1841,13 +1841,13 @@ DROP TABLE
 select pltest.PLPERLoutpara_unname_116(array['2011-08-12 10:00:52.14'::TIMETZ,NULL]::TIMETZ[]);
  plperloutpara_unname_116 
 --------------------------
- {10:00:52.14-07,NULL}
+ {10:00:52.14+00,NULL}
 (1 row)
 
 select * from pltest.PLPERLoutpara_unname_116(array['2011-08-12 10:00:52.14'::TIMETZ,NULL]::TIMETZ[]);
  plperloutpara_unname_116 
 --------------------------
- {10:00:52.14-07,NULL}
+ {10:00:52.14+00,NULL}
 (1 row)
 
 DROP function pltest.PLPERLoutpara_unname_116 ( IN  TIMETZ[] , OUT  TIMETZ[] );
@@ -2289,7 +2289,7 @@ CREATE FUNCTION
 select pltest.PLPERLoutpara_unname_135(pltest.tableTIMESTAMPTZarray.key) AS ID from pltest.tableTIMESTAMPTZarray ORDER BY ID;
                  id                 
 ------------------------------------
- {"2011-08-12 10:00:52.14-07",NULL}
+ {"2011-08-12 10:00:52.14+00",NULL}
 (1 row)
 
 create table pltest.tableTIMESTAMPTZarray1 as select pltest.PLPERLoutpara_unname_135(pltest.tableTIMESTAMPTZarray.key) AS ID from pltest.tableTIMESTAMPTZarray DISTRIBUTED randomly;
@@ -2297,7 +2297,7 @@ SELECT 1
 select * from pltest.tableTIMESTAMPTZarray1 ORDER BY ID;
                  id                 
 ------------------------------------
- {"2011-08-12 10:00:52.14-07",NULL}
+ {"2011-08-12 10:00:52.14+00",NULL}
 (1 row)
 
 drop table pltest.tableTIMESTAMPTZarray1;
@@ -2305,13 +2305,13 @@ DROP TABLE
 select pltest.PLPERLoutpara_unname_135(array['2011-08-12 10:00:52.14'::TIMESTAMPTZ,NULL]::TIMESTAMPTZ[]);
       plperloutpara_unname_135      
 ------------------------------------
- {"2011-08-12 10:00:52.14-07",NULL}
+ {"2011-08-12 10:00:52.14+00",NULL}
 (1 row)
 
 select * from pltest.PLPERLoutpara_unname_135(array['2011-08-12 10:00:52.14'::TIMESTAMPTZ,NULL]::TIMESTAMPTZ[]);
       plperloutpara_unname_135      
 ------------------------------------
- {"2011-08-12 10:00:52.14-07",NULL}
+ {"2011-08-12 10:00:52.14+00",NULL}
 (1 row)
 
 DROP function pltest.PLPERLoutpara_unname_135 ( IN  TIMESTAMPTZ[] , OUT  TIMESTAMPTZ[] );
@@ -2964,7 +2964,7 @@ CREATE FUNCTION
 select pltest.PLPERLoutpara_unname_152(('2011-08-12'::DATE, '10:00:52.14'::TIME, '2011-08-12 10:00:52.14'::TIMETZ, '2011-08-12 10:00:52.14'::TIMESTAMP, '2011-08-12 10:00:52.14'::TIMESTAMPTZ)::pltest.COMPOSITE_DATE);
                                    plperloutpara_unname_152                                   
 ----------------------------------------------------------------------------------------------
- (2011-08-12,10:00:52.14,10:00:52.14-07,"2011-08-12 10:00:52.14","2011-08-12 10:00:52.14-07")
+ (2011-08-12,10:00:52.14,10:00:52.14+00,"2011-08-12 10:00:52.14","2011-08-12 10:00:52.14+00")
 (1 row)
 
 select pltest.PLPERLoutpara_unname_152(('EPOCH'::DATE, 'ALLBALLS'::TIME, NULL, NULL, NULL)::pltest.COMPOSITE_DATE);
@@ -2976,13 +2976,13 @@ select pltest.PLPERLoutpara_unname_152(('EPOCH'::DATE, 'ALLBALLS'::TIME, NULL, N
 select pltest.PLPERLoutpara_unname_152((NULL, NULL, '2011-08-12 10:00:52.14'::TIMETZ, '2011-08-12 10:00:52.14'::TIMESTAMP, '2011-08-12 10:00:52.14'::TIMESTAMPTZ)::pltest.COMPOSITE_DATE);
                         plperloutpara_unname_152                         
 -------------------------------------------------------------------------
- (,,10:00:52.14-07,"2011-08-12 10:00:52.14","2011-08-12 10:00:52.14-07")
+ (,,10:00:52.14+00,"2011-08-12 10:00:52.14","2011-08-12 10:00:52.14+00")
 (1 row)
 
 select (pltest.PLPERLoutpara_unname_152(('2011-08-12'::DATE, '10:00:52.14'::TIME, '2011-08-12 10:00:52.14'::TIMETZ, '2011-08-12 10:00:52.14'::TIMESTAMP, '2011-08-12 10:00:52.14'::TIMESTAMPTZ)::pltest.COMPOSITE_DATE)).*;
     id1     |     id2     |      id3       |          id4           |            id5            
 ------------+-------------+----------------+------------------------+---------------------------
- 2011-08-12 | 10:00:52.14 | 10:00:52.14-07 | 2011-08-12 10:00:52.14 | 2011-08-12 10:00:52.14-07
+ 2011-08-12 | 10:00:52.14 | 10:00:52.14+00 | 2011-08-12 10:00:52.14 | 2011-08-12 10:00:52.14+00
 (1 row)
 
 select (pltest.PLPERLoutpara_unname_152(('EPOCH'::DATE, 'ALLBALLS'::TIME, NULL, NULL, NULL)::pltest.COMPOSITE_DATE)).*;
@@ -2994,13 +2994,13 @@ select (pltest.PLPERLoutpara_unname_152(('EPOCH'::DATE, 'ALLBALLS'::TIME, NULL, 
 select (pltest.PLPERLoutpara_unname_152((NULL, NULL, '2011-08-12 10:00:52.14'::TIMETZ, '2011-08-12 10:00:52.14'::TIMESTAMP, '2011-08-12 10:00:52.14'::TIMESTAMPTZ)::pltest.COMPOSITE_DATE)).*;
  id1 | id2 |      id3       |          id4           |            id5            
 -----+-----+----------------+------------------------+---------------------------
-     |     | 10:00:52.14-07 | 2011-08-12 10:00:52.14 | 2011-08-12 10:00:52.14-07
+     |     | 10:00:52.14+00 | 2011-08-12 10:00:52.14 | 2011-08-12 10:00:52.14+00
 (1 row)
 
 select * from pltest.PLPERLoutpara_unname_152(('2011-08-12'::DATE, '10:00:52.14'::TIME, '2011-08-12 10:00:52.14'::TIMETZ, '2011-08-12 10:00:52.14'::TIMESTAMP, '2011-08-12 10:00:52.14'::TIMESTAMPTZ)::pltest.COMPOSITE_DATE);
     id1     |     id2     |      id3       |          id4           |            id5            
 ------------+-------------+----------------+------------------------+---------------------------
- 2011-08-12 | 10:00:52.14 | 10:00:52.14-07 | 2011-08-12 10:00:52.14 | 2011-08-12 10:00:52.14-07
+ 2011-08-12 | 10:00:52.14 | 10:00:52.14+00 | 2011-08-12 10:00:52.14 | 2011-08-12 10:00:52.14+00
 (1 row)
 
 select * from pltest.PLPERLoutpara_unname_152(('EPOCH'::DATE, 'ALLBALLS'::TIME, NULL, NULL, NULL)::pltest.COMPOSITE_DATE);
@@ -3012,7 +3012,7 @@ select * from pltest.PLPERLoutpara_unname_152(('EPOCH'::DATE, 'ALLBALLS'::TIME, 
 select * from pltest.PLPERLoutpara_unname_152((NULL, NULL, '2011-08-12 10:00:52.14'::TIMETZ, '2011-08-12 10:00:52.14'::TIMESTAMP, '2011-08-12 10:00:52.14'::TIMESTAMPTZ)::pltest.COMPOSITE_DATE);
  id1 | id2 |      id3       |          id4           |            id5            
 -----+-----+----------------+------------------------+---------------------------
-     |     | 10:00:52.14-07 | 2011-08-12 10:00:52.14 | 2011-08-12 10:00:52.14-07
+     |     | 10:00:52.14+00 | 2011-08-12 10:00:52.14 | 2011-08-12 10:00:52.14+00
 (1 row)
 
 DROP function pltest.PLPERLoutpara_unname_152 ( IN  pltest.COMPOSITE_DATE , OUT  pltest.COMPOSITE_DATE );
