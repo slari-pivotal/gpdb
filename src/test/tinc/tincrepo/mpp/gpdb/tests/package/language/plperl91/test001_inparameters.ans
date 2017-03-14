@@ -1137,7 +1137,7 @@ CREATE or REPLACE function pltest.PLPERLinpara_unname_22 ( IN  CSTRING ) RETURNS
 $     R
         my $key = shift; return $key;
 $$ language PLPERL;
-psql:/data/gpadmin/pulse2-agent/agents/agent1/work/GPDB-43_STABLE-TINC-gppkg-redhat6/gppkg%20redhat%206/cdbunit/tinc/tincrepo/mpp/gpdb/tests/package/language/plperl91/test001_inparameters.sql:656: ERROR:  PL/Perl functions cannot return type cstring
+ERROR:  PL/Perl functions cannot return type cstring
 CREATE or REPLACE function pltest.PLPERLinpara_unname_23 ( IN  LSEG ) RETURNS LSEG as $$     
 	my $key = shift; return $key;
 $$ language PLPERL;
