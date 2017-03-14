@@ -279,10 +279,16 @@ class Release(object):
     shared_url = 'https://shared.ci.eng.pivotal.io'
 
     targets = self.gpdb_environment.command_runner.get_subprocess_output(
-        ('fly', 'targets'))
+        ('fly', 'targets', '--print-table-headers'))
 
-    for line in targets.splitlines():
-      target, url, team, expiry = line.split(None, 3)
+    line_iter = iter(targets.splitlines())
+    columns = dict(enumerate(next(line_iter).split()))
+    for line in line_iter:
+      row = dict((columns[i], value) for i, value in enumerate(line.split(None, len(columns) - 1)))
+      target = row['name']
+      url = row['url']
+      expiry = row['expiry']
+
       if target == 'shared' and url == shared_url:
         if self._parse_expiry(expiry) > datetime.utcnow():
           return True

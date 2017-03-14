@@ -566,12 +566,13 @@ class ReleaseTest_Fly(unittest.TestCase):
     os.makedirs(self.gpdb_environment.path('ci', 'concourse', 'pipelines'))
     self.secrets_environment = FakeEnvironment(tempfile.mkdtemp())
     targets_output = (
-        "sharded  https://shared.ci.eng.pivotal.io     Thu, 26 Jan 2217 22:47:46 UTC\n"
-        "shared   http://not-shared.ci.eng.pivotal.io  Thu, 26 Jan 2217 22:47:46 UTC\n"
-        "shared   https://shared.ci.eng.pivotal.io     Thu, 26 Jan 2017 22:47:46 UTC\n"
+        "name     url                                  team      expiry\n"
+        "sharded  https://shared.ci.eng.pivotal.io     main      Thu, 26 Jan 2217 22:47:46 UTC\n"
+        "shared   http://not-shared.ci.eng.pivotal.io  not-main  Thu, 26 Jan 2217 22:47:46 UTC\n"
+        "shared   https://shared.ci.eng.pivotal.io     gpdb      Thu, 26 Jan 2017 22:47:46 UTC\n"
     )
     self.gpdb_environment.command_runner.respond_to_command_with(
-        ('fly', 'targets'), output=targets_output)
+        ('fly', 'targets', '--print-table-headers'), output=targets_output)
 
   def tearDown(self):
     shutil.rmtree(self.gpdb_environment.directory)
@@ -597,6 +598,23 @@ class ReleaseTest_Fly(unittest.TestCase):
         ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), exit_code=1)
     release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
     assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime), equal_to(False))
+
+  def test_fly_ensure_logged_in_extra_column_in_fly_targets(self):
+    targets_output = (
+        "name     url                                  junk      team      expiry\n"
+        "sharded  https://shared.ci.eng.pivotal.io     ruh-roh   main      Thu, 26 Jan 2217 22:47:46 UTC\n"
+        "shared   http://not-shared.ci.eng.pivotal.io  THX-1138  not-main  Thu, 26 Jan 2217 22:47:46 UTC\n"
+        "shared   https://shared.ci.eng.pivotal.io     pdgb      gpdb      Thu, 26 Jan 2017 22:47:46 UTC\n"
+    )
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', 'targets', '--print-table-headers'), output=targets_output)
+
+    # Already logged in
+    mock_datetime = self.MockDatetime(datetime.datetime(2017, 1, 26, 22, 47, 45, 999999))
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), allowed=False)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
+    assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime))
 
   def test_fly_set_pipeline(self):
     self.gpdb_environment.command_runner.respond_to_command_with(
