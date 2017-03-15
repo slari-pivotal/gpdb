@@ -18,7 +18,7 @@ import boto3
 import botocore
 import collections
 import datetime
-from distutils.version import StrictVersion
+from distutils.version import LooseVersion
 import errno
 import json
 import os
@@ -79,8 +79,8 @@ class Environment(object):
         ('pip', 'install', '-r', 'ci/release/requirements.txt'))
 
     return (
-        StrictVersion(git_version) > StrictVersion('1.9.9') and
-        StrictVersion(fly_version) >= StrictVersion('2.6.0') and
+        LooseVersion(git_version) > LooseVersion('1.9.9') and
+        LooseVersion(fly_version) >= LooseVersion('2.6.0') and
         pip_install_success)
 
   def get_program_version(self, program):

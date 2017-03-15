@@ -95,6 +95,14 @@ class EnvironmentTest(unittest.TestCase):
     result = environment.check_dependencies()
     assert_that(result, equal_to(False))
 
+  def test_check_dependencies_with_semver_metadata(self):
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+        ('fly', '--version'), output='2.6.0+dev.1')
+    environment = Environment(command_runner=command_runner)
+    result = environment.check_dependencies()
+    assert_that(result)
+
   def test_check_dependencies_when_fly_too_old(self):
     command_runner = self.MockCommandRunner()
     command_runner.respond_to_command_with(
