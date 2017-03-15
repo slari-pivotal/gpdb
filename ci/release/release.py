@@ -16,6 +16,7 @@
 
 import boto3
 import botocore
+import collections
 import datetime
 from distutils.version import StrictVersion
 import errno
@@ -182,6 +183,8 @@ class PipelineFileEditor(object):
         node.insert(1, 'trigger', True)
 
 
+ConcourseTarget = collections.namedtuple('ConcourseTarget', 'name, url')
+
 class Release(object):
   def __init__(self, version, rev, gpdb_environment, secrets_environment, command_runner=None, aws=None, printer=None):
     self.version = version
@@ -197,6 +200,8 @@ class Release(object):
     self.release_bucket = 'gpdb-%s-concourse' % self.version
     self.release_secrets_file = 'gpdb-%s-ci-secrets.yml' % self.version
     self.pipeline_file = 'ci/concourse/pipelines/pipeline.yml'
+    self.concourse_target = ConcourseTarget(name='shared', url='https://shared.ci.eng.pivotal.io')
+    self.concourse_team = 'GPDB'
 
   def check_rev(self):
     return self.command_runner.subprocess_is_successful(
@@ -299,17 +304,15 @@ class Release(object):
     return True
 
   def fly_ensure_logged_in(self, datetime=datetime.datetime):
-    shared_url = 'https://shared.ci.eng.pivotal.io'
     if not self._login_is_valid(datetime=datetime):
       if not self.gpdb_environment.command_runner.subprocess_is_successful(
-          ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', shared_url)):
+          ('fly', '-t', self.concourse_target.name, 'login', '-n', self.concourse_team, '-c', self.concourse_target.url)):
         return False
 
     return self.gpdb_environment.command_runner.subprocess_is_successful(
-        ('fly', '-t', 'shared', 'sync'))
+        ('fly', '-t', self.concourse_target.name, 'sync'))
 
   def _login_is_valid(self, datetime=datetime.datetime):
-    shared_url = 'https://shared.ci.eng.pivotal.io'
     targets = self.gpdb_environment.command_runner.get_subprocess_output(
         ('fly', 'targets', '--print-table-headers'))
 
@@ -317,11 +320,10 @@ class Release(object):
     columns = dict(enumerate(next(line_iter).split()))
     for line in line_iter:
       row = dict((columns[i], value) for i, value in enumerate(line.split(None, len(columns) - 1)))
-      target = row['name']
-      url = row['url']
       expiry = row['expiry']
+      target = ConcourseTarget(name=row['name'], url=row['url'])
 
-      if target == 'shared' and url == shared_url:
+      if target == self.concourse_target:
         return datetime.utcnow() < self._parse_expiry(expiry)
     return False
 
@@ -331,7 +333,7 @@ class Release(object):
 
   def fly_set_pipeline(self):
     return self.gpdb_environment.command_runner.subprocess_is_successful(
-      ('fly', '-t', 'shared', 'set-pipeline', '--non-interactive',
+      ('fly', '-t', self.concourse_target.name, 'set-pipeline', '--non-interactive',
        '-p', self.release_pipeline,
        '-c', self.gpdb_environment.path(self.pipeline_file),
        '-l', self.secrets_environment.path(self.release_secrets_file)))
@@ -410,7 +412,7 @@ def main(argv):
   release = Release(version, rev, gpdb_environment, secrets_environment)
 
   exec_step(release.check_rev,                'Invalid git revision provided: ' + rev)
-  exec_step(release.fly_ensure_logged_in,     'Could not log in to Shared Concourse with fly')
+  exec_step(release.fly_ensure_logged_in,     'Could not log in to Concourse with fly')
   exec_step(release.create_release_bucket,    'Failed to create release bucket in S3')
   exec_step(release.set_bucket_versioning,    'Failed to enable versioning on the S3 bucket')
   exec_step(release.set_bucket_policy,        'Failed to configure the S3 bucket access policy')
