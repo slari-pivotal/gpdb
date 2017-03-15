@@ -59,6 +59,11 @@ class CommandRunner(object):
     return 0 == subprocess.call(cmd, cwd=self.cwd)
 
 
+class Printer(object):
+  def print_msg(self, msg):
+    print msg
+
+
 class Environment(object):
   def __init__(self, command_runner=None, printer=None):
     self.command_runner = command_runner or CommandRunner()
@@ -338,16 +343,14 @@ class Release(object):
        '-c', self.gpdb_environment.path(self.pipeline_file),
        '-l', self.secrets_environment.path(self.release_secrets_file)))
 
-class Printer(object):
-  def print_msg(self, msg):
-    print msg
-
 
 def secrets_dir_is_present(directory):
   return directory.is_dir()
 
 
-def check_environments(gpdb_environment, secrets_environment, printer=Printer(), aws=Aws()):
+def check_environments(gpdb_environment, secrets_environment, printer=None, aws=None):
+  printer = printer or Printer()
+  aws = aws or Aws()
   def check_has_43_secrets():
     return secrets_environment.check_has_file(SECRETS_FILE_43_STABLE)
 
