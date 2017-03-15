@@ -320,11 +320,10 @@ class Release(object):
     columns = dict(enumerate(next(line_iter).split()))
     for line in line_iter:
       row = dict((columns[i], value) for i, value in enumerate(line.split(None, len(columns) - 1)))
-      expiry = row['expiry']
       target = ConcourseTarget(name=row['name'], url=row['url'])
 
       if target == self.concourse_target:
-        return datetime.utcnow() < self._parse_expiry(expiry)
+        return datetime.utcnow() < self._parse_expiry(row['expiry'])
     return False
 
   @staticmethod
