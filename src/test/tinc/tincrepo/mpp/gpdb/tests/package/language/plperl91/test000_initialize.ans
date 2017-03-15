@@ -16,6 +16,8 @@ NOTICE:  role "plsuperuser" does not exist, skipping  (seg1 vm15.chorus:5201 pid
 NOTICE:  role "plsuperuser" does not exist, skipping  (seg2 vm16.chorus:5200 pid=28309)
 DROP ROLE
 -- end_ignore
+set time zone PST8PDT;
+SET
 CREATE SCHEMA pltest;
 CREATE SCHEMA
 CREATE TYPE pltest.LINEITEM_TYPE AS  (

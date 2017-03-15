@@ -4,6 +4,7 @@ DROP USER IF EXISTS pltestuser;
 DROP USER IF EXISTS plsuperuser;
 \echo '-- end_ignore'
 
+set time zone PST8PDT;
 CREATE SCHEMA pltest;
 
 CREATE TYPE pltest.LINEITEM_TYPE AS  (

@@ -1,3 +1,4 @@
+set time zone PST8PDT;
 ----Case 154 begin----
 -- 
 -- 		Unnamed parameter test;

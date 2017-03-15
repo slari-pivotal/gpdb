@@ -1,4 +1,6 @@
-CREATE or REPLACE function pltest.PLPERLinpara_unname_0 ( IN  REAL ) RETURNS REAL as $$     
+set time zone PST8PDT;
+SET
+CREATE or REPLACE function pltest.PLPERLinpara_unname_0 ( IN  REAL ) RETURNS REAL as $$
 	my $key = shift; return $key;
 $$ language PLPERL;
 CREATE FUNCTION

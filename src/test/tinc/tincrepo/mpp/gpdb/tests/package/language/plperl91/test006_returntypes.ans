@@ -1,4 +1,6 @@
-CREATE or REPLACE function pltest.PLPERLsetoftype_0 (  ) RETURNS SETOF REAL as $$  
+set time zone PST8PDT;
+SET
+CREATE or REPLACE function pltest.PLPERLsetoftype_0 (  ) RETURNS SETOF REAL as $$
 			my $rv = spi_exec_query('select * from pltest.TABLEREAL;');
 			my $status = $rv->{status};
 			my $nrows = $rv->{processed};

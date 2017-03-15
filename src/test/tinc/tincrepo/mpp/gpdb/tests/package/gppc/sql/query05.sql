@@ -1,3 +1,4 @@
+set time zone PST8PDT;
 -- Date and timestamp
 DROP FUNCTION IF EXISTS datefunc1_nochange(date);
 DROP FUNCTION IF EXISTS datefunc1(date);

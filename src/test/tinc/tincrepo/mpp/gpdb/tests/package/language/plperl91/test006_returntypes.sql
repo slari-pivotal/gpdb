@@ -1,3 +1,4 @@
+set time zone PST8PDT;
 ----Case 0 begin----
 -- CREATE OR REPLACE FUNCTION functionname() RETURN SETOF b/c.
 CREATE or REPLACE function pltest.PLPERLsetoftype_0 (  ) RETURNS SETOF REAL as $$  

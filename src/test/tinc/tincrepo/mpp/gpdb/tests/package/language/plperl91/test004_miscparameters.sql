@@ -1,3 +1,4 @@
+set time zone PST8PDT;
 CREATE or REPLACE function pltest.PLPERLmulcall ( INOUT  REAL ) RETURNS REAL as $$
                         my $key = shift ; $key = $key + 1;  return $key;
 $$ language PLPERL;
