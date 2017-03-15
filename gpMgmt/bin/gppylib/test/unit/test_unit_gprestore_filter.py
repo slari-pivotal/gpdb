@@ -2421,6 +2421,14 @@ CREATE SCHEMA user_schema_e;
 ALTER SCHEMA user_schema_e OWNER TO user_role_a;
 
 --
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: dcddev
+--
+
+CREATE PROCEDURAL LANGUAGE plpgsql;
+ALTER FUNCTION plpgsql_call_handler() OWNER TO dcddev;
+ALTER FUNCTION plpgsql_validator(oid) OWNER TO dcddev;
+
+
 SET search_path = user_schema_a, pg_catalog;
 
 SET default_tablespace = '';
@@ -2558,7 +2566,7 @@ SET default_tablespace = '';
         self.assertEquals(results, expected_out)
 
 
-    def test_process_schema_with_priviledges(self):
+    def test_process_schema_with_privileges(self):
         test_case_buf = """--
 -- Greenplum Database database dump
 --
@@ -2729,6 +2737,14 @@ CREATE SCHEMA user_schema_a;
 ALTER SCHEMA user_schema_a OWNER TO user_role_a;
 
 --
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: dcddev
+--
+
+CREATE PROCEDURAL LANGUAGE plpgsql;
+ALTER FUNCTION plpgsql_call_handler() OWNER TO dcddev;
+ALTER FUNCTION plpgsql_validator(oid) OWNER TO dcddev;
+
+
 SET search_path = user_schema_a, pg_catalog;
 
 SET default_tablespace = '';
@@ -2894,6 +2910,13 @@ CREATE SCHEMA "测试_schema";
 ALTER SCHEMA "测试_schema" OWNER TO user_role_a;
 
 --
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: dcddev
+--
+
+CREATE PROCEDURAL LANGUAGE plpgsql;
+ALTER FUNCTION plpgsql_call_handler() OWNER TO dcddev;
+ALTER FUNCTION plpgsql_validator(oid) OWNER TO dcddev;
+
 SET search_path = "测试_schema", pg_catalog;
 
 --
@@ -3057,6 +3080,13 @@ CREATE SCHEMA "Áá_schema";
 ALTER SCHEMA "Áá_schema" OWNER TO user_role_a;
 
 --
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: dcddev
+--
+
+CREATE PROCEDURAL LANGUAGE plpgsql;
+ALTER FUNCTION plpgsql_call_handler() OWNER TO dcddev;
+ALTER FUNCTION plpgsql_validator(oid) OWNER TO dcddev;
+
 SET search_path = "Áá_schema", pg_catalog;
 
 --
@@ -3220,6 +3250,13 @@ CREATE SCHEMA "Ж_schema";
 ALTER SCHEMA "Ж_schema" OWNER TO user_role_a;
 
 --
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: dcddev
+--
+
+CREATE PROCEDURAL LANGUAGE plpgsql;
+ALTER FUNCTION plpgsql_call_handler() OWNER TO dcddev;
+ALTER FUNCTION plpgsql_validator(oid) OWNER TO dcddev;
+
 SET search_path = "Ж_schema", pg_catalog;
 
 --
