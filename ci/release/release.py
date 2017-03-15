@@ -18,6 +18,7 @@ import boto3
 import botocore
 import datetime
 from distutils.version import StrictVersion
+import errno
 import json
 import os
 import re
@@ -62,11 +63,11 @@ class Environment(object):
     self.command_runner = command_runner or CommandRunner()
 
   def check_dependencies(self):
-    git_version_output = self.command_runner.get_subprocess_output(
-        ('git', '--version'))
+    git_version_output = self.get_program_version('git')
+    if not git_version_output: return False
     git_version = git_version_output.split()[2]
-    fly_version = self.command_runner.get_subprocess_output(
-        ('fly', '--version'))
+    fly_version = self.get_program_version('fly')
+    if not fly_version: return False
     pip_install_success = self.command_runner.subprocess_is_successful(
         ('pip', 'install', '-r', 'ci/release/requirements.txt'))
 
@@ -74,6 +75,19 @@ class Environment(object):
         StrictVersion(git_version) > StrictVersion('1.9.9') and
         StrictVersion(fly_version) >= StrictVersion('2.6.0') and
         pip_install_success)
+
+  def get_program_version(self, program):
+    try:
+      program_version = self.command_runner.get_subprocess_output(
+          (program, '--version'))
+    except OSError, e:
+      if e.args[0] == errno.ENOENT:
+        print program + ' not found. Is it installed?'
+        return None
+      else:
+        raise
+    return program_version
+
 
   def check_git_can_pull(self):
     result = self.command_runner.subprocess_is_successful(

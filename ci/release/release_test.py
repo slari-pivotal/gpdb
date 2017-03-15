@@ -1,5 +1,6 @@
 import collections
 import datetime
+import errno
 from hamcrest import *
 import json
 import os.path
@@ -17,28 +18,31 @@ class Error(Exception):
 
 class MockCommandRunner(object):
 
-  CommandResponse = collections.namedtuple('CommandResponse', 'output, exit_code, allowed')
+  CommandResponse = collections.namedtuple('CommandResponse', 'output, exit_code, allowed, exists')
 
   def __init__(self, cwd=None):
     self.cwd = cwd
     self.branch_changed = False
     self.subprocess_mock_outputs = {}
 
-  def respond_to_command_with(self, cmd, output=None, exit_code=0, allowed=True, branch_changed=False):
-    self.subprocess_mock_outputs[cmd] = self.CommandResponse(output, exit_code, allowed)
+  def respond_to_command_with(self, cmd, output=None, exit_code=0, allowed=True, branch_changed=False, exists=True):
+    self.subprocess_mock_outputs[cmd] = self.CommandResponse(output, exit_code, allowed, exists)
     self.branch_changed |= branch_changed
 
   def get_subprocess_output(self, cmd):
-    self._abort_if_command_is_not_allowed(cmd)
-    return self.subprocess_mock_outputs[cmd].output
+    return self._get_response(cmd).output
 
   def subprocess_is_successful(self, cmd):
-    self._abort_if_command_is_not_allowed(cmd)
-    return 0 == self.subprocess_mock_outputs[cmd].exit_code
+    return 0 == self._get_response(cmd).exit_code
 
-  def _abort_if_command_is_not_allowed(self, cmd):
-    if not self.subprocess_mock_outputs[cmd].allowed:
+  def _get_response(self, cmd):
+    response = self.subprocess_mock_outputs[cmd]
+    if not response.allowed:
       raise Error('Command is not allowed to be called: ' + str(cmd))
+    if not response.exists:
+      raise OSError(errno.ENOENT, 'No such file or directory: ' + str(cmd))
+    return response
+
 
 class EnvironmentTest(unittest.TestCase):
   class MockCommandRunner(MockCommandRunner):
@@ -79,6 +83,15 @@ class EnvironmentTest(unittest.TestCase):
     command_runner = self.MockCommandRunner()
     command_runner.respond_to_command_with(
         ('fly', '--version'), output='2.5.999')
+
+    environment = Environment(command_runner=command_runner)
+    result = environment.check_dependencies()
+    assert_that(result, equal_to(False))
+
+  def test_check_fly_exists(self):
+    command_runner = self.MockCommandRunner()
+    command_runner.respond_to_command_with(
+        ('fly', '--version'), exists=False)
 
     environment = Environment(command_runner=command_runner)
     result = environment.check_dependencies()
