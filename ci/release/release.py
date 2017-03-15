@@ -136,6 +136,52 @@ class Aws(object):
   def check_iam_user_within_account(self, expected_account):
     return expected_account in self.iam.get_user()['User']['Arn']
 
+
+class PipelineFileEditor(object):
+  def __init__(self, gpdb_environment):
+    self.gpdb_environment = gpdb_environment
+
+  def edit_pipeline_for_release(self, pipeline_file):
+    with open(self.gpdb_environment.path(pipeline_file), 'r') as fin:
+      pipeline_before = fin.read()
+      pipeline_with_interpolation_braces_quoted = re.sub(r'({{.*}})', r"'\1'", pipeline_before)
+      pipeline = ruamel.yaml.load(pipeline_with_interpolation_braces_quoted, ruamel.yaml.RoundTripLoader)
+
+    self.walk_and_edit_pipeline(pipeline)
+
+    with open(self.gpdb_environment.path(pipeline_file), 'w') as fout:
+      pipeline_after_ruamel_processing = ruamel.yaml.dump(pipeline, Dumper=ruamel.yaml.RoundTripDumper)
+      pipeline_with_interpolation_brace_quoting_removed = re.sub('["\']' r'({{.*}})' '[\'"]', r"\1", pipeline_after_ruamel_processing)
+      fout.write(pipeline_with_interpolation_brace_quoting_removed)
+
+  def walk_and_edit_pipeline(self, pipeline_hunk):
+
+    if isinstance(pipeline_hunk, list):
+      pipeline_hunk[:] = [item for item in pipeline_hunk if not self.should_delete(item)]
+      for item in pipeline_hunk:
+        self.maybe_add_trigger(item)
+        self.walk_and_edit_pipeline(item)
+
+    elif isinstance(pipeline_hunk, dict):
+      for key, value in pipeline_hunk.items():
+        if self.should_delete(value):
+          del pipeline_hunk[key]
+        else:
+          self.maybe_add_trigger(value)
+          self.walk_and_edit_pipeline(value)
+
+  def should_delete(self, node):
+    if isinstance(node, dict):
+      return node.get('gpdb_release') == 'delete'
+    return False
+
+  def maybe_add_trigger(self, node):
+    if isinstance(node, dict):
+      if node.get('gpdb_release') == 'add_trigger':
+        del node['gpdb_release']
+        node.insert(1, 'trigger', True)
+
+
 class Release(object):
   def __init__(self, version, rev, gpdb_environment, secrets_environment, command_runner=None, aws=None, printer=None):
     self.version = version
@@ -248,46 +294,9 @@ class Release(object):
     return success
 
   def edit_pipeline_for_release(self):
-    with open(self.gpdb_environment.path('ci/concourse/pipelines/pipeline.yml'), 'r') as fin:
-      pipeline_before = fin.read()
-      pipeline_with_interpolation_braces_quoted = re.sub(r'({{.*}})', r"'\1'", pipeline_before)
-      pipeline = ruamel.yaml.load(pipeline_with_interpolation_braces_quoted, ruamel.yaml.RoundTripLoader)
-
-    self.walk_and_edit_pipeline(pipeline)
-
-    with open(self.gpdb_environment.path('ci/concourse/pipelines/pipeline.yml'), 'w') as fout:
-      pipeline_after_ruamel_processing = ruamel.yaml.dump(pipeline, Dumper=ruamel.yaml.RoundTripDumper)
-      pipeline_with_interpolation_brace_quoting_removed = re.sub('["\']' r'({{.*}})' '[\'"]', r"\1", pipeline_after_ruamel_processing)
-      fout.write(pipeline_with_interpolation_brace_quoting_removed)
-
+    editor = PipelineFileEditor(self.gpdb_environment)
+    editor.edit_pipeline_for_release(self.pipeline_file)
     return True
-
-  def walk_and_edit_pipeline(self, pipeline_hunk):
-
-    if isinstance(pipeline_hunk, list):
-      pipeline_hunk[:] = [item for item in pipeline_hunk if not self.should_delete(item)]
-      for item in pipeline_hunk:
-        self.maybe_add_trigger(item)
-        self.walk_and_edit_pipeline(item)
-
-    elif isinstance(pipeline_hunk, dict):
-      for key, value in pipeline_hunk.items():
-        if self.should_delete(value):
-          del pipeline_hunk[key]
-        else:
-          self.maybe_add_trigger(value)
-          self.walk_and_edit_pipeline(value)
-
-  def should_delete(self, node):
-    if isinstance(node, dict):
-      return node.get('gpdb_release') == 'delete'
-    return False
-
-  def maybe_add_trigger(self, node):
-    if isinstance(node, dict):
-      if node.get('gpdb_release') == 'add_trigger':
-        del node['gpdb_release']
-        node.insert(1, 'trigger', True)
 
   def fly_ensure_logged_in(self, datetime=datetime.datetime):
     shared_url = 'https://shared.ci.eng.pivotal.io'
