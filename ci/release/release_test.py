@@ -38,7 +38,7 @@ class MockCommandRunner(object):
   def _get_response(self, cmd):
     response = self.subprocess_mock_outputs[cmd]
     if not response.allowed:
-      raise Error('Command is not allowed to be called: ' + str(cmd))
+      raise AssertionError('Command is not allowed to be called: ' + str(cmd))
     if not response.exists:
       raise OSError(errno.ENOENT, 'No such file or directory: ' + str(cmd))
     return response
@@ -584,31 +584,55 @@ class ReleaseTest_Fly(unittest.TestCase):
         "shared   http://not-shared.ci.eng.pivotal.io  not-main  Thu, 26 Jan 2217 22:47:46 UTC\n"
         "shared   https://shared.ci.eng.pivotal.io     gpdb      Thu, 26 Jan 2017 22:47:46 UTC\n"
     )
+    self.just_before_expiry = datetime.datetime(2017, 1, 26, 22, 47, 45, 999999)
+    self.after_expiry = datetime.datetime(2018, 1, 26, 22, 47, 45, 999999)
     self.gpdb_environment.command_runner.respond_to_command_with(
         ('fly', 'targets', '--print-table-headers'), output=targets_output)
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'sync'), exit_code=0)
 
   def tearDown(self):
     shutil.rmtree(self.gpdb_environment.directory)
     shutil.rmtree(self.secrets_environment.directory)
 
   def test_fly_ensure_logged_in_expired(self):
-    mock_datetime = self.MockDatetime(datetime.datetime(2018, 2, 27, 22, 47, 45, 999999))
+    mock_datetime = self.MockDatetime(self.after_expiry)
     self.gpdb_environment.command_runner.respond_to_command_with(
         ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), exit_code=0)
     release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
     assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime))
 
   def test_fly_ensure_logged_in_already(self):
-    mock_datetime = self.MockDatetime(datetime.datetime(2017, 1, 26, 22, 47, 45, 999999))
+    mock_datetime = self.MockDatetime(self.just_before_expiry)
     self.gpdb_environment.command_runner.respond_to_command_with(
         ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), allowed=False)
     release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
     assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime))
 
   def test_fly_ensure_logged_in_fly_errors(self):
-    mock_datetime = self.MockDatetime(datetime.datetime(2018, 2, 27, 22, 47, 45, 999999))
+    mock_datetime = self.MockDatetime(self.after_expiry)
     self.gpdb_environment.command_runner.respond_to_command_with(
         ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), exit_code=1)
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'sync'), allowed=False)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
+    assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime), equal_to(False))
+
+  def test_fly_ensure_logged_in_calls_fly_sync_if_logged_in(self):
+    mock_datetime = self.MockDatetime(self.just_before_expiry)
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), allowed=False)
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'sync'), exit_code=1)
+    release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
+    assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime), equal_to(False))
+
+  def test_fly_ensure_logged_in_calls_fly_sync_if_not_logged_in(self):
+    mock_datetime = self.MockDatetime(self.after_expiry)
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), exit_code=0)
+    self.gpdb_environment.command_runner.respond_to_command_with(
+        ('fly', '-t', 'shared', 'sync'), exit_code=1)
     release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)
     assert_that(release_fly.fly_ensure_logged_in(datetime=mock_datetime), equal_to(False))
 
@@ -623,7 +647,7 @@ class ReleaseTest_Fly(unittest.TestCase):
         ('fly', 'targets', '--print-table-headers'), output=targets_output)
 
     # Already logged in
-    mock_datetime = self.MockDatetime(datetime.datetime(2017, 1, 26, 22, 47, 45, 999999))
+    mock_datetime = self.MockDatetime(self.just_before_expiry)
     self.gpdb_environment.command_runner.respond_to_command_with(
         ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', 'https://shared.ci.eng.pivotal.io'), allowed=False)
     release_fly = release.Release('4.3.27.7', 'cab234', self.gpdb_environment, secrets_environment=None)

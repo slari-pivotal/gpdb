@@ -291,7 +291,16 @@ class Release(object):
 
   def fly_ensure_logged_in(self, datetime=datetime.datetime):
     shared_url = 'https://shared.ci.eng.pivotal.io'
+    if not self._login_is_valid(datetime=datetime):
+      if not self.gpdb_environment.command_runner.subprocess_is_successful(
+          ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', shared_url)):
+        return False
 
+    return self.gpdb_environment.command_runner.subprocess_is_successful(
+        ('fly', '-t', 'shared', 'sync'))
+
+  def _login_is_valid(self, datetime=datetime.datetime):
+    shared_url = 'https://shared.ci.eng.pivotal.io'
     targets = self.gpdb_environment.command_runner.get_subprocess_output(
         ('fly', 'targets', '--print-table-headers'))
 
@@ -304,11 +313,8 @@ class Release(object):
       expiry = row['expiry']
 
       if target == 'shared' and url == shared_url:
-        if self._parse_expiry(expiry) > datetime.utcnow():
-          return True
-
-    return self.gpdb_environment.command_runner.subprocess_is_successful(
-        ('fly', '-t', 'shared', 'login', '-n', 'GPDB', '-c', shared_url))
+        return datetime.utcnow() < self._parse_expiry(expiry)
+    return False
 
   @staticmethod
   def _parse_expiry(expiry):
