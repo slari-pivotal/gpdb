@@ -60,8 +60,9 @@ class CommandRunner(object):
 
 
 class Environment(object):
-  def __init__(self, command_runner=None):
+  def __init__(self, command_runner=None, printer=None):
     self.command_runner = command_runner or CommandRunner()
+    self.printer = printer or Printer()
 
   def check_dependencies(self):
     git_version_output = self.get_program_version('git')
@@ -83,7 +84,7 @@ class Environment(object):
           (program, '--version'))
     except OSError, e:
       if e.args[0] == errno.ENOENT:
-        print program + ' not found. Is it installed?'
+        self.printer.print_msg(program + ' not found. Is it installed?')
         return None
       else:
         raise

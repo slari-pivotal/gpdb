@@ -16,6 +16,22 @@ class Error(Exception):
   pass
 
 
+class Spy(object):
+  def __init__(self, returns=None):
+    self.calls = 0
+    self.returns = returns
+  def __call__(self, *args, **kwargs):
+    self.last_args = args
+    self.last_kwargs = kwargs
+    self.calls += 1
+    return self.returns
+
+
+class MockPrinter(object):
+  def print_msg(self, msg):
+    pass
+
+
 class MockCommandRunner(object):
 
   CommandResponse = collections.namedtuple('CommandResponse', 'output, exit_code, allowed, exists')
@@ -93,7 +109,7 @@ class EnvironmentTest(unittest.TestCase):
     command_runner.respond_to_command_with(
         ('fly', '--version'), exists=False)
 
-    environment = Environment(command_runner=command_runner)
+    environment = Environment(command_runner=command_runner, printer=MockPrinter())
     result = environment.check_dependencies()
     assert_that(result, equal_to(False))
 
@@ -672,22 +688,6 @@ class ReleaseTest_Fly(unittest.TestCase):
         exit_code=1)
     release_fly = release.Release('4.3.28.7', 'cab234', self.gpdb_environment, self.secrets_environment)
     assert_that(release_fly.fly_set_pipeline(), equal_to(False))
-
-
-class Spy(object):
-  def __init__(self, returns=None):
-    self.calls = 0
-    self.returns = returns
-  def __call__(self, *args, **kwargs):
-    self.last_args = args
-    self.last_kwargs = kwargs
-    self.calls += 1
-    return self.returns
-
-
-class MockPrinter(object):
-  def print_msg(self, msg):
-    pass
 
 
 class CheckEnvironmentsTest(unittest.TestCase):
