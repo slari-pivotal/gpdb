@@ -136,6 +136,6 @@ SELECT timestampfunc1('2011-02-24 15:00:01');
 SELECT timestamptzfunc1('2011-02-24 15:00:01 UTC');
     timestamptzfunc1    
 ------------------------
- 2012-03-25 16:01:02+00
+ 2012-03-25 09:01:02-07
 (1 row)
 

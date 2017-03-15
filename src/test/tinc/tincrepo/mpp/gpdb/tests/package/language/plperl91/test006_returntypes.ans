@@ -132,14 +132,14 @@ CREATE FUNCTION
 select pltest.PLPERLsetoftype_6() order by PLPERLsetoftype_6;
      plperlsetoftype_6     
 ---------------------------
- 2011-08-12 10:00:52.14+00
+ 2011-08-12 10:00:52.14-07
  
 (2 rows)
 
 select * from pltest.PLPERLsetoftype_6() order by PLPERLsetoftype_6;
      plperlsetoftype_6     
 ---------------------------
- 2011-08-12 10:00:52.14+00
+ 2011-08-12 10:00:52.14-07
  
 (2 rows)
 
@@ -735,14 +735,14 @@ CREATE FUNCTION
 select pltest.PLPERLsetoftype_33()  order by plperlsetoftype_33;
  plperlsetoftype_33 
 --------------------
- 10:00:52.14+00
+ 10:00:52.14-07
  
 (2 rows)
 
 select * from pltest.PLPERLsetoftype_33()  order by plperlsetoftype_33;
  plperlsetoftype_33 
 --------------------
- 10:00:52.14+00
+ 10:00:52.14-07
  
 (2 rows)
 
