@@ -77,14 +77,14 @@ class MapreduceMPPTestCase(MPPTestCase):
     def check_orca(self):
         cmd = 'gpconfig -s optimizer'
         res = {'rc': 0, 'stdout' : '', 'stderr': ''}
-        run_shell_command(cmd, 'check if orca enabled', res)        
+        run_shell_command(cmd, 'check if orca enabled', res)
         for line in res['stdout']:
             if 'Master  value: off' in line or 'Segment value: off' in line:
                 return False
         return True
 
     def doTest(self, fileName):
-        # get file path to queryXX.sql 
+        # get file path to queryXX.sql
         file = local_path(fileName)
         # run psql on file, and check result
         mapr.runYml(file)
@@ -109,7 +109,7 @@ class MapreduceMPPTestCase(MPPTestCase):
         so_loc = local_path('c_functions/functions.so')
         if not os.path.isfile(so_loc):
             self.skipTest()
-        
+
         input = open(filepath+'.sql.in')
         output = open(filepath+'.sql','w')
         for s in input.xreadlines():
@@ -122,39 +122,39 @@ class MapreduceMPPTestCase(MPPTestCase):
                 output.write(s)
         output.close()
         input.close()
-       
+
         sqlfile = "%s.sql" % filepath
         PSQL.run_sql_file(sqlfile)
         self.doTest("%s.yml" % filepath)
-        
-    def test_MapReduceDemo001(self): 
+
+    def test_MapReduceDemo001(self):
         "MapReduce: BFS Demo Init"
         mapr.replaceTemplate(local_path("demo/BFS/*.in"), local_path(''))
         self.doTest("demo/BFS/bfs-init.yml")
 
-    def test_MapReduceDemo002(self): 
+    def test_MapReduceDemo002(self):
         "MapReduce: BFS Demo Iter"
         self.doTest("demo/BFS/bfs-iter.yml")
 
-    def test_MapReduceDemo003(self): 
+    def test_MapReduceDemo003(self):
         "MapReduce: PageRank Demo Init"
         mapr.replaceTemplate(local_path("demo/PageRank/*.in"), local_path(''))
         self.doTest("demo/PageRank/pagerank-init.yml")
 
-    def test_MapReduceDemo004(self): 
+    def test_MapReduceDemo004(self):
         "MapReduce: PageRank Demo Iter"
         self.doTest("demo/PageRank/pagerank-iter.yml")
 
-    def test_MapReduceDemo005(self): 
+    def test_MapReduceDemo005(self):
         "MapReduce: PageRank Demo Final"
         self.doTest("demo/PageRank/pagerank-final.yml")
 
-    def test_MapReduceDemo006(self): 
+    def test_MapReduceDemo006(self):
         "MapReduce: PageRank Using pagerank.pl"
         cmd = local_path("demo/PageRank/pagerank.pl")
         res = {'rc': 0, 'stdout' : '', 'stderr': ''}
         run_shell_command(cmd, '', res)
- 
+
     def test_MapReduceError001(self):
         "MapReduce: Test Error Handling 1: MPP-4808"
         self.doTest("mpp4808.yml")
@@ -224,7 +224,7 @@ class MapreduceMPPTestCase(MPPTestCase):
 	self.doTest("mpp3478.yml")
 	self.doQuery("mpp3478-check.sql")
 
-    def test_MapReduceDemo007(self): 
+    def test_MapReduceDemo007(self):
 	"MapReduce: Demos Init"
 	# mapr.replaceTemplate(local_path("regression/*.in"), local_path(''))
 
@@ -331,7 +331,7 @@ class MapreduceMPPTestCase(MPPTestCase):
         "empty YML"
         res = {'rc': 0, 'stdout' : '', 'stderr': ''}
         run_shell_command("touch empty.yml;echo $?", '', res)
-        cmd = "gpmapreduce -f empty.yml;echo $?" 
+        cmd = "gpmapreduce -f empty.yml;echo $?"
         self.run_gpmapreduce_cmd(gpmaprcmd=cmd, expected_ret = 0)
 
     def test_mpp12767_notproper(self):
@@ -346,7 +346,7 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_Neg_InvalidTable(self):
         "Invalid Table"
-        cmd = "gpmapreduce -f mpp5551.yml;echo $?"
+        cmd = "gpmapreduce -f mpp5551.yml"
         self.run_gpmapreduce_cmd(gpmaprcmd=cmd, expected_ret = 1)
 
     def test_Neg_InvalidTable2(self):
@@ -443,14 +443,14 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_builtinfunction(self):
         """
-        builtin functions as reducer 
+        builtin functions as reducer
         """
 
         self.runFunctionTest("","builtinfunction")
 
     def test_aggFunction(self):
         """
-        use custom aggregation functions as reducer 
+        use custom aggregation functions as reducer
         """
 
         self.runFunctionTest("","aggFunction")
@@ -459,19 +459,19 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_transition_namedInYml_namedInDB(self):
         """
-        scalar  Transition  "param specified in yaml, DB defined with named param" 
+        scalar  Transition  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("scalar_transition", "namedInYml_namedInDB")
 
     def test_scalar_transition_namedInYml_unnamedInDB(self):
         """
-        scalar  Transition  "param specified in yaml, DB defined with unnamed param" 
+        scalar  Transition  "param specified in yaml, DB defined with unnamed param"
         """
         self.runFunctionTest("scalar_transition", "namedInYml_unnamedInDB")
 
     def test_scalar_transition_unnamedInYml_namedInDB(self):
         """
-        scalar  Transition  "param not specified in yaml, DB defined with named param" 
+        scalar  Transition  "param not specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("scalar_transition","unnamedInYml_namedInDB")
 
@@ -495,7 +495,7 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_transition_1outParam_namedInYml_namedInDB(self):
         """
-        scalar  Transition use 1 named out parameter, specified in yaml 
+        scalar  Transition use 1 named out parameter, specified in yaml
         """
         self.runFunctionTest("scalar_transition","1outParam_namedInYml_namedInDB")
 
@@ -513,25 +513,25 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_transition_1outParam_namedInYml_unnamedInDB(self):
         """
-        scalar  Transition use 1 named out parameter, not specified in yaml 
+        scalar  Transition use 1 named out parameter, not specified in yaml
         """
         self.runFunctionTest("scalar_transition","1outParam_namedInYml_unnamedInDB")
 
     def test_scalar_transition_1outParam_paramOverride(self):
         """
-        scalar  Transition use 1 named out parameter, specified with a different value in yaml 
+        scalar  Transition use 1 named out parameter, specified with a different value in yaml
         """
         self.runFunctionTest("scalar_transition","1outParam_paramOverride")
 
     def test_scalar_transition_mismatchingReturnVal(self):
         """
-        scalar  Transition override return value with what's defined in db vs library 
+        scalar  Transition override return value with what's defined in db vs library
         """
         self.runFunctionTest("scalar_transition","mismatchingReturnVal")
 
     def test_scalar_transition_ambiguousFunction(self):
         """
-        scalar  Transition NEG specify more than 1 function in db with the same name 
+        scalar  Transition NEG specify more than 1 function in db with the same name
         """
         self.runFunctionTest("scalar_transition","ambiguousFunction")
 
@@ -551,19 +551,19 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_consolidation_namedInYml_namedInDB(self):
         """
-        scalar  Consolidation  "param specified in yaml, DB defined with named param" 
+        scalar  Consolidation  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("scalar_consolidation", "namedInYml_namedInDB")
 
     def test_scalar_consolidation_namedInYml_unnamedInDB(self):
         """
-        scalar  Consolidation  "param specified in yaml, DB defined with unnamed param" 
+        scalar  Consolidation  "param specified in yaml, DB defined with unnamed param"
         """
         self.runFunctionTest("scalar_consolidation", "namedInYml_unnamedInDB")
 
     def test_scalar_consolidation_unnamedInYml_namedInDB(self):
         """
-        scalar  Consolidation  "param specified in yaml, DB defined with named param" 
+        scalar  Consolidation  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("scalar_consolidation","unnamedInYml_namedInDB")
 
@@ -587,7 +587,7 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_consolidation_1outParam_namedInYml_namedInDB(self):
         """
-        scalar  Consolidation use 1 named out parameter, specified in yaml 
+        scalar  Consolidation use 1 named out parameter, specified in yaml
         """
         self.runFunctionTest("scalar_consolidation","1outParam_namedInYml_namedInDB")
 
@@ -605,31 +605,31 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_consolidation_1outParam_unnamedInYml_namedInDB2(self):
         """
-        scalar  Consolidation use 1 named out parameter, not specified in yaml 
+        scalar  Consolidation use 1 named out parameter, not specified in yaml
         """
         self.runFunctionTest("scalar_consolidation","1outParam_unnamedInYml_namedInDB")
 
     def test_scalar_consolidation_1outParam_paramOverride(self):
         """
-        scalar  Consolidation use 1 named out parameter, specified with a different value in yaml 
+        scalar  Consolidation use 1 named out parameter, specified with a different value in yaml
         """
         self.runFunctionTest("scalar_consolidation","1outParam_paramOverride")
 
     def test_scalar_consolidation_mismatchingReturnVal(self):
         """
-        scalar  Consolidation override return value with what's defined in db vs library 
+        scalar  Consolidation override return value with what's defined in db vs library
         """
         self.runFunctionTest("scalar_consolidation","mismatchingReturnVal")
 
     def test_scalar_consolidation_ambiguousFunction(self):
         """
-        scalar  Consolidation NEG specify more than 1 function in db with the same name 
+        scalar  Consolidation NEG specify more than 1 function in db with the same name
         """
         self.runFunctionTest("scalar_consolidation","ambiguousFunction")
 
     def test_scalar_consolidation_NEG_1param(self):
         """
-        scalar  Consolidation NEG specify only 1 parameter 
+        scalar  Consolidation NEG specify only 1 parameter
         """
         self.runFunctionTest("scalar_consolidation","NEG_1param")
 
@@ -640,26 +640,26 @@ class MapreduceMPPTestCase(MPPTestCase):
         self.runFunctionTest("scalar_consolidation","NEG_paramDiffType")
         filename = local_path("c_functions/scalar_consolidation/NEG_paramDiffType_cleanup.sql")
         PSQL.run_sql_file(filename)
-        
+
 
 
     ###### test_scalar_finalize #######
 
     def test_scalar_finalize_namedInYml_namedInDB(self):
         """
-        scalar  Finalize  "param specified in yaml, DB defined with named param" 
+        scalar  Finalize  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("scalar_finalize", "namedInYml_namedInDB")
 
     def test_scalar_finalize_namedInYml_unnamedInDB(self):
         """
-        scalar  Finalize  "param specified in yaml, DB defined with unnamed param" 
+        scalar  Finalize  "param specified in yaml, DB defined with unnamed param"
         """
         self.runFunctionTest("scalar_finalize", "namedInYml_unnamedInDB")
 
     def test_scalar_finalize_unnamedInYml_namedInDB(self):
         """
-        scalar  Finalize  "param specified in yaml, DB defined with named param" 
+        scalar  Finalize  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("scalar_finalize","unnamedInYml_namedInDB")
 
@@ -683,7 +683,7 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_finalize_1outParam_namedInYml_namedInDB(self):
         """
-        scalar  Finalize use 1 named out parameter, specified in yaml 
+        scalar  Finalize use 1 named out parameter, specified in yaml
         """
         self.runFunctionTest("scalar_finalize","1outParam_namedInYml_namedInDB")
 
@@ -701,25 +701,25 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_finalize_1outParam_unnamedInYml_namedInDB(self):
         """
-        scalar  Finalize use 1 named out parameter, not specified in yaml 
+        scalar  Finalize use 1 named out parameter, not specified in yaml
         """
         self.runFunctionTest("scalar_finalize","1outParam_unnamedInYml_namedInDB")
 
     def test_scalar_finalize_1outParam_paramOverride(self):
         """
-        scalar  Finalize use 1 named out parameter, specified with a different value in yaml 
+        scalar  Finalize use 1 named out parameter, specified with a different value in yaml
         """
         self.runFunctionTest("scalar_finalize","1outParam_paramOverride")
 
     def test_scalar_finalize_mismatchingReturnVal(self):
         """
-        scalar  Finalize override return value with what's defined in db vs library 
+        scalar  Finalize override return value with what's defined in db vs library
         """
         self.runFunctionTest("scalar_finalize","mismatchingReturnVal")
 
     def test_scalar_finalize_ambiguousFunction(self):
         """
-        scalar  Finalize NEG specify more than 1 function in db with the same name 
+        scalar  Finalize NEG specify more than 1 function in db with the same name
         """
         self.runFunctionTest("scalar_finalize","ambiguousFunction")
 
@@ -734,19 +734,19 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_map_namedInYml_namedInDB(self):
         """
-        scalar  Map  "param specified in yaml, DB defined with named param" 
+        scalar  Map  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("scalar_map", "namedInYml_namedInDB")
 
     def test_scalar_map_namedInYml_unnamedInDB(self):
         """
-        scalar  Map  "param specified in yaml, DB defined with unnamed param" 
+        scalar  Map  "param specified in yaml, DB defined with unnamed param"
         """
         self.runFunctionTest("scalar_map", "namedInYml_unnamedInDB")
 
     def test_scalar_map_unnamedInYml_namedInDB(self):
         """
-        scalar  Map  "param not specified in yaml, DB defined with named param" 
+        scalar  Map  "param not specified in yaml, DB defined with named param"
         """
         if self.check_orca():
             self.skipTest("Skipping due to MPP-23877")
@@ -774,7 +774,7 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_map_1outParam_namedInYml_namedInDB(self):
         """
-        scalar  Map use 1 named out parameter, specified in yaml 
+        scalar  Map use 1 named out parameter, specified in yaml
         """
         self.runFunctionTest("scalar_map","1outParam_namedInYml_namedInDB")
 
@@ -792,25 +792,25 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_scalar_map_1outParam_unnamedInYml_namedInDB(self):
         """
-        scalar  Map use 1 named out parameter, not specified in yaml 
+        scalar  Map use 1 named out parameter, not specified in yaml
         """
         self.runFunctionTest("scalar_map","1outParam_unnamedInYml_namedInDB")
 
     def test_scalar_map_1outParam_paramOverride(self):
         """
-        scalar  Map use 1 named out parameter, specified with a different value in yaml 
+        scalar  Map use 1 named out parameter, specified with a different value in yaml
         """
         self.runFunctionTest("scalar_map","1outParam_paramOverride")
 
     def test_scalar_map_mismatchingReturnVal(self):
         """
-        scalar  Map override return value with what's defined in db vs library 
+        scalar  Map override return value with what's defined in db vs library
         """
         self.runFunctionTest("scalar_map","mismatchingReturnVal")
 
     def test_scalar_map_ambiguousFunction(self):
         """
-        scalar  Map NEG specify more than 1 function in db with the same name 
+        scalar  Map NEG specify more than 1 function in db with the same name
         """
         self.runFunctionTest("scalar_map","ambiguousFunction")
 
@@ -818,19 +818,19 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_composite_finalize_namedInYml_namedInDB(self):
         """
-        composite: finalize:  "param specified in yaml, DB defined with named param" 
+        composite: finalize:  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("composite_finalize", "namedInYml_namedInDB")
 
     def test_composite_finalize_namedInYml_unnamedInDB(self):
         """
-        composite: finalize:  "param specified in yaml, DB defined with unnamed param" 
+        composite: finalize:  "param specified in yaml, DB defined with unnamed param"
         """
         self.runFunctionTest("composite_finalize", "namedInYml_unnamedInDB")
 
     def test_composite_finalize_unnamedInYml_namedInDB(self):
         """
-        composite: finalize:  "param specified in yaml, DB defined with named param" 
+        composite: finalize:  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("composite_finalize","unnamedInYml_namedInDB")
 
@@ -854,7 +854,7 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_composite_finalize_outParam_namedInYml_namedInDB(self):
         """
-        composite: finalize: use named out parameter, specified in yaml 
+        composite: finalize: use named out parameter, specified in yaml
         """
         self.runFunctionTest("composite_finalize","outParam_namedInYml_namedInDB")
 
@@ -872,54 +872,54 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_composite_finalize_outParam_unnamedInYml_namedInDB(self):
         """
-        composite: finalize: use named out parameter, not specified in yaml 
+        composite: finalize: use named out parameter, not specified in yaml
         """
         self.runFunctionTest("composite_finalize","outParam_unnamedInYml_namedInDB")
 
     def test_composite_finalize_outParam_paramOverride(self):
         """
-        composite: finalize: use  named out parameter, specified with a different value in yaml 
+        composite: finalize: use  named out parameter, specified with a different value in yaml
         """
         self.runFunctionTest("composite_finalize","outParam_paramOverride")
 
     def test_composite_finalize_mismatchingReturnVal(self):
         """
-        composite: finalize: override return value with what's defined in db vs library 
+        composite: finalize: override return value with what's defined in db vs library
         """
         self.runFunctionTest("composite_finalize","mismatchingReturnVal")
 
     def test_composite_finalize_ambiguousFunction(self):
         """
-        composite: finalize: NEG specify more than 1 function in db with the same name 
+        composite: finalize: NEG specify more than 1 function in db with the same name
         """
         self.runFunctionTest("composite_finalize","ambiguousFunction")
 
     def test_composite_finalize_outTableDeclaration_namedInYml(self):
-        """ 
+        """
         composite: finalize: returns Table declaration, named return Val in Yml
         """
         self.runFunctionTest("composite_finalize","outTableDeclaration_namedInYml")
 
     def test_composite_finalize_outTableDeclaration_unnamedInYml(self):
-        """ 
+        """
         composite: finalize: returns Table declaration, named return Val unnamed in Yml
         """
         self.runFunctionTest("composite_finalize","outTableDeclaration_unnamedInYml")
 
     def test_composite_finalize_outToTable_namedInYml(self):
-        """ 
+        """
         composite: finalize: returns To DB table, named return Val in Yml
         """
         self.runFunctionTest("composite_finalize","outToTable_namedInYml")
 
     def test_composite_finalize_outToTable_unnamedInYml(self):
-        """ 
+        """
         composite: finalize: returns To DB table, named return Val not in Yml
         """
         self.runFunctionTest("composite_finalize","outToTable_unnamedInYml")
 
     def test_composite_finalize_NEG_2param(self):
-        """ 
+        """
         composite: finalize: specify more than 1 parameter
         """
         self.runFunctionTest("composite_finalize","NEG_2param")
@@ -930,19 +930,19 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_composite_map_namedInYml_namedInDB(self):
         """
-        composite: map:  "param specified in yaml, DB defined with named param" 
+        composite: map:  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("composite_map", "namedInYml_namedInDB")
 
     def test_composite_map_namedInYml_unnamedInDB(self):
         """
-        composite: map:  "param specified in yaml, DB defined with unnamed param" 
+        composite: map:  "param specified in yaml, DB defined with unnamed param"
         """
         self.runFunctionTest("composite_map", "namedInYml_unnamedInDB")
 
     def test_composite_map_unnamedInYml_namedInDB(self):
         """
-        composite: map:  "param specified in yaml, DB defined with named param" 
+        composite: map:  "param specified in yaml, DB defined with named param"
         """
         self.runFunctionTest("composite_map","unnamedInYml_namedInDB")
 
@@ -966,7 +966,7 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_composite_map_outParam_namedInYml_namedInDB(self):
         """
-        composite: map: use named out parameter, specified in yaml 
+        composite: map: use named out parameter, specified in yaml
         """
         self.runFunctionTest("composite_map","outParam_namedInYml_namedInDB")
 
@@ -984,48 +984,48 @@ class MapreduceMPPTestCase(MPPTestCase):
 
     def test_composite_map_outParam_unnamedInYml_namedInDB(self):
         """
-        composite: map: use named out parameter, not specified in yaml 
+        composite: map: use named out parameter, not specified in yaml
         """
         self.runFunctionTest("composite_map","outParam_unnamedInYml_namedInDB")
 
     def test_composite_map_outParam_paramOverride(self):
         """
-        composite: map: use  named out parameter, specified with a different value in yaml 
+        composite: map: use  named out parameter, specified with a different value in yaml
         """
         self.runFunctionTest("composite_map","outParam_paramOverride")
 
     def test_composite_map_mismatchingReturnVal(self):
         """
-        composite: map: override return value with what's defined in db vs library 
+        composite: map: override return value with what's defined in db vs library
         """
         self.runFunctionTest("composite_map","mismatchingReturnVal")
 
     def test_composite_map_ambiguousFunction(self):
         """
-        composite: map: NEG specify more than 1 function in db with the same name 
+        composite: map: NEG specify more than 1 function in db with the same name
         """
         self.runFunctionTest("composite_map","ambiguousFunction")
 
     def test_composite_map_outTableDeclaration_namedInYml(self):
-        """ 
+        """
         composite: map: returns Table declaration, named return Val in Yml
         """
         self.runFunctionTest("composite_map","outTableDeclaration_namedInYml")
 
     def test_composite_map_outTableDeclaration_unnamedInYml(self):
-        """ 
+        """
         composite: map: returns Table declaration, named return Val unnamed in Yml
         """
         self.runFunctionTest("composite_map","outTableDeclaration_unnamedInYml")
 
     def test_composite_map_outToTable_composite_map_namedInYml(self):
-        """ 
+        """
         composite: map: returns To DB table, named return Val in Yml
         """
         self.runFunctionTest("composite_map","outToTable_composite_map_namedInYml")
 
     def test_composite_map_outToTable_composite_map_unnamedInYml(self):
-        """ 
+        """
         composite: map: returns To DB table, named return Val not in Yml
         """
         self.runFunctionTest("composite_map","outToTable_composite_map_unnamedInYml")
