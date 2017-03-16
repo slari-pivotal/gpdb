@@ -30,6 +30,8 @@ class Spy(object):
 class MockPrinter(object):
   def print_msg(self, msg):
     pass
+  def prompt_yesno(self, prompt, default=False):
+    return True
 
 
 class MockCommandRunner(object):
@@ -711,8 +713,7 @@ class CheckEnvironmentsTest(unittest.TestCase):
       self.check_has_file = Spy(returns=True)
 
   class MockAws(object):
-    def __init__(self):
-      self.check_iam_user_within_account = Spy(returns=True)
+    pass
 
   def setUp(self):
     self.gpdb_environment = self.MockEnvironment()
@@ -731,7 +732,12 @@ class CheckEnvironmentsTest(unittest.TestCase):
     assert_that(self.secrets_environment.check_git_head_is_latest.calls, greater_than(0))
     assert_that(self.secrets_environment.check_has_file.calls, equal_to(1))
     assert_that(self.secrets_environment.check_has_file.last_args[0], equal_to('gpdb-4.3_STABLE-ci-secrets.yml'))
-    assert_that(self.aws.check_iam_user_within_account.last_args[0], equal_to('189358390367'))
+
+  def test_prompt_answered_no_results_in_failure(self):
+    printer = MockPrinter()
+    printer.prompt_yesno = Spy(returns=False)
+    ret = release.check_environments(self.gpdb_environment, self.secrets_environment, printer, aws=self.aws)
+    assert_that(ret, equal_to(False))
 
   def test_one_fails_but_still_runs_all(self):
     for i, failing_method in enumerate((

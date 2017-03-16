@@ -28,7 +28,6 @@ import sys
 import subprocess
 
 SECRETS_FILE_43_STABLE = 'gpdb-4.3_STABLE-ci-secrets.yml'
-SHARED_CONCOURSE_AWS_ACCOUNT_NUMBER = '189358390367'
 
 SECRETS_NOT_FOUND_ERROR = u"""\
 Error. gpdb-ci-deployments (the secrets repo) not found. Two possible reasons:
@@ -62,6 +61,18 @@ class CommandRunner(object):
 class Printer(object):
   def print_msg(self, msg):
     print msg
+
+  def prompt_yesno(self, prompt, default=False):
+    yesno = 'Y/n' if default else 'y/N'
+    while True:
+      sys.stdout.write('%s [%s] ' % (prompt, yesno)) ; sys.stdout.flush()
+      result = sys.stdin.readline().rstrip('\n')
+      if not result:
+        return default
+      if result in ('y', 'Y', 'yes', 'Yes', 'YES'):
+        return True
+      if result in ('n', 'N', 'no', 'No', 'NO'):
+        return False
 
 
 class Environment(object):
@@ -126,7 +137,6 @@ class Environment(object):
 class Aws(object):
   def __init__(self):
     self.s3 = boto3.resource('s3')
-    self.iam = boto3.client('iam')
 
   def get_botobucket(self, bucket_name):
     return self.s3.Bucket(bucket_name)
@@ -139,9 +149,6 @@ class Aws(object):
       if e.response['Error']['Code'] == '404':
         return False
       raise e
-
-  def check_iam_user_within_account(self, expected_account):
-    return expected_account in self.iam.get_user()['User']['Arn']
 
 
 class PipelineFileEditor(object):
@@ -348,6 +355,17 @@ def secrets_dir_is_present(directory):
   return directory.is_dir()
 
 
+AWS_IAM_MANUAL_CHECK_MSG = """\
+MANUAL CHECK: You must be logged in to the AWS CLI as a user in the
+pivotal-pa-toolsmiths account.
+
+Log in with `aws configure`. If you are unsure if you have credentials, ask the
+Toolsmiths. You can create an access key in the AWS IAM console. You will need
+to save the "Secret Access Key" securely (e.g., LastPass), as AWS will not
+reveal it to you after it is generated.
+"""
+
+
 def check_environments(gpdb_environment, secrets_environment, printer=None, aws=None):
   printer = printer or Printer()
   aws = aws or Aws()
@@ -355,7 +373,8 @@ def check_environments(gpdb_environment, secrets_environment, printer=None, aws=
     return secrets_environment.check_has_file(SECRETS_FILE_43_STABLE)
 
   def check_iam_user():
-    return aws.check_iam_user_within_account(SHARED_CONCOURSE_AWS_ACCOUNT_NUMBER)
+    printer.print_msg(AWS_IAM_MANUAL_CHECK_MSG)
+    return printer.prompt_yesno("Are you logged in to AWS?")
 
   checks_to_run = [
       ('overall dependencies', gpdb_environment.check_dependencies),
