@@ -795,7 +795,7 @@ static void parse_command_line(int argc, const char* const argv[],
 
 	/* Validate opt.sslclean*/
 	if ( (opt.sslclean < 0) || (opt.sslclean > 300) )
-		usage_error("Error: -sslclean timeout must be between 0 and 300 [sec] (default is 5[sec])", 0);
+		usage_error("Error: -sslclean timeout must be between 0 and 300 [sec] (default is 0[sec] for Linux, 5 for others)", 0);
 #endif
 
 #ifdef GPFXDIST
@@ -3450,6 +3450,10 @@ int gpfdist_init(int argc, const char* const argv[])
 
 	gcb.session.tab = apr_hash_make(gcb.pool);
 
+#ifdef __linux__
+	opt.sslclean = 0;
+#endif
+
 	parse_command_line(argc, argv, gcb.pool);
 
 #ifndef WIN32
@@ -4045,10 +4049,10 @@ static void flush_ssl_buffer(int fd, short event, void* arg)
 	}
 	else
 	{
-		// Prepare and start a 5 seconds timer.
+		// Prepare and start a timer.
 		// While working with BIO_SSL, we are working with 3 buffers:
 		// [1] BIO layer buffer [2] SSL buffer [3] Socket buffer
-		// Sometimes we have a delay somewhere between these buffers (MPP-16402)
+		// Sometimes we have a 5 sec delay somewhere between these buffers on Solaris (MPP-16402)
 		// So, even if the BIO_wpending() shows that there is no more pending data in the BIO_SSL buffer,
 		// we might still have data in the socket's buffer that wasn't sent yet.
 
@@ -4066,7 +4070,7 @@ static void flush_ssl_buffer(int fd, short event, void* arg)
 /*
  * setup_flush_ssl_buffer
  *
- * Create event that will call to 'flush_ssl_buffer', with 5 seconds timeout
+ * Create event that will call to 'flush_ssl_buffer', with opt.sslclean seconds timeout
  */
 static void setup_flush_ssl_buffer(request_t* r)
 {
