@@ -2,7 +2,7 @@
 # -------------
 #
 # 2. git branch 4.3.x.x (in gpdb repo)
-# 1. (before any changes on the release branch) tag the branch point as 4.3.x.x-rc1
+# 1. (before any changes on the release branch) tag the branch point as 4.3.x.x-rc.1
 # 3. Update release version number, (~~modify pipeline~~); commit & push
 # 4. Create secrets file in gpdb-ci-deployments repo; commit & push
 # 5. fly set-pipeline new release pipeline
@@ -254,8 +254,10 @@ class Release(object):
     self.printer.print_msg("Branch %s exists, but points to a different revision: %s" % (self.release_branch, commit))
     return False
 
-  def tag_branch_point(self): # TODO
-    return True
+  def tag_branch_point(self):
+      release_candidate_tag = self.version + '-rc.1'
+      tag_message = 'Tag %s, the branch point for %s' % (release_candidate_tag, self.version)
+      return self.command_runner.subprocess_is_successful(('git', 'tag', '-a', '-m', tag_message, release_candidate_tag, self.rev))
 
   def _edit_file(self, in_filename, out_filename, replacements):
     """Edit |in_filename|, writing to |out_filename|, while applying the
@@ -439,7 +441,7 @@ def main(argv):
   exec_step(release.set_bucket_versioning,    'Failed to enable versioning on the S3 bucket')
   exec_step(release.set_bucket_policy,        'Failed to configure the S3 bucket access policy')
   exec_step(release.create_release_branch,    'Failed to create release branch locally with git')
-  exec_step(release.tag_branch_point,         'TODO: Failed to tag where we created the branch point')
+  exec_step(release.tag_branch_point,         'Failed to tag where we created the branch point')
   exec_step(release.edit_getversion_file,     'Failed to edit the getversion file')
   exec_step(release.write_secrets_file,       'Failed to write pipeline secrets file')
   exec_step(release.edit_pipeline_for_release,'Editing pipeline failed')

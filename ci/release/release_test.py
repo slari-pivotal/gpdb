@@ -54,7 +54,9 @@ class MockCommandRunner(object):
     return 0 == self._get_response(cmd).exit_code
 
   def _get_response(self, cmd):
-    response = self.subprocess_mock_outputs[cmd]
+    response = self.subprocess_mock_outputs.get(cmd)
+    if not response:
+      raise AssertionError('No response set for command: ' + str(cmd))
     if not response.allowed:
       raise AssertionError('Command is not allowed to be called: ' + str(cmd))
     if not response.exists:
@@ -386,8 +388,22 @@ class ReleaseTest(ReleaseTestBase):
     assert_that(command_runner.branch_changed, equal_to(True))
 
   def test_tag_branch_point(self):
-    release_for_tagging = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None, aws=self.MockAws())
+    command_runner = MockCommandRunner()
+    release_for_tagging = release.Release('4.3.25.3', '123abc', gpdb_environment=None, secrets_environment=None, command_runner=command_runner, aws=self.MockAws())
+    tag_message = 'Tag 4.3.25.3-rc.1, the branch point for 4.3.25.3'
+    command_runner.respond_to_command_with(
+        ('git', 'tag', '-a', '-m', tag_message, '4.3.25.3-rc.1', '123abc'), exit_code=0)
     assert_that(release_for_tagging.tag_branch_point())
+
+  def test_tag_branch_point_fails(self):
+    command_runner = MockCommandRunner()
+    release_for_tagging = release.Release('4.3.26.3', '123abc', gpdb_environment=None, secrets_environment=None, command_runner=command_runner, aws=self.MockAws())
+    tag_message = 'Tag 4.3.26.3-rc.1, the branch point for 4.3.26.3'
+    # Fails because the tag already exists, say.
+    command_runner.respond_to_command_with(
+        ('git', 'tag', '-a', '-m', tag_message, '4.3.26.3-rc.1', '123abc'), exit_code=1)
+    assert_that(release_for_tagging.tag_branch_point(), equal_to(False))
+
 
 
 class FakeEnvironment(object):
