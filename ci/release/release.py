@@ -27,6 +27,26 @@ import ruamel.yaml
 import sys
 import subprocess
 
+AWS_IAM_MANUAL_CHECK_MSG = """\
+MANUAL CHECK: You must be logged in to the AWS CLI as a user in the
+pivotal-pa-toolsmiths account.
+
+Log in with `aws configure`. If you are unsure if you have credentials, ask the
+Toolsmiths. You can create an access key in the AWS IAM console. You will need
+to save the "Secret Access Key" securely (e.g., LastPass), as AWS will not
+reveal it to you after it is generated.
+"""
+
+FOLLOWUP_STEPS_MSG = """\
+Congratulations! The release has been cut!
+
+After looking over the changes, do the following:
+
+1. Push GPDB, including tags:  (cd ~/workspace/gpdb && git push --follow-tags)
+2. Push secrets:               (cd ~/workspace/gpdb-ci-deployments && git push)
+3. Unpause the release pipeline.
+"""
+
 SECRETS_FILE_43_STABLE = 'gpdb-4.3_STABLE-ci-secrets.yml'
 
 SECRETS_NOT_FOUND_ERROR = u"""\
@@ -352,20 +372,13 @@ class Release(object):
        '-c', self.gpdb_environment.path(self.pipeline_file),
        '-l', self.secrets_environment.path(self.release_secrets_file)))
 
+  def print_followup_steps(self):
+    print FOLLOWUP_STEPS_MSG
+    return True
+
 
 def secrets_dir_is_present(directory):
   return directory.is_dir()
-
-
-AWS_IAM_MANUAL_CHECK_MSG = """\
-MANUAL CHECK: You must be logged in to the AWS CLI as a user in the
-pivotal-pa-toolsmiths account.
-
-Log in with `aws configure`. If you are unsure if you have credentials, ask the
-Toolsmiths. You can create an access key in the AWS IAM console. You will need
-to save the "Secret Access Key" securely (e.g., LastPass), as AWS will not
-reveal it to you after it is generated.
-"""
 
 
 def check_environments(gpdb_environment, secrets_environment, printer=None, aws=None):
@@ -446,3 +459,4 @@ def main(argv):
   exec_step(release.write_secrets_file,       'Failed to write pipeline secrets file')
   exec_step(release.edit_pipeline_for_release,'Editing pipeline failed')
   exec_step(release.fly_set_pipeline,         'Failed to set pipeline')
+  exec_step(release.print_followup_steps,     'You didn\'t follow directions?')
