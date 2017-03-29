@@ -4,7 +4,7 @@ import sys
 
 from gparray import GpDB, GpArray, Segment
 from mock import Mock, patch
-from gppylib.test.unit.gp_unittest import GpTestCase, run_tests
+from gp_unittest import *
 
 
 class GpStop(GpTestCase):
