@@ -180,7 +180,7 @@ Datum s3_import(PG_FUNCTION_ARGS) {
     if (EXTPROTOCOL_IS_LAST_CALL(fcinfo)) {
         if (!reader_cleanup(&gpreader)) {
             ereport(ERROR,
-                    (0, errmsg("Failed to cleanup S3 extension: %s", s3extErrorMessage.c_str())));
+                    (0, errmsg("Failed to cleanup gpcloud extension: %s", s3extErrorMessage.c_str())));
         }
 
         thread_cleanup();
@@ -201,7 +201,7 @@ Datum s3_import(PG_FUNCTION_ARGS) {
 
         gpreader = reader_init(url_with_options);
         if (!gpreader) {
-            ereport(ERROR, (0, errmsg("Failed to init S3 extension (segid = %d, "
+            ereport(ERROR, (0, errmsg("Failed to init gpcloud extension (segid = %d, "
                                       "segnum = %d), please check your "
                                       "configurations and network connection: %s",
                                       s3ext_segid, s3ext_segnum, s3extErrorMessage.c_str())));
@@ -236,7 +236,7 @@ Datum s3_export(PG_FUNCTION_ARGS) {
     if (EXTPROTOCOL_IS_LAST_CALL(fcinfo)) {
         if (!writer_cleanup(&gpwriter)) {
             ereport(ERROR,
-                    (0, errmsg("Failed to cleanup S3 extension: %s", s3extErrorMessage.c_str())));
+                    (0, errmsg("Failed to cleanup gpcloud extension: %s", s3extErrorMessage.c_str())));
         }
 
         thread_cleanup();
@@ -255,7 +255,7 @@ Datum s3_export(PG_FUNCTION_ARGS) {
 
         gpwriter = writer_init(url_with_options, format);
         if (!gpwriter) {
-            ereport(ERROR, (0, errmsg("Failed to init S3 extension (segid = %d, "
+            ereport(ERROR, (0, errmsg("Failed to init gpcloud extension (segid = %d, "
                                       "segnum = %d), please check your "
                                       "configurations and network connection: %s",
                                       s3ext_segid, s3ext_segnum, s3extErrorMessage.c_str())));
