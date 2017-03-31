@@ -1583,9 +1583,6 @@ void AppendOnlyStorageWrite_FinishBuffer(
 					rowCount,
 					/* expectedCompressedLen */ 0);
 
-		storageWrite->lastWriteBeginPosition =
-			BufferedAppendNextBufferPosition(&(storageWrite->bufferedAppend));
-
 		BufferedAppendFinishBuffer(
 					&storageWrite->bufferedAppend,
 					bufferLen,
@@ -1630,9 +1627,6 @@ void AppendOnlyStorageWrite_FinishBuffer(
 					executorBlockKind,
 					rowCount,
 					compressedLen);
-
-		storageWrite->lastWriteBeginPosition =
-			BufferedAppendNextBufferPosition(&(storageWrite->bufferedAppend));
 
 		/*
 		 * Finish the current buffer by specifying the used length.
