@@ -57,7 +57,7 @@ test: alter_distribution_policy
 
 test: bfv_catalog bfv_index bfv_olap bfv_aggregate bfv_partition 
 test: bfv_cte bfv_joins bfv_statistic bfv_subquery bfv_planner bfv_legacy
-test: bfv_dd bfv_dd_multicolumn bfv_dd_types
+test: bfv_dd bfv_dd_multicolumn bfv_dd_types partition_pruning
 
 test: qp_misc
 test: qp_misc_jiras

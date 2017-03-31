@@ -20,7 +20,6 @@
 #include "executor/instrument.h"
 #include "executor/nodePartitionSelector.h"
 #include "utils/memutils.h"
-
 static void
 partition_propagation(List *partOids, List *scanIds, int32 selectorId);
 
@@ -121,7 +120,7 @@ ExecPartitionSelector(PartitionSelectorState *node)
 	{
 		/* propagate the part oids obtained via static partition selection */
 		partition_propagation(ps->staticPartOids, ps->staticScanIds, ps->selectorId);
-		*node->acceptedLeafPart = NULL;
+		node->acceptedLeafOid = InvalidOid;
 		return NULL;
 	}
 
@@ -185,12 +184,7 @@ ExecPartitionSelector(PartitionSelectorState *node)
 		Assert (ExprSingleResult == isDone);
 	}
 
-	/* reset acceptedLeafPart */
-	if (NULL != *node->acceptedLeafPart)
-	{
-		pfree(*node->acceptedLeafPart);
-		*node->acceptedLeafPart = NULL;
-	}
+	node->acceptedLeafOid = InvalidOid;
 	return candidateOutputSlot;
 }
 
@@ -206,11 +200,11 @@ ExecReScanPartitionSelector(PartitionSelectorState *node, ExprContext *exprCtxt)
 	/* reset PartitionSelectorState */
 	PartitionSelector *ps = (PartitionSelector *) node->ps.plan;
 	
-	Assert (NULL == *node->acceptedLeafPart);
+	Assert (InvalidOid == node->acceptedLeafOid);
 	
 	for(int iter = 0; iter < ps->nLevels; iter++)
 	{
-		node->levelPartConstraints[iter] = NULL;
+		node->levelPartRules[iter] = NULL;
 	}
 
 	/* free result tuple slot */

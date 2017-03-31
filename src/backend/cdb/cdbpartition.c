@@ -335,17 +335,38 @@ rel_partition_key_attrs(Oid relid)
 List *
 rel_partition_keys_ordered(Oid relid)
 {
-	cqContext *pcqCtx = caql_beginscan(
-							NULL,
-							cql("SELECT * FROM pg_partition "
-								" WHERE parrelid = :1 ",
-								ObjectIdGetDatum(relid)));
+	List *pkeys = NIL;
+	rel_partition_keys_kinds_ordered(relid, &pkeys, NULL);
+	return pkeys;
+}
 
+/*
+ * Output a list of lists representing the partitioning keys and a list representing
+ * the partitioning kinds of the partitioned table identified by the relid or NIL.
+ * The keys and kinds are in the order of partitioning levels.
+ */
+void
+rel_partition_keys_kinds_ordered(Oid relid, List **pkeys, List **pkinds)
+{
+	Relation	partrel;
+	ScanKeyData scankey;
+	SysScanDesc sscan;
 	List *levels = NIL;
 	List *keysUnordered = NIL;
+	List *kindsUnordered = NIL;
 	int nlevels = 0;
 	HeapTuple tuple = NULL;
-	while (HeapTupleIsValid(tuple = caql_getnext(pcqCtx)))
+
+	partrel = heap_open(PartitionRelationId, AccessShareLock);
+
+	/* SELECT * FROM pg_partition WHERE parrelid = :1 */
+	ScanKeyInit(&scankey, Anum_pg_partition_parrelid,
+				BTEqualStrategyNumber, F_OIDEQ,
+				ObjectIdGetDatum(relid));
+
+	sscan = systable_beginscan(partrel, PartitionParrelidIndexId, true,
+							   SnapshotNow, 1, &scankey);
+	while (HeapTupleIsValid(tuple = systable_getnext(sscan)))
 	{
 		Form_pg_partition p = (Form_pg_partition) GETSTRUCT(tuple);
 
@@ -362,29 +383,44 @@ rel_partition_keys_ordered(Oid relid)
 
 		nlevels++;
 		levels = lappend_int(levels, p->parlevel);
-		keysUnordered = lappend(keysUnordered, levelkeys);
+
+		if (pkeys != NULL)
+			keysUnordered = lappend(keysUnordered, levelkeys);
+
+		if (pkinds != NULL)
+			kindsUnordered = lappend_int(kindsUnordered, p->parkind);
 	}
-	caql_endscan(pcqCtx);
+	systable_endscan(sscan);
+	heap_close(partrel, AccessShareLock);
 
 	if (1 == nlevels)
 	{
 		list_free(levels);
-		return keysUnordered;
+
+		if (pkeys != NULL)
+			*pkeys = keysUnordered;
+
+		if (pkinds != NULL)
+			*pkinds = kindsUnordered;
+
+		return;
 	}
 
-	// now order the keys by level
-	List *pkeys = NIL;
+	// now order the keys and kinds by level
 	for (int i = 0; i< nlevels; i++)
 	{
 		int pos = list_find_int(levels, i);
 		Assert (0 <= pos);
 
-		pkeys = lappend(pkeys, list_nth(keysUnordered, pos));
+		if (pkeys != NULL)
+			*pkeys = lappend(*pkeys, list_nth(keysUnordered, pos));
+
+		if (pkinds != NULL)
+			*pkinds = lappend_int(*pkinds, list_nth_int(kindsUnordered, pos));
 	}
 	list_free(levels);
 	list_free(keysUnordered);
-
-	return pkeys;
+	list_free(kindsUnordered);
 }
 
  /*

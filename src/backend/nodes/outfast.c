@@ -2951,6 +2951,25 @@ _outPartBoundOpenExpr(StringInfo str, PartBoundOpenExpr *node)
 }
 
 static void
+_outPartListRuleExpr(StringInfo str, PartListRuleExpr *node)
+{
+	WRITE_NODE_TYPE("PARTLISTRULEEXPR");
+
+	WRITE_INT_FIELD(level);
+	WRITE_OID_FIELD(resulttype);
+	WRITE_OID_FIELD(elementtype);
+}
+
+static void
+_outPartListNullTestExpr(StringInfo str, PartListNullTestExpr *node)
+{
+	WRITE_NODE_TYPE("PARTLISTNULLTESTEXPR");
+
+	WRITE_INT_FIELD(level);
+	WRITE_ENUM_FIELD(nulltesttype, NullTestType);
+}
+
+static void
 _outColumnDef(StringInfo str, ColumnDef *node)
 {
 	WRITE_NODE_TYPE("COLUMNDEF");
@@ -4476,6 +4495,14 @@ _outNode(StringInfo str, void *obj)
 
 			case T_PartBoundOpenExpr:
 				_outPartBoundOpenExpr(str, obj);
+				break;
+
+			case T_PartListRuleExpr:
+				_outPartListRuleExpr(str, obj);
+				break;
+
+			case T_PartListNullTestExpr:
+				_outPartListNullTestExpr(str, obj);
 				break;
 
 			case T_CreateTrigStmt:

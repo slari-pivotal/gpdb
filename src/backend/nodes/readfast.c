@@ -447,6 +447,29 @@ _readPartBoundOpenExpr(const char ** str)
 	READ_DONE();
 }
 
+static PartListRuleExpr *
+_readPartListRuleExpr(const char ** str)
+{
+	READ_LOCALS(PartListRuleExpr);
+
+	READ_INT_FIELD(level);
+	READ_OID_FIELD(resulttype);
+	READ_OID_FIELD(elementtype);
+
+	READ_DONE();
+}
+
+static PartListNullTestExpr *
+_readPartListNullTestExpr(const char ** str)
+{
+	READ_LOCALS(PartListNullTestExpr);
+
+	READ_INT_FIELD(level);
+	READ_ENUM_FIELD(nulltesttype, NullTestType);
+
+	READ_DONE();
+}
+
 /*
  * _readRowMarkClause
  */
@@ -4586,6 +4609,12 @@ readNodeBinary(const char ** str)
 				break;
 			case T_PartBoundOpenExpr:
 				return_value = _readPartBoundOpenExpr(str);
+				break;
+			case T_PartListRuleExpr:
+				return_value = _readPartListRuleExpr(str);
+				break;
+			case T_PartListNullTestExpr:
+				return_value = _readPartListNullTestExpr(str);
 				break;
 			case T_RowMarkClause:
 				return_value = _readRowMarkClause(str);
