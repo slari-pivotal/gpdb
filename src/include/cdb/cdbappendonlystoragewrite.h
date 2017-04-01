@@ -113,8 +113,13 @@ typedef struct AppendOnlyStorageWrite
 	int64	firstRowNum;
 			/* Explicitly set first row number for the next block. */
 
-	int64   lastWriteBeginPosition;
-			/* The beginning of the write buffer for the last write. */
+	/*
+	 * The beginning of the logical block which will be used to record in
+	 * block-directory. So, incase of datum broken down into multiple blocks
+	 * this points to first / starting block, which would be large content
+	 * block for such a case.
+	 */
+	int64		logicalBlockStartOffset;
 
 	AoHeaderKind	getBufferAoHeaderKind;
 			/* The kind of header specifed to ~_GetBuffer. */
@@ -394,11 +399,7 @@ extern uint8 *AppendOnlyStorageWrite_GetBuffer(
 extern bool AppendOnlyStorageWrite_IsBufferAllocated(
 	AppendOnlyStorageWrite		*storageWrite);
 
-/*
- * Return the beginning of the last write position of
- * the write buffer.
- */
-extern int64 AppendOnlyStorageWrite_LastWriteBeginPosition(
+extern int64 AppendOnlyStorageWrite_LogicalBlockStartOffset(
 	AppendOnlyStorageWrite *storageWrite);
 
 /*

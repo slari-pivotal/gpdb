@@ -1814,8 +1814,7 @@ IndexBuildHeapScan(Relation heapRelation,
  * tuples to be indexed.
  *
  * If the block directory of the append-only relation does not exist, it is
- * created here. This occurs when the append-only relation is upgraded from
- * pre-3.4 release.
+ * created here.
  */
 static double
 IndexBuildAppendOnlyRowScan(Relation parentRelation,
@@ -1875,8 +1874,7 @@ IndexBuildAppendOnlyRowScan(Relation parentRelation,
 		/* Update blkdirrelid, blkdiridxid in aoEntry with new values */
 		aoscan->aoEntry->blkdirrelid = opaque->blkdirRelOid;
 		aoscan->aoEntry->blkdiridxid = opaque->blkdirIdxOid;
-		
-		aoscan->buildBlockDirectory = true;
+
 		aoscan->blockDirectory =
 			(AppendOnlyBlockDirectory *)palloc0(sizeof(AppendOnlyBlockDirectory));
 		blockDirectory = aoscan->blockDirectory;
@@ -1932,8 +1930,7 @@ IndexBuildAppendOnlyRowScan(Relation parentRelation,
  * find tuples to be indexed.
  *
  * If the block directory of the append-only relation does not exist, it is
- * created here. This occurs when the append-only relation is upgraded from
- * pre-3.4 release.
+ * created here.
  */
 static double
 IndexBuildAppendOnlyColScan(Relation parentRelation,
@@ -1966,12 +1963,10 @@ IndexBuildAppendOnlyColScan(Relation parentRelation,
 		ExecPrepareExpr((Expr *)indexInfo->ii_Predicate, estate);
 
 	/*
-	 * Mark columns that need to be scanned for the index creation.
-	 * Normally, only index key columns need to be scanned. However,
-	 * If the table is upgraded from pre-3.4 release, the table does
-	 * not have the block directory created. We create the block
-	 * directory as part of the index creation process. In that case,
-	 * all columns need to be scanned.
+	 * Mark columns that need to be scanned for the index creation. Normally,
+	 * only index key columns need to be scanned. We create the block
+	 * directory as part of the index creation process, if one doesn't
+	 * exist. In that case, all columns need to be scanned.
 	 */
 	Assert(parentRelation->rd_att != NULL);
 	proj = palloc0(parentRelation->rd_att->natts * sizeof(bool));
@@ -2030,7 +2025,6 @@ IndexBuildAppendOnlyColScan(Relation parentRelation,
 		aocsscan->aoEntry->blkdirrelid = opaque->blkdirRelOid;
 		aocsscan->aoEntry->blkdiridxid = opaque->blkdirIdxOid;
 		
-		aocsscan->buildBlockDirectory = true;
 		aocsscan->blockDirectory =
 			(AppendOnlyBlockDirectory *)palloc0(sizeof(AppendOnlyBlockDirectory));
 		blockDirectory = aocsscan->blockDirectory;
