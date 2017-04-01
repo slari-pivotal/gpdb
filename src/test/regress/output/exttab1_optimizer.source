@@ -591,7 +591,7 @@ format 'text' (delimiter '|');
 select * from badt1;
 NOTICE:  gfile stat @abs_srcdir@/data/no/such/place/badt1.tbl failure: No such file or directory  (seg0 slice1 @hostname@:50000 pid=64819)
 NOTICE:  fstream unable to open file @abs_srcdir@/data/no/such/place/badt1.tbl  (seg0 slice1 @hostname@:50000 pid=64819)
-ERROR:  could not open "file://@hostname@@abs_srcdir@/data/no/such/place/badt1.tbl" for reading: 404 file not found  (seg0 slice1 @hostname@:50000 pid=64819)
+ERROR:  could not open file "@abs_srcdir@/data/no/such/place/badt1.tbl": 404 file not found  (seg0 slice1 @hostname@:50000 pid=64819)
 drop external table badt1;
 --
 -- try a bad protocol
@@ -887,7 +887,6 @@ LOCATION('gpfdist://g182:7070/subtrans_w_ext.data') FORMAT 'csv';
 BEGIN;
 SAVEPOINT s1;
 INSERT INTO subtrans_w_ext SELECT i, i, i from generate_series(1,100) i;
-ERROR:  fault triggered, fault name:'external_insert_finish' fault type:'error' (faultinjector.c:677)  (seg0 g182:30000 pid=7028) (cdbdisp.c:1320)
 ROLLBACK TO s1;
 -- start_ignore
 select * from exttab1_gpfdist_status;

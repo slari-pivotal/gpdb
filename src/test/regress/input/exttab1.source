@@ -472,6 +472,45 @@ INSERT INTO wet_region VALUES(4,'MIDDLE EAST','uickly special');
 --
 SELECT DISTINCT(R_NAME) FROM ret_region ORDER BY R_NAME;
 
+CREATE EXTERNAL TABLE ext_lineitem (
+                L_ORDERKEY INT8,
+                L_PARTKEY INTEGER,
+                L_SUPPKEY INTEGER,
+                L_LINENUMBER integer,
+                L_QUANTITY decimal,
+                L_EXTENDEDPRICE decimal,
+                L_DISCOUNT decimal,
+                L_TAX decimal,
+                L_RETURNFLAG CHAR(1),
+                L_LINESTATUS CHAR(1),
+                L_SHIPDATE date,
+                L_COMMITDATE date,
+                L_RECEIPTDATE date,
+                L_SHIPINSTRUCT CHAR(25),
+                L_SHIPMODE CHAR(10),
+                L_COMMENT VARCHAR(44)
+                )
+LOCATION
+(
+      'gpfdist://@hostname@:7070/lineitem_cr.tbl'
+)
+FORMAT 'csv'
+(
+        DELIMITER AS '|'
+        NEWLINE 'CR'
+)
+;
+SELECT count(*) FROM ext_lineitem;
+DROP EXTERNAL TABLE ext_lineitem;
+
+CREATE EXTERNAL TABLE ext_crlf_with_lf_column(c1 int, c2 text) LOCATION ('gpfdist://@hostname@:7070/crlf_with_lf_column.csv') FORMAT 'csv' (NEWLINE 'CRLF');
+SELECT count(*) FROM ext_crlf_with_lf_column;
+DROP EXTERNAL TABLE ext_crlf_with_lf_column;
+
+CREATE EXTERNAL TABLE ext_crlf_with_lf_column(c1 int, c2 text) LOCATION ('gpfdist://@hostname@:7070/crlf_with_lf_column.csv') FORMAT 'text' (DELIMITER ',' NEWLINE 'CRLF');
+SELECT count(*) FROM ext_crlf_with_lf_column;
+DROP EXTERNAL TABLE ext_crlf_with_lf_column;
+
 -- start_ignore
 select * from exttab1_gpfdist_status;
 select * from exttab1_gpfdist_stop;
@@ -687,3 +726,4 @@ SET gp_log_gang TO DEFAULT;
 
 DROP FUNCTION exttab_error_context_callback_func();
 DROP EXTERNAL TABLE exttab_error_context_callback;
+

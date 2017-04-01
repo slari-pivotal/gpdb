@@ -591,7 +591,7 @@ format 'text' (delimiter '|');
 select * from badt1;
 NOTICE:  gfile stat @abs_srcdir@/data/no/such/place/badt1.tbl failure: No such file or directory  (seg0 slice1 @hostname@:50000 pid=64819)
 NOTICE:  fstream unable to open file @abs_srcdir@/data/no/such/place/badt1.tbl  (seg0 slice1 @hostname@:50000 pid=64819)
-ERROR:  could not open "file://@hostname@@abs_srcdir@/data/no/such/place/badt1.tbl" for reading: 404 file not found  (seg0 slice1 @hostname@:50000 pid=64819)
+ERROR:  could not open file "@abs_srcdir@/data/no/such/place/badt1.tbl": 404 file not found  (seg0 slice1 @hostname@:50000 pid=64819)
 drop external table badt1;
 --
 -- try a bad protocol
@@ -740,6 +740,57 @@ SELECT DISTINCT(R_NAME) FROM ret_region ORDER BY R_NAME;
  MIDDLE EAST              
 (5 rows)
 
+CREATE EXTERNAL TABLE ext_lineitem (
+                L_ORDERKEY INT8,
+                L_PARTKEY INTEGER,
+                L_SUPPKEY INTEGER,
+                L_LINENUMBER integer,
+                L_QUANTITY decimal,
+                L_EXTENDEDPRICE decimal,
+                L_DISCOUNT decimal,
+                L_TAX decimal,
+                L_RETURNFLAG CHAR(1),
+                L_LINESTATUS CHAR(1),
+                L_SHIPDATE date,
+                L_COMMITDATE date,
+                L_RECEIPTDATE date,
+                L_SHIPINSTRUCT CHAR(25),
+                L_SHIPMODE CHAR(10),
+                L_COMMENT VARCHAR(44)
+                )
+LOCATION
+(
+      'gpfdist://@hostname@:7070/lineitem_cr.tbl'
+)
+FORMAT 'csv'
+(
+        DELIMITER AS '|'
+      NEWLINE 'CR'
+)
+;
+SELECT count(*) FROM ext_lineitem;
+ count
+-------
+  2985
+(1 row)
+
+DROP EXTERNAL TABLE ext_lineitem;
+CREATE EXTERNAL TABLE ext_crlf_with_lf_column(c1 int, c2 text) LOCATION ('gpfdist://@hostname@:7070/crlf_with_lf_column.csv') FORMAT 'csv' (NEWLINE 'CRLF');
+SELECT count(*) FROM ext_crlf_with_lf_column;
+ count
+-------
+ 10367
+(1 row)
+
+DROP EXTERNAL TABLE ext_crlf_with_lf_column;
+CREATE EXTERNAL TABLE ext_crlf_with_lf_column(c1 int, c2 text) LOCATION ('gpfdist://@hostname@:7070/crlf_with_lf_column.csv') FORMAT 'text' (DELIMITER ',' NEWLINE 'CRLF');
+SELECT count(*) FROM ext_crlf_with_lf_column;
+ count
+-------
+ 10367
+(1 row)
+
+DROP EXTERNAL TABLE ext_crlf_with_lf_column;
 -- start_ignore
 select * from exttab1_gpfdist_status;
                                      x                                     
@@ -888,7 +939,6 @@ LOCATION('gpfdist://g182:7070/subtrans_w_ext.data') FORMAT 'csv';
 BEGIN;
 SAVEPOINT s1;
 INSERT INTO subtrans_w_ext SELECT i, i, i from generate_series(1,100) i;
-ERROR:  fault triggered, fault name:'external_insert_finish' fault type:'error' (faultinjector.c:677)  (seg0 g182:30000 pid=7028) (cdbdisp.c:1320)
 ROLLBACK TO s1;
 -- start_ignore
 select * from exttab1_gpfdist_status;
