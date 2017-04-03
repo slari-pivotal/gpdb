@@ -99,9 +99,6 @@ namespace gpdxl
 
 			IMemoryPool *m_pmp;
 
-			// mappings for share scan nodes
-			HMUlDxltrctx *m_phmuldxltrctxSharedScan;
-
 			// counter for generating plan ids
 			CIdGenerator *m_pidgtorPlan;
 
@@ -150,10 +147,6 @@ namespace gpdxl
 
 			// dtor
 			~CContextDXLToPlStmt();
-
-			const CDXLTranslateContext *PdxltrctxForSharedScan(ULONG ulSpoolId);
-
-			void AddSharedScanTranslationContext(ULONG ulSpoolId, CDXLTranslateContext *pdxltrctx);
 
 			// retrieve the next plan id
 			ULONG UlNextPlanId();
