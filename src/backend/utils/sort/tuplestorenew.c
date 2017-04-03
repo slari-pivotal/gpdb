@@ -161,6 +161,8 @@ struct NTupleStore
 	int rwflag;  /* if I am ordinary store, or a reader, or a writer of readerwriter (share input) */
 
 
+	bool cached_workfiles_found; /* true if found matching and usable cached workfiles */
+	bool cached_workfiles_loaded; /* set after loading cached workfiles */
 	bool workfiles_created; /* set if the operator created workfiles */
 	workfile_set *work_set; /* workfile set to use when using workfile manager */
 
@@ -170,8 +172,6 @@ struct NTupleStore
 
 	List *accessors;    /* all current accessors of the store */
 	bool fwacc; 		/* if I had already has a write acc */
-
-	MemoryContext mcxt; /* memory context holding this tuplestore, and the page structs */
 
 	/* instrumentation for explain analyze */
 	Instrumentation *instrument;
@@ -365,9 +365,21 @@ static void nts_return_free_page(NTupleStore *nts, NTupleStorePage *page)
 	nts->first_free_page = NTS_PREPEND_1(nts->first_free_page, page);
 }
 
+static inline void *check_malloc(int size)
+{
+	void *ptr = gp_malloc(size);
+	if(!ptr)
+		ereport(ERROR,
+				(errcode(ERRCODE_OUT_OF_MEMORY),
+				 errmsg("NTupleStore failed to malloc: out of memory")));
+	return ptr;
+}
+
 /* Get a free page.  Will shrink if necessary.
  * The page returned still belong to the store (accounted by nts->page_cnt), but it is
  * not on any list.  Caller is responsible to put it back onto a list.
+ *
+ * Page is allocated/freed with gcc malloc/free, not palloc/pfree.
  */
 static NTupleStorePage *nts_get_free_page(NTupleStore *nts)
 {
@@ -434,7 +446,7 @@ static NTupleStorePage *nts_get_free_page(NTupleStore *nts)
 
 				if(nts->page_cnt >= page_max)
 				{
-					pfree(page_next);
+					gp_free2(page_next, sizeof(NTupleStorePage));
 					--nts->page_cnt;
 				}
 				else
@@ -456,7 +468,7 @@ static NTupleStorePage *nts_get_free_page(NTupleStore *nts)
 	}
 
 	Assert(page_next == NULL && nts->page_cnt < page_max);
-	page = (NTupleStorePage *) MemoryContextAlloc(nts->mcxt, sizeof(NTupleStorePage));
+	page = (NTupleStorePage *) check_malloc(sizeof(NTupleStorePage));
 	init_page(page);
 	++nts->page_cnt;
 
@@ -584,24 +596,30 @@ static NTupleStorePage *nts_load_prev_page(NTupleStore *store, NTupleStorePage *
 	}
 }
 
-void
-ntuplestore_destroy(NTupleStore *ts)
+static void ntuplestore_cleanup(NTupleStore *ts, bool fNormal)
 {
 	NTupleStorePage *p = ts->first_page;
-	ListCell *cell;
 
-	/* For each accessor, we mark it has no owning store. */
-	foreach(cell, ts->accessors)
+	/* normal case: for each accessor, we mark it has no owning store.
+	 * This do not need to, actually, cannot be called in error out case,
+	 * because the memory context of ts->accessor has already been 
+	 * cleaned up
+	 */
+	if(fNormal)
 	{
-		NTupleStoreAccessor *acc = (NTupleStoreAccessor *) lfirst(cell);
-		acc->store = NULL;
-		acc->page = NULL;
+		ListCell *cell;
+		foreach(cell, ts->accessors)
+		{
+			NTupleStoreAccessor *acc = (NTupleStoreAccessor *) lfirst(cell);
+			acc->store = NULL;
+			acc->page = NULL;
+		}
 	}
 
 	while(p)
 	{
 		NTupleStorePage *pnext = nts_page_next(p); 
-		pfree(p);
+		gp_free2(p, sizeof(NTupleStorePage));
 		p = pnext;
 	}
 
@@ -609,7 +627,7 @@ ntuplestore_destroy(NTupleStore *ts)
 	while(p)
 	{
 		NTupleStorePage *pnext = nts_page_next(p); 
-		pfree(p);
+		gp_free2(p, sizeof(NTupleStorePage));
 		p = pnext;
 	}
 
@@ -630,14 +648,18 @@ ntuplestore_destroy(NTupleStore *ts)
 		ts->work_set = NULL;
 	}
 
-	pfree(ts);
+	gp_free2(ts, sizeof(NTupleStore));
+}
+
+static void XCallBack_NTS(XactEvent event, void *nts)
+{
+	ntuplestore_cleanup((NTupleStore *)nts, false);
 }
 
 NTupleStore *
 ntuplestore_create(int maxBytes)
 {
-	NTupleStore *store = (NTupleStore *) palloc(sizeof(NTupleStore));
-	store->mcxt = CurrentMemoryContext;
+	NTupleStore *store = (NTupleStore *) check_malloc(sizeof(NTupleStore));
 
 	store->pfile = NULL;
 	store->first_ondisk_blockn = 0;
@@ -646,6 +668,8 @@ ntuplestore_create(int maxBytes)
 	store->lobbytes = 0;
 
 	store->work_set = NULL;
+	store->cached_workfiles_found = false;
+	store->cached_workfiles_loaded = false;
 	store->workfiles_created = false;
 
 	Assert(maxBytes >= 0);
@@ -654,7 +678,7 @@ ntuplestore_create(int maxBytes)
 	if(store->page_max < 16)
 		store->page_max = 16;
 
-	store->first_page = (NTupleStorePage *) MemoryContextAlloc(store->mcxt, sizeof(NTupleStorePage));
+	store->first_page = (NTupleStorePage *) check_malloc(sizeof(NTupleStorePage));
 	init_page(store->first_page);
 	nts_page_set_blockn(store->first_page, 0);
 
@@ -673,6 +697,7 @@ ntuplestore_create(int maxBytes)
 
 	store->instrument = NULL;
 
+	RegisterXactCallbackOnce(XCallBack_NTS, (void *) store);
 	return store;
 }
 
@@ -706,9 +731,10 @@ ntuplestore_create_readerwriter(const char *filename, int maxBytes, bool isWrite
 	}
 	else
 	{
-		store = (NTupleStore *) palloc(sizeof(NTupleStore));
-		store->mcxt = CurrentMemoryContext;
+		store = (NTupleStore *) check_malloc(sizeof(NTupleStore));
 		store->work_set = NULL;
+		store->cached_workfiles_found = false;
+		store->cached_workfiles_loaded = false;
 		store->workfiles_created = false;
 
 		store->pfile = ExecWorkFile_Open(filenameprefix, BUFFILE,
@@ -720,6 +746,7 @@ ntuplestore_create_readerwriter(const char *filename, int maxBytes, bool isWrite
 				0 /* compressType */);
 
 		ntuplestore_init_reader(store, maxBytes);
+		RegisterXactCallbackOnce(XCallBack_NTS, (void *) store);
 	}
 	return store;
 }
@@ -746,7 +773,7 @@ ntuplestore_init_reader(NTupleStore *store, int maxBytes)
 	if(store->page_max < 16)
 		store->page_max = 16;
 
-	store->first_page = (NTupleStorePage *) MemoryContextAlloc(store->mcxt, sizeof(NTupleStorePage));
+	store->first_page = (NTupleStorePage *) check_malloc(sizeof(NTupleStorePage));
 	init_page(store->first_page);
 
 	bool fOK = ntsReadBlock(store, 0, store->first_page);
@@ -776,16 +803,36 @@ ntuplestore_init_reader(NTupleStore *store, int maxBytes)
  * The workSet needs to be initialized by the caller.
  */
 NTupleStore *
-ntuplestore_create_workset(workfile_set *workSet, int maxBytes)
+ntuplestore_create_workset(workfile_set *workSet, bool cachedWorkfilesFound, int maxBytes)
 {
 
 	elog(gp_workfile_caching_loglevel, "Creating tuplestore with workset in directory %s", workSet->path);
 
 	NTupleStore *store = ntuplestore_create(maxBytes);
 	store->work_set = workSet;
-	/* Creating new workset */
-	store->rwflag = NTS_IS_WRITER;
+	store->cached_workfiles_found = cachedWorkfilesFound;
 
+	if (store->cached_workfiles_found)
+	{
+		Assert(store->work_set != NULL);
+
+		/* Reusing existing files. Load data from spill files here */
+		MemoryContext   oldcxt;
+		oldcxt = MemoryContextSwitchTo(TopMemoryContext);
+
+		store->pfile = workfile_mgr_open_fileno(store->work_set, WORKFILE_NUM_TUPLESTORE_DATA);
+		store->plobfile = workfile_mgr_open_fileno(store->work_set, WORKFILE_NUM_TUPLESTORE_LOB);
+
+		MemoryContextSwitchTo(oldcxt);
+
+		ntuplestore_init_reader(store, maxBytes);
+		store->cached_workfiles_loaded = true;
+	}
+	else
+	{
+		/* Creating new workset */
+		store->rwflag = NTS_IS_WRITER;
+	}
 	return store;
 }
 
@@ -858,19 +905,17 @@ ntuplestore_flush(NTupleStore *ts)
 	}
 }
 
+void 
+ntuplestore_destroy(NTupleStore *ts)
+{
+	ntuplestore_cleanup(ts, true);
+	UnregisterXactCallbackOnce(XCallBack_NTS, (void *) ts);
+}
+
 NTupleStoreAccessor* 
 ntuplestore_create_accessor(NTupleStore *ts, bool isWriter)
 {
-	NTupleStoreAccessor *acc;
-	MemoryContext oldcxt;
-
-	/*
-	 * The accessor is allocated in the same memory context as the tuplestore
-	 * itself.
-	 */
-	oldcxt = MemoryContextSwitchTo(ts->mcxt);
-
-	acc = (NTupleStoreAccessor *) palloc(sizeof(NTupleStoreAccessor));
+	NTupleStoreAccessor *acc = (NTupleStoreAccessor *) palloc(sizeof(NTupleStoreAccessor));
 
 	acc->store = ts;
 	acc->isWriter = isWriter;
@@ -888,8 +933,6 @@ ntuplestore_create_accessor(NTupleStore *ts, bool isWriter)
 	AssertImply(isWriter, !ts->fwacc);
 	if(isWriter)
 		ts->fwacc = true;
-
-	MemoryContextSwitchTo(oldcxt);
 
 	return acc;
 }
@@ -1309,7 +1352,7 @@ bool ntuplestore_acc_current_data(NTupleStoreAccessor *tsa, void **data, int *le
 		{
 			if (tsa->tmp_lob)
 				pfree(tsa->tmp_lob);
-			tsa->tmp_lob = MemoryContextAlloc(tsa->store->mcxt, plobref->size);
+			tsa->tmp_lob = palloc(plobref->size);
 			tsa->tmp_len = plobref->size;
 		}
 
@@ -1536,6 +1579,7 @@ static void
 ntuplestore_create_spill_files(NTupleStore *nts)
 {
 	Assert(nts->work_set != NULL);
+	Assert(!nts->cached_workfiles_found);
 
 	MemoryContext   oldcxt;
 	oldcxt = MemoryContextSwitchTo(TopMemoryContext);
@@ -1544,6 +1588,34 @@ ntuplestore_create_spill_files(NTupleStore *nts)
 	nts->plobfile = workfile_mgr_create_fileno(nts->work_set, WORKFILE_NUM_TUPLESTORE_LOB);
 
 	MemoryContextSwitchTo(oldcxt);
+}
+
+/*
+ * Returns true if this tuplestore created workfiles that can potentially be
+ * reused by other queries.
+ */
+bool
+ntuplestore_created_reusable_workfiles(NTupleStore *nts)
+{
+	Assert(nts);
+	return gp_workfile_caching && nts->workfiles_created && nts->work_set && nts->work_set->can_be_reused;
+}
+/*
+ * Mark the associated workfile set as complete, allowing it to be cached for reuse.
+ */
+void
+ntuplestore_mark_workset_complete(NTupleStore *nts)
+{
+	Assert(nts != NULL);
+	if (nts->work_set == NULL)
+	{
+		return;
+	}
+	if (nts->workfiles_created)
+	{
+		elog(gp_workfile_caching_loglevel, "Tuplestore: Marking workset as complete");
+		workfile_mgr_mark_complete(nts->work_set);
+	}
 }
 
 /* EOF */

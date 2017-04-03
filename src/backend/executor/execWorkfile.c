@@ -45,8 +45,8 @@ ExecWorkFile_Create(const char *fileName,
 					bool delOnClose,
 					int compressType)
 {
-	ExecWorkFile *workfile;
-	void	   *file;
+	ExecWorkFile *workfile = NULL;
+	void *file = NULL;
 
 	/* Before creating a new file, let's check the limit on number of workfile created */
 	if (!WorkfileQueryspace_AddWorkfile())
@@ -54,6 +54,14 @@ ExecWorkFile_Create(const char *fileName,
 		/* Failed to reserve additional disk space, notify caller */
 		workfile_mgr_report_error();
 	}
+
+	/*
+	 * Create ExecWorkFile in the TopMemoryContext since this memory context
+	 * is still available when calling the transaction callback at the
+	 * time when the transaction aborts.
+	 */
+	 MemoryContext oldContext = MemoryContextSwitchTo(TopMemoryContext);
+
 
 	switch(fileType)
 	{
@@ -65,10 +73,10 @@ ExecWorkFile_Create(const char *fileName,
 			file = (void *)bfz_create(fileName, delOnClose, compressType);
 			break;
 		default:
-			ereport(ERROR,
+			ereport(LOG,
 					(errcode(ERRCODE_INTERNAL_ERROR),
 					 errmsg("invalid work file type: %d", fileType)));
-			return NULL;		/* keep compiler quiet */
+			Assert(false);
 	}
 
 	workfile = palloc0(sizeof(ExecWorkFile));
@@ -78,6 +86,8 @@ ExecWorkFile_Create(const char *fileName,
 	workfile->fileName = pstrdup(fileName);
 	workfile->size = 0;
 	ExecWorkFile_SetFlags(workfile, delOnClose, true /* created */);
+
+	MemoryContextSwitchTo(oldContext);
 
 	return workfile;
 }
@@ -133,9 +143,16 @@ ExecWorkFile_Open(const char *fileName,
 					bool delOnClose,
 					int compressType)
 {
-	ExecWorkFile *workfile;
-	void	   *file;
-	int64		file_size;
+	ExecWorkFile *workfile = NULL;
+	void *file = NULL;
+	int64 file_size = 0;
+
+	/*
+	 * Create ExecWorkFile in the TopMemoryContext since this memory context
+	 * is still available when calling the transaction callback at the
+	 * time when the transaction aborts.
+	 */
+	MemoryContext oldContext = MemoryContextSwitchTo(TopMemoryContext);
 
 	switch(fileType)
 	{
@@ -145,30 +162,33 @@ ExecWorkFile_Open(const char *fileName,
 					delOnClose,
 					true  /* interXact */ );
 			if (!file)
-				ereport(ERROR,
-						(errcode_for_file_access(),
-						 errmsg("could not open temporary file \"%s\": %m",
-								fileName)));
-
+			{
+				elog(ERROR, "could not open temporary file \"%s\": %m", fileName);
+			}
 			BufFileSetWorkfile(file);
 			file_size = BufFileGetSize(file);
-			break;
 
+			break;
 		case BFZ:
 			file = (void *)bfz_open(fileName, delOnClose, compressType);
 			if (!file)
-				ereport(ERROR,
-						(errcode_for_file_access(),
-						 errmsg("could not open temporary file \"%s\": %m",
-								fileName)));
+			{
+				elog(ERROR, "could not open temporary file \"%s\": %m", fileName);
+			}
 			file_size = bfz_totalbytes((bfz_t *)file);
 			break;
-
 		default:
-			ereport(ERROR,
+			ereport(LOG,
 					(errcode(ERRCODE_INTERNAL_ERROR),
 					 errmsg("invalid work file type: %d", fileType)));
-			return NULL;		/* keep compiler quiet */
+			Assert(false);
+	}
+
+	/* Failed opening existing workfile. Inform the caller */
+	if (NULL == file)
+	{
+		MemoryContextSwitchTo(oldContext);
+		return NULL;
 	}
 
 	workfile = palloc0(sizeof(ExecWorkFile));
@@ -179,6 +199,8 @@ ExecWorkFile_Open(const char *fileName,
 	workfile->fileName = pstrdup(fileName);
 	workfile->size = file_size;
 	ExecWorkFile_SetFlags(workfile, delOnClose, false /* created */);
+
+	MemoryContextSwitchTo(oldContext);
 
 	return workfile;
 }
@@ -232,6 +254,9 @@ ExecWorkFile_Write(ExecWorkFile *workfile,
 				workfile->size = new_size;
 				WorkfileDiskspace_Commit( (new_size - current_size), size, true /* update_query_size */);
 
+				int64 size_evicted = workfile_mgr_evict(MIN_EVICT_SIZE);
+				elog(gp_workfile_caching_loglevel, "Hit out of disk space, evicted " INT64_FORMAT " bytes", size_evicted);
+
 				PG_RE_THROW();
 			}
 			PG_END_TRY();
@@ -258,6 +283,9 @@ ExecWorkFile_Write(ExecWorkFile *workfile,
 			{
 				Assert(WorkfileDiskspace_IsFull());
 				WorkfileDiskspace_Commit(0, size, true /* update_query_size */);
+
+				int64 size_evicted = workfile_mgr_evict(MIN_EVICT_SIZE);
+				elog(gp_workfile_caching_loglevel, "Hit out of disk space, evicted " INT64_FORMAT " bytes", size_evicted);
 
 				PG_RE_THROW();
 			}
@@ -432,7 +460,7 @@ ExecWorkFile_Close(ExecWorkFile *workfile)
 				ExecWorkFile_AdjustBFZSize(workfile, file_size);
 			}
 
-			bfz_close(bfz_file);
+			bfz_close(bfz_file, true, true);
 			break;
 		default:
 			insist_log(false, "invalid work file type: %d", workfile->fileType);

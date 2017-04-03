@@ -32,6 +32,7 @@ extern void ExecHashJoinSaveTuple(PlanState *ps, MemTuple tuple, uint32 hashvalu
 extern void ExecEagerFreeHashJoin(HashJoinState *node);
 
 extern void ExecHashJoinSaveFirstInnerBatch(HashJoinTable hashtable);
+extern bool ExecHashJoinLoadBucketsBatches(HashJoinTable hashtable);
 
 enum 
 {

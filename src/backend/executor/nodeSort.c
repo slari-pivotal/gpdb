@@ -27,6 +27,7 @@
 #include "utils/faultinjector.h"
 
 static void ExecSortExplainEnd(PlanState *planstate, struct StringInfoData *buf);
+static void ExecSortResetWorkfileState(SortState *node);
 
 /* ----------------------------------------------------------------
  *		ExecSort
@@ -53,6 +54,7 @@ ExecSort(SortState *node)
 	Sort 		*plannode = NULL;
 	PlanState  *outerNode = NULL;
 	TupleDesc	tupDesc = NULL;
+	workfile_set *work_set = NULL;
 
 	/*
 	 * get state info from node
@@ -96,6 +98,17 @@ ExecSort(SortState *node)
 	{
 		SO1_printf("ExecSort: %s\n",
 				   "sorting subplan");
+
+		if (gp_workfile_caching)
+		{
+			/* Look for cached workfile set. Mark here if found */
+			work_set = workfile_mgr_find_set(&node->ss.ps);
+			if (work_set != NULL)
+			{
+				elog(gp_workfile_caching_loglevel, "Sort found matching cached workfile set");
+				node->cached_workfiles_found = true;
+			}
+		}
 
 		/*
 		 * Want to scan subplan in the forward direction while creating the
@@ -250,7 +263,42 @@ ExecSort(SortState *node)
 	}
 
 	/*
-	 * If first time through,
+	 * Before reading any tuples from below, check if we can re-use
+	 * existing spill files.
+	 * Only mk_sort supports spill file caching.
+	 */
+	if (!node->sort_Done && gp_enable_mk_sort && gp_workfile_caching)
+	{
+		Assert(tuplesortstate_mk != NULL);
+
+		if (node->cached_workfiles_found && !node->cached_workfiles_loaded)
+		{
+			Assert(work_set != NULL);
+			elog(gp_workfile_caching_loglevel, "nodeSort: loading cached workfile metadata");
+
+			tuplesort_set_spillfile_set_mk(tuplesortstate_mk, work_set);
+			tuplesort_read_spill_metadata_mk(tuplesortstate_mk);
+			node->cached_workfiles_loaded = true;
+
+			if (node->ss.ps.instrument)
+			{
+				node->ss.ps.instrument->workfileReused = true;
+			}
+
+			/* Loaded sorted data from cached workfile, therefore
+			 * no need to sort anymore!
+			 */
+			node->sort_Done = true;
+
+			elog(gp_workfile_caching_loglevel, "Sort reusing cached workfiles, initiating Squelch walker");
+			ExecSquelchNode(outerNode);
+		}
+	}
+
+
+
+	/*
+	 * If first time through and no cached workfiles can be used,
 	 * read all tuples from outer plan and pass them to
 	 * tuplesort.c. Subsequent calls just fetch tuples from tuplesort.
 	 */
@@ -402,6 +450,7 @@ ExecInitSort(Sort *node, EState *estate, int eflags)
 	sortstate->sort_Done = false;
 	sortstate->tuplesortstate = palloc0(sizeof(GenericTupStore));
 	sortstate->share_lk_ctxt = NULL;
+	ExecSortResetWorkfileState(sortstate);
 
 	/* CDB */
 
@@ -745,5 +794,16 @@ ExecEagerFreeSort(SortState *node)
 
 		}
 
+		ExecSortResetWorkfileState(node);
 	}
+}
+
+/*
+ * Reset workfile caching state
+ */
+static void
+ExecSortResetWorkfileState(SortState *node)
+{
+	node->cached_workfiles_found = false;
+	node->cached_workfiles_loaded = false;
 }

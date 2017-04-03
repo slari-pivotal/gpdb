@@ -1064,6 +1064,18 @@ ExecAgg(AggState *node)
 
 				case HASHAGG_END_OF_PASSES:
 					node->agg_done = true;
+					if (gp_workfile_caching && node->workfiles_created)
+					{
+						/*
+						 * HashAgg closes each spill file after it is done with
+						 * them. Since we got here on the regular path, all
+						 * files should be closed.
+						 */
+						Assert(node->hhashtable->work_set);
+						Assert(node->hhashtable->spill_set == NULL);
+						agg_hash_close_state_file(node->hhashtable);
+						agg_hash_mark_spillset_complete(node);
+					}
 					ExecEagerFreeAgg(node);
 					return NULL;
 
@@ -1711,6 +1723,7 @@ ExecInitAgg(Agg *node, EState *estate, int eflags)
 	aggstate->pergroup = NULL;
 	aggstate->grp_firstTuple = NULL;
 	aggstate->hashtable = NULL;
+	agg_hash_reset_workfile_state(aggstate);
 
 	/*
 	 * Create expression contexts.	We need two, one for per-input-tuple

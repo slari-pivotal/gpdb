@@ -2088,8 +2088,16 @@ typedef struct HashJoinState
         bool                prefetch_inner;
         bool                hj_nonequijoin;
 
-	/* set if the operator created workfiles */
-	bool workfiles_created;
+        /* true if found matching and usable cached workfiles */
+        bool cached_workfiles_found;
+        /* set after loading nbatch and nbuckets from cached workfile */
+        bool cached_workfiles_batches_buckets_loaded;
+        /* set after loading cached workfiles */
+        bool cached_workfiles_loaded;
+        /* set if the operator created workfiles */
+        bool workfiles_created;
+        /* number of batches when we loaded from the state. -1 means not loaded yet */
+        int nbatch_loaded_state;
 } HashJoinState;
 
 
@@ -2181,6 +2189,8 @@ typedef struct SortState
 
         void                *share_lk_ctxt;
 
+        bool                cached_workfiles_found; /* true if found matching and usable cached workfiles */
+        bool                cached_workfiles_loaded; /* set after loading cached workfiles */
 } SortState;
 
 /* ---------------------
@@ -2240,6 +2250,10 @@ typedef struct AggState
         bool *doReplace;
 	List	   *percs;			/* all PercentileExpr nodes in targetlist & quals */
 
+	/* true if found matching and usable cached workfiles */
+	bool cached_workfiles_found;
+	/* set after loading cached workfiles */
+	bool cached_workfiles_loaded;
 	/* set if the operator created workfiles */
 	bool workfiles_created;
 

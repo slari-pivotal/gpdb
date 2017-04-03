@@ -3,9 +3,6 @@
 -- Test NOTIN clauses
 --
 
-create schema notin;
-set search_path=notin;
-
 --
 -- generate a bunch of tables
 --
@@ -335,5 +332,3 @@ select c1 from t1 where c1 not in (select c2 from t2 where c2 > 4) and c1 is not
 --
 select c1 from t1 where c1 not in (select c2 from t2 where c2 > 4) and c1 > 2;
 
-reset search_path;
-drop schema notin cascade;
