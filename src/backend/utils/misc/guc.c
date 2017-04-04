@@ -6567,7 +6567,7 @@ static struct config_int ConfigureNamesInt[] =
 			NULL,
 			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
 		},
-		&optimizer_array_expansion_threshold,
+		&optimizer_join_order_threshold,
 		10, 0, INT_MAX, NULL, NULL
 	},
 
