@@ -126,3 +126,16 @@ insert into copytest5 select i, repeat('abcdefghijklmnopqrstuvwxyz', i) from gen
 --end_ignore
 copy copytest5 to '@abs_builddir@/results/copytest5.csv';
 select count(*) from copytest5;
+
+-- test null string with CRLF for text mode
+
+CREATE TEMP TABLE venue(
+    venueid smallint not null,
+    venuename varchar(100),
+    venuecity varchar(30),
+    venuestate char(2),
+    venueseats integer) DISTRIBUTED BY (venueid);
+
+COPY venue FROM '@abs_srcdir@/data/venue_pipe.txt' WITH DELIMITER AS '|';
+SELECT count(*) FROM venue;
+

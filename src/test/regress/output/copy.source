@@ -114,3 +114,17 @@ select count(*) from copytest5;
    100
 (1 row)
 
+-- test null string with CRLF for text mode
+CREATE TEMP TABLE venue(
+    venueid smallint not null,
+    venuename varchar(100),
+    venuecity varchar(30),
+    venuestate char(2),
+    venueseats integer) DISTRIBUTED BY (venueid);
+COPY venue FROM '@abs_srcdir@/data/venue_pipe.txt' WITH DELIMITER AS '|';
+SELECT count(*) FROM venue;
+ count
+-------
+    10
+(1 row)
+
