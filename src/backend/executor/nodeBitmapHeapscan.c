@@ -114,15 +114,8 @@ initBitmapState(BitmapHeapScanState *scanstate)
 static inline void
 freeBitmapState(BitmapHeapScanState *scanstate)
 {
-	if (scanstate->tbm != NULL)
-	{
-		if(IsA(scanstate->tbm, HashBitmap))
-			tbm_free((HashBitmap *)scanstate->tbm);
-		else
-            tbm_bitmap_free(scanstate->tbm);
-
-		scanstate->tbm = NULL;
-	}
+	/* BitmapIndexScan is the owner of the bitmap memory. Don't free it here */
+	scanstate->tbm = NULL;
 	if (scanstate->tbmres != NULL)
 	{
 		pfree(scanstate->tbmres);
@@ -219,13 +212,6 @@ BitmapHeapNext(BitmapHeapScanState *node)
 		if (tbm != NULL && (!(IsA(tbm, HashBitmap) ||
 							  IsA(tbm, StreamBitmap))))
 			elog(ERROR, "unrecognized result from subplan");
-
-		/* When a HashBitmap is returned, set the returning bitmaps
-		 * in the subplan to NULL, so that the subplan nodes do not
-		 * mistakenly try to release the space during the rescan.
-		 */
-		if (tbm != NULL && IsA(tbm, HashBitmap))
-			tbm_reset_bitmaps(outerPlanState(node));
 
 		node->tbm = tbm;
 	}
@@ -532,8 +518,6 @@ ExecBitmapHeapReScan(BitmapHeapScanState *node, ExprContext *exprCtxt)
 	pgstat_discount_heap_scan(node->ss.ss_currentRelation);
 
 	freeBitmapState(node);
-
-	tbm_reset_bitmaps(outerPlanState(node));
 
 	/*
 	 * Always rescan the input immediately, to ensure we can pass down any
