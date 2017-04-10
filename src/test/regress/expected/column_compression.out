@@ -1969,10 +1969,7 @@ CREATE TABLE col_large_content_block (id BIGINT, arr DOUBLE PRECISION[])
 WITH (appendonly=true, orientation=column, blocksize=8192) DISTRIBUTED BY (id);
 CREATE INDEX col_large_content_block_idx ON col_large_content_block USING btree (id);
 -- insert data to create large content header for CO table
-INSERT INTO col_large_content_block
-SELECT 1,
-       array_fill(1234567890.12, ARRAY[1100])
-       FROM generate_series(0, 2);
+COPY col_large_content_block (id, arr) FROM stdin;
 -- select via index to confirm AO blockdirectory has correct offsets and read
 -- succeeds.
 SET enable_seqscan TO OFF;
@@ -1983,7 +1980,7 @@ WHERE id=1;
 SELECT count(*) from col_large_content_block;
  count 
 -------
-     6
+     8
 (1 row)
 
 SET enable_seqscan TO ON;
@@ -2005,10 +2002,10 @@ SELECT *
 FROM col_large_content_block_add_col
 WHERE id=1;
 -- Lets validate above insert worked.
-SELECT count(*) from col_large_content_block;
+SELECT count(*) from col_large_content_block_add_col;
  count 
 -------
-     6
+     4
 (1 row)
 
 SET enable_seqscan TO ON;
