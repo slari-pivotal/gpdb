@@ -23,6 +23,8 @@
 
 #include "../compress_zlib.c"
 
+static MemoryContext *compress_zlib_context;
+
 /* ==================== bfz_zlib_init =================== */
 /*
  * Tests that bfz_zlib_init uses palloc() to allocate memory
@@ -80,13 +82,13 @@ test__bfz_zlib_init__palloc_write(void **state)
 	bfz.mode = BFZ_MODE_APPEND;
 	bfz.fd = -1;
 
-	Size beforeAlloc = MemoryContextGetPeakSpace(TopTransactionContext);
-	assert_true(TopTransactionContext != CurrentMemoryContext);
+	Size beforeAlloc = MemoryContextGetPeakSpace(compress_zlib_context);
+	assert_true(compress_zlib_context == CurrentMemoryContext);
 
 	bfz_zlib_init(&bfz);
 
-	Size afterAlloc = MemoryContextGetPeakSpace(TopTransactionContext);
-	assert_true(TopTransactionContext != CurrentMemoryContext);
+	Size afterAlloc = MemoryContextGetPeakSpace(compress_zlib_context);
+	assert_true(compress_zlib_context == CurrentMemoryContext);
 
 	int memZlib = zlib_memory_needed(true /* isWrite */);
 
@@ -102,13 +104,13 @@ test__bfz_zlib_init__palloc_read(void **state)
 	bfz.mode = BFZ_MODE_SCAN;
 	bfz.fd = -1;
 
-	Size beforeAlloc = MemoryContextGetPeakSpace(TopTransactionContext);
-	assert_true(TopTransactionContext != CurrentMemoryContext);
+	Size beforeAlloc = MemoryContextGetPeakSpace(compress_zlib_context);
+	assert_true(compress_zlib_context == CurrentMemoryContext);
 
 	bfz_zlib_init(&bfz);
 
-	Size afterAlloc = MemoryContextGetPeakSpace(TopTransactionContext);
-	assert_true(TopTransactionContext != CurrentMemoryContext);
+	Size afterAlloc = MemoryContextGetPeakSpace(compress_zlib_context);
+	assert_true(compress_zlib_context == CurrentMemoryContext);
 
 	int memZlib = zlib_memory_needed(false /* isWrite */);
 
@@ -120,13 +122,6 @@ main(int argc, char* argv[])
 {
 	cmockery_parse_arguments(argc, argv);
 
-	TopTransactionContext =
-		AllocSetContextCreate(TopMemoryContext,
-							  "TopTransactionContext",
-							  ALLOCSET_DEFAULT_MINSIZE,
-							  ALLOCSET_DEFAULT_INITSIZE,
-							  ALLOCSET_DEFAULT_MAXSIZE);
-
 	const UnitTest tests[] = {
 		unit_test(test__bfz_zlib_init__palloc_write),
 		unit_test(test__bfz_zlib_init__palloc_read)
@@ -134,6 +129,15 @@ main(int argc, char* argv[])
 
 
 	MemoryContextInit();
+
+	compress_zlib_context =
+		AllocSetContextCreate(TopMemoryContext,
+							  "compress_zlib_context",
+							  ALLOCSET_DEFAULT_MINSIZE,
+							  ALLOCSET_DEFAULT_INITSIZE,
+							  ALLOCSET_DEFAULT_MAXSIZE);
+
+	MemoryContextSwitchTo(compress_zlib_context);
 
 	return run_tests(tests);
 }
