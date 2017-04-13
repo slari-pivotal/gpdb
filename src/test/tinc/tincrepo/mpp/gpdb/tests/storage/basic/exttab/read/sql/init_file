@@ -18,4 +18,14 @@
 # For test12
 -- m/ERROR:  gpfdist error - cannot read file/
 -- s/ERROR:  gpfdist error - cannot read file.+/ERROR:  gpfdist error - cannot read file/g
+
+-- m/ERROR:  could not open file/
+-- s/ERROR:  could not open file(.)+/ERROR:  could not open file/g
+
+-- m/NOTICE:  fstream unable to open file/
+-- s/NOTICE:  fstream unable to open file(.)+/NOTICE:  fstream unable to open file/g
+
+-- m/NOTICE:  gfile stat/
+-- s/NOTICE:  gfile stat(.)+/NOTICE:  gfile stat/g
+
 -- end_matchsubs

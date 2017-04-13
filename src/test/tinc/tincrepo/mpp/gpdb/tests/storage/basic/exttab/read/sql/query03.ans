@@ -656,7 +656,9 @@ location ('file://@hostname@@abs_srcdir@/data/no/such/place/badt1.tbl' )
 format 'text' (delimiter '|');
 CREATE EXTERNAL TABLE
 select * from badt1;
-ERROR:  could not open "file://@hostname@@abs_srcdir@/data/no/such/place/badt1.tbl" for reading: 404 file not found  (seg0 slice1 @hostname@:21000 pid=11611)
+NOTICE:  gfile stat
+NOTICE:  fstream unable to open file
+ERROR:  could not open filedrop external table badt1;
 drop external table badt1;
 DROP EXTERNAL TABLE
 -- start_ignore

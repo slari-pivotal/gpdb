@@ -122,13 +122,13 @@ NOTICE:  Found 4 data formatting errors (4 or more input rows). Rejected related
 select linenum,bytenum,rawdata from gp_read_error_log('ext_line') order by linenum;
  linenum | bytenum |    rawdata    
 ---------+---------+---------------
-       4 |         | line3,"       
+       3 |         | line3,"       
                    : 4,"
-       4 |         | line3,"       
+       3 |         | line3,"       
                    : 4,"
-      20 |         | line1999999," 
+      19 |         | line1999999," 
                    : 2000000,"
-      20 |         | line1999999," 
+      19 |         | line1999999," 
                    : 2000000,"
 (4 rows)
 
@@ -236,13 +236,13 @@ NOTICE:  Found 4 data formatting errors (4 or more input rows). Rejected related
 select linenum,bytenum,rawdata from gp_read_error_log('ext_line') order by linenum;
  linenum | bytenum |    rawdata    
 ---------+---------+---------------
-       4 |         | line3,"       
+       3 |         | line3,"       
                    : 4,"
-       4 |         | line3,"       
+       3 |         | line3,"       
                    : 4,"
-      20 |         | line1999999," 
+      19 |         | line1999999," 
                    : 2000000,"
-      20 |         | line1999999," 
+      19 |         | line1999999," 
                    : 2000000,"
 (4 rows)
 
