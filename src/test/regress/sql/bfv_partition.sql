@@ -1,9 +1,9 @@
 create schema bfv_partition;
 set search_path=bfv_partition;
 
----
---- Initial setup for all the partitioning test for this suite
----
+--
+-- Initial setup for all the partitioning test for this suite
+--
 -- start_ignore
 create language plpythonu;
 -- end_ignore
@@ -35,9 +35,9 @@ return result
 $$
 language plpythonu;
 
----
---- Tests if it produces SIGSEGV from "select from partition_table group by rollup or cube function"
----
+--
+-- Tests if it produces SIGSEGV from "select from partition_table group by rollup or cube function"
+--
 
 -- SETUP
 -- start_ignore
@@ -69,9 +69,9 @@ drop table mpp7980;
 
 
 
----
---- Tests if it is using casting comparator for partition selector with compatible types
----
+--
+-- Tests if it is using casting comparator for partition selector with compatible types
+--
 
 -- SETUP
 CREATE TABLE TIMESTAMP_MONTH_rangep_STARTINCL (i1 int, f2 timestamp)
@@ -174,9 +174,9 @@ DROP TABLE TIMESTAMP_MONTH_rangep_STARTINCL;
 -- end_ignore
 
 
----
---- Data Engineer can see partition key in psql
----
+--
+-- Data Engineer can see partition key in psql
+--
 
 -- SETUP
 -- start_ignore
@@ -266,9 +266,9 @@ set optimizer_enable_indexjoin=off;
 -- end_ignore
 
 
----
---- Check we have Dynamic Index Scan operator and check we have Nest loop operator
----
+--
+-- Check we have Dynamic Index Scan operator and check we have Nest loop operator
+--
 
 -- SETUP
 -- start_ignore
@@ -301,9 +301,9 @@ select enable_xform('CXformInnerJoin2HashJoin');
 -- end_ignore
 
 
----
---- A rescanning of DTS with its own partition selector (under sequence node)
----
+--
+-- A rescanning of DTS with its own partition selector (under sequence node)
+--
 
 -- SETUP
 -- start_ignore
@@ -340,9 +340,9 @@ set optimizer_enable_broadcast_nestloop_outer_child=off;
 -- end_ignore
 
 
----
---- Testing whether test gives wrong results with partition tables when sub-partitions are distributed differently than the parent partition.
----
+--
+-- Testing whether test gives wrong results with partition tables when sub-partitions are distributed differently than the parent partition.
+--
 
 -- SETUP
 -- start_ignore
@@ -379,9 +379,9 @@ drop table if exists t;
 -- end_ignore
 
 
----
---- Tests if DynamicIndexScan sets tuple descriptor of the planstate->ps_ResultTupleSlot
----
+--
+-- Tests if DynamicIndexScan sets tuple descriptor of the planstate->ps_ResultTupleSlot
+--
 
 -- SETUP
 -- start_ignore
@@ -425,9 +425,9 @@ select enable_xform('CXformDynamicGet2DynamicTableScan');
 -- end_ignore
 
 
----
---- No DPE (Dynamic Partition Elimination) on second child of a union under a join
----
+--
+-- No DPE (Dynamic Partition Elimination) on second child of a union under a join
+--
 
 -- SETUP
 -- start_ignore
@@ -491,9 +491,9 @@ drop table p;
 -- end_ignore
 
 
----
---- Gracefully handle NULL partition set from BitmapTableScan, DynamicTableScan and DynamicIndexScan
----
+--
+-- Gracefully handle NULL partition set from BitmapTableScan, DynamicTableScan and DynamicIndexScan
+--
 
 -- SETUP
 -- start_ignore
@@ -554,9 +554,9 @@ drop table if exists dts;
 select enable_xform('CXformDynamicGet2DynamicTableScan');
 -- end_ignore
 
----
---- Partition elimination for heterogenous DynamicIndexScans
----
+--
+-- Partition elimination for heterogenous DynamicIndexScans
+--
 
 -- SETUP
 -- start_ignore
@@ -595,9 +595,9 @@ select enable_xform('CXformDynamicGet2DynamicTableScan') ;
 -- end_ignore
 
 
----
---- Partition elimination with implicit CAST on the partitioning key
----
+--
+-- Partition elimination with implicit CAST on the partitioning key
+--
 
 -- SETUP
 -- start_ignore
@@ -644,9 +644,9 @@ drop function if exists find_operator(query text, operator_name text);
 drop function if exists count_operator(query text, operator_name text);
 -- end_ignore
 
----
---- Partition table with appendonly leaf, full join
----
+--
+-- Partition table with appendonly leaf, full join
+--
 
 -- SETUP
 -- start_ignore
@@ -678,9 +678,9 @@ DROP TABLE IF EXISTS foo;
 DROP TABLE IF EXISTS bar;
 -- end_ignore
 
----
---- Partition table with appendonly set at middlevel partition, full join
----
+--
+-- Partition table with appendonly set at middlevel partition, full join
+--
 
 -- SETUP
 -- start_ignore
@@ -712,9 +712,9 @@ DROP TABLE IF EXISTS foo;
 DROP TABLE IF EXISTS bar;
 -- end_ignore
 
----
---- Partition table with appendonly set at root partition, full join
----
+--
+-- Partition table with appendonly set at root partition, full join
+--
 
 -- SETUP
 -- start_ignore
