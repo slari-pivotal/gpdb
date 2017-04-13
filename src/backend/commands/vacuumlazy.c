@@ -568,7 +568,7 @@ lazy_scan_heap(Relation onerel, LVRelStats *vacrelstats,
 				 * we've already switched the buffer lock to exclusive.
 				 */
 				if (heap_freeze_tuple(tuple.t_data, FreezeLimit,
-									  (nfrozen > 0) ? InvalidBuffer : buf))
+									  (nfrozen > 0) ? InvalidBuffer : buf, false))
 					frozen[nfrozen++] = offnum;
 			}
 		}						/* scan along page */
