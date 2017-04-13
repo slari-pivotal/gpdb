@@ -1570,7 +1570,7 @@ CONTEXT:  SQL statement "explain select * from pp where b=2 and c=2;"
 PL/Python function "count_operator"
  count_operator 
 ----------------
-              0
+              1
 (1 row)
 
 -- CLEANUP
