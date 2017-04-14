@@ -358,13 +358,13 @@ echo ""
 zip $( basename ${GPDB_INSTALLER_FILE} ) -u $( basename ${GPDB_INSTALLER_FILE} .zip ).bin
 mv $( basename ${GPDB_INSTALLER_FILE} ) ..
 
-openssl dgst -md5 ../$( basename ${GPDB_INSTALLER_FILE} ) > ../$( basename ${GPDB_INSTALLER_FILE} ).md5
+openssl dgst -sha256 ../$( basename ${GPDB_INSTALLER_FILE} ) > ../$( basename ${GPDB_INSTALLER_FILE} ).sha256
 
 echo ""
 echo "----------------------------------------------------------------------"
 echo "Done baking:"
 echo "  $( ls -l ../$( basename ${GPDB_INSTALLER_FILE} )) "
-echo "  $( ls -l ../$( basename ${GPDB_INSTALLER_FILE} )).md5 "
+echo "  $( ls -l ../$( basename ${GPDB_INSTALLER_FILE} )).sha256 "
 echo "----------------------------------------------------------------------"
 
 ## ----------------------------------------------------------------------
@@ -524,12 +524,12 @@ zip $( basename ${CLIENTS_INSTALLER_FILE} ) -u $( basename ${CLIENTS_INSTALLER_F
 mv $( basename ${CLIENTS_INSTALLER_FILE} ) ..
 popd
 
-openssl dgst -md5 $( basename ${CLIENTS_INSTALLER_FILE} ) > $( basename ${CLIENTS_INSTALLER_FILE} ).md5
+openssl dgst -sha256 $( basename ${CLIENTS_INSTALLER_FILE} ) > $( basename ${CLIENTS_INSTALLER_FILE} ).sha256
 
 echo ""
 echo "----------------------------------------------------------------------"
 echo "  $( ls -l $( basename ${CLIENTS_INSTALLER_FILE} )) "
-echo "  $( ls -l $( basename ${CLIENTS_INSTALLER_FILE} )).md5 "
+echo "  $( ls -l $( basename ${CLIENTS_INSTALLER_FILE} )).sha256 "
 echo "----------------------------------------------------------------------"
 
 echo ""
@@ -540,9 +540,9 @@ echo ""
 
 mkdir -p $BASE_DIR/ms_installer_rhel5_gpdb_rc $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients
 cp greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_rc/
-cp greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip.md5 $BASE_DIR/ms_installer_rhel5_gpdb_rc/
+cp greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip.sha256 $BASE_DIR/ms_installer_rhel5_gpdb_rc/
 cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
-cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip.md5 $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
+cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip.sha256 $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
 
 echo ""
 echo "---------------------------------------------------------------------"

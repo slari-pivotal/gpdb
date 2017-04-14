@@ -215,14 +215,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip
 
-- name: ms_installer_rhel5_gpdb_rc_md5
+- name: ms_installer_rhel5_gpdb_rc_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip.sha256
 
 - name: ms_installer_rhel5_gpdb_bundled_clients
   type: s3
@@ -233,14 +233,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip
 
-- name: ms_installer_rhel5_gpdb_bundled_clients_md5
+- name: ms_installer_rhel5_gpdb_bundled_clients_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: deliverables/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
+    versioned_file: deliverables/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.sha256
 
 ## ======================================================================
 ## jobs
@@ -494,15 +494,15 @@ jobs:
     - put: ms_installer_rhel5_gpdb_rc
       params:
         file: ms_installer_rhel5_gpdb_rc/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip
-    - put: ms_installer_rhel5_gpdb_rc_md5
+    - put: ms_installer_rhel5_gpdb_rc_sha256
       params:
-        file: ms_installer_rhel5_gpdb_rc/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
+        file: ms_installer_rhel5_gpdb_rc/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip.sha256
     - put: ms_installer_rhel5_gpdb_bundled_clients
       params:
         file: ms_installer_rhel5_gpdb_bundled_clients/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip
-    - put: ms_installer_rhel5_gpdb_bundled_clients_md5
+    - put: ms_installer_rhel5_gpdb_bundled_clients_sha256
       params:
-        file: ms_installer_rhel5_gpdb_bundled_clients/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
+        file: ms_installer_rhel5_gpdb_bundled_clients/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.sha256
 
 # Stage 3c: Sync packages to dist.eng.pivotal.io
 - name: gpdb_sync_to_dist
@@ -514,11 +514,11 @@ jobs:
     - get: ms_installer_rhel5_gpdb_rc
       passed: [apply_morgan_stanley_specific_patches]
       trigger: true
-    - get: ms_installer_rhel5_gpdb_rc_md5
+    - get: ms_installer_rhel5_gpdb_rc_sha256
       passed: [apply_morgan_stanley_specific_patches]
     - get: ms_installer_rhel5_gpdb_bundled_clients
       passed: [apply_morgan_stanley_specific_patches]
-    - get: ms_installer_rhel5_gpdb_bundled_clients_md5
+    - get: ms_installer_rhel5_gpdb_bundled_clients_sha256
       passed: [apply_morgan_stanley_specific_patches]
     - get: centos-gpdb-dev-5
   - aggregate:
@@ -531,13 +531,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: ms_gpdb_rhel5_sync_to_dist_md5
+    - task: ms_gpdb_rhel5_sync_to_dist_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: ms_installer_rhel5_gpdb_rc_md5
+        artifact_to_upload: ms_installer_rhel5_gpdb_rc_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-4.3.9.1MS28-build-1-rhel5-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: ms_gpdb_rhel5_clients_sync_to_dist
@@ -549,13 +549,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: ms_gpdb_rhel5_clients_sync_to_dist_md5
+    - task: ms_gpdb_rhel5_clients_sync_to_dist_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: ms_installer_rhel5_gpdb_bundled_clients_md5
+        artifact_to_upload: ms_installer_rhel5_gpdb_bundled_clients_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-4.3.9.1MS28-build-1-rhel5-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
 

@@ -369,14 +369,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-db-4.(.*)-rhel5-x86_64.zip
 
-- name: installer_rhel5_gpdb_rc_md5
+- name: installer_rhel5_gpdb_rc_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-db-4.(.*)-rhel5-x86_64.zip.md5
+    regexp: deliverables/greenplum-db-4.(.*)-rhel5-x86_64.zip.sha256
 
 - name: installer_rhel5_gpdb_clients
   type: s3
@@ -387,14 +387,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-clients-4.(.*)-build-1-rhel5-x86_64.zip
 
-- name: installer_rhel5_gpdb_clients_md5
+- name: installer_rhel5_gpdb_clients_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-clients-4.(.*)-build-1-rhel5-x86_64.zip.md5
+    regexp: deliverables/greenplum-clients-4.(.*)-build-1-rhel5-x86_64.zip.sha256
 
 - name: installer_sles11_gpdb_rc
   type: s3-week-long-urls
@@ -406,14 +406,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-db-4.(.*)-sles11-x86_64.zip
 
-- name: installer_sles11_gpdb_rc_md5
+- name: installer_sles11_gpdb_rc_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-db-4.(.*)-sles11-x86_64.zip.md5
+    regexp: deliverables/greenplum-db-4.(.*)-sles11-x86_64.zip.sha256
 
 - name: installer_appliance_rhel5_gpdb_rc
   type: s3
@@ -424,14 +424,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-db-appliance-4.(.*)-rhel5-x86_64.zip
 
-- name: installer_appliance_rhel5_gpdb_rc_md5
+- name: installer_appliance_rhel5_gpdb_rc_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-db-appliance-4.(.*)-rhel5-x86_64.zip.md5
+    regexp: deliverables/greenplum-db-appliance-4.(.*)-rhel5-x86_64.zip.sha256
 
 - name: qautils_rhel5_tarball
   type: s3-week-long-urls
@@ -462,14 +462,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-clients-4.(.*)-build-1-sles11-x86_64.zip
 
-- name: installer_sles11_gpdb_clients_md5
+- name: installer_sles11_gpdb_clients_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-clients-4.(.*)-build-1-sles11-x86_64.zip.md5
+    regexp: deliverables/greenplum-clients-4.(.*)-build-1-sles11-x86_64.zip.sha256
 
 - name: installer_rhel5_gpdb_connectivity
   type: s3
@@ -480,14 +480,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-rhel5-x86_64.zip
 
-- name: installer_rhel5_gpdb_connectivity_md5
+- name: installer_rhel5_gpdb_connectivity_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-rhel5-x86_64.zip.md5
+    regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-rhel5-x86_64.zip.sha256
 
 - name: installer_sles11_gpdb_connectivity
   type: s3
@@ -498,14 +498,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-sles11-x86_64.zip
 
-- name: installer_sles11_gpdb_connectivity_md5
+- name: installer_sles11_gpdb_connectivity_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-sles11-x86_64.zip.md5
+    regexp: deliverables/greenplum-connectivity-4.(.*)-build-1-sles11-x86_64.zip.sha256
 
 - name: installer_rhel5_gpdb_loaders
   type: s3
@@ -516,14 +516,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-loaders-4.(.*)-build-1-rhel5-x86_64.zip
 
-- name: installer_rhel5_gpdb_loaders_md5
+- name: installer_rhel5_gpdb_loaders_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-loaders-4.(.*)-build-1-rhel5-x86_64.zip.md5
+    regexp: deliverables/greenplum-loaders-4.(.*)-build-1-rhel5-x86_64.zip.sha256
 
 - name: installer_sles11_gpdb_loaders
   type: s3
@@ -534,14 +534,14 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     regexp: deliverables/greenplum-loaders-4.(.*)-build-1-sles11-x86_64.zip
 
-- name: installer_sles11_gpdb_loaders_md5
+- name: installer_sles11_gpdb_loaders_sha256
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    regexp: deliverables/greenplum-loaders-4.(.*)-build-1-sles11-x86_64.zip.md5
+    regexp: deliverables/greenplum-loaders-4.(.*)-build-1-sles11-x86_64.zip.sha256
 
 - name: postgis_rhel5_gppkg
   type: s3
@@ -721,21 +721,21 @@ jobs:
     - put: installer_rhel5_gpdb_clients
       params:
         file: gpdb_artifacts/greenplum-clients-*-rhel5-x86_64.zip
-    - put: installer_rhel5_gpdb_clients_md5
+    - put: installer_rhel5_gpdb_clients_sha256
       params:
-        file: gpdb_artifacts/greenplum-clients-*-rhel5-x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-clients-*-rhel5-x86_64.zip.sha256
     - put: installer_rhel5_gpdb_connectivity
       params:
         file: gpdb_artifacts/greenplum-connectivity-*-rhel5-x86_64.zip
-    - put: installer_rhel5_gpdb_connectivity_md5
+    - put: installer_rhel5_gpdb_connectivity_sha256
       params:
-        file: gpdb_artifacts/greenplum-connectivity-*-rhel5-x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-connectivity-*-rhel5-x86_64.zip.sha256
     - put: installer_rhel5_gpdb_loaders
       params:
         file: gpdb_artifacts/greenplum-loaders-*-rhel5-x86_64.zip
-    - put: installer_rhel5_gpdb_loaders_md5
+    - put: installer_rhel5_gpdb_loaders_sha256
       params:
-        file: gpdb_artifacts/greenplum-loaders-*-rhel5-x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-loaders-*-rhel5-x86_64.zip.sha256
     - put: postgis_rhel5_gppkg
       params:
         file: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-rhel5-x86_64.gppkg
@@ -818,21 +818,21 @@ jobs:
     - put: installer_sles11_gpdb_clients
       params:
         file: gpdb_artifacts/greenplum-clients-*-sles11-x86_64.zip
-    - put: installer_sles11_gpdb_clients_md5
+    - put: installer_sles11_gpdb_clients_sha256
       params:
-        file: gpdb_artifacts/greenplum-clients-*-sles11-x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-clients-*-sles11-x86_64.zip.sha256
     - put: installer_sles11_gpdb_connectivity
       params:
         file: gpdb_artifacts/greenplum-connectivity-*-sles11-x86_64.zip
-    - put: installer_sles11_gpdb_connectivity_md5
+    - put: installer_sles11_gpdb_connectivity_sha256
       params:
-        file: gpdb_artifacts/greenplum-connectivity-*-sles11-x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-connectivity-*-sles11-x86_64.zip.sha256
     - put: installer_sles11_gpdb_loaders
       params:
         file: gpdb_artifacts/greenplum-loaders-*-sles11-x86_64.zip
-    - put: installer_sles11_gpdb_loaders_md5
+    - put: installer_sles11_gpdb_loaders_sha256
       params:
-        file: gpdb_artifacts/greenplum-loaders-*-sles11-x86_64.zip.md5
+        file: gpdb_artifacts/greenplum-loaders-*-sles11-x86_64.zip.sha256
     - put: postgis_sles11_gppkg
       params:
         file: gpdb_artifacts/postgis-ossv2.0.3_pv2.0.1_gpdb4.3orca-sles11-x86_64.gppkg
@@ -1289,15 +1289,15 @@ jobs:
     - put: installer_rhel5_gpdb_rc
       params:
         file: packaged_gpdb_rc/greenplum-db-*-rhel5-x86_64.zip
-    - put: installer_rhel5_gpdb_rc_md5
+    - put: installer_rhel5_gpdb_rc_sha256
       params:
-        file: packaged_gpdb_rc/greenplum-db-*-rhel5-x86_64.zip.md5
+        file: packaged_gpdb_rc/greenplum-db-*-rhel5-x86_64.zip.sha256
     - put: installer_appliance_rhel5_gpdb_rc
       params:
         file: packaged_gpdb_appliance_rc/greenplum-db-appliance-*-rhel5-x86_64.zip
-    - put: installer_appliance_rhel5_gpdb_rc_md5
+    - put: installer_appliance_rhel5_gpdb_rc_sha256
       params:
-        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-*-rhel5-x86_64.zip.md5
+        file: packaged_gpdb_appliance_rc/greenplum-db-appliance-*-rhel5-x86_64.zip.sha256
     - put: qautils_rhel5_tarball
       params:
         file: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
@@ -1331,9 +1331,9 @@ jobs:
   - put: installer_sles11_gpdb_rc
     params:
       file: packaged_gpdb/greenplum-db-*-sles11-x86_64.zip
-  - put: installer_sles11_gpdb_rc_md5
+  - put: installer_sles11_gpdb_rc_sha256
     params:
-      file: packaged_gpdb/greenplum-db-*-sles11-x86_64.zip.md5
+      file: packaged_gpdb/greenplum-db-*-sles11-x86_64.zip.sha256
   - put: qautils_sles11_tarball
     params:
       file: rc_bin_gpdb/QAUtils-sles11-x86_64.tar.gz
@@ -1378,24 +1378,24 @@ jobs:
       trigger: true
     - get: installer_rhel5_gpdb_rc
       passed: [gpdb_rc_packaging_centos]
-    - get: installer_rhel5_gpdb_rc_md5
+    - get: installer_rhel5_gpdb_rc_sha256
       passed: [gpdb_rc_packaging_centos]
     - get: installer_appliance_rhel5_gpdb_rc
       passed: [gpdb_rc_packaging_centos]
       trigger: true
-    - get: installer_appliance_rhel5_gpdb_rc_md5
+    - get: installer_appliance_rhel5_gpdb_rc_sha256
       passed: [gpdb_rc_packaging_centos]
     - get: installer_rhel5_gpdb_clients
       passed: [compile_gpdb_centos]
-    - get: installer_rhel5_gpdb_clients_md5
+    - get: installer_rhel5_gpdb_clients_sha256
       passed: [compile_gpdb_centos]
     - get: installer_rhel5_gpdb_connectivity
       passed: [compile_gpdb_centos]
-    - get: installer_rhel5_gpdb_connectivity_md5
+    - get: installer_rhel5_gpdb_connectivity_sha256
       passed: [compile_gpdb_centos]
     - get: installer_rhel5_gpdb_loaders
       passed: [compile_gpdb_centos]
-    - get: installer_rhel5_gpdb_loaders_md5
+    - get: installer_rhel5_gpdb_loaders_sha256
       passed: [compile_gpdb_centos]
     - get: postgis_rhel5_gppkg
       passed: [compile_gpdb_centos]
@@ -1414,19 +1414,19 @@ jobs:
     - get: installer_sles11_gpdb_rc
       passed: [gpdb_rc_packaging_sles]
       trigger: true
-    - get: installer_sles11_gpdb_rc_md5
+    - get: installer_sles11_gpdb_rc_sha256
       passed: [gpdb_rc_packaging_sles]
     - get: installer_sles11_gpdb_clients
       passed: [compile_gpdb_sles]
-    - get: installer_sles11_gpdb_clients_md5
+    - get: installer_sles11_gpdb_clients_sha256
       passed: [compile_gpdb_sles]
     - get: installer_sles11_gpdb_connectivity
       passed: [compile_gpdb_sles]
-    - get: installer_sles11_gpdb_connectivity_md5
+    - get: installer_sles11_gpdb_connectivity_sha256
       passed: [compile_gpdb_sles]
     - get: installer_sles11_gpdb_loaders
       passed: [compile_gpdb_sles]
-    - get: installer_sles11_gpdb_loaders_md5
+    - get: installer_sles11_gpdb_loaders_sha256
       passed: [compile_gpdb_sles]
     - get: postgis_sles11_gppkg
       passed: [compile_gpdb_sles]
@@ -1462,13 +1462,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_rhel5_sync_to_dist_rc_md5
+    - task: gpdb_rhel5_sync_to_dist_rc_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_rhel5_gpdb_rc_md5
+        artifact_to_upload: installer_rhel5_gpdb_rc_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-rhel5-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_appliance_sync_to_dist_rc
@@ -1480,13 +1480,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-*-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_rhel5_appliance_sync_to_dist_rc_md5
+    - task: gpdb_rhel5_appliance_sync_to_dist_rc_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_appliance_rhel5_gpdb_rc_md5
+        artifact_to_upload: installer_appliance_rhel5_gpdb_rc_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-*-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-appliance-*-rhel5-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_clients_sync_to_dist
@@ -1498,13 +1498,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_rhel5_clients_sync_to_dist_md5
+    - task: gpdb_rhel5_clients_sync_to_dist_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_rhel5_gpdb_clients_md5
+        artifact_to_upload: installer_rhel5_gpdb_clients_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-rhel5-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_connectivity_sync_to_dist
@@ -1516,13 +1516,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_rhel5_connectivity_sync_to_dist_md5
+    - task: gpdb_rhel5_connectivity_sync_to_dist_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_rhel5_gpdb_connectivity_md5
+        artifact_to_upload: installer_rhel5_gpdb_connectivity_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-rhel5-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_rhel5_loaders_sync_to_dist
@@ -1534,13 +1534,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-rhel5-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_rhel5_loaders_sync_to_dist_md5
+    - task: gpdb_rhel5_loaders_sync_to_dist_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_rhel5_gpdb_loaders_md5
+        artifact_to_upload: installer_rhel5_gpdb_loaders_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-rhel5-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-rhel5-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: postgis_rhel5_gppkg_sync_to_dist
@@ -1615,13 +1615,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_sles_sync_to_dist_rc_md5
+    - task: gpdb_sles_sync_to_dist_rc_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_sles11_gpdb_rc_md5
+        artifact_to_upload: installer_sles11_gpdb_rc_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-db-*-sles11-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_clients_sync_to_dist
@@ -1633,13 +1633,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_sles11_clients_sync_to_dist_md5
+    - task: gpdb_sles11_clients_sync_to_dist_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_sles11_gpdb_clients_md5
+        artifact_to_upload: installer_sles11_gpdb_clients_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-clients-*-build-1-sles11-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_connectivity_sync_to_dist
@@ -1651,13 +1651,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_sles11_connectivity_sync_to_dist_md5
+    - task: gpdb_sles11_connectivity_sync_to_dist_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_sles11_gpdb_connectivity_md5
+        artifact_to_upload: installer_sles11_gpdb_connectivity_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-connectivity-*-build-1-sles11-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: gpdb_sles11_loaders_sync_to_dist
@@ -1669,13 +1669,13 @@ jobs:
         FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-sles11-x86_64.zip
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
-    - task: gpdb_sles11_loaders_sync_to_dist_md5
+    - task: gpdb_sles11_loaders_sync_to_dist_sha256
       file: gpdb_src/ci/concourse/gpdb_sync_to_dist.yml
       image: centos-gpdb-dev-5
       input_mapping:
-        artifact_to_upload: installer_sles11_gpdb_loaders_md5
+        artifact_to_upload: installer_sles11_gpdb_loaders_sha256
       params:
-        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-sles11-x86_64.zip.md5
+        FILE_TO_UPLOAD: artifact_to_upload/greenplum-loaders-*-build-1-sles11-x86_64.zip.sha256
         BUCKET_NAME: {{bucket-name}}
         SSH_KEY: {{dist-ssh-key}}
     - task: postgis_sles11_gppkg_sync_to_dist
