@@ -87,6 +87,7 @@ valid_tokens = {
     "file": {'parse_children': False, 'parent': "source"},
     "ssl": {'parse_children': False, 'parent': "source"},
     "certificates_path": {'parse_children': False, 'parent': "source"},
+    "sslclean": {'parse_children': False, 'parent': "source"},
     "columns": {'parse_children': False, 'parent': "input"},
     "transform": {'parse_children': True, 'parent': "input"},
     "transform_config": {'parse_children': True, 'parent': "input"},
@@ -1583,6 +1584,7 @@ class gpload:
         """
         ssl = self.getconfig('gpload:input:source:ssl',bool, False)
         certificates_path = self.getconfig('gpload:input:source:certificates_path', unicode, None)
+        sslclean = self.getconfig('gpload:input:source:sslclean', int, None)
 
         if ssl and certificates_path:
             dir_exists = os.path.isdir(certificates_path)
@@ -1591,6 +1593,9 @@ class gpload:
 
             popenList.append('--ssl')
             popenList.append(certificates_path)
+            if sslclean is not None:
+                popenList.append('--sslclean')
+                popenList.append(str(sslclean))
 
         else:
             if ssl:
