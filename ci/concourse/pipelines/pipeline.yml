@@ -1807,19 +1807,21 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
+  - aggregate: &rhel_artifacts_for_pulse_release-add-trigger
     - get: gpdb_src
       gpdb_release: add_trigger
       params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
+      passed:
+      - gpdb_src_packaging
+      - gpdb_rc_packaging_centos
     - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_src_packaging]
     - get: installer_gpdb_rc
       resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_rc_packaging_centos]
     - get: qautils_tarball
       resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_rc_packaging_centos]
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1844,19 +1846,21 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: false
-  - aggregate:
+  - aggregate: &rhel_artifacts_for_pulse_MU-manual-trigger
     - get: gpdb_src
       gpdb_release: MU_team_manual_trigger
       params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
+      passed:
+      - gpdb_src_packaging
+      - gpdb_rc_packaging_centos
     - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_src_packaging]
     - get: installer_gpdb_rc
       resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_rc_packaging_centos]
     - get: qautils_tarball
       resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_rc_packaging_centos]
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1881,19 +1885,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1918,19 +1910,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1955,19 +1935,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1992,19 +1960,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2029,19 +1985,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2066,19 +2010,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: false
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: MU_team_manual_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2103,19 +2035,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2140,19 +2060,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2177,19 +2085,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: false
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: MU_team_manual_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2214,19 +2110,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: false
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: MU_team_manual_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2251,19 +2135,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: false
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: MU_team_manual_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2288,19 +2160,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: false
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: MU_team_manual_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2325,19 +2185,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: false
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: MU_team_manual_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2362,19 +2210,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2399,19 +2235,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2436,19 +2260,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2473,19 +2285,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2510,19 +2310,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2547,19 +2335,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2584,19 +2360,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2697,19 +2461,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2734,19 +2486,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2771,19 +2511,7 @@ jobs:
   - get: weekly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2808,19 +2536,21 @@ jobs:
   - get: weekly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
+  - aggregate: &sles_artifacts_for_pulse_release-add-trigger
     - get: gpdb_src
       gpdb_release: add_trigger
       params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
+      passed:
+      - gpdb_src_packaging
+      - gpdb_rc_packaging_sles
     - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_src_packaging]
     - get: installer_gpdb_rc
       resource: installer_sles11_gpdb_rc
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_rc_packaging_sles]
     - get: qautils_tarball
       resource: qautils_sles11_tarball
-      passed: [gpdb_sync_to_dist]
+      passed: [gpdb_rc_packaging_sles]
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2845,19 +2575,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2882,19 +2600,7 @@ jobs:
   - get: nightly-trigger-pulse
     gpdb_release: delete
     trigger: true
-  - aggregate:
-    - get: gpdb_src
-      gpdb_release: add_trigger
-      params: {submodules: none}
-      passed: [gpdb_sync_to_dist]
-    - get: gpdb_src_archive
-      passed: [gpdb_sync_to_dist]
-    - get: installer_gpdb_rc
-      resource: installer_sles11_gpdb_rc
-      passed: [gpdb_sync_to_dist]
-    - get: qautils_tarball
-      resource: qautils_sles11_tarball
-      passed: [gpdb_sync_to_dist]
+  - aggregate: *sles_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -2916,7 +2622,7 @@ jobs:
 - name: manual_testing_on_pulse_centos
   plan:
   - get: installer_rhel5_gpdb_rc
-    passed: [gpdb_sync_to_dist]
+    passed: [gpdb_rc_packaging_centos]
   - task: ask_teams_to_kick_off_jobs
     config:
       platform: linux
@@ -2926,7 +2632,7 @@ jobs:
 - name: manual_appliance_testing_centos
   plan:
   - get: installer_appliance_rhel5_gpdb_rc
-    passed: [gpdb_sync_to_dist]
+    passed: [gpdb_rc_packaging_centos]
   - task: ask_PMs_to_verify
     config:
       platform: linux
@@ -2936,7 +2642,7 @@ jobs:
 - name: manual_testing_on_pulse_sles
   plan:
   - get: installer_sles11_gpdb_rc
-    passed: [gpdb_sync_to_dist]
+    passed: [gpdb_rc_packaging_sles]
   - task: ask_teams_to_kick_off_jobs
     config:
       platform: linux
