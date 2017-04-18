@@ -757,21 +757,17 @@ ExplainOnePlan_internal(PlannedStmt *plannedstmt,
         appendStringInfoChar(buf, '\n');
     }
 
-#ifdef USE_ORCA
     /* Display optimizer status: either 'legacy query optimizer' or Orca version number */
-    if (optimizer_explain_show_status)
-    {
-
-    	appendStringInfo(buf, "Optimizer status: ");
-    	if (queryDesc->plannedstmt->planGen == PLANGEN_PLANNER)
-    	{
-    		appendStringInfo(buf, "legacy query optimizer\n");
-    	}
-    	else /* PLANGEN_OPTIMIZER */
-    	{
-			appendStringInfo(buf, "PQO version %s\n", OptVersion());
-    	}
-    }
+	appendStringInfo(buf, "Optimizer status: ");
+	if (queryDesc->plannedstmt->planGen == PLANGEN_PLANNER)
+	{
+		appendStringInfo(buf, "legacy query optimizer\n");
+	}
+#ifdef USE_ORCA
+	else /* PLANGEN_OPTIMIZER */
+	{
+		appendStringInfo(buf, "PQO version %s\n", OptVersion());
+	}
 #endif
 
     /*
