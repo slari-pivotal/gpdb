@@ -63,10 +63,6 @@ endif
 #$(warning BLD_CFLAGS=$(BLD_CFLAGS))
 #$(warning )
 
-# help gpcheckdb, our only C++ binary, find the right copy of libstdc++
-sol10_sparc_32_CXX_LIB_DIR=/usr/sfw/lib
-BLD_CXX_LIB_DIR=$($(BLD_ARCH)_CXX_LIB_DIR)
-
 # help Windows builds find the cross-compiler and a pre-built curl
 ifeq "$(findstring win,$(BLD_ARCH))" "win"
 tmpPATH:=/usr/local/mingw32/bin:/usr/local/mingw32/mingw32/bin:/opt/curl-7.16.1-crosscompile/bin:$(PATH)
@@ -193,8 +189,6 @@ rhel5_x86_32_CONFIGFLAGS=--host=i686-pc-linux-gnu --enable-snmp --enable-ddboost
 rhel5_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 rhel6_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 rhel7_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
-sol10_x86_64_CONFIGFLAGS=--enable-snmp ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
-sol_x86_64_CONFIGFLAGS=--without-libcurl $(APR_CONFIG)
 sles11_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 linux_x86_64_CONFIGFLAGS=--enable-snmp --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 osx106_x86_CONFIGFLAGS=--enable-snmp --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
@@ -204,7 +198,7 @@ BLD_CONFIGFLAGS=$($(BLD_ARCH)_CONFIGFLAGS)
 CONFIGFLAGS=$(strip $(BLD_CONFIGFLAGS) --with-pgport=$(DEFPORT) --with-libedit-preferred $(TRACE_CFG_FLAG) $(BLD_DEPLOYMENT_SETTING)) 
 
 # PL/Python does not compile on Tiger, skipping it on AIX
-ifneq "$(findstring $(BLD_ARCH),aix5_ppc_64 aix5_ppc_32 osx104_x86)" ""
+ifneq "$(findstring $(BLD_ARCH),aix7_ppc_64 )" ""
 PG_LANG=false
 endif
 
@@ -223,8 +217,7 @@ endif
 endif
 
 # Configure in the extra path AIX requires for pthread support
-aix5_ppc_64_PTHREADS_LIB_DIR=/usr/lib/threads
-aix5_ppc_32_PTHREADS_LIB_DIR=/usr/lib/threads
+aix7_ppc_64_PTHREADS_LIB_DIR=/usr/lib/threads
 BLD_PTHREADS_LIB_DIR=$($(BLD_ARCH)_PTHREADS_LIB_DIR)
 
 # Configure in thirdparty libraries from the ext/ directory
@@ -234,22 +227,20 @@ CONFIGFLAGS+= --with-includes="$(CONFIG_INCLUDES)" --with-libraries="$(CONFIG_LI
 
 # Configure in "authlibs"...
 # ...without an ext/ dir copy of curl-config on Tiger or AIX
-ifeq "$(findstring $(BLD_ARCH),aix5_ppc_64 aix5_ppc_32)" ""
+ifeq "$(findstring $(BLD_ARCH),aix7_ppc_64)" ""
 BLD_CURL_CONFIG=CURL_CONFIG=$(BLD_THIRDPARTY_BIN_DIR)/curl-config
 endif
 # ...and do not include the authlibs on Windows or AIX
-ifeq "$(findstring $(BLD_ARCH),aix5_ppc_32 aix5_ppc_64 win32 win64)" ""
+ifeq "$(findstring $(BLD_ARCH), aix7_ppc_64 win32 win64)" ""
 CONFIGFLAGS+= --with-openssl --with-pam --with-krb5 --with-ldap $(BLD_CURL_CONFIG) $(APR_CONFIG)
 endif
 # ...but do include some of the authlibs on AIX
-ifneq "$(findstring $(BLD_ARCH),aix5_ppc_32 aix5_ppc_64)" ""
+ifneq "$(findstring $(BLD_ARCH), aix7_ppc_64)" ""
 CONFIGFLAGS+= --with-openssl --with-pam --without-krb5 --with-ldap $(BLD_CURL_CONFIG) $(APR_CONFIG)
 endif
 
 # Platform-specific config flags
-aix5_ppc_64_CONFIG_ADDITIONS=LDFLAGS="-Wl,-bbigtoc -L/usr/lib/threads"
-aix5_ppc_32_CONFIG_ADDITIONS=LDFLAGS="-L/usr/lib/threads"
-hpux_ia64_CONFIG_ADDITIONS=--without-readline --without-ldap
+aix7_ppc_64_CONFIG_ADDITIONS=LDFLAGS="-Wl,-bbigtoc -L/usr/lib/threads"
 
 win32_GPFDIST_LDFLAGS += -L/usr/i686-pc-mingw32/sys-root/mingw/lib -L$(GPPGDIR)/src/bin/gpfdist/ext/lib
 win32_GPFDIST_CFLAGS += -I/usr/i686-pc-mingw32/sys-root/mingw/include
@@ -271,8 +262,7 @@ RECONFIG :
 	fi;
 
 # avoid AIX's restricted shell
-aix5_ppc_64_CONFIG_SHELL=/usr/bin/bash
-aix5_ppc_32_CONFIG_SHELL=/usr/bin/bash
+aix7_ppc_64_CONFIG_SHELL=/usr/bin/bash
 BLD_CONFIG_SHELL=$($(BLD_ARCH)_CONFIG_SHELL)
 
 $(GPPGDIR)/GNUmakefile : $(GPPGDIR)/configure  env.sh
@@ -347,13 +337,8 @@ BLD_LD_LIBRARY_PATH:=$($(BLD_ARCH)_LD_LIBRARY_PATH):$($(BLD_WHERE_THE_LIBRARY_TH
 export $(BLD_WHERE_THE_LIBRARY_THINGS_ARE)=$(BLD_LD_LIBRARY_PATH)
 
 # how much of GPDB to build by platform (default is "full")
-hpux_ia64_GPDB_BUILDSET=partial
 rhel5_x86_32_GPDB_BUILDSET=partial
-aix5_ppc_64_GPDB_BUILDSET=partial
-aix5_ppc_32_GPDB_BUILDSET=partial
-sol10_x86_64_GPDB_BUILDSET=partial
-sol10_x86_32_GPDB_BUILDSET=partial
-sol10_sparc_32_GPDB_BUILDSET=partial
+aix7_ppc_64_GPDB_BUILDSET=partial
 win64_GPDB_BUILDSET=partial
 win32_GPDB_BUILDSET=partial
 BLD_GPDB_BUILDSET=$($(BLD_ARCH)_GPDB_BUILDSET)
@@ -446,9 +431,7 @@ define BUILD_STEPS
 	$(MAKE) copylibs INSTLOC=$(INSTLOC)
 	$(MAKE) clients INSTLOC=$(INSTLOC) CLIENTINSTLOC=$(CLIENTINSTLOC)
 	$(MAKE) connectivity INSTLOC=$(INSTLOC) CONNECTIVITYINSTLOC=$(CONNECTIVITYINSTLOC)
-	if [ "$(findstring hpux_ia64,$(BLD_ARCH))" = "hpux_ia64" ]; then \
-	  cd $(GPMGMT)/bin && $(MAKE) pygresql LDFLAGS="" INSTLOC=$(INSTLOC) ; \
-	elif [ "$(findstring win,$(BLD_ARCH))" != "win" ]; then \
+	if [ "$(findstring win,$(BLD_ARCH))" != "win" ]; then \
 	  cd $(GPMGMT)/bin && $(MAKE) pygresql INSTLOC=$(INSTLOC) ; \
 	fi
 	$(MAKE) loaders INSTLOC=$(INSTLOC) LOADERSINSTLOC=$(LOADERSINSTLOC)
@@ -650,8 +633,7 @@ LOADERS_FILESET_BINEXT = $(strip $(tmpLOADERS_FILESET_BINEXT))
 
 # define python file subset to ship by platform, as desired
 BLD_PYTHON_FILESET=.
-aix5_ppc_32_PYTHON_FILESET=bin/python* lib/python* include/python*
-aix5_ppc_64_PYTHON_FILESET=bin/python* lib/python* include/python*
+aix7_ppc_64_PYTHON_FILESET=bin/python* lib/python* include/python*
 ifneq "$($(BLD_ARCH)_PYTHON_FILESET)" ""
 BLD_PYTHON_FILESET=$($(BLD_ARCH)_PYTHON_FILESET)
 endif
@@ -663,26 +645,24 @@ BLD_OS:=$(shell uname -s)
 endif
 AIX_LOADERS_LIBS=libbz2.a libz.a libpq.a liblber*.a libldap*.a libyaml*.a
 Darwin_LOADERS_LIBS=libcrypto.*.dylib libssl.*.dylib libpq.*.dylib* libkrb5.*.dylib libcom_err.*.dylib libldap_r-*.dylib libk5crypto.*.dylib libkrb5support.*.dylib liblber-*.dylib libyaml*.dylib
-HP-UX_LOADERS_LIBS=libcrypto.so* libssl.so.* libz.so* libpq.so* libapr* libyaml*so*
 Linux_LOADERS_LIBS=libcrypto.so* libssl.so.* libz.so* libpq.so* libkrb5.so* libcom_err.so* libk5crypto.so* libkrb5support.so* liblber*.so* libldap_r-*so* libgssapi_krb5.so* libyaml*so*
-SunOS_LOADERS_LIBS=libcrypto.so* libssl.so.* libgcc_s.so.1 libz.so* libpq.so* libk5crypto.so* libkrb5support.so* liblber*.so* libldap_r-*so* libcom_err.so* libkrb5.so* libyaml*so*
 Windows_LOADERS_LIBS=comerr32.dll gssapi32.dll k5sprt32.dll kclnt32.dll kfwlogon.dll krb4cred.dll krb4cred_en_us.dll krb524.dll krb5_32.dll krb5cred.dll krb5cred_en_us.dll krbcc32.dll krbv4w32.dll leashw32.dll nidmgr32.dll wshelp32.dll xpprof32.dll libpq.dll
 define tmpLOADERS_FILESET_LIB
 	$($(BLD_OS)_LOADERS_LIBS)
 endef
 LOADERS_FILESET_LIB = $(strip $(tmpLOADERS_FILESET_LIB))
 
-hpux_ia64_LOADERS_LIBS_GCC=libgcc_s.so libgcc_s.so.0
-hpux_ia64_LOADERS_LIBS_GCC_LOC=/opt/hp-gcc/lib/hpux64
 
 FILESET_LIB_GCC=$($(BLD_ARCH)_LOADERS_LIBS_GCC)
 FILESET_LIB_GCC_LOC=$($(BLD_ARCH)_LOADERS_LIBS_GCC_LOC)
 
-aix5_ppc_32_LOADERS_LIBS_PERZL=libz.a
-aix5_ppc_64_LOADERS_LIBS_PERZL=libz.so libz.so.1 libz.so.1.2.4 libcrypto.so libcrypto.so.0.9.8 libssl.so libssl.so.0.9.8
+# PERZL was the old freeware for AIX 5.x and installed into /opt/pware64
+# We are using "AIX Toolbox for Linux Applications" by IBM that installs into /opt/freeware
+# These libraries though should be provided by Pivotal and are found under <gpdb_src>/gpAux/ext/<platform>/lib
+# This should all be renamed
 
-aix5_ppc_32_LOADERS_LIBS_PERZL_LOC=/opt/freeware/lib
-aix5_ppc_64_LOADERS_LIBS_PERZL_LOC=/opt/pware64/lib
+aix7_ppc_64_LOADERS_LIBS_PERZL=libz.so libz.so.1 libz.so.1.2.3 libcrypto.so libcrypto.so.0.9.8 libssl.so libssl.so.0.9.8
+aix7_ppc_64_LOADERS_LIBS_PERZL_LOC=$(BLD_TOP)/ext/aix7_ppc_64/lib
 
 LOADERS_FILESET_LIB_PERZL=$($(BLD_ARCH)_LOADERS_LIBS_PERZL)
 LOADERS_FILESET_LIB_PERZL_LOC=$($(BLD_ARCH)_LOADERS_LIBS_PERZL_LOC)
@@ -691,11 +671,6 @@ AIX_LOADERS_LIBS_PWARE=libbz2.a libiconv.a libintl.a libncurses.a libpanel.a lib
 LOADERS_FILESET_LIB_PWARE=$($(BLD_OS)_LOADERS_LIBS_PWARE)
 
 ifeq "$(MPP_ARCH)" ""
-sol10_x86_64_MPP_ARCH=SOL-x86_64
-sol10_x86_32_MPP_ARCH=SOL-i386
-sol10_sparc_MPP_ARCH=SOL10-sparc
-sol10_sparc_64_MPP_ARCH=SOL10-sparc_64
-sol10_sparc_32_MPP_ARCH=SOL10-sparc_32
 rhel5_x86_64_MPP_ARCH=RHEL5-x86_64
 rhel6_x86_64_MPP_ARCH=RHEL6-x86_64
 rhel7_x86_64_MPP_ARCH=RHEL7-x86_64
@@ -869,14 +844,12 @@ endif
 ifneq "$(LOADERS_FILESET_LIB_PWARE)" ""
 	# include libraries from pware needed by the pware Python-2.6.1 build
 	mkdir -p $(LOADERSINSTLOC_LIB_PWARE)
-	($(TAR) cf - -C $($(BLD_ARCH)_PYTHON)/lib $(LOADERS_FILESET_LIB_PWARE)) | ($(TAR) xpf - -C $(LOADERSINSTLOC_LIB_PWARE))$(check_pipe_for_errors)
+	($(TAR) cf - -C $(PYTHONHOME)/lib $(LOADERS_FILESET_LIB_PWARE)) | ($(TAR) xpf - -C $(LOADERSINSTLOC_LIB_PWARE))$(check_pipe_for_errors)
 endif
-#ifneq "$(findstring $(BLD_ARCH),aix5_ppc_32 aix5_ppc_64)" ""
+#ifneq "$(findstring $(BLD_ARCH),aix7_ppc_64)" ""
 #	(cd /opt/freeware/lib/ && $(TAR) cf - libbz2.a libz.a) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
 #endif
-ifneq "$(findstring $(BLD_ARCH),sol10_sparc_32)" ""
-	(cd /usr/local/lib/ && $(TAR) cf - libiconv.so* libexpat.so*) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xpf -)$(check_pipe_for_errors)
-endif
+
 	# ---- copy scripts fileset ----
 	mkdir -p $(LOADERSINSTLOC)
 	cp -f client/scripts/greenplum_$@_path$(SCRIPT) $(LOADERSINSTLOC)/
@@ -1169,7 +1142,6 @@ ifeq ($(BLD_ARCH),$(filter $(BLD_ARCH),rhel7_x86_64 rhel6_x86_64 rhel5_x86_64))
 endif
 
 copylibs : thirdparty-dist copy-rsa-libs copy-nbu-libs
-	if [ `uname -s` = 'SunOS' ]; then cp `ldd $(INSTLOC)/bin/psql | grep gcc | head -1 | awk '{print $$3}'` $(INSTLOC)/lib; fi
 	if [ `uname -s` = 'Darwin' ] ; then \
 	    for lib in `otool -L $(INSTLOC)/bin/psql | egrep 'libssl|libcrypto|libcom_err|libkrb5|curl|readline|numa' | awk '{print $$1}'`; do \
 	        if [ x"`dirname $$lib`" = x"$(INSTLOC)/lib" ]; then continue; fi; \
@@ -1181,14 +1153,6 @@ copylibs : thirdparty-dist copy-rsa-libs copy-nbu-libs
 	            echo "cp -p $$lib $(INSTLOC)/lib/" ; \
 	            cp -p $$lib $(INSTLOC)/lib/ ; \
 	        fi ; \
-	    done ; \
-	fi
-	if [ `uname -s` != 'Darwin' -a `uname -s` != 'AIX' ] ; then \
-	    for lib in `ldd $(INSTLOC)/bin/psql | egrep 'libssl|libcrypto|libcom_err|curl|readline|numa' | awk '{print $$3}' | sort -u`; do \
-	        if [ x"`dirname $$lib`" = x"$(INSTLOC)/lib" ]; then continue; fi; \
-	        if [ -f $(INSTLOC)/lib/`basename $$lib` -a ! -w $(INSTLOC)/lib/`basename $$lib` ]; then chmod u+w $(INSTLOC)/lib/`basename $$lib`; fi; \
-	        echo "cp -p $$lib $(INSTLOC)/lib" ; \
-	        cp -p $$lib $(INSTLOC)/lib ; \
 	    done ; \
 	fi
 	if [ `uname -s` = 'AIX' ] ; then \
@@ -1206,6 +1170,12 @@ copylibs : thirdparty-dist copy-rsa-libs copy-nbu-libs
 	    done ; \
 	fi
 	if [ `uname -s` != 'AIX' -a `uname -s` != 'Darwin' ] ; then \
+            for lib in `ldd $(INSTLOC)/bin/psql | egrep 'libssl|libcrypto|libcom_err|curl|readline|numa' | awk '{print $$3}' | sort -u`; do \
+                if [ x"`dirname $$lib`" = x"$(INSTLOC)/lib" ]; then continue; fi; \
+                if [ -f $(INSTLOC)/lib/`basename $$lib` -a ! -w $(INSTLOC)/lib/`basename $$lib` ]; then chmod u+w $(INSTLOC)/lib/`basename $$lib`; fi; \
+                echo "cp -p $$lib $(INSTLOC)/lib" ; \
+                cp -p $$lib $(INSTLOC)/lib ; \
+            done ; \
 	    lib_wildcards=`$(BLD_LDD) $(INSTLOC)/bin/lib/gpcheckdb | egrep 'libstdc\+\+' $(BLD_LDD_FILTER)` export lib_wildcards; \
 	    if [ -z "$${lib_wildcards}" ]; then exit 0; fi; \
 	    lib_list=`ls $${lib_wildcards}` export lib_list; \
@@ -1228,7 +1198,7 @@ copylibs : thirdparty-dist copy-rsa-libs copy-nbu-libs
 	fi
 	mkdir -p $(INSTLOC)/etc
 	mkdir -p $(INSTLOC)/include
-ifeq "$(findstring $(BLD_ARCH),aix5_ppc_32 aix5_ppc_64 win32 win64)" ""
+ifeq "$(findstring $(BLD_ARCH),aix7_ppc_64 win32 win64)" ""
 	# Copy curl header file
 	cp -rp $(BLD_THIRDPARTY_INCLUDE_DIR)/curl $(INSTLOC)/include/
 endif
@@ -1245,7 +1215,7 @@ ifneq "$(BLD_GPDB_BUILDSET)" "partial"
 endif
 
 	# Copy in openssl files needed by gpperfmon
-ifeq "$(findstring $(BLD_ARCH),aix5_ppc_32 win32 win64)" ""
+ifeq "$(findstring $(BLD_ARCH), win32 win64)" ""
 ifneq "$(BLD_ARCH)" "osx104_x86"
 	cp -rp $(BLD_THIRDPARTY_BIN_DIR)/openssl $(INSTLOC)/bin/
 	cp -rp $(BLD_THIRDPARTY_INCLUDE_DIR)/openssl $(INSTLOC)/include/
@@ -1257,16 +1227,18 @@ else
 endif
 endif
 #
-	# Copy glider stack trace capture tool
-	-cp -rp $(BLD_THIRDPARTY_BIN_DIR)/glider $(INSTLOC)/sbin/
 
 ifeq "$(BLD_ARCH)" "win32"
 	# Copy kfw dlls
 	cp -rp $(BLD_TOP)/ext/win32/kfw-3-2-2/lib/*dll $(INSTLOC)/lib/
 endif
 
-	# Copy libstdc++
-	cd $(LIBSTDC++_LIBDIR); tar cvf - * | (cd $(INSTLOC)/lib; tar xfp -)
+ifneq "$(BLD_ARCH)" "aix7_ppc_64"
+	# Copy glider stack trace capture tool
+	-cp -rp $(BLD_THIRDPARTY_BIN_DIR)/glider $(INSTLOC)/sbin/
+	[ -d "$(LIBSTDC++_LIBDIR)" ]  # Ensure the source directory exists.
+	cd "$(LIBSTDC++_LIBDIR)"; tar cvf - * | (cd $(INSTLOC)/lib; tar xfp -)
+endif
 
 ## ----------------------------------------------------------------------
 ## Copy Optimizer (orca) specific libraries to INSTLOC.  It must be

@@ -58,16 +58,12 @@ ifeq "$(BLD_ARCH)" "rhel6_x86_64"
 LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib64
 endif
 
-ifeq "$(BLD_ARCH)" "sles11_x86_64"
+ifeq "$(BLD_ARCH)" "rhel7_x86_64"
 LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib64
 endif
 
-ifeq "$(BLD_ARCH)" "sol10_x86_32"
-LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib
-endif
-
-ifeq "$(BLD_ARCH)" "sol10_x86_64"
-LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib/amd64
+ifeq "$(BLD_ARCH)" "sles11_x86_64"
+LIBSTDC++_LIBDIR = $(LIBSTDC++_BASEDIR)/lib64
 endif
 
 ## ---------------------------------------
