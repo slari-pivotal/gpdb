@@ -29,9 +29,37 @@ DETAIL:  Entity: line 1: parser error : Couldn't find end of Start Tag wrong lin
 SELECT * FROM xmltest;
  id |        data        
 ----+--------------------
-  2 | <value>two</value>
   1 | <value>one</value>
+  2 | <value>two</value>
 (2 rows)
+
+PREPARE foo (xml) AS SELECT xmlconcat2('<foo/>', $1);
+SET XML OPTION DOCUMENT;
+EXECUTE foo ('<bar/>');
+  xmlconcat2  
+--------------
+ <foo/><bar/>
+(1 row)
+
+EXECUTE foo ('bad');
+ERROR:  invalid XML document
+LINE 1: EXECUTE foo ('bad');
+                     ^
+DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
+bad
+^
+SET XML OPTION CONTENT;
+EXECUTE foo ('<bar/>');
+  xmlconcat2  
+--------------
+ <foo/><bar/>
+(1 row)
+
+EXECUTE foo ('good');
+ xmlconcat2 
+------------
+ <foo/>good
+(1 row)
 
 SELECT xmlcomment('test');
  xmlcomment  
@@ -63,24 +91,23 @@ SELECT xmlconcat2(xmlcomment('hello'),
 (1 row)
 
 SELECT xmlconcat2('hello', 'you');
-ERROR:  invalid XML document
-LINE 1: SELECT xmlconcat2('hello', 'you');
-               ^
-DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
-hello
-^
+ xmlconcat2 
+------------
+ helloyou
+(1 row)
+
 SELECT xmlconcat2(1, 2);
 ERROR:  function xmlconcat2(integer, integer) does not exist
 LINE 1: SELECT xmlconcat2(1, 2);
                ^
 HINT:  No function matches the given name and argument types. You may need to add explicit type casts.
 SELECT xmlconcat2('bad', '<syntax');
-ERROR:  invalid XML document
+ERROR:  invalid XML content
 LINE 1: SELECT xmlconcat2('bad', '<syntax');
                ^
-DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
-bad
-^
+DETAIL:  Entity: line 1: parser error : Couldn't find end of Start Tag syntax line 1
+<syntax
+       ^
 SELECT xmlconcat2('<foo/>', '<?xml version="1.1" standalone="no"?><bar/>');
   xmlconcat2  
 --------------
@@ -158,12 +185,8 @@ SELECT xpath(NULL, NULL) IS NULL FROM xmltest;
 (2 rows)
 
 SELECT xpath('', '<!-- error -->');
-ERROR:  invalid XML document
-LINE 1: SELECT xpath('', '<!-- error -->');
-               ^
-DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
-<!-- error -->
-              ^
+ERROR:  empty XPath expression
+CONTEXT:  SQL function "xpath" statement 1
 SELECT xpath('//text()', '<local:data xmlns:local="http://127.0.0.1"><local:piece id="1">number one</local:piece><local:piece id="2" /></local:data>');
      xpath      
 ----------------
@@ -272,6 +295,7 @@ SELECT xml_is_well_formed_content('abc');
  t
 (1 row)
 
+SET xmloption TO DOCUMENT;
 SELECT xml_is_well_formed('abc');
  xml_is_well_formed 
 --------------------
@@ -321,6 +345,13 @@ SELECT xml_is_well_formed('<pg:foo xmlns:pg="http://postgresql.org/stuff">bar</m
 (1 row)
 
 SELECT xml_is_well_formed('<pg:foo xmlns:pg="http://postgresql.org/stuff">bar</pg:foo>');
+ xml_is_well_formed 
+--------------------
+ t
+(1 row)
+
+SET xmloption TO CONTENT;
+SELECT xml_is_well_formed('abc');
  xml_is_well_formed 
 --------------------
  t

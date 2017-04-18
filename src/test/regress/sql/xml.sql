@@ -22,6 +22,16 @@ INSERT INTO xmltest VALUES (2, '<value>two</value>');
 INSERT INTO xmltest VALUES (3, '<wrong');
 SELECT * FROM xmltest;
 
+PREPARE foo (xml) AS SELECT xmlconcat2('<foo/>', $1);
+
+SET XML OPTION DOCUMENT;
+EXECUTE foo ('<bar/>');
+EXECUTE foo ('bad');
+
+SET XML OPTION CONTENT;
+EXECUTE foo ('<bar/>');
+EXECUTE foo ('good');
+
 SELECT xmlcomment('test');
 SELECT xmlcomment('-test');
 SELECT xmlcomment('test-');
@@ -88,6 +98,7 @@ SELECT xml_is_well_formed_document('abc');
 SELECT xml_is_well_formed_content('<foo>bar</foo>');
 SELECT xml_is_well_formed_content('abc');
 
+SET xmloption TO DOCUMENT;
 SELECT xml_is_well_formed('abc');
 SELECT xml_is_well_formed('<>');
 SELECT xml_is_well_formed('<abc/>');
@@ -97,6 +108,9 @@ SELECT xml_is_well_formed('<foo><bar>baz</foo>');
 SELECT xml_is_well_formed('<local:data xmlns:local="http://127.0.0.1"><local:piece id="1">number one</local:piece><local:piece id="2" /></local:data>');
 SELECT xml_is_well_formed('<pg:foo xmlns:pg="http://postgresql.org/stuff">bar</my:foo>');
 SELECT xml_is_well_formed('<pg:foo xmlns:pg="http://postgresql.org/stuff">bar</pg:foo>');
+
+SET xmloption TO CONTENT;
+SELECT xml_is_well_formed('abc');
 
 DROP TABLE query;
 DROP TABLE xmltest;
