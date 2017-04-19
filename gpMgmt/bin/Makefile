@@ -65,6 +65,8 @@ pygresql:
 	. $(prefix)/greenplum_path.sh && unset PYTHONHOME && \
 	if [ `uname -s` = 'HP-UX' ]; then \
 	    cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" LDFLAGS="-L../../../../gpAux/ext/hpux_ia64/python-2.5.6/lib" python setup.py build; \
+	elif [ `uname -s` = 'AIX' ]; then  \
+            cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" /opt/freeware/bin/python_64 setup.py build; \
 	else \
 	    cd $(PYLIB_SRC)/$(PYGRESQL_DIR) && CC="$(CC)" $(PYTHON) setup.py build; \
 	fi
