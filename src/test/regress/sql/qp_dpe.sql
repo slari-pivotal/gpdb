@@ -212,8 +212,8 @@ insert into jpat values(1, '2010-01-02');
 
 -- end_ignore
 
-select count_operator('explain select * from (select count(*) over (order by a rows between 1 preceding and 1 following), a, b from jpat)jpat inner join pat using(b);', 'Append') > 0;
-select count_operator('explain select * from (select count(*) over (order by a rows between 1 preceding and 1 following), a, b from jpat)jpat inner join pat using(b);', 'Dynamic Table Scan') > 0;
+select count_operator('select * from (select count(*) over (order by a rows between 1 preceding and 1 following), a, b from jpat)jpat inner join pat using(b);', 'Append') > 0;
+select count_operator('select * from (select count(*) over (order by a rows between 1 preceding and 1 following), a, b from jpat)jpat inner join pat using(b);', 'Dynamic Table Scan') > 0;
 
 select * from (select count(*) over (order by a rows between 1 preceding and 1 following), a, b from jpat)jpat inner join pat using(b);
 RESET ALL;
