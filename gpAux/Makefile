@@ -1236,9 +1236,8 @@ endif
 ifneq "$(BLD_ARCH)" "aix7_ppc_64"
 	# Copy glider stack trace capture tool
 	-cp -rp $(BLD_THIRDPARTY_BIN_DIR)/glider $(INSTLOC)/sbin/
-	if [ -d "$(LIBSTDC++_LIBDIR)" ]; then  # Ensure the source directory exists.
-		cd "$(LIBSTDC++_LIBDIR)"; tar cvf - * | (cd $(INSTLOC)/lib; tar xfp -); \
-	fi
+	[ -d "$(LIBSTDC++_LIBDIR)" ]  # Ensure the source directory exists.
+	cd "$(LIBSTDC++_LIBDIR)"; tar cvf - * | (cd $(INSTLOC)/lib; tar xfp -)
 endif
 
 ## ----------------------------------------------------------------------
