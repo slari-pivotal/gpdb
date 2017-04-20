@@ -563,3 +563,6 @@ select qx_count_operator('select foo_p.b, foo_p.t from foo_p inner join bar on f
 select foo_p.b, foo_p.t from foo_p inner join bar on foo_p.a = bar.k  where foo_p.t is not null and foo_p.a = mytest(100) order by 1, 2 desc limit 10;
 
 drop function if exists mytest(integer);
+-- start_ignore
+drop schema qp_query_execution cascade;
+-- end_ignore
