@@ -478,20 +478,20 @@ def impl(context, configString, dbname):
 
 @given('a cast is created in "{dbname}"')
 def impl(context, dbname):
-    function_sql = """CREATE FUNCTION castToInt(text) RETURNS integer STRICT IMMUTABLE LANGUAGE SQL AS 'SELECT cast($1 as integer);'"""
+    function_sql = """CREATE FUNCTION castBooleanToText(boolean) RETURNS text STRICT IMMUTABLE LANGUAGE PLPGSQL AS $$ BEGIN IF $1 IS TRUE THEN RETURN 'true'; ELSE RETURN 'false'; END IF; END; $$;"""
     execute_sql(dbname, function_sql)
-    cast_sql = """CREATE CAST (text AS integer) WITH FUNCTION castToInt(text) AS ASSIGNMENT"""
+    cast_sql = """CREATE CAST (boolean AS text) WITH FUNCTION castBooleanToText(boolean) AS ASSIGNMENT"""
     execute_sql(dbname, cast_sql)
 
 def check_cast_function_exists(dbname, schema):
     func_sql = """SELECT
-                    n.nspname, p.proname, pg_catalog.pg_get_function_result(p.oid), pg_catalog.pg_get_function_arguments(p.oid)
+                    n.nspname, p.proname, pg_catalog.format_type(p.prorettype, NULL), pg_catalog.format_type(p.proargtypes[0], NULL)
                 FROM
                     pg_catalog.pg_proc p
                     LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
-                WHERE p.proname = 'casttoint';""" # Simplified version of query behind psql's "\df" to show functions
+                WHERE p.proname = 'castbooleantotext';""" # Simplified version of query behind psql's "\df" to show functions
     func_result =  getRow(dbname, func_sql)
-    return [schema, "casttoint", "integer", "text"] == func_result
+    return [schema, "castbooleantotext", "text", "boolean"] == func_result
 
 def check_cast_exists(dbname, schema):
     cast_sql = """SELECT
@@ -503,9 +503,9 @@ def check_cast_exists(dbname, schema):
                     LEFT JOIN pg_catalog.pg_namespace ns ON ns.oid = ts.typnamespace
                     LEFT JOIN pg_catalog.pg_type tt ON c.casttarget = tt.oid
                     LEFT JOIN pg_catalog.pg_namespace nt ON nt.oid = tt.typnamespace
-                WHERE p.proname = 'casttoint';""" # Simplified version of query behind psql's "\dC" to show casts
+                WHERE p.proname = 'castbooleantotext';""" # Simplified version of query behind psql's "\dC" to show casts
     cast_result =  getRow(dbname, cast_sql)
-    return ["text", "integer", "casttoint", "a"] == cast_result
+    return ["boolean", "text", "castbooleantotext", "a"] == cast_result
 
 @then('verify that a cast exists in "{dbname}" in schema "{schema}"')
 def impl(context, dbname, schema):

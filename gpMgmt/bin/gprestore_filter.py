@@ -249,7 +249,7 @@ def _handle_further_investigation(state, line, arguments):
 def _handle_cast_function_schema(state, line, arguments):
     change_schema = arguments.change_schema_name
 
-    if state.change_cast_func_schema:
+    if state.change_cast_func_schema and state.cast_func_schema:
         if "CREATE CAST" in line and "WITH FUNCTION" in line:
             state.change_cast_func_schema = False
             line = _handle_change_schema(state.cast_func_schema, change_schema, line)
