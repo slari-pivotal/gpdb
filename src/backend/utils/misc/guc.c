@@ -802,7 +802,6 @@ bool		optimizer_enable_outerjoin_to_unionall_rewrite;
 bool		optimizer_apply_left_outer_to_union_all_disregarding_stats;
 bool		optimizer_enable_ctas;
 bool		optimizer_remove_order_below_dml;
-bool		optimizer_static_partition_selection;
 bool		optimizer_enable_partial_index;
 bool		optimizer_dml_triggers;
 bool		optimizer_dml_constraints;
@@ -4368,16 +4367,6 @@ static struct config_bool ConfigureNamesBool[] =
 		},
 		&optimizer_remove_order_below_dml,
 		false, NULL, NULL
-	},
-
-	{
-		{"optimizer_static_partition_selection", PGC_USERSET, DEVELOPER_OPTIONS,
-			gettext_noop("Enable static partition selection"),
-			NULL,
-			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
-		},
-		&optimizer_static_partition_selection,
-		true, NULL, NULL
 	},
 
 	{
