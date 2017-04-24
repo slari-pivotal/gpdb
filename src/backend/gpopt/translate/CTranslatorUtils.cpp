@@ -240,7 +240,7 @@ CTranslatorUtils::PreloadMDStats
 	OID oidRelation
 	)
 {
-	CMDIdGPDB *pmdidgpdbRel = CDXLUtils::Pmdid(pmp, oidRelation);
+	CMDIdGPDB *pmdidgpdbRel = GPOS_NEW(pmp) CMDIdGPDB(oidRelation);
 
 	// preload column stats
 	const IMDRelation *pmdrelation = pmda->Pmdrel(pmdidgpdbRel);
@@ -315,7 +315,7 @@ CTranslatorUtils::Pdxltabdesc
 		GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("Query over external partitions"));
 	}
 
-	CMDIdGPDB *pmdid = CDXLUtils::Pmdid(pmp, oidRel);
+	CMDIdGPDB *pmdid = GPOS_NEW(pmp) CMDIdGPDB(oidRel);
 
 	const IMDRelation *pmdrel = pmda->Pmdrel(pmdid);
 	
