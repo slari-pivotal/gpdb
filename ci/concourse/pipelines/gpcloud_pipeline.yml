@@ -70,7 +70,8 @@ jobs:
     file: gpdb_src/ci/concourse/regression_tests_gpcloud.yml
     image: centos-gpdb-dev-5
     params:
-      s3conf: {{s3_configuration_file}}
+      gpcloud_access_key_id: {{gpcloud-access-key-id}}
+      gpcloud_secret_access_key: {{gpcloud-secret-access-key}}
       overwrite_gpcloud: true
       TEST_OS: centos
 
@@ -91,8 +92,9 @@ jobs:
     file: gpdb_src/ci/concourse/gpcheckcloud_tests_gpcloud.yml
     image: centos-gpdb-dev-5
     params:
+      gpcloud_access_key_id: {{gpcloud-access-key-id}}
+      gpcloud_secret_access_key: {{gpcloud-secret-access-key}}
       overwrite_gpcloud: true
-      s3conf: {{s3_configuration_file}}
 
 - name: staging_server_gpcloud_centos
   public: true
