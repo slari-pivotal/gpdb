@@ -1021,7 +1021,7 @@ COptTasks::PvOptimizeTask
 	CDXLNode *pdxlnPlan = NULL;
 
 	DrgPmdid *pdrgmdidCol = NULL;
-	HMMDIdMDId *phmmdidRel = NULL;
+	HSMDId *phsmdidRel = NULL;
 
 	GPOS_TRY
 	{
@@ -1112,10 +1112,10 @@ COptTasks::PvOptimizeTask
 			pdrgmdidCol = GPOS_NEW(pmp) DrgPmdid(pmp);
 			pstatsconf->CollectMissingStatsColumns(pdrgmdidCol);
 
-			phmmdidRel = GPOS_NEW(pmp) HMMDIdMDId(pmp);
-			PrintMissingStatsWarning(pmp, &mda, pdrgmdidCol, phmmdidRel);
+			phsmdidRel = GPOS_NEW(pmp) HSMDId(pmp);
+			PrintMissingStatsWarning(pmp, &mda, pdrgmdidCol, phsmdidRel);
 
-			phmmdidRel->Release();
+			phsmdidRel->Release();
 			pdrgmdidCol->Release();
 
 			pceeval->Release();
@@ -1127,7 +1127,7 @@ COptTasks::PvOptimizeTask
 	GPOS_CATCH_EX(ex)
 	{
 		ResetTraceflags(pbsEnabled, pbsDisabled);
-		CRefCount::SafeRelease(phmmdidRel);
+		CRefCount::SafeRelease(phsmdidRel);
 		CRefCount::SafeRelease(pdrgmdidCol);
 		CRefCount::SafeRelease(pbsEnabled);
 		CRefCount::SafeRelease(pbsDisabled);
@@ -1180,12 +1180,12 @@ COptTasks::PrintMissingStatsWarning
 	IMemoryPool *pmp,
 	CMDAccessor *pmda,
 	DrgPmdid *pdrgmdidCol,
-	HMMDIdMDId *phmmdidRel
+	HSMDId *phsmdidRel
 	)
 {
 	GPOS_ASSERT(NULL != pmda);
 	GPOS_ASSERT(NULL != pdrgmdidCol);
-	GPOS_ASSERT(NULL != phmmdidRel);
+	GPOS_ASSERT(NULL != phsmdidRel);
 
 	CWStringDynamic str(pmp);
 	COstreamString oss(&str);
@@ -1202,7 +1202,7 @@ COptTasks::PrintMissingStatsWarning
 
 		if (IMDRelation::ErelstorageExternal != pmdrel->Erelstorage())
 		{
-			if (NULL == phmmdidRel->PtLookup(pmdidRel))
+			if (!phsmdidRel->FExists(pmdidRel))
 			{
 				if (0 != ul)
 				{
@@ -1211,7 +1211,7 @@ COptTasks::PrintMissingStatsWarning
 
 				pmdidRel->AddRef();
 				pmdidRel->AddRef();
-				phmmdidRel->FInsert(pmdidRel, pmdidRel);
+				phsmdidRel->FInsert(pmdidRel);
 				oss << pmdrel->Mdname().Pstr()->Wsz();
 			}
 
@@ -1220,7 +1220,7 @@ COptTasks::PrintMissingStatsWarning
 		}
 	}
 
-	if (0 < phmmdidRel->UlEntries())
+	if (0 < phsmdidRel->UlEntries())
 	{
 		ereport(NOTICE,
 				(errcode(ERRCODE_SUCCESSFUL_COMPLETION),
