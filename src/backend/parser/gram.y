@@ -65,7 +65,6 @@
 #include "utils/datetime.h"
 #include "utils/guc.h"
 #include "utils/numeric.h"
-#include "utils/xml.h"
 #include "cdb/cdbvars.h" /* CDB *//* gp_enable_partitioned_tables */
 
 
@@ -470,8 +469,6 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 %type <list>	opt_storage_encoding OptTabPartitionColumnEncList
 				TabPartitionColumnEncList
 
-%type <ival>	document_or_content
-
 /*
  * If you make any token changes, update the keyword table in
  * parser/keywords.c and add new keywords to the appropriate one of
@@ -497,7 +494,7 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 
 	DATA_P DATABASE DAY_P DEALLOCATE DEC DECIMAL_P DECLARE DECODE DEFAULT DEFAULTS
 	DEFERRABLE DEFERRED DEFINER DELETE_P DELIMITER DELIMITERS DENY
-	DESC DISABLE_P DISTINCT DISTRIBUTED DO DOCUMENT_P DOMAIN_P DOUBLE_P DROP DXL
+	DESC DISABLE_P DISTINCT DISTRIBUTED DO DOMAIN_P DOUBLE_P DROP DXL
 
 	EACH ELSE ENABLE_P ENCODING ENCRYPTED END_P ENUM_P ERRORS ESCAPE EVERY EXCEPT 
 	EXCHANGE EXCLUDE EXCLUDING EXCLUSIVE EXECUTE EXISTS EXPLAIN EXTERNAL EXTRACT
@@ -566,8 +563,6 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 	VERBOSE VERSION_P VIEW VOLATILE
 
 	WEB WHEN WHERE WINDOW WITH WITHIN WITHOUT WORK WRAPPER WRITABLE WRITE
-
-	XML_P
 
 	YEAR_P
 
@@ -1804,18 +1799,6 @@ set_rest:  var_name TO var_list_or_default
 					n->args = NIL;
 					$$ = n;
 				}
-			| XML_P OPTION document_or_content
-				{
-					VariableSetStmt *n = makeNode(VariableSetStmt);
-					n->name = "xmloption";
-					n->args = list_make1(makeStringConst($3 == XMLOPTION_DOCUMENT ? "DOCUMENT" : "CONTENT", NULL, @3));
-					$$ = n;
-				}
-		;
-
-document_or_content:
-			DOCUMENT_P								{ $$ = XMLOPTION_DOCUMENT; }
-			| CONTENT_P								{ $$ = XMLOPTION_CONTENT; }
 		;
 
 var_name:
@@ -12476,7 +12459,6 @@ unreserved_keyword:
 			| DELIMITERS
 			| DENY
 			| DISABLE_P
-			| DOCUMENT_P
 			| DOMAIN_P
 			| DOUBLE_P
 			| DROP
@@ -12689,7 +12671,6 @@ unreserved_keyword:
 			| WRAPPER
 			| WRITABLE
 			| WRITE
-			| XML_P
 			| YEAR_P
 			| ZONE
 		;
