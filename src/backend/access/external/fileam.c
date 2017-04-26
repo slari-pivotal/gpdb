@@ -2490,12 +2490,12 @@ external_set_env_vars_ext(extvar_t *extvar, char *uri, bool csv, char *escape, c
 	int			line_delim_len;
 
 	sprintf(extvar->GP_CSVOPT,
-			"m%dx%dq%dn%dh%d",
+			"m%dx%dq%dh%dn%d",
 			csv ? 1 : 0,
 			escape ? 255 & *escape : 0,
 			quote ? 255 & *quote : 0,
-			eol_type,
-			header ? 1 : 0);
+			header ? 1 : 0,
+			eol_type);
 
 	if (Gp_role != GP_ROLE_DISPATCH)
 	{
