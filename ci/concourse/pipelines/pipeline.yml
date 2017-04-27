@@ -35,10 +35,8 @@ groups:
   - pulse_MU_BehaveGPCheckcat
   - pulse_MU_BehaveGPRecoverseg
   - pulse_MU_BehaveGptransfer43xTo43x
-  - pulse_MU_BehaveNetBackup
-  - pulse_MU_BehaveNetBackup76
   - pulse_MU_BehaveNetBackup77
-  - pulse_MU_BehaveNetBackup76_filename_compatibility
+  - pulse_MU_BehaveNetBackup77_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
   - pulse_MU_DDBOOST_Full_filename_compatibility
@@ -98,10 +96,8 @@ groups:
   - pulse_MU_BehaveGPCheckcat
   - pulse_MU_BehaveGPRecoverseg
   - pulse_MU_BehaveGptransfer43xTo43x
-  - pulse_MU_BehaveNetBackup
-  - pulse_MU_BehaveNetBackup76
   - pulse_MU_BehaveNetBackup77
-  - pulse_MU_BehaveNetBackup76_filename_compatibility
+  - pulse_MU_BehaveNetBackup77_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
   - pulse_MU_DDBOOST_Full_filename_compatibility
@@ -148,10 +144,8 @@ groups:
   - pulse_MU_BehaveGPCheckcat
   - pulse_MU_BehaveGPRecoverseg
   - pulse_MU_BehaveGptransfer43xTo43x
-  - pulse_MU_BehaveNetBackup
-  - pulse_MU_BehaveNetBackup76
   - pulse_MU_BehaveNetBackup77
-  - pulse_MU_BehaveNetBackup76_filename_compatibility
+  - pulse_MU_BehaveNetBackup77_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
   - pulse_MU_DDBOOST_Full_filename_compatibility
@@ -1529,56 +1523,6 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_BehaveNetBackup
-  plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_MU_BehaveNetBackup76
-  plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
 - name: pulse_MU_BehaveNetBackup77
   plan:
   - get: pulse-api-image
@@ -1604,7 +1548,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_BehaveNetBackup76_filename_compatibility
+- name: pulse_MU_BehaveNetBackup77_filename_compatibility
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1616,7 +1560,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76_filename_compatibility
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup77_filename_compatibility
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -1625,7 +1569,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76_filename_compatibility
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup77_filename_compatibility
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 

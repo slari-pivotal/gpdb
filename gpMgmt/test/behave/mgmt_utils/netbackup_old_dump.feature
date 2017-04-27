@@ -1,22 +1,13 @@
 @netbackup_old_to_new
 Feature: NetBackup Integration with GPDB
 
-    @nbusetup76
+    @nbusetup77
     Scenario: Setup to load NBU libraries
-        Given the NetBackup "7.6" libraries are loaded
+        Given the NetBackup "7.7" libraries are loaded
 
-    @nbusetup76_old
+    @nbusetup77_old
     Scenario: Setup to load NBU libraries
-        Given the NetBackup "7.6" libraries are loaded for GPHOME "/data/greenplum-db-old/"
-
-    @nbusetup75
-    Scenario: Setup to load NBU libraries
-        Given the NetBackup "7.5" libraries are loaded
-
-    @nbusetup71
-    #Scenario: Setup to load NBU libraries
-    #    Given the NetBackup "7.1" libraries are loaded
-
+        Given the NetBackup "7.7" libraries are loaded for GPHOME "/data/greenplum-db-old/"
 
 ##----------------------------------------------------------------------------------------------------
 ##---------------------------------- start part 1 dump      ------------------------------------------
