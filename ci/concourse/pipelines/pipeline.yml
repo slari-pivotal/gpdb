@@ -37,6 +37,7 @@ groups:
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_BehaveNetBackup77
   - pulse_MU_BehaveNetBackup76_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
@@ -99,6 +100,7 @@ groups:
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_BehaveNetBackup77
   - pulse_MU_BehaveNetBackup76_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
@@ -148,6 +150,7 @@ groups:
   - pulse_MU_BehaveGptransfer43xTo43x
   - pulse_MU_BehaveNetBackup
   - pulse_MU_BehaveNetBackup76
+  - pulse_MU_BehaveNetBackup77
   - pulse_MU_BehaveNetBackup76_filename_compatibility
   - pulse_MU_DDBOOST_Full
   - pulse_MU_DDBOOST_Incremental
@@ -1573,6 +1576,31 @@ jobs:
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup76
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+
+- name: pulse_MU_BehaveNetBackup77
+  plan:
+  - get: pulse-api-image
+  - get: nightly-trigger-pulse
+    gpdb_release: delete
+    trigger: true
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
+  - task: trigger_pulse
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup77
+      PULSE_USERNAME: {{pulse_username}}
+      PULSE_PASSWORD: {{pulse_password}}
+  - task: monitor_pulse
+    attempts: 2
+    image: pulse-api-image
+    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+    params:
+      PULSE_URL: {{pulse_url}}
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveNetBackup77
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
