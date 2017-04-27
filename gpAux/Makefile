@@ -577,7 +577,7 @@ LOADERSINSTLOC_BIN=$(LOADERSINSTLOC)/bin
 LOADERSINSTLOC_BINEXT=$(LOADERSINSTLOC)/bin/ext/
 LOADERSINSTLOC_EXT=$(LOADERSINSTLOC)/ext
 LOADERSINSTLOC_LIB=$(LOADERSINSTLOC)/lib
-LOADERSINSTLOC_LIB_PWARE=$(LOADERSINSTLOC)/lib/pware
+LOADERSINSTLOC_LIB_PWARE=$(LOADERSINSTLOC)/lib
 LOADERSINSTLOC_DOCS=$(LOADERSINSTLOC)/docs
 LOADERSINSTLOC_OPENSOURCE=$(LOADERSINSTLOC)/thirdparty
 
@@ -661,7 +661,7 @@ FILESET_LIB_GCC_LOC=$($(BLD_ARCH)_LOADERS_LIBS_GCC_LOC)
 # These libraries though should be provided by Pivotal and are found under <gpdb_src>/gpAux/ext/<platform>/lib
 # This should all be renamed
 
-aix7_ppc_64_LOADERS_LIBS_PERZL=libz.so libz.so.1 libz.so.1.2.3 libcrypto.so libcrypto.so.0.9.8 libssl.so libssl.so.0.9.8
+aix7_ppc_64_LOADERS_LIBS_PERZL=libcrypto.so libcrypto.so.0.9.8 libssl.so libssl.so.0.9.8
 aix7_ppc_64_LOADERS_LIBS_PERZL_LOC=$(BLD_TOP)/ext/aix7_ppc_64/lib
 
 LOADERS_FILESET_LIB_PERZL=$($(BLD_ARCH)_LOADERS_LIBS_PERZL)
@@ -828,6 +828,11 @@ endif
 ifneq "$(PYTHONHOME)" ""
 	mkdir -p $(LOADERSINSTLOC_EXT)/python
 	(cd $(PYTHONHOME) && $(TAR) cf - $(BLD_PYTHON_FILESET)) | (cd $(LOADERSINSTLOC_EXT)/python/ && $(TAR) xpf -)$(check_pipe_for_errors)
+# Reset python to point to python 64 bit to avoid compatability issues on AIX
+ifeq ($(BLD_ARCH),aix7_ppc_64)
+	rm -f $(LOADERSINSTLOC_EXT)/python/bin/python
+	ln -s $(LOADERSINSTLOC_EXT)/python/bin/python2.7_64 $(LOADERSINSTLOC_EXT)/python/bin/python
+endif
 endif
 	mkdir -p $(LOADERSINSTLOC_LIB)
 ifneq "$(LOADERS_FILESET_LIB)" ""
@@ -846,9 +851,9 @@ ifneq "$(LOADERS_FILESET_LIB_PWARE)" ""
 	mkdir -p $(LOADERSINSTLOC_LIB_PWARE)
 	($(TAR) cf - -C $(PYTHONHOME)/lib $(LOADERS_FILESET_LIB_PWARE)) | ($(TAR) xpf - -C $(LOADERSINSTLOC_LIB_PWARE))$(check_pipe_for_errors)
 endif
-#ifneq "$(findstring $(BLD_ARCH),aix7_ppc_64)" ""
-#	(cd /opt/freeware/lib/ && $(TAR) cf - libbz2.a libz.a) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
-#endif
+ifneq "$(findstring $(BLD_ARCH),aix7_ppc_64)" ""
+	(cd /opt/freeware/lib/ && $(TAR) cf - libbz2.a libz.a) | (cd $(LOADERSINSTLOC_LIB)/ && $(TAR) xvpf -)$(check_pipe_for_errors)
+endif
 
 	# ---- copy scripts fileset ----
 	mkdir -p $(LOADERSINSTLOC)
