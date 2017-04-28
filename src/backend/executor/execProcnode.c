@@ -1211,9 +1211,9 @@ Exec_Jmp_Done:
 			if (subplanAtTopNestLevel)
 			{
 				ExecSquelchNode(subplanState->planstate);
+				ExecEagerFreeChildNodes(subplanState->planstate, subplanAtTopNestLevel);
+				ExecEagerFree(subplanState->planstate);
 			}
-			ExecEagerFreeChildNodes(subplanState->planstate, subplanAtTopNestLevel);
-			ExecEagerFree(subplanState->planstate);
 		}
 	}
 
