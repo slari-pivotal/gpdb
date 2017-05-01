@@ -43,10 +43,6 @@ def impl(context, ver):
     gphome = os.environ.get('GPHOME')
     _copy_nbu_lib_files(context=context, ver=ver, gphome=gphome)
 
-@given('the NetBackup "{ver}" libraries are loaded for GPHOME "{gphome}"')
-def impl(context, ver, gphome):
-    _copy_nbu_lib_files(context=context, ver=ver, gphome=gphome)
-
 @when('the user runs gpcrondump with -k option on database "{dbname}" using netbackup')
 def impl(context, dbname):
     datetime_fmt = datetime.now().strftime("%Y%m%d%H%M%S")
