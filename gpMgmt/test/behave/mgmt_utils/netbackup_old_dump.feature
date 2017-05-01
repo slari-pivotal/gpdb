@@ -14,7 +14,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 1 - Full Backup and Restore
-        Given the test is initialized with database "bkdb1"
+        Given the backup test is initialized with database "bkdb1"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb1" with data
         And there is a "ao" table "public.ao_table_comp" with compression "zlib" in "bkdb1" with data
@@ -40,7 +40,7 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 2 - Full Backup and Restore with --netbackup-block-size option
-        Given the test is initialized with database "bkdb2"
+        Given the backup test is initialized with database "bkdb2"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb2" with data
         And there is a "co" table "public.co_table" in "bkdb2" with data
@@ -52,7 +52,7 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 3 - Full Backup and Restore with --netbackup-keyword option
-        Given the test is initialized with database "bkdb3"
+        Given the backup test is initialized with database "bkdb3"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb3" with data
         And there is a "co" table "public.co_table" in "bkdb3" with data
@@ -63,7 +63,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 4 - Full Backup and Restore with --netbackup-block-size and --netbackup-keyword options
-        Given the test is initialized with database "bkdb4"
+        Given the backup test is initialized with database "bkdb4"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb4" with data
         And there is a "co" table "public.co_table" in "bkdb4" with data
@@ -75,7 +75,7 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 5 - Full Backup and Restore with -u option
-        Given the test is initialized with database "bkdb5"
+        Given the backup test is initialized with database "bkdb5"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb5" with data
         And there is a "co" table "public.co_table" in "bkdb5" with data
@@ -87,7 +87,7 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 6 - Full Backup with option -t and Restore
-        Given the test is initialized with database "bkdb6"
+        Given the backup test is initialized with database "bkdb6"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb6" with data
         And there is a "co" table "public.co_table" in "bkdb6" with data
@@ -101,7 +101,7 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 7 - Full Backup with option -T and Restore
-        Given the test is initialized with database "bkdb7"
+        Given the backup test is initialized with database "bkdb7"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb7" with data
         And there is a "ao" table "public.ao_table" in "bkdb7" with data
@@ -113,22 +113,22 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 8 - Full Backup with option -s and Restore
-        Given the test is initialized with database "bkdb8"
+        Given the backup test is initialized with database "bkdb8"
         And the netbackup params have been parsed
-        And there is schema "schema_heap, schema_ao" exists in "bkdb8"
+        And schema "schema_heap, schema_ao" exists in "bkdb8"
         And there is a "heap" table "schema_heap.heap_table" in "bkdb8" with data
         And there is a "ao" table "schema_ao.ao_table" in "bkdb8" with data
-        And there is a backupfile of tables "schema_heap.heap_table, schema_ao.ao_table" in "bkdb8" exists for validation
+        And a backup file of tables "schema_heap.heap_table, schema_ao.ao_table" in "bkdb8" exists for validation
         When the user runs "gpcrondump -a -x bkdb8 -s schema_heap --netbackup-block-size 2048" using netbackup
         Then gpcrondump should return a return code of 0
         And the timestamp from gpcrondump is stored
 
     @nbu_old_to_new_partI
     Scenario: 9 - Full Backup with option -t and Restore after TRUNCATE on filtered tables
-        Given the test is initialized with database "bkdb9"
+        Given the backup test is initialized with database "bkdb9"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb9" with data
-        And there is a backupfile of tables "public.heap_table" in "bkdb9" exists for validation
+        And a backup file of tables "public.heap_table" in "bkdb9" exists for validation
         When the user runs "gpcrondump -a -x bkdb9 -t public.heap_table --netbackup-block-size 2048" using netbackup
         Then gpcrondump should return a return code of 0
         And the timestamp from gpcrondump is stored
@@ -136,11 +136,11 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 10 - Full Backup with option --exclude-table-file and Restore
-        Given the test is initialized with database "bkdb10"
+        Given the backup test is initialized with database "bkdb10"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb10" with data
         And there is a "co" table "public.co_table" in "bkdb10" with data
-        And there is a backupfile of tables "public.co_table" in "bkdb10" exists for validation
+        And a backup file of tables "public.co_table" in "bkdb10" exists for validation
         And there is a file "exclude_file" with tables "public.ao_table"
         When the user runs "gpcrondump -a -x bkdb10 --exclude-table-file exclude_file --netbackup-block-size 2048" using netbackup
         Then gpcrondump should return a return code of 0
@@ -149,12 +149,12 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 11 - Full Backup with option --table-file and Restore
-        Given the test is initialized with database "bkdb11"
+        Given the backup test is initialized with database "bkdb11"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb11" with data
         And there is a "ao" table "public.ao_table" in "bkdb11" with data
         And there is a "co" table "public.co_table" in "bkdb11" with data
-        And there is a backupfile of tables "public.heap_table, public.ao_table" in "bkdb11" exists for validation
+        And a backup file of tables "public.heap_table, public.ao_table" in "bkdb11" exists for validation
         And there is a file "include_file" with tables "public.ao_table|public.heap_table"
         When the user runs "gpcrondump -a -x bkdb11 --table-file include_file --netbackup-block-size 2048" using netbackup
         Then gpcrondump should return a return code of 0
@@ -162,12 +162,12 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 12 - Schema only restore of full backup
-        Given the test is initialized with database "bkdb12"
+        Given the backup test is initialized with database "bkdb12"
         And the netbackup params have been parsed
-        And there is schema "s1" exists in "bkdb12"
+        And schema "s1" exists in "bkdb12"
         And there is a "ao" table "s1.ao_table" in "bkdb12" with data
         And there is a "co" table "s1.co_table" in "bkdb12" with data
-        And there is schema "s2" exists in "bkdb12"
+        And schema "s2" exists in "bkdb12"
         And there is a "ao" table "s2.ao_table" in "bkdb12" with data
         And there is a "co" table "s2.co_table" in "bkdb12" with data
         When the user runs "gpcrondump -a -x bkdb12" using netbackup
@@ -177,9 +177,9 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 13 - Full Backup and Restore without compression
-        Given the test is initialized with database "bkdb13"
+        Given the backup test is initialized with database "bkdb13"
         And the netbackup params have been parsed
-        And there is schema "s1" exists in "bkdb13"
+        And schema "s1" exists in "bkdb13"
         And there is a "ao" table "s1.ao_table" in "bkdb13" with data
         And there is a "co" table "s1.co_table" in "bkdb13" with data
         When the user runs "gpcrondump -a -x bkdb13 -z --netbackup-block-size 1024 --netbackup-keyword foo" using netbackup
@@ -190,7 +190,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 14 - gpdbrestore with --table-file option
-        Given the test is initialized with database "bkdb14"
+        Given the backup test is initialized with database "bkdb14"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb14" with data
         And there is a "co" table "public.co_table" in "bkdb14" with data
@@ -202,7 +202,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 15 - Multiple full backup and restore from first full backup
-        Given the test is initialized with database "bkdb15"
+        Given the backup test is initialized with database "bkdb15"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb15" with data
         And there is a "ao" table "public.ao_table" in "bkdb15" with data
@@ -217,7 +217,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 16 - gpdbrestore with -T option
-        Given the test is initialized with database "bkdb16"
+        Given the backup test is initialized with database "bkdb16"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb16" with data
         And there is a "ao" table "public.ao_table" in "bkdb16" with data
@@ -229,7 +229,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 17 - gpdbrestore list_backup option with full timestamp
-        Given the test is initialized with database "bkdb17"
+        Given the backup test is initialized with database "bkdb17"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb17" with data
         When the user runs "gpcrondump -a -x bkdb17 --netbackup-block-size 2048" using netbackup
@@ -238,7 +238,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 18 - gpdbrestore list_backup option with incremental backup
-        Given the test is initialized with database "bkdb18"
+        Given the backup test is initialized with database "bkdb18"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb18" with data
         And there is a "ao" table "public.ao_table" in "bkdb18" with data
@@ -259,7 +259,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 19 - User specified timestamp key for dump
-        Given the test is initialized with database "bkdb19"
+        Given the backup test is initialized with database "bkdb19"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb19" with data
         And there is a "ao" table "public.ao_index_table" in "bkdb19" with data
@@ -274,12 +274,12 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 20 - Full Backup and Restore with --prefix option
-        Given the test is initialized with database "bkdb20"
+        Given the backup test is initialized with database "bkdb20"
         And the netbackup params have been parsed
         And the prefix "foo" is stored
         And there is a "heap" table "public.heap_table" in "bkdb20" with data
         And there is a "ao" partition table "public.ao_part_table" in "bkdb20" with data
-        And there is a backupfile of tables "public.heap_table, public.ao_part_table" in "bkdb20" exists for validation
+        And a backup file of tables "public.heap_table, public.ao_part_table" in "bkdb20" exists for validation
         When the user runs "gpcrondump -a -x bkdb20 --prefix=foo --netbackup-block-size 2048" using netbackup
         Then gpcrondump should return a return code of 0
         And the timestamp from gpcrondump is stored
@@ -289,12 +289,12 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 21 - Full Backup and Restore with -u and --prefix option
-        Given the test is initialized with database "bkdb21"
+        Given the backup test is initialized with database "bkdb21"
         And the netbackup params have been parsed
         And the prefix "foo" is stored
         And there is a "heap" table "public.heap_table" in "bkdb21" with data
         And there is a "ao" table "public.ao_table" in "bkdb21" with data
-        And there is a backupfile of tables "public.heap_table, public.ao_table" in "bkdb21" exists for validation
+        And a backup file of tables "public.heap_table, public.ao_table" in "bkdb21" exists for validation
         When the user runs "gpcrondump -a -x bkdb21 --prefix=foo -u /tmp --netbackup-block-size 2048" using netbackup
         Then gpcrondump should return a return code of 0
         And the subdir from gpcrondump is stored
@@ -305,7 +305,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 22 - Restore database without prefix for a dump with prefix
-        Given the test is initialized with database "bkdb22"
+        Given the backup test is initialized with database "bkdb22"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb22" with data
         And there is a "ao" table "public.ao_index_table" in "bkdb22" with data
@@ -316,7 +316,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 23 - Full Backup and Restore of external and ao table
-        Given the test is initialized with database "bkdb23"
+        Given the backup test is initialized with database "bkdb23"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb23" with data
         And there is a "ao" table "public.ao_table" in "bkdb23" with data
@@ -336,7 +336,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 24 - Full Backup and Restore filtering tables with post data objects
-        Given the test is initialized with database "bkdb24"
+        Given the backup test is initialized with database "bkdb24"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb24" with data
         And there is a "heap" table "public.heap_table_ex" in "bkdb24" with data
@@ -363,7 +363,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 25 - Full Backup and Restore dropped database filtering tables with post data objects
-        Given the test is initialized with database "bkdb25"
+        Given the backup test is initialized with database "bkdb25"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb25" with data
         And there is a "heap" table "public.heap_index_table" in "bkdb25" with data
@@ -386,7 +386,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 26 - Full backup and restore for table names with multibyte (chinese) characters
-        Given the test is initialized with database "bkdb26"
+        Given the backup test is initialized with database "bkdb26"
         And the netbackup params have been parsed
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/create_multi_byte_char_table_name.sql bkdb26"
         When the user runs "gpcrondump -a -x bkdb26 --netbackup-block-size 1024" using netbackup
@@ -395,7 +395,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 27 - Full Backup with option -T and Restore with exactly 1000 partitions
-        Given the test is initialized with database "bkdb27"
+        Given the backup test is initialized with database "bkdb27"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb27" with data
         And there is a "ao" table "public.ao_part_table" in "bkdb27" having "1000" partitions
@@ -406,7 +406,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 28 - Single table restore with shared sequence across multiple tables
-        Given the test is initialized with database "bkdb28"
+        Given the backup test is initialized with database "bkdb28"
         And the netbackup params have been parsed
         And there is a sequence "shared_seq" in "bkdb28"
         And the user runs "psql -c """CREATE TABLE table1 (column1 INT4 DEFAULT nextval('shared_seq') NOT NULL, price NUMERIC);""" bkdb28"
@@ -426,11 +426,11 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 29 - Full backup and restore using gpcrondump with pg_class lock
-        Given the test is initialized with database "bkdb29"
+        Given the backup test is initialized with database "bkdb29"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" with compression "None" in "bkdb29" with data and 1000000 rows
         And there is a "ao" partition table "public.ao_part_table" in "bkdb29" with data
-        And there is a backupfile of tables "public.heap_table, public.ao_part_table" in "bkdb29" exists for validation
+        And a backup file of tables "public.heap_table, public.ao_part_table" in "bkdb29" exists for validation
         When the user runs the "gpcrondump -a -x bkdb29" in a worker pool "w1" using netbackup
         And this test sleeps for "2" seconds
         And the "gpcrondump" has a lock on the pg_class table in "bkdb29"
@@ -441,7 +441,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 30 - Restore -T for full dump should restore metadata/postdata objects for tablenames with English and multibyte (chinese) characters
-        Given the test is initialized with database "bkdb30"
+        Given the backup test is initialized with database "bkdb30"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_index_table" with index "ao_index" compression "None" in "bkdb30" with data
         And there is a "co" table "public.co_index_table" with index "co_index" compression "None" in "bkdb30" with data
@@ -455,13 +455,13 @@ Feature: NetBackup Integration with GPDB
         And the timestamp from gpcrondump is stored
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/describe_multi_byte_char.sql bkdb30 > /tmp/describe_multi_byte_char_before"
         And the user runs "psql -c '\d public.ao_index_table' bkdb30 > /tmp/describe_ao_index_table_before"
-        When there is a backupfile of tables "ao_index_table, co_index_table, heap_index_table" in "bkdb30" exists for validation
+        When a backup file of tables "ao_index_table, co_index_table, heap_index_table" in "bkdb30" exists for validation
         And table "public.ao_index_table" is dropped in "bkdb30"
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/drop_table_with_multi_byte_char.sql bkdb30"
 
     @nbu_old_to_new_partI
     Scenario: 31 - Full Backup and Restore with the master dump file missing
-        Given the test is initialized with database "bkdb31"
+        Given the backup test is initialized with database "bkdb31"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb31" with data
         And there is a "ao" partition table "public.ao_part_table" in "bkdb31" with data
@@ -472,7 +472,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 32 - Full Backup and Restore with the master dump file missing without compression
-        Given the test is initialized with database "bkdb32"
+        Given the backup test is initialized with database "bkdb32"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb32" with data
         And there is a "ao" partition table "public.ao_part_table" in "bkdb32" with data
@@ -483,7 +483,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 33 - Uppercase Database Name Full Backup and Restore using timestamp
-        Given the test is initialized with database "bkdb33"
+        Given the backup test is initialized with database "bkdb33"
         And the netbackup params have been parsed
         And database "TESTING" is dropped and recreated
         And there is a "heap" table "public.heap_table" in "TESTING" with data
@@ -496,7 +496,7 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 34 - Verify that metadata files get backed up to NetBackup server
-        Given the test is initialized with database "bkdb34"
+        Given the backup test is initialized with database "bkdb34"
         And the netbackup params have been parsed
         And there are no report files in "master_data_directory"
         And there are no status files in "segment_data_directory"
@@ -515,7 +515,7 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partI
     Scenario: 35 - Basic Incremental Backup and Restore with NBU
-        Given the test is initialized with database "bkdb35"
+        Given the backup test is initialized with database "bkdb35"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb35" with data
         And there is a "ao" table "public.ao_table" in "bkdb35" with data
@@ -529,7 +529,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partI
     Scenario: 36 - Simple Plan File Test
-        Given the test is initialized with database "bkdb36"
+        Given the backup test is initialized with database "bkdb36"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb36" with data
         And there is a "heap" partition table "public.heap_part_table" in "bkdb36" with data
@@ -565,7 +565,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 1 - Full Backup and Restore
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "68" tables in "bkdb1" is validated after restore
 
@@ -574,7 +574,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 2 - Full Backup and Restore with --netbackup-block-size option
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options " --netbackup-block-size 1024 " using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options " --netbackup-block-size 1024 " using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "2" tables in "bkdb2" is validated after restore
 
@@ -583,7 +583,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 3 - Full Backup and Restore with --netbackup-keyword option
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "2" tables in "bkdb3" is validated after restore
 
@@ -591,7 +591,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 4 - Full Backup and Restore with --netbackup-block-size and --netbackup-keyword options
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options " --netbackup-block-size 4096 " using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options " --netbackup-block-size 4096 " using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "2" tables in "bkdb4" is validated after restore
 
@@ -600,7 +600,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 5 - Full Backup and Restore with -u option
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options " -u /tmp " using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options " -u /tmp " using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "2" tables in "bkdb5" is validated after restore
 
@@ -609,7 +609,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 6 - Full Backup with option -t and Restore
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options " " without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options " " using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "3" tables in "bkdb6" is validated after restore
 
@@ -618,7 +618,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 7 - Full Backup with option -T and Restore
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "2" tables in "bkdb7" is validated after restore
         And verify that there is no table "public.heap_table" in "bkdb7"
@@ -627,7 +627,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 8 - Full Backup with option -s and Restore
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "schema_heap.heap_table" in "bkdb8" with data
         And verify that there is no table "schema_ao.ao_table" in "bkdb8"
@@ -636,7 +636,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 9 - Full Backup with option -t and Restore after TRUNCATE on filtered tables
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "--netbackup-block-size 2048" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--netbackup-block-size 2048" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb9" with data
 
@@ -644,7 +644,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 10 - Full Backup with option --exclude-table-file and Restore
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "co" table "public.co_table" in "bkdb10" with data
         And verify that there is no table "public.ao_table" in "bkdb10"
@@ -654,7 +654,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 11 - Full Backup with option --table-file and Restore
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb11" with data
         And verify that there is a "ao" table "public.ao_table" in "bkdb11" with data
@@ -665,7 +665,7 @@ Feature: NetBackup Integration with GPDB
         Given the netbackup params have been parsed
         And read old timestamp from json
         When the table names in "bkdb12" is stored
-        And the user runs gpdbrestore with the stored json timestamp and options " -S s1" using netbackup
+        And the user runs gpdbrestore -e with the stored timestamp and options " -S s1" using netbackup
         Then gpdbrestore should return a return code of 0
         And tables names should be identical to stored table names in "bkdb12" except "public.gpcrondump_history,s2.ao_table,s2.co_table"
 
@@ -674,7 +674,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 13 - Full Backup and Restore without compression
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "2" tables in "bkdb13" is validated after restore
 
@@ -683,7 +683,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 14 - gpdbrestore with --table-file option
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "--table-file /tmp/table_file_foo" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "--table-file /tmp/table_file_foo" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "2" tables in "bkdb14" is validated after restore
         And verify that the tuple count of all appendonly tables are consistent in "bkdb14"
@@ -692,7 +692,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 15 - Multiple full backup and restore from first full backup
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "3" tables in "bkdb15" is validated after restore
         And verify that the tuple count of all appendonly tables are consistent in "bkdb15"
@@ -701,7 +701,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 16 - gpdbrestore with -T option
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "-T public.ao_table -a --netbackup-block-size 2048" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "-T public.ao_table -a --netbackup-block-size 2048" using netbackup
         And gpdbrestore should return a return code of 0
         Then verify that there is no table "heap_table" in "bkdb16"
         And verify that there is a "ao" table "public.ao_table" in "bkdb16" with data
@@ -712,7 +712,7 @@ Feature: NetBackup Integration with GPDB
         And read old timestamp from json
         When the user runs gpdbrestore with the stored timestamp to print the backup set with options "--netbackup-block-size 2048" using netbackup
         Then gpdbrestore should return a return code of 2
-        And gpdbrestore should print --list-backup is not supported for restore with full timestamps to stdout
+        And gpdbrestore should print "--list-backup is not supported for restore with full timestamps" to stdout
 
     @nbu_old_to_new_partI
     Scenario: 18 - gpdbrestore list_backup option with incremental backup
@@ -732,7 +732,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 19 - User specified timestamp key for dump
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "2" tables in "bkdb19" is validated after restore
         And verify that the tuple count of all appendonly tables are consistent in "bkdb19"
@@ -742,7 +742,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 20 - Full Backup and Restore with --prefix option
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "--prefix=foo --netbackup-block-size 2048" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "--prefix=foo --netbackup-block-size 2048" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb20" with data
         And verify that there is a "ao" table "public.ao_part_table" in "bkdb20" with data
@@ -751,7 +751,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 21 - Full Backup and Restore with -u and --prefix option
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "-u /tmp --prefix=foo --netbackup-block-size 2048" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "-u /tmp --prefix=foo --netbackup-block-size 2048" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb21" with data
         And verify that there is a "ao" table "public.ao_table" in "bkdb21" with data
@@ -760,15 +760,15 @@ Feature: NetBackup Integration with GPDB
     Scenario: 22 - Restore database without prefix for a dump with prefix
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 2
-        And gpdbrestore should print No object matched the specified predicate to stdout
+        And gpdbrestore should print "No object matched the specified predicate" to stdout
 
     @nbu_old_to_new_partI
     Scenario: 23 - Full Backup and Restore of external and ao table
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "--table-file restore_file23 --netbackup-block-size 2048" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--table-file restore_file23 --netbackup-block-size 2048" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "ao" table "public.ao_table" in "bkdb23" with data
         And verify that there is a "external" table "public.ext_tab" in "bkdb23" with data
@@ -777,14 +777,14 @@ Feature: NetBackup Integration with GPDB
         And verify that there is no table "public.co_table_ex" in "bkdb23"
         And verify that there is no view "vista" in "bkdb23"
         And the user runs "psql -c '\z' bkdb23"
-        And psql should print foo_user=a/ to stdout
+        And psql should print "foo_user=a/" to stdout
         And verify that the data of "2" tables in "bkdb23" is validated after restore
 
     @nbu_old_to_new_partI
     Scenario: 24 - Full Backup and Restore filtering tables with post data objects
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "--table-file restore_file24 --netbackup-block-size 4096" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--table-file restore_file24 --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "ao" table "public.ao_table" in "bkdb24" with data
         And verify that there is a "ao" table "public.ao_index_table" in "bkdb24" with data
@@ -793,24 +793,24 @@ Feature: NetBackup Integration with GPDB
         And verify that there is a "co" table "public.co_table_ex" in "bkdb24" with data
         And verify that there is a "co" table "public.co_index_table" in "bkdb24" with data
         And the user runs "psql -c '\d public.ao_index_table' bkdb24"
-        And psql should print \"bitmap_ao_index\" bitmap \(column3\) to stdout
-        And psql should print \"btree_ao_index\" btree \(column1\) to stdout
+        And psql should print "\"bitmap_ao_index\" bitmap \(column3\)" to stdout
+        And psql should print "\"btree_ao_index\" btree \(column1\)" to stdout
         And the user runs "psql -c '\d public.heap_table' bkdb24"
-        And psql should print \"heap_table_pkey\" PRIMARY KEY, btree \(column1, column2, column3\) to stdout
-        And psql should print heap_trigger AFTER INSERT OR DELETE OR UPDATE ON heap_table FOR EACH STATEMENT EXECUTE PROCEDURE heap_trigger_func\(\) to stdout
-        And psql should print heap_co_rule AS\n.*ON INSERT TO heap_table\n.*WHERE new\.column1 = 100 DO INSTEAD  INSERT INTO co_table_ex \(column1, column2, column3\) to stdout
-        And psql should print \"heap_const_1\" FOREIGN KEY \(column1, column2, column3\) REFERENCES heap_table_ex\(column1, column2, column3\) to stdout
+        And psql should print "\"heap_table_pkey\" PRIMARY KEY, btree \(column1, column2, column3\)" to stdout
+        And psql should print "heap_trigger AFTER INSERT OR DELETE OR UPDATE ON heap_table FOR EACH STATEMENT EXECUTE PROCEDURE heap_trigger_func\(\)" to stdout
+        And psql should print "heap_co_rule AS\n.*ON INSERT TO heap_table\n.*WHERE new\.column1 = 100 DO INSTEAD  INSERT INTO co_table_ex \(column1, column2, column3\)" to stdout
+        And psql should print "\"heap_const_1\" FOREIGN KEY \(column1, column2, column3\) REFERENCES heap_table_ex\(column1, column2, column3\)" to stdout
         And the user runs "psql -c '\d public.co_index_table' bkdb24"
-        And psql should not print bitmap_co_index to stdout
+        And psql should not print "bitmap_co_index" to stdout
         And the user runs "psql -c '\d public.heap_table_ex' bkdb24"
-        And psql should not print heap_ex_trigger to stdout
+        And psql should not print "heap_ex_trigger" to stdout
         And verify that the data of "7" tables in "bkdb24" is validated after restore
 
     @nbu_old_to_new_partI
     Scenario: 25 - Full Backup and Restore dropped database filtering tables with post data objects
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "--table-file restore_file25 --netbackup-block-size 4096" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--table-file restore_file25 --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "ao" table "public.ao_table" in "bkdb25" with data
         And verify that there is a "ao" table "public.ao_index_table" in "bkdb25" with data
@@ -819,29 +819,29 @@ Feature: NetBackup Integration with GPDB
         And verify that there is no table "public.co_table_ex" in "bkdb25"
         And verify that there is no table "public.co_index_table" in "bkdb25"
         And the user runs "psql -c '\d public.ao_index_table' bkdb25"
-        And psql should print \"bitmap_ao_index\" bitmap \(column3\) to stdout
-        And psql should print \"btree_ao_index\" btree \(column1\) to stdout
+        And psql should print "\"bitmap_ao_index\" bitmap \(column3\)" to stdout
+        And psql should print "\"btree_ao_index\" btree \(column1\)" to stdout
         And the user runs "psql -c '\d public.heap_table' bkdb25"
-        And psql should print \"heap_table_pkey\" PRIMARY KEY, btree \(column1, column2, column3\) to stdout
-        And psql should print heap_trigger AFTER INSERT OR DELETE OR UPDATE ON heap_table FOR EACH STATEMENT EXECUTE PROCEDURE heap_trigger_func\(\) to stdout
-        And psql should print heap_ao_rule AS\n.*ON INSERT TO heap_table\n.*WHERE new\.column1 = 100 DO INSTEAD  INSERT INTO ao_table \(column1, column2, column3\) to stdout
-        And psql should print \"heap_const_1\" FOREIGN KEY \(column1, column2, column3\) REFERENCES heap_index_table\(column1, column2, column3\) to stdout
+        And psql should print "\"heap_table_pkey\" PRIMARY KEY, btree \(column1, column2, column3\)" to stdout
+        And psql should print "heap_trigger AFTER INSERT OR DELETE OR UPDATE ON heap_table FOR EACH STATEMENT EXECUTE PROCEDURE heap_trigger_func\(\)" to stdout
+        And psql should print "heap_ao_rule AS\n.*ON INSERT TO heap_table\n.*WHERE new\.column1 = 100 DO INSTEAD  INSERT INTO ao_table \(column1, column2, column3\)" to stdout
+        And psql should print "\"heap_const_1\" FOREIGN KEY \(column1, column2, column3\) REFERENCES heap_index_table\(column1, column2, column3\)" to stdout
         And verify that the data of "4" tables in "bkdb25" is validated after restore
 
     @nbu_old_to_new_partI
     Scenario: 26 - Full backup and restore for table names with multibyte (chinese) characters
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         When the user runs "psql -f test/behave/mgmt_utils/steps/data/select_multi_byte_char.sql bkdb26"
-        Then psql should print 1000 to stdout
+        Then psql should print "1000" to stdout
 
     @nbu_old_to_new_partI
     Scenario: 27 - Full Backup with option -T and Restore with exactly 1000 partitions
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "1" tables in "bkdb27" is validated after restore
 
@@ -849,7 +849,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 28 - Single table restore with shared sequence across multiple tables
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "-T public.table1 --netbackup-block-size 4096" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "-T public.table1 --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.table1" in "bkdb28" with data
         And the user runs "psql -c 'INSERT INTO table2 (price) SELECT * FROM generate_series(2020,2029)' bkdb28"
@@ -859,7 +859,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 29 - Full backup and restore using gpcrondump with pg_class lock
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb29" with data
         And verify that there is a "ao" table "public.ao_part_table" in "bkdb29" with data
@@ -868,10 +868,10 @@ Feature: NetBackup Integration with GPDB
     Scenario: 30 - Restore -T for full dump should restore metadata/postdata objects for tablenames with English and multibyte (chinese) characters
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options "--table-file test/behave/mgmt_utils/steps/data/include_tables_with_metadata_postdata --netbackup-block-size 4096" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--table-file test/behave/mgmt_utils/steps/data/include_tables_with_metadata_postdata --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         When the user runs "psql -f test/behave/mgmt_utils/steps/data/select_multi_byte_char_tables.sql bkdb30"
-        Then psql should print 1000 to stdout 4 times
+        Then psql should print "1000" to stdout 4 times
         And verify that there is a "ao" table "ao_index_table" in "bkdb30" with data
         And verify that there is a "co" table "co_index_table" in "bkdb30" with data
         And verify that there is a "heap" table "heap_index_table" in "bkdb30" with data
@@ -888,25 +888,25 @@ Feature: NetBackup Integration with GPDB
     Scenario: 31 - Full Backup and Restore with the master dump file missing
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
-        And gpdbrestore should print Backup for given timestamp was performed using NetBackup. Querying NetBackup server to check for the dump file. to stdout
+        And gpdbrestore should print "Backup for given timestamp was performed using NetBackup. Querying NetBackup server to check for the dump file." to stdout
 
     @nbu_old_to_new_partI
     Scenario: 32 - Full Backup and Restore with the master dump file missing without compression
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
-        And gpdbrestore should print Backup for given timestamp was performed using NetBackup. Querying NetBackup server to check for the dump file. to stdout
+        And gpdbrestore should print "Backup for given timestamp was performed using NetBackup. Querying NetBackup server to check for the dump file." to stdout
 
     @nbu_old_to_new_partI
     Scenario: 33 - Uppercase Database Name Full Backup and Restore using timestamp
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
-        And gpdbestore should not print Issue with analyze of to stdout
+        And gpdbrestore should not print "Issue with analyze of" to stdout
         And verify that there is a "heap" table "public.heap_table" in "TESTING" with data
         And verify that there is a "ao" table "public.ao_part_table" in "TESTING" with data
 
@@ -915,7 +915,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 34 - Verify that metadata files get backed up to NetBackup server
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb34" with data
         And verify that there is a "ao" table "public.ao_part_table" in "bkdb34" with data
@@ -925,7 +925,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 35 - Basic Incremental Backup and Restore with NBU
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored json timestamp and options " --netbackup-block-size 4096 " using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options " --netbackup-block-size 4096 " using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb35" with data
         And verify that there is a "ao" table "public.ao_table" in "bkdb35" with data
@@ -934,7 +934,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 36 - Simple Plan File Test
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         And gpdbrestore should return a return code of 0
         Then "plan" file should be created under " "
         And the plan file is validated against "data/plan1"
@@ -948,9 +948,9 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 37 - Multiple Incremental backup and restore
-        Given the test is initialized with database "bkdb37"
+        Given the backup test is initialized with database "bkdb37"
         And the netbackup params have been parsed
-        And there is schema "testschema" exists in "bkdb37"
+        And schema "testschema" exists in "bkdb37"
         And there is a "heap" table "public.heap_table" in "bkdb37" with data
         And there is a "heap" partition table "public.heap_part_table" in "bkdb37" with data
         And there is a "heap" table "testschema.heap_table" in "bkdb37" with data
@@ -986,9 +986,9 @@ Feature: NetBackup Integration with GPDB
     @nbusmoke
     @nbu_old_to_new_partII
     Scenario: 38 - Non compressed incremental backup
-        Given the test is initialized with database "bkdb38"
+        Given the backup test is initialized with database "bkdb38"
         And the netbackup params have been parsed
-        And there is schema "testschema" exists in "bkdb38"
+        And schema "testschema" exists in "bkdb38"
         And there is a "heap" table "testschema.heap_table" in "bkdb38" with data
         And there is a "ao" table "testschema.ao_table" in "bkdb38" with data
         And there is a "co" partition table "testschema.co_part_table" in "bkdb38" with data
@@ -1014,7 +1014,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 39 - gpdbrestore -u option with incremental backup timestamp
-        Given the test is initialized with database "bkdb39"
+        Given the backup test is initialized with database "bkdb39"
         And the netbackup params have been parsed
         And there is a "ao" table "public.ao_table" in "bkdb39" with data
         And there is a "co" table "public.co_table" in "bkdb39" with data
@@ -1028,7 +1028,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 40 - Incremental backup with -T option
-        Given the test is initialized with database "bkdb40"
+        Given the backup test is initialized with database "bkdb40"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb40" with data
         And there is a "ao" partition table "public.ao_part_table" in "bkdb40" with data
@@ -1043,7 +1043,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 41 - Dirty File Scale Test
-        Given the test is initialized with database "bkdb41"
+        Given the backup test is initialized with database "bkdb41"
         And the netbackup params have been parsed
         And there are "240" "heap" tables "public.heap_table" with data in "bkdb41"
         And there are "10" "ao" tables "public.ao_table" with data in "bkdb41"
@@ -1060,7 +1060,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 42 - Dirty File Scale Test for partitions
-        Given the test is initialized with database "bkdb42"
+        Given the backup test is initialized with database "bkdb42"
         And the netbackup params have been parsed
         And there are "240" "heap" tables "public.heap_table" with data in "bkdb42"
         And there is a "ao" partition table "public.ao_table" in "bkdb42" with data
@@ -1079,7 +1079,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 43 - Incremental table filter gpdbrestore
-        Given the test is initialized with database "bkdb43"
+        Given the backup test is initialized with database "bkdb43"
         And the netbackup params have been parsed
         And there are "2" "heap" tables "public.heap_table" with data in "bkdb43"
         And there is a "ao" partition table "public.ao_part_table" in "bkdb43" with data
@@ -1101,7 +1101,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 44 - Incremental table filter gpdbrestore with noplan option
-        Given the test is initialized with database "bkdb44"
+        Given the backup test is initialized with database "bkdb44"
         And the netbackup params have been parsed
         And there are "2" "heap" tables "public.heap_table" with data in "bkdb44"
         And there is a "ao" partition table "public.ao_part_table" in "bkdb44" with data
@@ -1121,7 +1121,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 45 - Multiple full and incrementals with and without prefix
-        Given the test is initialized with database "bkdb45"
+        Given the backup test is initialized with database "bkdb45"
         And the netbackup params have been parsed
         And the prefix "foo" is stored
         And there is a list to store the incremental backup timestamps
@@ -1144,7 +1144,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 46 - Incremental Backup and Restore with --prefix and -u options
-        Given the test is initialized with database "bkdb46"
+        Given the backup test is initialized with database "bkdb46"
         And the netbackup params have been parsed
         And the prefix "foo" is stored
         And there is a list to store the incremental backup timestamps
@@ -1164,7 +1164,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 47 - Incremental Backup with table filter on Full Backup should update the tracker files
-        Given the test is initialized with database "bkdb47"
+        Given the backup test is initialized with database "bkdb47"
         And the netbackup params have been parsed
         And the prefix "foo" is stored
         And there is a list to store the incremental backup timestamps
@@ -1194,9 +1194,9 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 48 - Incremental Backup and Restore of specified post data objects
-        Given the test is initialized with database "bkdb48"
+        Given the backup test is initialized with database "bkdb48"
         And the netbackup params have been parsed
-        And there is schema "testschema" exists in "bkdb48"
+        And schema "testschema" exists in "bkdb48"
         And there is a list to store the incremental backup timestamps
         And there is a "heap" table "testschema.heap_table" in "bkdb48" with data
         And there is a "heap" partition table "public.heap_part_table" in "bkdb48" with data
@@ -1233,9 +1233,9 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 49 - Restore -T for incremental dump should restore metadata/postdata objects for tablenames with English and multibyte (chinese) characters
-        Given the test is initialized with database "bkdb49"
+        Given the backup test is initialized with database "bkdb49"
         And the netbackup params have been parsed
-        And there is schema "schema_heap" exists in "bkdb49"
+        And schema "schema_heap" exists in "bkdb49"
         And there is a "heap" table "schema_heap.heap_table" in "bkdb49" with data
         And there is a "ao" table "public.ao_index_table" with index "ao_index" compression "None" in "bkdb49" with data
         And there is a "co" table "public.co_index_table" with index "co_index" compression "None" in "bkdb49" with data
@@ -1253,13 +1253,13 @@ Feature: NetBackup Integration with GPDB
         And the timestamp from gpcrondump is stored
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/describe_multi_byte_char.sql bkdb49 > /tmp/describe_multi_byte_char_before"
         And the user runs "psql -c '\d public.ao_index_table' bkdb49 > /tmp/describe_ao_index_table_before"
-        When there is a backupfile of tables "ao_index_table, co_index_table, heap_index_table" in "bkdb49" exists for validation
+        When a backup file of tables "ao_index_table, co_index_table, heap_index_table" in "bkdb49" exists for validation
         And table "public.ao_index_table" is dropped in "bkdb49"
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/drop_table_with_multi_byte_char.sql bkdb49"
 
     @nbu_old_to_new_partII
     Scenario: 50 - Incremental Backup with pre-content_id
-        Given the test is initialized with database "bkdb50"
+        Given the backup test is initialized with database "bkdb50"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb50" with data
         And there is a "ao" table "public.ao_table" in "bkdb50" with data
@@ -1269,7 +1269,7 @@ Feature: NetBackup Integration with GPDB
 
     @nbu_old_to_new_partII
     Scenario: 51 - Incremental with contentid after pre-contentid incremental
-        Given the test is initialized with database "bkdb51"
+        Given the backup test is initialized with database "bkdb51"
         And the netbackup params have been parsed
         And there is a "heap" table "public.heap_table" in "bkdb51" with data
         And there is a "ao" table "public.ao_table" in "bkdb51" with data
@@ -1292,7 +1292,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 37 - Multiple Incremental backup and restore
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is no table "testschema.heap_table" in "bkdb37"
         And verify that the data of "60" tables in "bkdb37" is validated after restore
@@ -1304,7 +1304,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 38 - Non compressed incremental backup
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is no table "testschema.heap_table" in "bkdb38"
         And verify that the data of "11" tables in "bkdb38" is validated after restore
@@ -1315,7 +1315,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 39 - gpdbrestore -u option with incremental backup timestamp
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp and options "-u /tmp --verbose" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "-u /tmp --verbose" using netbackup
         And gpdbrestore should return a return code of 0
         Then verify that the data of "3" tables in "bkdb39" is validated after restore
         And verify that the tuple count of all appendonly tables are consistent in "bkdb39"
@@ -1324,7 +1324,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 40 - Incremental backup with -T option
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp and options "-T public.ao_index_table" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "-T public.ao_index_table" using netbackup
         And gpdbrestore should return a return code of 0
         Then verify that there is no table "ao_part_table" in "bkdb40"
         And verify that there is no table "public.heap_table" in "bkdb40"
@@ -1336,7 +1336,7 @@ Feature: NetBackup Integration with GPDB
         And read old timestamp from json
         When the user runs gp_restore with the the stored timestamp and subdir for metadata only in "bkdb41" using netbackup
         Then gp_restore should return a return code of 0
-        When the user runs gpdbrestore with the stored timestamp and options "--noplan" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--noplan" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that tables "public.ao_table_3, public.ao_table_4, public.ao_table_5, public.ao_table_6" in "bkdb41" has no rows
         And verify that tables "public.ao_table_7, public.ao_table_8, public.ao_table_9, public.ao_table_10" in "bkdb41" has no rows
@@ -1348,7 +1348,7 @@ Feature: NetBackup Integration with GPDB
         And read old timestamp from json
         When the user runs gp_restore with the the stored timestamp and subdir for metadata only in "bkdb42" using netbackup
         Then gp_restore should return a return code of 0
-        When the user runs gpdbrestore with the stored timestamp and options "--noplan" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--noplan" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that tables "public.ao_table_1_prt_p1_2_prt_3, public.ao_table_1_prt_p2_2_prt_1" in "bkdb42" has no rows
         And verify that tables "public.ao_table_1_prt_p2_2_prt_2, public.ao_table_1_prt_p2_2_prt_3" in "bkdb42" has no rows
@@ -1358,7 +1358,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 43 - Incremental table filter gpdbrestore
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp and options "-T public.ao_part_table --netbackup-block-size 4096" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "-T public.ao_part_table --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is no table "public.ao_part_table1_1_prt_p1_2_prt_3" in "bkdb43"
         And verify that there is no table "public.ao_part_table1_1_prt_p2_2_prt_3" in "bkdb43"
@@ -1375,7 +1375,7 @@ Feature: NetBackup Integration with GPDB
         And read old timestamp from json
         When the user runs gp_restore with the the stored timestamp and subdir for metadata only in "bkdb44" using netbackup
         Then gp_restore should return a return code of 0
-        When the user runs gpdbrestore with the stored timestamp and options "-T public.ao_part_table -T public.heap_table_1 --noplan" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "-T public.ao_part_table -T public.heap_table_1 --noplan" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that tables "public.ao_part_table_1_prt_p1_2_prt_3, public.ao_part_table_1_prt_p2_2_prt_3" in "bkdb44" has no rows
         And verify that tables "public.ao_part_table_1_prt_p1_2_prt_2, public.ao_part_table_1_prt_p2_2_prt_2" in "bkdb44" has no rows
@@ -1389,7 +1389,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 45 - Multiple full and incrementals with and without prefix
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp and options "--prefix=foo --netbackup-block-size 4096" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "--prefix=foo --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "12" tables in "bkdb45" is validated after restore
 
@@ -1397,7 +1397,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 46 - Incremental Backup and Restore with --prefix and -u options
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp and options "--prefix=foo -u /tmp --netbackup-block-size 4096" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "--prefix=foo -u /tmp --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that the data of "12" tables in "bkdb46" is validated after restore
 
@@ -1405,7 +1405,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 47 - Incremental Backup with table filter on Full Backup should update the tracker files
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp and options "--prefix=foo --netbackup-block-size 4096" using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options "--prefix=foo --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb47" with data
         And verify that there is a "ao" table "public.ao_index_table" in "bkdb47" with data
@@ -1416,7 +1416,7 @@ Feature: NetBackup Integration with GPDB
     Scenario: 48 - Incremental Backup and Restore of specified post data objects
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp and options "--table-file restore_file48 --netbackup-block-size 4096" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--table-file restore_file48 --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "testschema.heap_table" in "bkdb48" with data
         And verify that there is a "ao" table "testschema.ao_table" in "bkdb48" with data
@@ -1430,21 +1430,21 @@ Feature: NetBackup Integration with GPDB
         And verify that there is a "heap" table "public.heap_part_table" in "bkdb48" with data
         And verify that there is a "co" table "public.co_index_table" in "bkdb48" with data
         And the user runs "psql -c '\d testschema.heap_table' bkdb48"
-        And psql should print \"heap_table_pkey\" PRIMARY KEY, btree \(column1, column2, column3\) to stdout
-        And psql should print heap_co_rule AS\n.*ON INSERT TO testschema.heap_table\n.*WHERE new\.column1 = 100 DO INSTEAD  INSERT INTO testschema.co_table_ex \(column1, column2, column3\) to stdout
-        And psql should print \"heap_const_1\" FOREIGN KEY \(column1, column2, column3\) REFERENCES heap_table_ex\(column1, column2, column3\) to stdout
+        And psql should print "\"heap_table_pkey\" PRIMARY KEY, btree \(column1, column2, column3\)" to stdout
+        And psql should print "heap_co_rule AS\n.*ON INSERT TO testschema.heap_table\n.*WHERE new\.column1 = 100 DO INSTEAD  INSERT INTO testschema.co_table_ex \(column1, column2, column3\)" to stdout
+        And psql should print "\"heap_const_1\" FOREIGN KEY \(column1, column2, column3\) REFERENCES heap_table_ex\(column1, column2, column3\)" to stdout
         And the user runs "psql -c '\d public.co_index_table' bkdb48"
-        And psql should not print bitmap_co_index to stdout
+        And psql should not print "bitmap_co_index" to stdout
         And verify that the data of "52" tables in "bkdb48" is validated after restore
 
     @nbu_old_to_new_partII
     Scenario: 49 - Restore -T for incremental dump should restore metadata/postdata objects for tablenames with English and multibyte (chinese) characters
         Given the netbackup params have been parsed
         And read old timestamp from json
-        When the user runs gpdbrestore with the stored timestamp and options "--table-file test/behave/mgmt_utils/steps/data/include_tables_with_metadata_postdata --netbackup-block-size 4096" without -e option using netbackup
+        When the user runs gpdbrestore without -e with the stored timestamp and options "--table-file test/behave/mgmt_utils/steps/data/include_tables_with_metadata_postdata --netbackup-block-size 4096" using netbackup
         Then gpdbrestore should return a return code of 0
         When the user runs "psql -f test/behave/mgmt_utils/steps/data/select_multi_byte_char_tables.sql bkdb49"
-        Then psql should print 2000 to stdout 4 times
+        Then psql should print "2000" to stdout 4 times
         And verify that there is a "ao" table "ao_index_table" in "bkdb49" with data
         And verify that there is a "co" table "co_index_table" in "bkdb49" with data
         And verify that there is a "heap" table "heap_index_table" in "bkdb49" with data
@@ -1465,7 +1465,7 @@ Feature: NetBackup Integration with GPDB
         Then gpcrondump should return a return code of 0
         And the timestamp from gpcrondump is stored
         And all the data from "bkdb50" is saved for verification
-        When the user runs gpdbrestore with the stored json timestamp and options " --netbackup-block-size 4096 " using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options " --netbackup-block-size 4096 " using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb50" with data
         And verify that there is a "ao" table "public.ao_table" in "bkdb50" with data
@@ -1478,7 +1478,7 @@ Feature: NetBackup Integration with GPDB
         Then gpcrondump should return a return code of 0
         And the timestamp from gpcrondump is stored
         And all the data from "bkdb51" is saved for verification
-        When the user runs gpdbrestore with the stored json timestamp and options " --netbackup-block-size 4096 " using netbackup
+        When the user runs gpdbrestore -e with the stored timestamp and options " --netbackup-block-size 4096 " using netbackup
         Then gpdbrestore should return a return code of 0
         And verify that there is a "heap" table "public.heap_table" in "bkdb51" with data
         And verify that there is a "ao" table "public.ao_table" in "bkdb51" with data

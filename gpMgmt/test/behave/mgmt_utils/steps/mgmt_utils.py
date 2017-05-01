@@ -4,6 +4,7 @@ import getpass
 import glob
 import gzip
 import json
+import csv
 import os
 import platform
 import shutil
@@ -25,9 +26,12 @@ from test.behave_utils.gpfdist_utils.gpfdist_mgmt import Gpfdist
 from test.behave_utils.utils import *
 from test.behave_utils.PgHba import PgHba, Entry
 
+labels_json = '/tmp/old_to_new_timestamp_labels.json'
 timestamp_json = '/tmp/old_to_new_timestamps.json'
+global_labels = {}
+global_timestamps = {}
+
 master_data_dir = os.environ.get('MASTER_DATA_DIRECTORY')
-global_timestamps = dict()
 if master_data_dir is None:
     raise Exception('Please set MASTER_DATA_DIRECTORY in environment')
 
@@ -35,15 +39,41 @@ def _write_timestamp_to_json(context):
     scenario_name = context._stack[0]['scenario'].name
     timestamp = get_timestamp_from_output(context)
     if not global_timestamps.has_key(scenario_name):
-	global_timestamps[scenario_name] = list()
+        global_timestamps[scenario_name] = list()
     global_timestamps[scenario_name].append(timestamp)
     with open(timestamp_json, 'w') as outfile:
         json.dump(global_timestamps, outfile)
+
+def _write_label_to_json(context, label_key, label):
+    timestamp = get_timestamp_from_output(context)
+    if not global_labels.has_key(label_key):
+        global_labels[label_key] = {}
+    global_labels[label_key][label] = timestamp
+    with open(labels_json, 'w') as outfile:
+        json.dump(global_labels, outfile)
 
 def _read_timestamp_from_json(context):
     scenario_name = context._stack[0]['scenario'].name
     with open(timestamp_json, 'r') as infile:
         return json.load(infile)[scenario_name]
+
+
+def _read_label_from_json(context, label_key):
+    with open(labels_json, 'r') as infile:
+        return json.load(infile)[label_key]
+
+@given('the old timestamps are read from json')
+def impl(context):
+    json_timestamps = _read_timestamp_from_json(context)
+    context.backup_timestamp = json_timestamps[-1]
+    context.inc_backup_timestamps = json_timestamps[1:]
+    context.backup_subdir = json_timestamps[-1][:8]
+
+
+@given('the timestamp labels for scenario "{scenario_number}" are read from json')
+def impl(context, scenario_number):
+    label_key = 'timestamp_labels' + scenario_number
+    global_labels[label_key] = _read_label_from_json(context, label_key)
 
 @given('the database is running')
 def impl(context):
@@ -626,10 +656,19 @@ def impl(context):
 
 @when('the timestamp is labeled "{lbl}"')
 def impl(context, lbl):
-    if not 'timestamp_labels' in context._root:
-        context._root['timestamp_labels'] = {}
+    if not 'timestamp_labels' in global_labels:
+        global_labels['timestamp_labels'] = {}
 
-    context._root['timestamp_labels'][lbl] = get_timestamp_from_output(context)
+    global_labels['timestamp_labels'][lbl] = get_timestamp_from_output(context)
+
+@when('the timestamp for scenario "{scenario_number}" is labeled "{lbl}"')
+def impl(context, scenario_number, lbl):
+    labels_key = 'timestamp_labels' + scenario_number
+    if not labels_key in global_labels:
+        global_labels[labels_key] = {}
+
+    global_labels[labels_key][lbl] = get_timestamp_from_output(context)
+    _write_label_to_json(context, labels_key, lbl)
 
 @given('there is a list to store the incremental backup timestamps')
 def impl(context):
@@ -892,6 +931,13 @@ def impl(context, indexname, dbname):
     if not check_index_exists(context, dbname=dbname, indexname=indexname):
         raise Exception("Index '%s' does not exist when it should" % indexname)
 
+@when('check that there is a "{table_type}" table "{tablename}" in "{dbname}" with same data from "{backedup_dbname}"')
+@then('check that there is a "{table_type}" table "{tablename}" in "{dbname}" with same data from "{backedup_dbname}"')
+def impl(context, table_type, tablename, dbname, backedup_dbname):
+    if not check_table_exists(context, dbname=dbname, table_name=tablename, table_type=table_type):
+        raise Exception("Table '%s' does not exist when it should" % tablename)
+    validate_restore_data(context, tablename, dbname, None, backedup_dbname)
+
 @then('verify that there is a "{table_type}" table "{tablename}" in "{dbname}"')
 def impl(context, table_type, tablename, dbname):
     if not check_table_exists(context, dbname=dbname, table_name=tablename,table_type=table_type):
@@ -1034,9 +1080,9 @@ def impl(context, table_list, dbname, num_parts):
     for t in tables:
         check_x_empty_parts(dbname, t, expected_num_parts)
 
-@given('there is a backupfile of tables "{table_list}" in "{dbname}" exists for validation')
-@when('there is a backupfile of tables "{table_list}" in "{dbname}" exists for validation')
-@then('there is a backupfile of tables "{table_list}" in "{dbname}" exists for validation')
+@given('a backup file of tables "{table_list}" in "{dbname}" exists for validation')
+@when('a backup file of tables "{table_list}" in "{dbname}" exists for validation')
+@then('a backup file of tables "{table_list}" in "{dbname}" exists for validation')
 def impl(context, table_list, dbname):
     tables = [t.strip() for t in table_list.split(',')]
     for t in tables:
@@ -1065,8 +1111,8 @@ def impl(context, table_type, tablename, dbname, old_dbname):
         raise Exception("Table '%s' does not exist in database %s when it should" % (tablename, dbname))
     validate_restore_data(context, tablename, dbname, old_dbname=old_dbname)
 
-@given('there is schema "{schema_list}" exists in "{dbname}"')
-@then('there is schema "{schema_list}" exists in "{dbname}"')
+@given('schema "{schema_list}" exists in "{dbname}"')
+@then('schema "{schema_list}" exists in "{dbname}"')
 def impl(context, schema_list, dbname):
     schemas = [s.strip() for s in schema_list.split(',')]
     for s in schemas:
@@ -1274,12 +1320,13 @@ def parse_plan_file(filename):
                         plan[ts].add(t.strip())
     return plan
 
-def modify_plan_with_labels(context, expected_plan):
+def modify_plan_with_labels(context, expected_plan, scenario_number=""):
+    labels_key = 'timestamp_labels' + scenario_number
     newplan = {}
     for k in expected_plan:
-        if k not in context._root['timestamp_labels']:
+        if k not in global_labels[labels_key]:
             raise Exception("Label '%s' not specified in behave test" % k)
-        ts = context._root['timestamp_labels'][k]
+        ts = global_labels[labels_key][k]
         newplan[ts] = expected_plan[k]
     return newplan
 
@@ -1311,6 +1358,17 @@ def impl(context, expected_plan):
     expected_plan = modify_plan_with_labels(context, expected_plan)
     compare_plans(expected_plan, context.restore_plan)
 
+@then('the plan file for scenario "{scenario_number}" is validated against "{expected_plan}"')
+def impl(context, scenario_number, expected_plan):
+    context.restore_plan = parse_plan_file(get_plan_filename(context))
+
+    current_path = os.path.realpath(__file__)
+    current_dir = os.path.dirname(current_path)
+    expected_file = '%s/%s' % (current_dir, expected_plan)
+    expected_plan = parse_plan_file(expected_file)
+    expected_plan = modify_plan_with_labels(context, expected_plan, scenario_number)
+    compare_plans(expected_plan, context.restore_plan)
+
 @then('there should be "{numtimestamps}" timestamps in the plan file')
 def impl(context, numtimestamps):
     num = int(numtimestamps)
@@ -1336,11 +1394,13 @@ def impl(context, filetype, dir):
         filename = 'gp_global_-1_1_%s' % context.backup_timestamp
     elif filetype == "report":
         filename = 'gp_dump_%s.rpt' % context.backup_timestamp
+    elif filetype == "dump":
+        filename = 'gp_dump_*_1_%s.gz' % context.backup_timestamp
     else:
         raise Exception("Unknown filetype '%s' specified" % filetype)
 
     dump_dir = dir if len(dir.strip()) != 0 else master_data_dir
-    file_path = os.path.join(dump_dir, 'db_dumps', context.backup_timestamp[0:8], filename)
+    file_path = glob.glob(os.path.join(dump_dir, 'db_dumps', context.backup_timestamp[0:8], filename))[0]
 
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -1387,35 +1447,41 @@ def impl(context, tmp_file_prefix):
     else:
         raise Exception('Invalid call to temp file removal %s' % tmp_file_prefix)
 
-@then('tables names should be identical to stored table names in "{dbname}" except "{fq_table_names_list}"')
-def impl(context, dbname, fq_table_names_list):
-    table_names = sorted(get_table_names(dbname))
-    stored_table_names = sorted(context.table_names)
-
-    if fq_table_names_list:
-        fq_table_names = fq_table_names_list.split(',')
-        for fq_table_name in fq_table_names:
-            if fq_table_name != "" :
-                stored_table_names.remove(fq_table_name.strip().split('.'))
-
+def compare_table_lists(table_names, stored_table_names, dbname):
     if table_names != stored_table_names:
         print "Table names after backup:"
         print stored_table_names
         print "Table names after restore:"
         print table_names
-        raise Exception('Schema not restored correctly. List of tables are not equal before and after restore in database %s' % dbname)
+        raise Exception(
+            'Schema not restored correctly. List of tables are not equal before and after restore in database %s' % dbname)
+
+@then('tables names should be identical to stored table names in "{dbname}" except "{fq_table_name}"')
+def impl(context, dbname, fq_table_name):
+    table_names = sorted(get_table_names(dbname))
+    stored_table_names = sorted(context.table_names)
+    exclude_table_names = fq_table_name.split(',')
+    for exclude_table in exclude_table_names:
+        exclude_table = exclude_table.strip().split('.')
+        if exclude_table in stored_table_names:
+            stored_table_names.remove(exclude_table)
+    compare_table_lists(table_names, stored_table_names, dbname)
 
 @then('tables names should be identical to stored table names in "{dbname}"')
 def impl(context, dbname):
     table_names = sorted(get_table_names(dbname))
     stored_table_names = sorted(context.table_names)
+    compare_table_lists(table_names, stored_table_names, dbname)
 
-    if table_names != stored_table_names:
-        print "Table names after backup:"
-        print stored_table_names
-        print "Table names after restore:"
-        print table_names
-        raise Exception('Schema not restored correctly. List of tables are not equal before and after restore in database %s' % dbname)
+@then('tables names in database "{dbname}" should be identical to stored table names in file "{table_file_name}"')
+def impl(context, dbname, table_file_name):
+    table_names = sorted(get_table_names(dbname))
+    stored_table_file_path = os.path.join('test/behave/mgmt_utils/steps/data', table_file_name)
+    stored_table_file = open(stored_table_file_path, 'r')
+    reader = csv.reader(stored_table_file)
+    stored_table_names = list(reader)
+
+    compare_table_lists(table_names, stored_table_names, dbname)
 
 @then('tables in "{dbname}" should not contain any data')
 def impl(context, dbname):
@@ -1427,9 +1493,10 @@ def impl(context, dbname):
 def impl(context, dbname, expected_count):
     validate_db_data(context, dbname, int(expected_count))
 
-@then('verify that the data of "{expected_count}" tables is the same in "{dbname}" as in "{old_dbname}" after restore')
-def impl(context, dbname, expected_count, old_dbname):
-    validate_db_data(context, dbname, int(expected_count), old_dbname=old_dbname)
+@then(
+    'verify that the data of "{expected_count}" tables in "{dbname}" is validated after restore from "{backedup_dbname}"')
+def impl(context, dbname, expected_count, backedup_dbname):
+    validate_db_data(context, dbname, int(expected_count), old_dbname=backedup_dbname)
 
 @then('all the data from the remote segments in "{dbname}" are stored in path "{dir}" for "{backup_type}"')
 def impl(context, dbname, dir, backup_type):
@@ -1719,6 +1786,13 @@ def impl(context):
 @when('the timestamp for database dumps "{db_list}" are stored')
 def impl(context, db_list):
     context.db_timestamps = get_timestamp_from_output_for_db(context)
+    scenario_name = context._stack[0]['scenario'].name
+    if not global_timestamps.has_key(scenario_name):
+        global_timestamps[scenario_name] = list()
+    global_timestamps[scenario_name].append(context.db_timestamps.values())
+    with open(timestamp_json, 'w') as outfile:
+        json.dump(global_timestamps, outfile)
+
 
 def get_timestamp_from_output_for_db(context):
     db_timestamps = {}
@@ -1843,6 +1917,10 @@ def impl(context, tablename, file_type, backup_dir):
 @then('verify that exactly "{num_tables}" tables in "{dbname}" have been restored')
 def impl(context, num_tables, dbname):
     validate_num_restored_tables(context, num_tables, dbname)
+
+@then('verify that exactly "{num_tables}" tables in "{dbname}" have been restored from "{backedup_dbname}"')
+def impl(context, num_tables, dbname, backedup_dbname):
+    validate_num_restored_tables(context, num_tables, dbname, backedup_dbname=backedup_dbname)
 
 @then('the user runs gpdbrestore on dump date directory with options "{options}"')
 def impl(context, options):
@@ -2501,10 +2579,12 @@ def get_segment_dump_files(context, dir):
     gparray = GpArray.initFromCatalog(dbconn.DbURL())
     primary_segs = [seg for seg in gparray.getDbList() if seg.isSegmentPrimary()]
     for seg in primary_segs:
-        segment_dump_dir =  dir.strip() if len(dir.strip()) != 0 else seg.getSegmentDataDirectory()
-        cmd = Command('check dump files', 'ls %s/db_dumps/%s' % (segment_dump_dir, context.backup_timestamp[0:8]), ctxt=REMOTE, remoteHost=seg.getSegmentHostName())
-        cmd.run(validateAfter=False) #because we expect ls to fail
-        results.append((seg, [r for r in cmd.get_results().stdout.strip().split()]))
+        segment_dump_dir = dir.strip() if len(dir.strip()) != 0 else seg.getSegmentDataDirectory()
+        cmd = Command('check dump files', 'ls %s/db_dumps/%s/*%s*' % (
+        segment_dump_dir, context.backup_timestamp[0:8], context.backup_timestamp), ctxt=REMOTE,
+                      remoteHost=seg.getSegmentHostName())
+        cmd.run(validateAfter=False)  # because we expect ls to fail
+        results.append((seg, [os.path.basename(r) for r in cmd.get_results().stdout.strip().split()]))
     return results
 
 @then('there are no dump files created under "{dir}"')
@@ -2734,15 +2814,16 @@ def impl(context, directory, prefix):
             if not dump_file.startswith(dump_prefix):
                 raise Exception('Dump file %s on the segment %s under %s/db_dumps/%s does not start with required prefix %s' % (dump_file, seg.getSegmentDataDirectory(), segment_dump_dir, context.backup_timestamp[0:8], prefix))
 
-    cmd = Command('check dump files', 'ls %s/db_dumps/%s' % (master_dump_dir, context.backup_timestamp[0:8]))
+    cmd = Command('check dump files', 'ls %s/db_dumps/%s/*%s*' % (master_dump_dir, context.backup_timestamp[0:8], context.backup_timestamp))
     cmd.run(validateAfter=True)
     results = cmd.get_results().stdout.strip().split('\n')
 
     if len(results) == 0:
         raise Exception('Failed to find dump files %s on the master under %s' % (results, master_dump_dir))
-    for file in results:
-        if not file.startswith(prefix.strip()):
-            raise Exception('Dump file %s on master under %s does not have required prefix %s' %(file, master_dump_dir, prefix))
+    for filename in results:
+        if not os.path.basename(filename).startswith(prefix.strip()):
+            raise Exception('Dump file %s on master under %s does not have required prefix %s' % (
+            filename, master_dump_dir, prefix))
 
 @given('the environment variable "{var}" is not set')
 def impl(context, var):

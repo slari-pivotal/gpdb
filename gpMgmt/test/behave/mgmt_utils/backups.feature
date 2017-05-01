@@ -581,20 +581,20 @@ Feature: Validate command line arguments
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/special_chars/create_special_schema.sql template1"
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/special_chars/create_special_table.sql template1"
         # --table-file=<filename> option
-        When the user runs command "gpcrondump -a -x " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 " --table-file test/behave/mgmt_utils/steps/data/special_chars/table-file-double-quote.txt"
+        When the user runs command "gpcrondump -a -x " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'?><;1 " --table-file test/behave/mgmt_utils/steps/data/special_chars/table-file-double-quote.txt"
         Then gpcrondump should return a return code of 2
         And gpcrondump should print "does not exist" to stdout
         # --exclude-table-file=<filename> option
-        When the user runs command "gpcrondump -a -x " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 " --exclude-table-file test/behave/mgmt_utils/steps/data/special_chars/table-file-double-quote.txt"
+        When the user runs command "gpcrondump -a -x " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'?><;1 " --exclude-table-file test/behave/mgmt_utils/steps/data/special_chars/table-file-double-quote.txt"
         Then gpcrondump should return a return code of 0
         And gpcrondump should print "does not exist" to stdout
         And gpcrondump should print "All exclude table names have been removed due to issues" to stdout
         # --schema-file
-        When the user runs command "gpcrondump -a -x " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 " --schema-file test/behave/mgmt_utils/steps/data/special_chars/schema-file-double-quote.txt"
+        When the user runs command "gpcrondump -a -x " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'?><;1 " --schema-file test/behave/mgmt_utils/steps/data/special_chars/schema-file-double-quote.txt"
         Then gpcrondump should return a return code of 2
         And gpcrondump should print "does not exist" to stdout
         # --exclude-schema-file
-        When the user runs command "gpcrondump -a -x " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'/?><;1 " --exclude-schema-file test/behave/mgmt_utils/steps/data/special_chars/schema-file-double-quote.txt"
+        When the user runs command "gpcrondump -a -x " DB\`~@#\$%^&*()_-+[{]}|\\;: \\'?><;1 " --exclude-schema-file test/behave/mgmt_utils/steps/data/special_chars/schema-file-double-quote.txt"
         Then gpcrondump should return a return code of 0
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/special_chars/drop_special_database.sql template1"
 

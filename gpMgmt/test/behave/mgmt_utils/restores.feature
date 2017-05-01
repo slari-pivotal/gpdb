@@ -9,7 +9,7 @@ Feature: Validate command line arguments
 
     Scenario: gpdbrestore, -s option with special chars
         Given the backup test is initialized with no backup files
-        When the user runs command "gpdbrestore -s " DB\`~@#\$%^&*()_-+[{]}|\\;:.;\n\t \\'/?><;2 ""
+        When the user runs command "gpdbrestore -s " DB\`~@#\$%^&*()_-+[{]}|\\;:.;\n\t \\'?><;2 ""
         Then gpdbrestore should print "Name has an invalid character" to stdout
 
     Scenario: Funny characters in the table name or schema name for gpdbrestore

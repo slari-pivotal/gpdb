@@ -1021,22 +1021,22 @@ def create_large_num_partitions(table_type, table_name, db_name, num_partitions=
     if num_rows != 1:
         raise Exception('Creation of table "%s:%s" failed. Num rows in pg_class = %s' % (db_name, table_name, num_rows))
 
-def validate_num_restored_tables(context, num_tables, dbname):
+def validate_num_restored_tables(context, num_tables, dbname, backedup_dbname=None):
     tbls = get_table_names(dbname)
 
-    count_query = """select count(*) from %s"""
     num_validate_tables = 0
     for t in tbls:
         name = '%s.%s' % (t[0], t[1])
-        count = getRows(dbname, count_query % name)[0][0]
+        count = getRows(dbname, "SELECT count(*) FROM %s" % name)[0][0]
         if count == 0:
             continue
         else:
-            validate_restore_data(context, name, dbname)
+            validate_restore_data(context, name, dbname, old_dbname=backedup_dbname)
             num_validate_tables += 1
 
     if num_validate_tables != int(num_tables.strip()):
-        raise Exception('Invalid number of tables were restored. Expected "%s", Actual "%s"' % (num_tables, num_validate_tables)) 
+        raise Exception(
+            'Invalid number of tables were restored. Expected "%s", Actual "%s"' % (num_tables, num_validate_tables))
 
 def get_partition_list(partition_type, dbname):
     if partition_type == 'ao':

@@ -406,9 +406,9 @@ def impl(context, role_name, dbname):
     except:
         raise Exception("Role %s does not exist in database %s." % (role_name, dbname))
 
-@given('there is a list of files "{filenames}" of tables "{table_list}" in "{dbname}" exists for validation')
-@when('there is a list of files "{filenames}" of tables "{table_list}" in "{dbname}" exists for validation')
-@then('there is a list of files "{filenames}" of tables "{table_list}" in "{dbname}" exists for validation')
+@given('a list of files "{filenames}" of tables "{table_list}" in "{dbname}" exists for validation')
+@when('a list of files "{filenames}" of tables "{table_list}" in "{dbname}" exists for validation')
+@then('a list of files "{filenames}" of tables "{table_list}" in "{dbname}" exists for validation')
 def impl(context, filenames, table_list, dbname):
     files = [f for f in filenames.split(',')]
     tables = [t for t in table_list.split(',')]

@@ -155,19 +155,19 @@ Feature: Incrementally analyze the database
      @analyzedb_UI
      Scenario: Mixed case inputs
      Given no state files exist for database "incr_analyze"
-     And there is schema ""MySchema"" exists in "incr_analyze"
+     And schema ""MySchema"" exists in "incr_analyze"
      And there is a regular "ao" table ""My_ao"" with column name list ""y","Y",z" and column type list "int,text,real" in schema ""MySchema""
      And there is a regular "heap" table ""T2_heap_UPPERCASE"" with column name list "x,y,z" and column type list "int,text,real" in schema "public"
      When the user runs "analyzedb -v -l -d incr_analyze -s MySchema"
-     Then analyzedb should print "-"MySchema"."My_ao" to stdout
-     When the user runs "analyzedb -v -l -d incr_analyze -t \"MySchema\".\"My_ao\""
-     Then analyzedb should print "-"MySchema"."My_ao" to stdout
-     When the user runs command "printf '\"MySchema\".\"My_ao\" -x Y,z\npublic.\"T2_heap_UPPERCASE\"' > config_file"
+     Then analyzedb should print "-MySchema.My_ao" to stdout
+     When the user runs "analyzedb -v -l -d incr_analyze -t MySchema.My_ao"
+     Then analyzedb should print "-MySchema.My_ao" to stdout
+     When the user runs command "printf 'MySchema.My_ao -x Y,z\npublic.T2_heap_UPPERCASE' > config_file"
      And the user runs "analyzedb -v -d incr_analyze -f config_file"
-     Then analyzedb should print "-public."T2_heap_UPPERCASE" to stdout
-     And analyzedb should print "-"MySchema"."My_ao"\(y\)" to stdout
+     Then analyzedb should print "-public.T2_heap_UPPERCASE" to stdout
+     And analyzedb should print "-MySchema.My_ao\(y\)" to stdout
      When the user runs "analyzedb -v -l -d incr_analyze -s public"
-     Then analyzedb should print "-public.\"T2_heap_UPPERCASE\"" to stdout
+     Then analyzedb should print "-public.T2_heap_UPPERCASE" to stdout
 
     @analyzedb_core @analyzedb_single_table
     Scenario: Incremental analyze, no dirty tables
