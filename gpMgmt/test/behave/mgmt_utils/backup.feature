@@ -4028,18 +4028,6 @@ Feature: Validate command line arguments
         And gpdbrestore should return a return code of 0
         Then verify that a cast does not exist in "bkdb" in schema "newschema"
 
-    Scenario: Table includes both XML content and document types
-        Given the test is initialized
-        And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/create_xml_data.sql bkdb"
-        When the user runs command "gpcrondump -a -x bkdb"
-        Then gpcrondump should return a return code of 0
-        And the timestamp from gpcrondump is stored
-        When the user runs gpdbrestore with the stored timestamp
-        Then gpdbrestore should return a return code of 0
-        And verify that there is a "heap" table "public.testxml" in "bkdb"
-        # Look for one row more than the number of inserts on create_xml_data.sql
-        And verify that table "testxml" in "bkdb" has "4" rows
-
     # THIS SHOULD BE THE LAST TEST
     @backupfire
     Scenario: cleanup for backup feature

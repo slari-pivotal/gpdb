@@ -2209,8 +2209,6 @@ _doSetFixedOutputState(ArchiveHandle *AH)
 	if (!AH->public.std_strings)
 		ahprintf(AH, "SET escape_string_warning = off;\n");
 
-	ahprintf(AH, "SET gp_strict_xml_parse = false;\n");
-
 	ahprintf(AH, "\n");
 }
 
