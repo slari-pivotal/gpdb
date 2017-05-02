@@ -760,3 +760,11 @@ select id from tbl_25484 where 3 = (select 3 where 3 = (select num));
 drop table tbl_25484;
 reset optimizer_segments;
 reset optimizer_nestloop_factor;
+
+CREATE TABLE tbl1(a, b) AS SELECT i, i FROM generate_series(1,6) i DISTRIBUTED BY (b);
+CREATE TABLE tbl2(a, b) AS SELECT i, i FROM generate_series(1,7) i DISTRIBUTED BY (b);
+
+SELECT tbl3.* FROM tbl2 AS tbl3 WHERE tbl3.b > ALL (
+  SELECT tbl2.a FROM tbl2 WHERE tbl2.a > ALL (SELECT a FROM tbl1 WHERE tbl1.b=tbl2.b)
+    AND tbl2.a = tbl3.a);
+
