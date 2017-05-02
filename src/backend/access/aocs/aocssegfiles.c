@@ -198,7 +198,7 @@ GetAOCSFileSegInfo(
 		struct varlena *v = (struct varlena *) DatumGetPointer(d[Anum_pg_aocs_vpinfo - 1]);
 		struct varlena *dv = pg_detoast_datum(v);
 
-		Assert(VARSIZE(dv) == aocs_vpinfo_size(nvp));
+		Assert(VARSIZE(dv) <= aocs_vpinfo_size(nvp));
 		memcpy(&seginfo->vpinfo, dv, aocs_vpinfo_size(nvp));
 		if(dv!=v)
 			pfree(dv);
