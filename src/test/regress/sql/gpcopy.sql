@@ -564,3 +564,79 @@ COPY copy_regression_newline from stdin with delimiter '|' newline 'blah';
 COPY copy_regression_newline to stdout with delimiter '|' newline 'blah';
 
 DROP TABLE copy_regression_newline;
+-- start_ignore
+DROP TABLE IF EXISTS test_copy_on_segment;
+DROP EXTERNAL TABLE IF EXISTS check_copy_onsegment_txt1;
+DROP EXTERNAL TABLE IF EXISTS check_copy_onsegment_csv1;
+DROP EXTERNAL TABLE IF EXISTS rm_copy_onsegment_files;
+-- end_ignore
+
+CREATE TABLE test_copy_on_segment (a int, b text, c text);
+INSERT INTO test_copy_on_segment VALUES (1, 's', 'd');
+INSERT INTO test_copy_on_segment VALUES (2, 'f', 'g');
+INSERT INTO test_copy_on_segment VALUES (3, 'h', 'j');
+INSERT INTO test_copy_on_segment VALUES (4, 'i', 'l');
+INSERT INTO test_copy_on_segment VALUES (5, 'q', 'w');
+
+CREATE TABLE test_copy_on_segment_withoids (a int, b text, c text) WITH OIDS;
+INSERT INTO test_copy_on_segment_withoids VALUES (1, 's', 'd');
+INSERT INTO test_copy_on_segment_withoids VALUES (2, 'f', 'g');
+INSERT INTO test_copy_on_segment_withoids VALUES (3, 'h', 'j');
+
+COPY test_copy_on_segment TO '/tmp/invalid_filename.txt' ON SEGMENT;
+COPY test_copy_on_segment TO '/tmp/valid_filename<SEGID>.txt' ON SEGMENT;
+COPY test_copy_on_segment TO '/tmp/valid_filename<SEGID>.csv' ON SEGMENT CSV HEADER;
+COPY test_copy_on_segment TO '/tmp/valid_filename<SEGID>.csv' WITH ON SEGMENT CSV QUOTE '"' FORCE QUOTE a,b,c ESCAPE E'\\' NULL E'\N' DELIMITER ',' HEADER IGNORE EXTERNAL PARTITIONS;
+COPY test_copy_on_segment_withoids TO '/tmp/withoids_valid_filename<SEGID>.csv' WITH ON SEGMENT OIDS CSV QUOTE '"' FORCE QUOTE a,b,c ESCAPE E'\\' NULL E'\N' DELIMITER ',' IGNORE EXTERNAL PARTITIONS;
+
+CREATE EXTERNAL WEB TABLE check_copy_onsegment_txt1 (a int, b text, c text)
+EXECUTE E'(cat /tmp/valid_filename*.txt)'
+ON SEGMENT 0
+FORMAT 'text';
+SELECT * FROM check_copy_onsegment_txt1 ORDER BY a;
+
+CREATE EXTERNAL WEB TABLE check_copy_onsegment_csv1 (a int, b text, c text)
+EXECUTE E'(tail -q -n +2 /tmp/valid_filename*.csv)'
+ON SEGMENT 0
+FORMAT 'csv';
+SELECT * FROM check_copy_onsegment_csv1 ORDER BY a;
+
+CREATE TABLE onek_copy_onsegment (
+    unique1     int4,
+    unique2     int4,
+    two         int4,
+    four        int4,
+    ten         int4,
+    twenty      int4,
+    hundred     int4,
+    thousand    int4,
+    twothousand int4,
+    fivethous   int4,
+    tenthous    int4,
+    odd         int4,
+    even        int4,
+    stringu1    name,
+    stringu2    name,
+    string4     name
+);
+\COPY onek_copy_onsegment FROM 'data/onek.data';
+SELECT count(*) FROM onek_copy_onsegment;
+COPY onek_copy_onsegment TO '/tmp/valid_filename_onek_copy_onsegment<SEGID>.txt' ON SEGMENT;
+
+CREATE EXTERNAL WEB TABLE check_onek_copy_onsegment (a int)
+EXECUTE E'(cat /tmp/valid_filename_onek_copy_onsegment*.txt |wc -l)'
+ON SEGMENT 0
+FORMAT 'text';
+SELECT * FROM check_onek_copy_onsegment;
+
+CREATE EXTERNAL WEB TABLE rm_copy_onsegment_files (a int)
+EXECUTE E'(rm -rf /tmp/*valid_filename*.*)'
+ON SEGMENT 0
+FORMAT 'text';
+SELECT * FROM rm_copy_onsegment_files;
+
+DROP TABLE IF EXISTS test_copy_on_segment;
+DROP EXTERNAL TABLE IF EXISTS check_copy_onsegment_txt1;
+DROP EXTERNAL TABLE IF EXISTS check_copy_onsegment_csv1;
+DROP EXTERNAL TABLE IF EXISTS check_onek_copy_onsegment;
+DROP EXTERNAL TABLE IF EXISTS rm_copy_onsegment_files;
