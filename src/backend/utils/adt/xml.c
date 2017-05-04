@@ -160,6 +160,8 @@
 int			xmlbinary;
 int			xmloption;
 
+extern bool gp_strict_xml_parse;
+
 #ifdef USE_LIBXML
 
 static StringInfo xml_err_buf = NULL;
@@ -1093,6 +1095,7 @@ xml_parse(text *data, XmlOptionType xmloption_arg, bool preserve_whitespace,
 	xmlChar    *utf8string;
 	xmlParserCtxtPtr ctxt;
 	xmlDocPtr	doc;
+	bool parse_xml_as_content = false;
 
 	len = VARSIZE(data) - VARHDRSZ;		/* will be useful later */
 	string = xml_text2xmlChar(data);
@@ -1129,10 +1132,16 @@ xml_parse(text *data, XmlOptionType xmloption_arg, bool preserve_whitespace,
 								 XML_PARSE_NOENT | XML_PARSE_DTDATTR
 						   | (preserve_whitespace ? 0 : XML_PARSE_NOBLANKS));
 			if (doc == NULL)
-				xml_ereport(ERROR, ERRCODE_INVALID_XML_DOCUMENT,
+			{
+				if (gp_strict_xml_parse)
+					xml_ereport(ERROR, ERRCODE_INVALID_XML_DOCUMENT,
 							"invalid XML document");
+				else
+					parse_xml_as_content = true;
+			}
 		}
-		else
+
+		if ((xmloption_arg == XMLOPTION_CONTENT) || parse_xml_as_content)
 		{
 			int			res_code;
 			size_t		count = 0;

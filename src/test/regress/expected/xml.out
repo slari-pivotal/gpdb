@@ -19,6 +19,50 @@ CREATE TABLE xmltest (
 );
 NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'id' as the Greenplum Database data distribution key for this table.
 HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+-- Test copy with gp_strict_xml_parse GUC
+drop TABLE IF EXISTS xmla;
+NOTICE:  table "xmla" does not exist, skipping
+create TABLE xmla as select (xpath('//foo/text()'::text, '<foo>bar</foo>'::xml))[1] as cx1 distributed randomly ;
+insert into xmla values ('<?xml version="1.0"?><note><to>Tove</to><body>hello</body></note>' ) ;
+insert into xmla values ('<?xml version="1.0"?><!DOCTYPE note SYSTEM "note.dtd"><note><to>Tove</to><body>hello</body></note>' ) ;
+drop TABLE IF EXISTS xmlb;
+NOTICE:  table "xmlb" does not exist, skipping
+create TABLE xmlb (like xmla) distributed randomly;
+copy xmla to '/tmp/xmla.xml';
+copy xmlb from '/tmp/xmla.xml';
+ERROR:  invalid XML document  (seg1 gpdb4dev:40001 pid=23509)
+DETAIL:
+Entity: line 1: parser error : Start tag expected, '<' not found
+bar
+^
+CONTEXT:  COPY xmlb, line 1, column bar
+SET gp_strict_xml_parse TO FALSE;
+copy xmlb from '/tmp/xmla.xml';
+select * from xmlb;
+                                      cx1
+-------------------------------------------------------------------------------
+ <note><to>Tove</to><body>hello</body></note>
+ bar
+ <!DOCTYPE note SYSTEM "note.dtd"><note><to>Tove</to><body>hello</body></note>
+(3 rows)
+
+SET gp_strict_xml_parse TO TRUE;
+-- Test normal insert with gp_strict_xml_parse GUC
+INSERT INTO xmltest VALUES (0, 'content_only');
+ERROR:  invalid XML document
+DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
+content_only
+^
+SET gp_strict_xml_parse TO FALSE;
+INSERT INTO xmltest VALUES (0, 'content_only');
+SELECT * FROM xmltest;
+ id |     data
+----+--------------
+  0 | content_only
+(1 row)
+
+TRUNCATE TABLE xmltest;
+SET gp_strict_xml_parse TO TRUE;
 INSERT INTO xmltest VALUES (1, '<value>one</value>');
 INSERT INTO xmltest VALUES (2, '<value>two</value>');
 INSERT INTO xmltest VALUES (3, '<wrong');

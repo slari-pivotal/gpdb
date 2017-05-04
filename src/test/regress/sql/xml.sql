@@ -17,6 +17,30 @@ CREATE TABLE xmltest (
     data xml
 );
 
+-- Test copy with gp_strict_xml_parse GUC
+drop TABLE IF EXISTS xmla;
+create TABLE xmla as select (xpath('//foo/text()'::text, '<foo>bar</foo>'::xml))[1] as cx1 distributed randomly ;
+insert into xmla values ('<?xml version="1.0"?><note><to>Tove</to><body>hello</body></note>' ) ;
+insert into xmla values ('<?xml version="1.0"?><!DOCTYPE note SYSTEM "note.dtd"><note><to>Tove</to><body>hello</body></note>' ) ;
+
+drop TABLE IF EXISTS xmlb;
+create TABLE xmlb (like xmla) distributed randomly;
+copy xmla to '/tmp/xmla.xml';
+copy xmlb from '/tmp/xmla.xml';
+
+SET gp_strict_xml_parse TO FALSE;
+copy xmlb from '/tmp/xmla.xml';
+select * from xmlb;
+SET gp_strict_xml_parse TO TRUE;
+
+-- Test normal insert with gp_strict_xml_parse GUC
+INSERT INTO xmltest VALUES (0, 'content_only');
+SET gp_strict_xml_parse TO FALSE;
+INSERT INTO xmltest VALUES (0, 'content_only');
+SELECT * FROM xmltest;
+TRUNCATE TABLE xmltest;
+SET gp_strict_xml_parse TO TRUE;
+
 INSERT INTO xmltest VALUES (1, '<value>one</value>');
 INSERT INTO xmltest VALUES (2, '<value>two</value>');
 INSERT INTO xmltest VALUES (3, '<wrong');

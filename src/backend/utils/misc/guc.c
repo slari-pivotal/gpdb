@@ -673,6 +673,8 @@ static char *gp_test_system_cache_flush_force_str;
 /* include file/line information to stack traces */
 bool gp_log_stack_trace_lines;
 
+bool gp_strict_xml_parse;
+
 /* Planner gucs */
 bool		enable_seqscan = true;
 bool		enable_indexscan = true;
@@ -3794,6 +3796,16 @@ static struct config_bool ConfigureNamesBool[] =
 		},
 		&gp_enable_exchange_default_partition,
 		false, NULL, NULL
+	},
+
+	{
+		{"gp_strict_xml_parse", PGC_USERSET, CLIENT_CONN_STATEMENT,
+			gettext_noop("Sets whether XML data is considered strictly as documents. "),
+			NULL,
+			GUC_NOT_IN_SAMPLE
+		},
+		&gp_strict_xml_parse,
+		true, NULL, NULL
 	},
 
 	{
