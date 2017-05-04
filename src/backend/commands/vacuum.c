@@ -4904,6 +4904,7 @@ open_relation_and_check_permission(VacuumStmt *vacstmt,
 {
 	Relation onerel;
 	LOCKMODE lmode;
+	bool dontWait = false;
 
 	/*
 	 * If this is a drop transaction and there is another parallel drop transaction
@@ -4938,7 +4939,10 @@ open_relation_and_check_permission(VacuumStmt *vacstmt,
 	 * For analyze, we use ShareUpdateExclusiveLock.
 	 */
 	if (isDropTransaction)
+	{
 		lmode = AccessExclusiveLock;
+		dontWait = true;
+	}
 	else if (!vacstmt->vacuum)
 		lmode = ShareUpdateExclusiveLock;
 	else
@@ -4950,9 +4954,9 @@ open_relation_and_check_permission(VacuumStmt *vacstmt,
 	 * There's a race condition here: the rel may have gone away since the
 	 * last time we saw it.  If so, we don't need to vacuum it.
 	 */
-	onerel = try_relation_open(relid, lmode, false);
+	onerel = try_relation_open(relid, lmode, dontWait);
 
-	if (!onerel)
+	if (!RelationIsValid(onerel))
 		return NULL;
 
 	/*
