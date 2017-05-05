@@ -4030,7 +4030,7 @@ Feature: Validate command line arguments
 
     Scenario: Table includes both XML content and document types
         Given the test is initialized
-        And the user runs "psql -f gppylib/test/behave/mgmt_utils/steps/data/create_xml_data.sql bkdb"
+        And the user runs "psql -f test/behave/mgmt_utils/steps/data/create_xml_data.sql bkdb"
         When the user runs command "gpcrondump -a -x bkdb"
         Then gpcrondump should return a return code of 0
         And the timestamp from gpcrondump is stored
