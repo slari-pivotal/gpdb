@@ -1343,6 +1343,7 @@ installcheck-good :
 	@cd $(BUILDDIR)/src/test/regress && $(MAKE) installcheck-good && gpcheckcat -A
 	@cd extensions && $(MAKE) installcheck
 	@cd $(BUILDDIR)/src/test/fsync && $(MAKE) install && $(MAKE) installcheck
+	@cd $(BUILDDIR)/src/test/isolation2 && $(MAKE) install && $(MAKE) installcheck
 
 installcheck-parallel :
 	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi

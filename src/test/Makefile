@@ -13,3 +13,4 @@
 
 .DEFAULT:
 	$(MAKE) -C regress $@
+	$(MAKE) -C isolation2 $@

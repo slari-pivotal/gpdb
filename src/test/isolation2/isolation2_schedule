@@ -1,1 +1,4 @@
+test: setup
 
+test: uao/select_while_delete_row
+test: uao/select_while_delete_column
