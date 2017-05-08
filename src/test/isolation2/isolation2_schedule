@@ -1,6 +1,11 @@
 test: setup
 
+# Tests on Append-Optimized tables (row-oriented).
 test: uao/select_while_delete_row
 test: uao/select_while_delete_column
+test: uao/vacuum_cleanup_row
 test: add_column_after_vacuum_skip_drop_column
 test: vacuum_after_vacuum_skip_drop_column
+
+# Tests on Append-Optimized tables (column-oriented).
+test: uao/vacuum_cleanup_column

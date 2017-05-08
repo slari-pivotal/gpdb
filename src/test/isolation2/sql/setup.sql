@@ -9,7 +9,6 @@ CREATE OR REPLACE FUNCTION gp_ao_or_aocs_seg_name(rel text,
   segno OUT integer,
   tupcount OUT bigint,
   modcount OUT bigint,
-  formatversion OUT smallint,
   state OUT smallint)
 RETURNS SETOF record as $$
 declare
@@ -17,11 +16,11 @@ declare
 begin	/* in func */
   select relstorage into relstorage_var from pg_class where oid = rel::regclass; /* in func */
   if relstorage_var = 'c' then	/* in func */
-    for segno, tupcount, modcount, formatversion, state in SELECT DISTINCT x.segno, x.tupcount, x.modcount, x.formatversion, x.state FROM gp_toolkit.__gp_aocsseg_name(rel) x loop	/* in func */
+    for segno, tupcount, modcount, state in SELECT DISTINCT x.segno, x.tupcount, x.modcount, x.state FROM gp_toolkit.__gp_aocsseg_name(rel) x loop	/* in func */
       return next;	/* in func */
     end loop;	/* in func */
   else	/* in func */
-    for segno, tupcount, modcount, formatversion, state in SELECT x.segno, x.tupcount, x.modcount, x.formatversion, x.state FROM gp_toolkit.__gp_aoseg_name(rel) x loop	/* in func */
+    for segno, tupcount, modcount, state in SELECT x.segno, x.tupcount, x.modcount, x.state FROM gp_toolkit.__gp_aoseg_name(rel) x loop	/* in func */
       return next;	/* in func */
     end loop;	/* in func */
   end if;	/* in func */
@@ -85,3 +84,20 @@ SELECT coalesce(
        else 'n segments' end as node
   FROM gp_dist_random('locktest_segments_dist')
   group by relname, relation, mode, locktype;
+
+-- start_ignore
+create language plpythonu;
+-- end_ignore
+
+CREATE OR REPLACE FUNCTION wait_for_trigger_fault(fault text, segno int)
+RETURNS bool as $$
+    import subprocess 
+    import time
+    cmd = 'gpfaultinjector -f %s -y status -s %d | grep -i triggered | wc -l' % (fault, segno)
+    for i in range(100):
+        cmd_output = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, shell=True)
+        if int(cmd_output.stdout.read()):
+            return True
+        time.sleep(0.5)
+    return False 
+$$ LANGUAGE plpythonu;
