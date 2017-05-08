@@ -2536,13 +2536,13 @@ def impl(context, file_type, directory, options):
     reg_file_count = 6
 
     pipes_pattern_list = ['gp_dump_.*_%s.*(?:\.gz)?' % context.backup_timestamp]
-    regular_pattern_list = ['gp_cdatabase_*_1_%s' % context.backup_timestamp,
+    regular_pattern_list = ['gp_cdatabase_.*_1_%s' % context.backup_timestamp,
             'gp_dump_%s.*' % context.backup_timestamp,
-            'gp_dump_status_*_1_%s' % context.backup_timestamp]
+            'gp_dump_status_.*_1_%s' % context.backup_timestamp]
 
     if '-G' in option_list:
         pipe_file_count += 1
-        pipes_pattern_list += ['gp_global_*_1_%s' % context.backup_timestamp]
+        pipes_pattern_list += ['gp_global_.*_1_%s' % context.backup_timestamp]
     if '-g' in option_list:
         pipe_file_count += get_num_segments(primary=True, mirror=False, master=True, standby=False)
         pipes_pattern_list += ['gp_master_config_files_%s.*' % context.backup_timestamp, 'gp_segment_config_files_.*_.*_%s.*' % context.backup_timestamp]
