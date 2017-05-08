@@ -412,9 +412,10 @@ WalReceiverMain(void)
 static void
 WalRcvUsr2Handler(SIGNAL_ARGS)
 {
+#define BUF_SIZE 80
 	File file;
 	int nbytes = 0;
-	char buf[80];
+	char buf[BUF_SIZE];
 
 	/* Read the type of action to take later from the file in the $PGDATA */
 	if ((file = PathNameOpenFile("wal_rcv_test", O_RDONLY | PG_BINARY, 0600)) < 0)
@@ -424,7 +425,7 @@ WalRcvUsr2Handler(SIGNAL_ARGS)
 	}
 	else
 	{
-		nbytes = FileRead(file, buf, 80);
+		nbytes = FileRead(file, buf, BUF_SIZE - 1);
 		if (nbytes <= 0)
 		{
 			/* Cleanup */
@@ -435,7 +436,7 @@ WalRcvUsr2Handler(SIGNAL_ARGS)
 		}
 		FileClose(file);
 
-		Assert(nbytes < 80);
+		Assert(nbytes < BUF_SIZE);
 		buf[nbytes] = '\0';
 
 		if (strcmp(buf,"wait_before_send_ack") == 0)
