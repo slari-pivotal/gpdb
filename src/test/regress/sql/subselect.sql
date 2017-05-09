@@ -768,3 +768,6 @@ SELECT tbl3.* FROM tbl2 AS tbl3 WHERE tbl3.b > ALL (
   SELECT tbl2.a FROM tbl2 WHERE tbl2.a > ALL (SELECT a FROM tbl1 WHERE tbl1.b=tbl2.b)
     AND tbl2.a = tbl3.a);
 
+-- Planner test to make sure the initplan is not removed for function scan
+explain select sess_id from pg_stat_activity where current_query = (select current_query());
+
