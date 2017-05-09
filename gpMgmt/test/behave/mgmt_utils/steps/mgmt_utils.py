@@ -4084,6 +4084,44 @@ def impl(context):
         time.sleep(5)
         current_time = datetime.now()
 
+@when('wait until the process "{proc}" goes down')
+@then('wait until the process "{proc}" goes down')
+@given('wait until the process "{proc}" goes down')
+def impl(context, proc):
+    start_time = current_time = datetime.now()
+    is_running = False
+    while (current_time - start_time).seconds < 120:
+        is_running = is_process_running(proc)
+        if not is_running:
+            break
+        time.sleep(2)
+        current_time = datetime.now()
+    context.ret_code = 0 if not is_running else 1
+    context.error_message = ''
+    check_return_code(context, 0)
+
+
+@when('wait until the process "{proc}" is up')
+@then('wait until the process "{proc}" is up')
+@given('wait until the process "{proc}" is up')
+def impl(context, proc):
+    cmd = Command(name='pgrep for %s' % proc, cmdStr="pgrep %s" % proc)
+    start_time = current_time = datetime.now()
+    while (current_time - start_time).seconds < 120:
+        cmd.run()
+        if cmd.get_return_code() > 1:
+            raise Exception("unexpected problem with gprep, return code: %s" % cmd.get_return_code())
+        if cmd.get_return_code() != 1:  # 0 means match
+            break
+        time.sleep(2)
+        current_time = datetime.now()
+    context.ret_code = cmd.get_return_code()
+    context.error_message = ''
+    if context.ret_code > 1:
+        context.error_message = 'pgrep internal error'
+    check_return_code(context, 0)  # 0 means one or more processes were matched
+
+
 @when('run gppersistent_rebuild with the saved content id')
 @then('run gppersistent_rebuild with the saved content id')
 def impl(context):
@@ -4214,6 +4252,70 @@ def store_timestamp_in_old_format(context, directory = None, prefix = ""):
         change_report_file_content = "sed -i 's|%s|%s|' %s" % (new_format, old_format, master_report_file)
 
         run_command(context, change_report_file_content)
+
+
+@when('wait until the results from boolean sql "{sql}" is "{boolean}"')
+@then('wait until the results from boolean sql "{sql}" is "{boolean}"')
+@given('wait until the results from boolean sql "{sql}" is "{boolean}"')
+def impl(context, sql, boolean):
+    cmd = Command(name='psql', cmdStr='psql --tuples-only -d gpperfmon -c "%s"' % sql)
+    start_time = current_time = datetime.now()
+    result = None
+    while (current_time - start_time).seconds < 120:
+        cmd.run()
+        if cmd.get_return_code() != 0:
+            break
+        result = cmd.get_stdout()
+        if _str2bool(result) == _str2bool(boolean):
+            break
+        time.sleep(2)
+        current_time = datetime.now()
+
+    if cmd.get_return_code() != 0:
+        context.ret_code = cmd.get_return_code()
+        context.error_message = 'psql internal error: %s' % cmd.get_stderr()
+        check_return_code(context, 0)
+    else:
+        if _str2bool(result) != _str2bool(boolean):
+            raise Exception("sql output '%s' is not same as '%s'" % (result, boolean))
+
+
+def _str2bool(string):
+    return string.lower().strip() in ['t', 'true', '1', 'yes', 'y']
+
+
+@given('gpperfmon is configured and running in qamode')
+@then('gpperfmon is configured and running in qamode')
+def impl(context):
+    target_line = 'qamode = 1'
+    gpperfmon_config_file = "%s/gpperfmon/conf/gpperfmon.conf" % os.getenv("MASTER_DATA_DIRECTORY")
+    if not check_db_exists("gpperfmon", "localhost") or \
+            not is_process_running("gpsmon") or \
+            not file_contains_line(gpperfmon_config_file, target_line):
+        context.execute_steps(u'''
+            When the user runs "gpperfmon_install --port 15432 --enable --password foo"
+            Then gpperfmon_install should return a return code of 0
+            When the user runs command "echo 'qamode = 1' >> $MASTER_DATA_DIRECTORY/gpperfmon/conf/gpperfmon.conf"
+            Then echo should return a return code of 0
+            When the user runs command "echo 'verbose = 1' >> $MASTER_DATA_DIRECTORY/gpperfmon/conf/gpperfmon.conf"
+            Then echo should return a return code of 0
+            When the user runs command "echo 'min_query_time = 0' >> $MASTER_DATA_DIRECTORY/gpperfmon/conf/gpperfmon.conf"
+            Then echo should return a return code of 0
+            When the user runs command "echo 'quantum = 10' >> $MASTER_DATA_DIRECTORY/gpperfmon/conf/gpperfmon.conf"
+            Then echo should return a return code of 0
+            When the user runs command "echo 'harvest_interval = 5' >> $MASTER_DATA_DIRECTORY/gpperfmon/conf/gpperfmon.conf"
+            Then echo should return a return code of 0
+            When the database is not running
+            Then wait until the process "postgres" goes down
+            When the user runs "gpstart -a"
+            Then gpstart should return a return code of 0
+            And verify that a role "gpmon" exists in database "gpperfmon"
+            And verify that the last line of the master postgres configuration file contains the string "gpperfmon_log_alert_level=warning"
+            And verify that there is a "heap" table "database_history" in "gpperfmon"
+            Then wait until the process "gpmmon" is up
+            And wait until the process "gpsmon" is up
+        ''')
+
 
 @then('the timestamp will be stored in json format')
 @given('the timestamp will be stored in json format')

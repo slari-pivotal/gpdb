@@ -1506,3 +1506,16 @@ def remove_local_path(dirname):
 def validate_local_path(path):
     list = glob.glob(os.path.join(os.path.curdir, path))
     return len(list)
+
+
+def is_process_running(proc_name):
+    cmd = Command(name='pgrep for %s' % proc_name, cmdStr="pgrep %s" % proc_name)
+    cmd.run()
+    if cmd.get_return_code() > 1:
+        raise Exception("unexpected problem with pgrep, return code: %s" % cmd.get_return_code())
+    return cmd.get_return_code() == 0
+
+
+def file_contains_line(filepath, target_line):
+    with open(filepath, 'r') as myfile:
+        return target_line in myfile.read().splitlines()
