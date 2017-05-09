@@ -2150,7 +2150,10 @@ class gpload:
                 self.control_file_error("Invalid option, gpload quit immediately")
                 sys.exit(2);
         else:
-            self.formatOpts += "%s %s " % (specify_str, quote(val))
+            if val == '\'':
+                self.formatOpts += "%s '%s' " % (specify_str, val)
+            else:
+                self.formatOpts += "%s %s " % (specify_str, quote(val))
 
 
     #
