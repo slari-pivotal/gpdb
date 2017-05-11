@@ -81,6 +81,8 @@ clean distclean:
 maintainer-clean: distclean
 	rm -f specparse.c specscanner.c
 
+installcheck-good: installcheck
+
 installcheck: all gpdiff.pl gpstringsubs.pl
 	./pg_isolation_regress --psqldir='$(PSQLDIR)' --inputdir=$(srcdir) --schedule=$(srcdir)/isolation_schedule
 
