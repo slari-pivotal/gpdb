@@ -476,12 +476,12 @@ gen_implied_quals_for_equi_key_list(PlannerInfo *root, List *lpkitems)
     {
     	PathKeyItem *item1 = (PathKeyItem *) lfirst(lcpk1);
 
-		/*
-		 * Skip duplicating subplans clauses as multiple subplan node referring to
-		 * same plan_id of subplans breaks cdbparallize.
-		 */
-		if (contain_subplans((Node *) item1->key))
-			continue;
+    	/*
+    	 * Skip duplicating subplans clauses as multiple subplan node referring to
+    	 * same plan_id are later fixed up in fixup_subplans
+    	 */
+    	if (contain_subplans((Node *) item1->key))
+    		continue;
     	Relids relidspk1 = pull_varnos(item1->key);
 
     	/**
@@ -514,9 +514,11 @@ gen_implied_quals_for_equi_key_list(PlannerInfo *root, List *lpkitems)
     				foreach(lcpk2, lpkitems)
     				{
     					PathKeyItem *item2 = (PathKeyItem *) lfirst(lcpk2);;
-						// Skip SubPlans
-						if (contain_subplans((Node *) item2->key))
-							continue;
+    					/*
+    					 * Skip SubPlans
+    					 */
+    					if (contain_subplans((Node *) item2->key))
+    						continue;
 
     					if (exprType(item1->key) == exprType(item2->key)
     							&& exprTypmod(item1->key) == exprTypmod(item2->key))
@@ -673,7 +675,7 @@ generate_implied_equalities(PlannerInfo *root)
 				PathKeyItem *item1 = (PathKeyItem *) lfirst(ptr1);
 				/*
 				 * Skip duplicating subplans clauses as multiple subplan node referring to
-				 * same plan_id of subplans breaks cdbparallize.
+				 * same plan_id are later fixed up in fixup_subplans
 				 */
 				if (contain_subplans((Node *) item1->key))
 				{

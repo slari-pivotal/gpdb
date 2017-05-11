@@ -437,6 +437,9 @@ standard_planner(Query *parse, int cursorOptions, ParamListInfo boundParams)
 	/* walk plan and remove unused initplans and their params */
 	remove_unused_initplans(top_plan, root);
 
+	/* walk subplans and fixup subplan node referring to same plan_id */
+	fixup_subplans(top_plan, root);
+
 	/* executor wants to know total number of Params used overall */
 	top_plan->nParamExec = list_length(glob->paramlist);
 

@@ -642,12 +642,24 @@ FROM
 ) B ON A.varchar_col = B.varchar_col;
 
 --
--- Same subplan should not be referred in multiple quals
+-- Multiple SUBPLAN nodes must not refer to same plan_id
 --
-CREATE TABLE test_subplans(a int, b int, c int) DISTRIBUTED BY(a);
-INSERT INTO test_subplans VALUES(9,9,9), (11,11,11);
-SELECT * FROM test_subplans T1 WHERE b = (SELECT max(b) FROM test_subplans T2 WHERE T2.a = T1.a GROUP BY c) AND b < 10;
-DROP TABLE test_subplans;
+CREATE TABLE test_subplans1(a int, b int, c int) DISTRIBUTED BY(a);
+INSERT INTO test_subplans1 VALUES(9,9,9), (11,11,11);
+CREATE TABLE test_subplans2 (a integer, b integer, c int)
+DISTRIBUTED BY (a)
+PARTITION BY RANGE(b)
+    (
+    PARTITION sub_one START (1) END (10),
+    PARTITION sub_two START (11) END (22)
+    );
+INSERT INTO test_subplans2 VALUES (2, 9, 9);
+SELECT * FROM test_subplans1 T1 WHERE b = (SELECT max(b) FROM test_subplans1 T2 WHERE T2.a = T1.a GROUP BY c) AND b < 10;
+SELECT test_subplans1.c from test_subplans1, test_subplans2
+WHERE (test_subplans2.a=2 or test_subplans2.c = test_subplans2.b)
+AND test_subplans2.b = (SELECT max(b) FROM test_subplans2 WHERE test_subplans1.c = 9);
+DROP TABLE test_subplans1;
+DROP TABLE test_subplans2;
 
 -- start_ignore
 drop schema qp_subquery cascade;

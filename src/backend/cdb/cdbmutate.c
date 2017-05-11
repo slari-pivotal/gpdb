@@ -60,6 +60,16 @@ typedef struct ApplyMotionState
 }	ApplyMotionState;
 
 /*
+ * SubPlanWalkerContext holds information of the subplan ids
+ * referred in the plan nodes
+ */
+typedef struct SubPlanWalkerContext
+{
+	plan_tree_base_prefix base; /* Required prefix for plan_tree_walker/mutator */
+	Bitmapset	   *bms_subplans; /* Bitmapset for used subplans */
+}	SubPlanWalkerContext;
+
+/*
  * External functions
  */
 bool is_dummy_plan(Plan *plan);
@@ -91,6 +101,9 @@ static bool
 doesUpdateAffectPartitionCols(PlannerInfo  *root,
 							  Plan         *plan,
                               Query        *query);
+
+
+static bool fixup_subplan_walker(Node *node, SubPlanWalkerContext *context);
 
 /*
  * Given an expression, return true if it contains anything non-constant.
@@ -2710,3 +2723,66 @@ void remove_unused_initplans(Plan *top_plan, PlannerInfo *root)
 	bms_free(context.scanrelids);
 }
 
+/*
+ * Append duplicate subplans and update plan id to refer them if same
+ * subplan is referred at multiple places
+ */
+static bool
+fixup_subplan_walker(Node *node, SubPlanWalkerContext *context)
+{
+	if (node == NULL)
+		return false;
+
+	if (IsA(node, SubPlan))
+	{
+		SubPlan *subplan = (SubPlan *) node;
+		int plan_id = subplan->plan_id;
+		if (!bms_is_member(plan_id, context->bms_subplans))
+			/*
+			 * Add plan_id to bitmapset to maintain the plan_id's found
+			 * while traversing the plan
+			 */
+			context->bms_subplans = bms_add_member(context->bms_subplans, plan_id);
+		else
+		{
+			/*
+			 * If plan_id is already available in the bitmapset, it means that there is
+			 * more than one subplan node which refer to the same plan_id. In this case
+			 * create a duplicate subplan, append it to the glob->subplans and update the plan_id
+			 * of the subplan to refer to the new copy of the subplan node
+			 */
+			PlannerInfo *root = (PlannerInfo *)context->base.node;
+			Plan *dupsubplan = (Plan *) copyObject(planner_subplan_get_plan(root, subplan));
+			int newplan_id = list_length(root->glob->subplans) + 1;
+			subplan->plan_id = newplan_id;
+			root->glob->subplans = lappend(root->glob->subplans, dupsubplan);
+			context->bms_subplans = bms_add_member(context->bms_subplans, newplan_id);
+			return false;
+		}
+	}
+	return plan_tree_walker(node, fixup_subplan_walker, context);
+}
+
+/*
+ * Entry point for fixing subplan references. A SubPlan node
+ * cannot be parallelized twice, so if multiple subplan node
+ * refer to the same plan_id, create a duplicate subplan and update
+ * the plan_id of the subplan to refer to the new copy of subplan node
+ * created in PlannedStmt subplans
+ */
+void
+fixup_subplans(Plan *top_plan, PlannerInfo *root)
+{
+	SubPlanWalkerContext context;
+
+	/*
+	 * If there are no subplans, no fixup will be required
+	 */
+	if (!root->glob->subplans)
+		return;
+
+	context.base.node = (Node *) root;
+	context.bms_subplans = NULL;
+	fixup_subplan_walker((Node *) top_plan, &context);
+	bms_free(context.bms_subplans);
+}

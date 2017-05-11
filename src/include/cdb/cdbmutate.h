@@ -44,6 +44,7 @@ extern void assign_plannode_id(PlannedStmt *stmt);
 extern List *getExprListFromTargetList(List *tlist, int numCols, AttrNumber *colIdx,
 									   bool useExecutorVarFormat);
 extern void remove_unused_initplans(Plan *plan, PlannerInfo *root);
+extern void fixup_subplans(Plan *plan, PlannerInfo *root);
 
 extern int32 cdbhash_const(Const *pconst, int iSegments);
 extern int32 cdbhash_const_list(List *plConsts, int iSegments);
