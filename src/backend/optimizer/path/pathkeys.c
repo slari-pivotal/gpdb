@@ -475,6 +475,13 @@ gen_implied_quals_for_equi_key_list(PlannerInfo *root, List *lpkitems)
     foreach(lcpk1, lpkitems)
     {
     	PathKeyItem *item1 = (PathKeyItem *) lfirst(lcpk1);
+
+		/*
+		 * Skip duplicating subplans clauses as multiple subplan node referring to
+		 * same plan_id of subplans breaks cdbparallize.
+		 */
+		if (contain_subplans((Node *) item1->key))
+			continue;
     	Relids relidspk1 = pull_varnos(item1->key);
 
     	/**
@@ -507,6 +514,9 @@ gen_implied_quals_for_equi_key_list(PlannerInfo *root, List *lpkitems)
     				foreach(lcpk2, lpkitems)
     				{
     					PathKeyItem *item2 = (PathKeyItem *) lfirst(lcpk2);;
+						// Skip SubPlans
+						if (contain_subplans((Node *) item2->key))
+							continue;
 
     					if (exprType(item1->key) == exprType(item2->key)
     							&& exprTypmod(item1->key) == exprTypmod(item2->key))
@@ -661,6 +671,15 @@ generate_implied_equalities(PlannerInfo *root)
 			foreach(ptr1, curset)
 			{
 				PathKeyItem *item1 = (PathKeyItem *) lfirst(ptr1);
+				/*
+				 * Skip duplicating subplans clauses as multiple subplan node referring to
+				 * same plan_id of subplans breaks cdbparallize.
+				 */
+				if (contain_subplans((Node *) item1->key))
+				{
+					i1++;
+					continue;
+				}
 				bool		i1_is_variable = !bms_is_empty(relids[i1]);
 				ListCell   *ptr2;
 				int			i2 = i1 + 1;
@@ -679,6 +698,16 @@ generate_implied_equalities(PlannerInfo *root)
 					 */
 					if (i1_is_variable || i2_is_variable)
 					{
+						/*
+						 * Skip duplicating subplans clauses as multiple subplan node referring to
+						 * same plan_id are later fixed up in fixup_subplans
+						 */
+						if (contain_subplans((Node *) item2->key))
+						{
+							i2++;
+							continue;
+						}
+
 						/*
 						 * Tell process_implied_equality to delete the clause,
 						 * not add it, if it's "var = var" and we have

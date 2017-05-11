@@ -641,6 +641,14 @@ FROM
    GROUP BY A.varchar_col
 ) B ON A.varchar_col = B.varchar_col;
 
+--
+-- Same subplan should not be referred in multiple quals
+--
+CREATE TABLE test_subplans(a int, b int, c int) DISTRIBUTED BY(a);
+INSERT INTO test_subplans VALUES(9,9,9), (11,11,11);
+SELECT * FROM test_subplans T1 WHERE b = (SELECT max(b) FROM test_subplans T2 WHERE T2.a = T1.a GROUP BY c) AND b < 10;
+DROP TABLE test_subplans;
+
 -- start_ignore
 drop schema qp_subquery cascade;
 -- end_ignore
