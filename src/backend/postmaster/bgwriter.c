@@ -282,7 +282,6 @@ BackgroundWriterMain(void)
 		if (!PostmasterIsAlive(true))
 			exit(1);
 
-#ifdef USE_ASSERT_CHECKING
 #ifdef FAULT_INJECTOR
     FaultInjector_InjectFaultIfSet(
     		FaultInBackgroundWriterMain,
@@ -290,7 +289,7 @@ BackgroundWriterMain(void)
             "",  // databaseName
             ""); // tableName
 #endif
-#endif
+
 		if (got_SIGHUP)
 		{
 			got_SIGHUP = false;
