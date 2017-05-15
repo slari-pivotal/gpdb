@@ -224,8 +224,6 @@ bool		gp_interconnect_aggressive_retry=true; /* fast-track app-level retry */
 
 bool gp_interconnect_full_crc=false; /* sanity check UDP data. */
 
-bool gp_interconnect_elide_setup=true; /* under some conditions we can eliminate the setup */
-
 bool gp_interconnect_log_stats=false; /* emit stats at log-level */
 
 bool gp_interconnect_cache_future_packets=true;
@@ -961,8 +959,6 @@ gpvars_assign_gp_interconnect_type(const char *newval, bool doit, GucSource sour
 	if (newval == NULL || newval[0] == 0 ||
 		!pg_strcasecmp("tcp", newval))
 		newtype = INTERCONNECT_TYPE_TCP;
-	else if (!pg_strcasecmp("udp", newval))
-		newtype = INTERCONNECT_TYPE_UDP;
 	else if (!pg_strcasecmp("udpifc", newval))
 		newtype = INTERCONNECT_TYPE_UDPIFC;
 	else if (!pg_strcasecmp("nil", newval))
@@ -999,8 +995,6 @@ gpvars_show_gp_interconnect_type(void)
 {
 	switch(Gp_interconnect_type)
 	{
-		case INTERCONNECT_TYPE_UDP:
-			return "UDP";
 		case INTERCONNECT_TYPE_UDPIFC:
 			return "UDPIFC";
 		case INTERCONNECT_TYPE_NIL:

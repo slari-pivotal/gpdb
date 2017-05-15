@@ -480,9 +480,8 @@ extern int	Gp_max_packet_size;	/* GUC var */
  */
 
 #define INTERCONNECT_TYPE_TCP    (0)
-#define INTERCONNECT_TYPE_UDP    (1)
-#define INTERCONNECT_TYPE_UDPIFC (2)
-#define INTERCONNECT_TYPE_NIL    (3)
+#define INTERCONNECT_TYPE_UDPIFC (1)
+#define INTERCONNECT_TYPE_NIL    (2)
 
 extern int Gp_interconnect_type;
 
@@ -555,13 +554,6 @@ extern bool gp_interconnect_aggressive_retry; /* fast-track app-level retry */
  * Perform a full CRC on UDP-packets as they depart and arrive.
  */
 extern bool gp_interconnect_full_crc;
-
-/*
- * Parameter gp_interconnect_elide_setup
- *
- * Perform a full initial handshake for every statement ?
- */
-extern bool gp_interconnect_elide_setup;
 
 /*
  * Parameter gp_interconnect_log_stats

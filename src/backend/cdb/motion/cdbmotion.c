@@ -154,7 +154,7 @@ initMotionLayerStructs(MotionLayerState **mlStates)
 	if (Gp_role == GP_ROLE_UTILITY)
 		return;
 
-	if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC || Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
+	if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
 		Gp_max_tuple_chunk_size = Gp_max_packet_size - sizeof(struct icpkthdr) - TUPLE_CHUNK_HEADER_SIZE;
 	else
 		Gp_max_tuple_chunk_size = Gp_max_packet_size - PACKET_HEADER_SIZE - TUPLE_CHUNK_HEADER_SIZE;		
@@ -702,8 +702,6 @@ processIncomingChunks(MotionLayerState *mlStates,
 	/* The chunk list we just processed freed-up our rx-buffer space. */
 	if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
 		MlPutRxBufferIFC(transportStates, motNodeID, srcRoute);
-	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
-		MlPutRxBuffer(transportStates, motNodeID, srcRoute);
 
 	/* Stats */
 	statChunksProcessed(mlStates, pMNEntry, numChunks, chunkBytes, tupleBytes);

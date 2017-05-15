@@ -306,8 +306,6 @@ InitMotionLayerIPC(void)
 		InitMotionTCP(&TCP_listenerFd, &tcp_listener);
 	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
 		InitMotionUDPIFC(&UDP_listenerFd, &udp_listener);
-	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
-		InitMotionUDP(&UDP_listenerFd, &udp_listener);
 
 	Gp_listener_port = (udp_listener<<16) | tcp_listener;
 
@@ -321,11 +319,10 @@ CleanUpMotionLayerIPC(void)
 	if (gp_log_interconnect >= GPVARS_VERBOSITY_DEBUG)
     	elog(DEBUG3, "Cleaning Up Motion Layer IPC...");
 
-	CleanupMotionTCP();
-	if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
+	if (Gp_interconnect_type == INTERCONNECT_TYPE_TCP)
+		CleanupMotionTCP();
+	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
 		CleanupMotionUDPIFC();
-	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
-		CleanupMotionUDP();
 
 	/* close down the Interconnect listener socket. */
     if (TCP_listenerFd >= 0)
@@ -565,13 +562,6 @@ DeregisterReadInterest(ChunkTransportState *transportStates,
 #endif
 		markUDPConnInactiveIFC(conn);
 	}
-	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
-	{
-#ifdef AMS_VERBOSE_LOGGING
-		elog(LOG, "deregisterReadInterest set stillactive = false for node %d route %d (%s)", motNodeID, srcRoute, reason);
-#endif
-		markUDPConnInactive(conn);
-	}
 	else
 	{
 
@@ -740,8 +730,6 @@ SetupInterconnect(EState *estate)
 {
 	if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
 		SetupUDPIFCInterconnect(estate);
-	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
-		SetupUDPInterconnect(estate);
 	else if (Gp_interconnect_type == INTERCONNECT_TYPE_TCP)
 		SetupTCPInterconnect(estate);
 	else
@@ -817,11 +805,6 @@ TeardownInterconnect(ChunkTransportState *transportStates,
 	if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
 	{
 		TeardownUDPIFCInterconnect(transportStates, mlStates, forceEOS);
-		return;
-	}
-	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
-	{
-		TeardownUDPInterconnect(transportStates, mlStates, forceEOS);
 		return;
 	}
 	else if (Gp_interconnect_type == INTERCONNECT_TYPE_TCP)
@@ -1138,9 +1121,5 @@ WaitInterconnectQuit(void)
 	if (Gp_interconnect_type == INTERCONNECT_TYPE_UDPIFC)
 	{
 		WaitInterconnectQuitUDPIFC();
-	}
-	else if (Gp_interconnect_type == INTERCONNECT_TYPE_UDP)
-	{
-		WaitInterconnectQuitUDP();
 	}
 }

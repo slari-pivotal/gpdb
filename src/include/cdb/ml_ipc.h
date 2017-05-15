@@ -101,7 +101,6 @@ extern int  GetSeqServerFD(void);
  *
  */
 extern void SetupInterconnect(EState *estate);
-extern void SetupUDPInterconnect(EState *estate);
 extern void SetupUDPIFCInterconnect(EState *estate);
 extern void SetupTCPInterconnect(EState *estate);
 
@@ -120,10 +119,6 @@ extern void TeardownInterconnect(ChunkTransportState *transportStates,
 								 bool forceEOS);
 
 extern void TeardownTCPInterconnect(ChunkTransportState *transportStates,
-								 MotionLayerState *mlStates,
-								 bool forceEOS);
-
-extern void TeardownUDPInterconnect(ChunkTransportState *transportStates,
 								 MotionLayerState *mlStates,
 								 bool forceEOS);
 
@@ -234,7 +229,6 @@ extern void readPacket(MotionConn *conn, bool inTeardown);
  * allows us to "keep" a buffer held for a connection, to avoid a copy
  * (see inplace in chunklist).
  */
-extern void  MlPutRxBuffer(ChunkTransportState *transportStates, int motNodeID, int route);
 extern void  MlPutRxBufferIFC(ChunkTransportState *transportStates, int motNodeID, int route);
 
 #define getChunkTransportState(transportState, motNodeID, ppEntry) \
@@ -324,20 +318,16 @@ extern void forceEosToPeers(MotionLayerState       *mlStates,
 							int                     motNodeID);
 
 extern void InitMotionTCP(int *listenerSocketFd, uint16 *listenerPort);
-extern void InitMotionUDP(int *listenerSocketFd, uint16 *listenerPort);
 extern void InitMotionUDPIFC(int *listenerSocketFd, uint16 *listenerPort);
 
 extern TupleChunkListItem RecvTupleChunk(MotionConn *conn, bool inTeardown);
 
-extern void markUDPConnInactive(MotionConn *conn);
 extern void markUDPConnInactiveIFC(MotionConn *conn);
 
 extern void CleanupMotionTCP(void);
-extern void CleanupMotionUDP(void);
 extern void CleanupMotionUDPIFC(void);
 
 extern void WaitInterconnectQuitUDPIFC(void);
-extern void WaitInterconnectQuitUDP(void);
 
 extern void adjustMasterRouting(Slice *recvSlice);
 
