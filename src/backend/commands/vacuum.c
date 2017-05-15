@@ -1006,7 +1006,7 @@ vacuumStatement_Relation(VacuumStmt *vacstmt, Oid relid, List *relations)
 			 * it on the outer vacuumStatement, but it is useful to track
 			 * relation by relation.
 			 */
-			if (relationRound == 0 && !vacuumStatement_IsTemporary(onerel))
+			if (relationRound == 0 && !vacuumStatement_IsTemporary(RelationGetRelid(onerel)))
 			{
 				char *vsubtype = ""; /* NOFULL */
 
