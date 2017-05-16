@@ -1294,15 +1294,16 @@ void PersistentStore_ReadTuple(
 
 	HeapTupleData 	tuple;
 	Buffer			buffer;
-
 	bool *nulls;
-	
+	ItemPointerData  localMaxTid;
+	READ_PERSISTENT_STATE_ORDERED_LOCK_DECLARE;
+
 #ifdef USE_ASSERT_CHECKING
 	if (storeSharedData == NULL ||
 		!PersistentStoreSharedData_EyecatcherIsValid(storeSharedData))
 		elog(ERROR, "Persistent store shared-memory not valid");
 #endif
-	
+
 	if (Debug_persistent_store_print)
 		elog(PersistentStore_DebugPrintLevel(), 
 			 "PersistentStore_ReadTuple: Going to read tuple at TID %s ('%s', shared data %p)",
@@ -1314,20 +1315,33 @@ void PersistentStore_ReadTuple(
 		elog(ERROR, "TID for fetch persistent tuple is invalid (0,0) ('%s')",
 			 storeData->tableName);
 
+	/*
+	 * Any reads of the storeSharedData should be done under lock. Also, no IO
+	 * like heap_fetch etc.. should be performed within this lock, else it may
+	 * cause dead-lock as WRITE_PERSISTENT_STATE_ORDERED_LOCK take 3 locks
+	 * in-order. Performing IO while holding this lock may reverse the locking
+	 * order like PersistentObjLock taken first and then asking for
+	 * MirroredLock.
+	 */
+	READ_PERSISTENT_STATE_ORDERED_LOCK;
+	ItemPointerCopy(&storeSharedData->maxTid, &localMaxTid);
+	READ_PERSISTENT_STATE_ORDERED_UNLOCK;
+	/* storeSharedData SHOULD NOT BE USED BEYOND THIS POINT */
+
 	// UNDONE: I think the InRecovery test only applies to physical Master Mirroring on Standby.
 	/* Only test this outside of recovery scenarios */
 	if (!InRecovery 
 		&& 
-		(PersistentStore_IsZeroTid(&storeSharedData->maxTid)
+		(PersistentStore_IsZeroTid(&localMaxTid)
 		 ||
 		 ItemPointerCompare(
 						readTid,
-						&storeSharedData->maxTid) == 1 // Greater-than.
+						&localMaxTid) == 1 // Greater-than.
 		))
 	{
 		elog(ERROR, "TID %s for fetch persistent tuple is greater than the last known TID %s ('%s')",
 			 ItemPointerToString(readTid),
-			 ItemPointerToString2(&storeSharedData->maxTid),
+			 ItemPointerToString2(&localMaxTid),
 			 storeData->tableName);
 	}
 	
@@ -1340,7 +1354,7 @@ void PersistentStore_ReadTuple(
 	{
 		elog(ERROR, "Failed to fetch persistent tuple at %s (maximum known TID %s, '%s')",
 			 ItemPointerToString(&tuple.t_self),
-			 ItemPointerToString2(&storeSharedData->maxTid),
+			 ItemPointerToString2(&localMaxTid),
 			 storeData->tableName);
 	}
 
