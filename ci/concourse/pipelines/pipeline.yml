@@ -1414,22 +1414,8 @@ jobs:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
     gpdb_release: delete
-    trigger: false
-  - aggregate: &rhel_artifacts_for_pulse_MU-manual-trigger
-    - get: gpdb_src
-      gpdb_release: MU_team_manual_trigger
-      params: {submodules: none}
-      passed:
-      - gpdb_src_packaging
-      - gpdb_rc_packaging_centos
-    - get: gpdb_src_archive
-      passed: [gpdb_src_packaging]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_rc_packaging_centos]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_rc_packaging_centos]
+    trigger: true
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1551,10 +1537,10 @@ jobs:
 - name: pulse_MU_BehaveNetBackup77_filename_compatibility
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
+  - get: weekly-trigger-pulse
     gpdb_release: delete
-    trigger: false
-  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
+    trigger: true
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1626,10 +1612,10 @@ jobs:
 - name: pulse_MU_DDBOOST_Full
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
+  - get: weekly-trigger-pulse
     gpdb_release: delete
-    trigger: false
-  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
+    trigger: true
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1651,10 +1637,10 @@ jobs:
 - name: pulse_MU_DDBOOST_Full_filename_compatibility
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
+  - get: weekly-trigger-pulse
     gpdb_release: delete
-    trigger: false
-  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
+    trigger: true
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1676,10 +1662,10 @@ jobs:
 - name: pulse_MU_DDBOOST_Incremental
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
+  - get: weekly-trigger-pulse
     gpdb_release: delete
-    trigger: false
-  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
+    trigger: true
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1701,10 +1687,10 @@ jobs:
 - name: pulse_MU_DDBOOST_Incremental_filename_compatibility
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
+  - get: weekly-trigger-pulse
     gpdb_release: delete
-    trigger: false
-  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
+    trigger: true
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
@@ -1726,10 +1712,10 @@ jobs:
 - name: pulse_MU_MFR-TINC
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
+  - get: weekly-trigger-pulse
     gpdb_release: delete
-    trigger: false
-  - aggregate: *rhel_artifacts_for_pulse_MU-manual-trigger
+    trigger: true
+  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
