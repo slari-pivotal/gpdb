@@ -19,7 +19,7 @@
 -- We want to have an error between the point where all segments are prepared and our decision 
 -- to write the Distributed Commit record.
 --
-SET optimizer_disable_missing_stats_collection=true;
+SET optimizer_print_missing_stats =off;
 CREATE TABLE distxact1_1 (a int);
 BEGIN;
 INSERT INTO distxact1_1 VALUES (1);

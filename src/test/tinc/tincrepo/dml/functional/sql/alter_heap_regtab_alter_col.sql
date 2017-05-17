@@ -6,6 +6,7 @@
 -- @description test: Alter table alter column
 \echo --start_ignore
 set gp_enable_column_oriented_table=on;
+set optimizer_print_missing_stats=off;
 \echo --end_ignore
 
 -- ADD COLUMN

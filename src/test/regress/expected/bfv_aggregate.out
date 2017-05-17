@@ -220,7 +220,7 @@ analyze multi_stage_test;
 -- TEST
 -- start_ignore
 set optimizer_segments=2;
-set optimizer_prefer_multistage_agg = on;
+set optimizer_force_multistage_agg = on;
 -- end_ignore
 select count_operator('explain select count(*) from multi_stage_test group by b;','GroupAggregate');
  count_operator 
@@ -229,7 +229,7 @@ select count_operator('explain select count(*) from multi_stage_test group by b;
 (1 row)
 
 -- start_ignore
-set optimizer_prefer_multistage_agg = off;
+set optimizer_force_multistage_agg = off;
 -- end_ignore
 select count_operator('explain select count(*) from multi_stage_test group by b;','GroupAggregate');
  count_operator 
@@ -241,14 +241,14 @@ select count_operator('explain select count(*) from multi_stage_test group by b;
 -- start_ignore
 DROP TABLE IF EXISTS multi_stage_test;
 reset optimizer_segments;
-set optimizer_prefer_multistage_agg = off;
+set optimizer_force_multistage_agg = off;
 -- end_ignore
 ---
 --- Testing not picking HashAgg for aggregates without preliminary functions
 ---
 -- SETUP
 -- start_ignore
-SET optimizer_disable_missing_stats_collection=on;
+SET optimizer_print_missing_stats =off;
 DROP TABLE IF EXISTS attribute_table;
 NOTICE:  table "attribute_table" does not exist, skipping
 -- end_ignore
@@ -291,7 +291,7 @@ select count_operator('explain select product_id,concat(E''#attribute_''||attrib
 DROP TABLE IF EXISTS attribute_table;
 DROP AGGREGATE IF EXISTS concat(text);
 drop function do_concat(text,text) cascade;
-SET optimizer_disable_missing_stats_collection=off;
+SET optimizer_print_missing_stats=on;
 -- end_ignore
 ---
 --- Testing fallback to planner when the agg used in window does not have either prelim or inverse prelim function.

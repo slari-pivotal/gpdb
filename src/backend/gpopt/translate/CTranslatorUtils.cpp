@@ -98,7 +98,7 @@ CTranslatorUtils::PreloadMD
 	Query *pquery
 	)
 {
-	CAutoTimer at("\n[OPT]: Metadata Preload Time", GPOS_FTRACE(EopttracePrintOptStats));
+	CAutoTimer at("\n[OPT]: Metadata Preload Time", GPOS_FTRACE(EopttracePrintOptimizationStatistics));
 
 	// TODO: venky Jan 11th 2012; this is a temporary fix that preloads the
 	// cache with MD information of base types

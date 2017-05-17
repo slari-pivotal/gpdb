@@ -17,8 +17,8 @@ SET
 -- @optimizer_mode on
 -- @description GUC to disable DML in Orca in the presence of check or not null constraints
 -- start_ignore
-set optimizer_dml_constraints=off;
-psql:/data/prabhd/test/tincrepo/main/dml/functional/output/fallback_dml_constraint_3_orca.sql:18: LOG:  statement: set optimizer_dml_constraints=off;
+set optimizer_enable_dml_constraints=off;
+psql:/data/prabhd/test/tincrepo/main/dml/functional/output/fallback_dml_constraint_3_orca.sql:18: LOG:  statement: set optimizer_enable_dml_constraints=off;
 SET
 explain update constr_tab set a = 10;
 psql:/data/prabhd/test/tincrepo/main/dml/functional/output/fallback_dml_constraint_3_orca.sql:19: LOG:  statement: explain update constr_tab set a = 10;

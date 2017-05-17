@@ -163,7 +163,7 @@ drop database heap_table_drop_col3;
 
 --
 \echo -- end_ignore
-set optimizer_disable_missing_stats_collection = on;
+set optimizer_print_missing_stats = off;
 create database ao_db;
 CREATE DATABASE db_test_bed;
 

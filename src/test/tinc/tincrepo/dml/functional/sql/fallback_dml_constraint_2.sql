@@ -8,7 +8,7 @@
 -- @description GUC to disable DML in Orca in the presence of check or not null constraints
 
 -- start_ignore
-set optimizer_dml_constraints=on;
+set optimizer_enable_dml_constraints=on;
 explain insert into constr_tab values (1,2,3);
 -- end_ignore
 

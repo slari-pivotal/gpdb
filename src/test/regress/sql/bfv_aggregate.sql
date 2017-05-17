@@ -157,11 +157,11 @@ analyze multi_stage_test;
 -- TEST
 -- start_ignore
 set optimizer_segments=2;
-set optimizer_prefer_multistage_agg = on;
+set optimizer_force_multistage_agg = on;
 -- end_ignore
 select count_operator('explain select count(*) from multi_stage_test group by b;','GroupAggregate');
 -- start_ignore
-set optimizer_prefer_multistage_agg = off;
+set optimizer_force_multistage_agg = off;
 -- end_ignore
 select count_operator('explain select count(*) from multi_stage_test group by b;','GroupAggregate');
 
@@ -169,7 +169,7 @@ select count_operator('explain select count(*) from multi_stage_test group by b;
 -- start_ignore
 DROP TABLE IF EXISTS multi_stage_test;
 reset optimizer_segments;
-set optimizer_prefer_multistage_agg = off;
+set optimizer_force_multistage_agg = off;
 -- end_ignore
 
 ---
@@ -178,7 +178,7 @@ set optimizer_prefer_multistage_agg = off;
 
 -- SETUP
 -- start_ignore
-SET optimizer_disable_missing_stats_collection=on;
+SET optimizer_print_missing_stats =off;
 DROP TABLE IF EXISTS attribute_table;
 -- end_ignore
 CREATE TABLE attribute_table (product_id integer, attribute_id integer,attribute text, attribute2 text,attribute_ref_lists text,short_name text,attribute6 text,attribute5 text,measure double precision,unit character varying(60)) DISTRIBUTED BY (product_id ,attribute_id);
@@ -216,7 +216,7 @@ select count_operator('explain select product_id,concat(E''#attribute_''||attrib
 DROP TABLE IF EXISTS attribute_table;
 DROP AGGREGATE IF EXISTS concat(text);
 drop function do_concat(text,text) cascade;
-SET optimizer_disable_missing_stats_collection=off;
+SET optimizer_print_missing_stats =on;
 -- end_ignore
 
 

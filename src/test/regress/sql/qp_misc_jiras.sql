@@ -1,7 +1,7 @@
 set DateStyle="ISO, MDY";
 set gp_create_table_random_default_distribution=off;
 -- start_ignore
-set optimizer_disable_missing_stats_collection=on;
+set optimizer_print_missing_stats=off;
 create schema qp_misc_jiras;
 create table qp_misc_jiras.tbl3301_foo (c1 int);
 create external web table qp_misc_jiras.tbl3301_bar(like qp_misc_jiras.tbl3301_foo) execute 'echo 1' on master format 'csv';
@@ -1359,7 +1359,7 @@ insert into qp_misc_jiras.tbl7286_test select i%10, '2009/01/01'::date + (i || '
 set gp_enable_agg_distinct=off;
 set gp_enable_agg_distinct_pruning=off;
 set statement_mem='1000kB';
-set optimizer_prefer_scalar_dqa_multistage_agg=off;
+set optimizer_force_three_stage_scalar_dqa =off;
 
 select count(distinct d) from qp_misc_jiras.tbl7286_test;
 drop table qp_misc_jiras.tbl7286_test;
