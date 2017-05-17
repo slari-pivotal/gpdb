@@ -1412,7 +1412,7 @@ jobs:
 - name: pulse_MU_BehaveBackupRestore_filename_compatibility
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
+  - get: weekly-trigger-pulse
     gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
