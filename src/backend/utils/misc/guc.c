@@ -775,6 +775,9 @@ bool		optimizer_enable_partial_index;
 bool		optimizer_enable_dml_triggers;
 bool		optimizer_enable_dml_constraints;
 bool		optimizer_enable_master_only_queries;
+bool		optimizer_enable_hashjoin;
+bool		optimizer_enable_dynamictablescan;
+bool		optimizer_enable_indexscan;
 
 /* Optimizer plan enumeration related GUCs */
 bool		optimizer_enumerate_plans;
@@ -4145,55 +4148,85 @@ static struct config_bool ConfigureNamesBool[] =
     	&optimizer_control,
     	true, NULL, NULL
     },
-        {
-                {"optimizer_enable_space_pruning", PGC_USERSET, DEVELOPER_OPTIONS,
-                        gettext_noop("Enable space pruning in the optimizer."),
-                        NULL,
-                        GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
-                },
-                &optimizer_enable_space_pruning,
-                true, NULL, NULL
+    
+    {
+        {"optimizer_enable_space_pruning", PGC_USERSET, DEVELOPER_OPTIONS,
+            gettext_noop("Enable space pruning in the optimizer."),
+            NULL,
+            GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
         },
+        &optimizer_enable_space_pruning,
+        true, NULL, NULL
+    },
 
-        {
-                {"optimizer_enable_master_only_queries", PGC_USERSET, DEVELOPER_OPTIONS,
-                        gettext_noop("Process master only queries via the optimizer."),
-                        NULL,
-                        GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
-                },
-                &optimizer_enable_master_only_queries,
-                false, NULL, NULL
+    {
+        {"optimizer_enable_master_only_queries", PGC_USERSET, DEVELOPER_OPTIONS,
+            gettext_noop("Process master only queries via the optimizer."),
+            NULL,
+            GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
         },
+        &optimizer_enable_master_only_queries,
+        false, NULL, NULL
+        },
+    {
+        {"optimizer_enable_hashjoin", PGC_USERSET, DEVELOPER_OPTIONS,
+            gettext_noop("Enables the optimizer's use of hash join plans."),
+            NULL,
+            GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+        },
+        &optimizer_enable_hashjoin,
+        true, NULL, NULL
+    },
+    
+    {
+        {"optimizer_enable_dynamictablescan", PGC_USERSET, DEVELOPER_OPTIONS,
+            gettext_noop("Enables the optimizer's use of plans with dynamic table scan."),
+            NULL,
+            GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+        },
+        &optimizer_enable_dynamictablescan,
+        true, NULL, NULL
+    },
+    
+    {
+        {"optimizer_enable_indexscan", PGC_USERSET, DEVELOPER_OPTIONS,
+            gettext_noop("Enables the optimizer's use of plans with index scan."),
+            NULL,
+            GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+            },
+            &optimizer_enable_indexscan,
+            true, NULL, NULL
+    },
 
-        {
-                {"optimizer_multilevel_partitioning", PGC_USERSET, DEVELOPER_OPTIONS,
-                        gettext_noop("Enable optimization of queries on multilevel partitioned tables."),
-                        NULL,
-                        GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
-                },
-                &optimizer_multilevel_partitioning,
-                true, NULL, NULL
+    {
+        {"optimizer_multilevel_partitioning", PGC_USERSET, DEVELOPER_OPTIONS,
+            gettext_noop("Enable optimization of queries on multilevel partitioned tables."),
+            NULL,
+            GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
         },
+        &optimizer_multilevel_partitioning,
+        true, NULL, NULL
+    },
 
-        {
-                {"optimizer_enable_derive_stats_all_groups", PGC_USERSET, DEVELOPER_OPTIONS,
-                        gettext_noop("Enable stats derivation for all groups after exploration."),
-                        NULL,
-                        GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
-                },
-                &optimizer_enable_derive_stats_all_groups,
-                false, NULL, NULL
-        },
+    {
+       {"optimizer_enable_derive_stats_all_groups", PGC_USERSET, DEVELOPER_OPTIONS,
+           gettext_noop("Enable stats derivation for all groups after exploration."),
+           NULL,
+           GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+       },
+       &optimizer_enable_derive_stats_all_groups,
+       false, NULL, NULL
+    },
 
-        {
-                {"optimizer_force_multistage_agg", PGC_USERSET, QUERY_TUNING_METHOD,
-                        gettext_noop("Force optimizer to always pick multistage aggregates when such a plan alternative is generated."),
-                        NULL,
-                        GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
-                },
-                &optimizer_force_multistage_agg,
-                true, NULL, NULL
+    {
+        {"optimizer_force_multistage_agg", PGC_USERSET, QUERY_TUNING_METHOD,
+            gettext_noop("Force optimizer to always pick multistage aggregates when such a plan alternative is generated."),
+            NULL,
+            GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
         },
+        &optimizer_force_multistage_agg,
+        true, NULL, NULL
+    },
 
         {
                 {"optimizer_enable_multiple_distinct_aggs", PGC_USERSET, DEVELOPER_OPTIONS,
