@@ -7768,6 +7768,16 @@ static struct config_string ConfigureNamesString[] =
 	},
 
 	{
+		{"gp_log_interconnect", PGC_USERSET, LOGGING_WHAT,
+		 gettext_noop("Sets the verbosity of logged messages pertaining to connections between worker processes."),
+		 gettext_noop("Valid values are \"off\", \"terse\", \"verbose\" and \"debug\"."),
+		 GUC_GPDB_ADDOPT | GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+		},
+		&gp_log_interconnect_str,
+		"terse", gpvars_assign_gp_log_interconnect, gpvars_show_gp_log_interconnect
+	},
+
+	{
 		{"gp_interconnect_type", PGC_BACKEND, GP_ARRAY_TUNING,
 		 gettext_noop("Sets the protocol used for inter-node communication."),
 		 gettext_noop("Valid values are \"tcp\", \"udpifc\"."),
@@ -7775,6 +7785,16 @@ static struct config_string ConfigureNamesString[] =
 		},
 		&gp_interconnect_type_str,
 		"udpifc", gpvars_assign_gp_interconnect_type, gpvars_show_gp_interconnect_type
+	},
+
+	{
+		{"gp_interconnect_fc_method", PGC_USERSET, GP_ARRAY_TUNING,
+		 gettext_noop("Sets the flow control method used for UDP interconnect."),
+		 gettext_noop("Valid values are \"capacity\" and \"loss\"."),
+		 GUC_GPDB_ADDOPT
+		},
+		&gp_interconnect_fc_method_str,
+		"loss", gpvars_assign_gp_interconnect_fc_method, gpvars_show_gp_interconnect_fc_method
 	},
 
 	{
