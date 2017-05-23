@@ -627,7 +627,7 @@ convert_sourcefiles_in(char *source, char * dest_dir, char *dest, char *suffix)
 		exit_nicely(2);
 
 	/* also create the output directory if not present */
-	snprintf(outdir, sizeof(outdir), "%s/%s", abs_srcdir, dest);
+	snprintf(outdir, sizeof(outdir), "%s/%s", dest_dir, dest);
 	if (!directory_exists(outdir))
 		make_directory(outdir);
 
@@ -762,10 +762,9 @@ convert_sourcefiles_in(char *source, char * dest_dir, char *dest, char *suffix)
 static void
 convert_sourcefiles(void)
 {
-	convert_sourcefiles_in("input", inputdir, "sql", "sql");
+	convert_sourcefiles_in("input", outputdir, "sql", "sql");
 	convert_sourcefiles_in("output", outputdir, "expected", "out");
-
-	convert_sourcefiles_in("mapred", inputdir, "yml", "yml");
+	convert_sourcefiles_in("mapred", outputdir, "yml", "yml");
 }
 
 /*
