@@ -657,24 +657,6 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
 
-- name: nightly-trigger-pulse
-  gpdb_release: delete
-  type: time
-  source:
-    location: America/Los_Angeles
-    days: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday]
-    start: 5:00 AM
-    stop: 6:00 AM
-
-- name: weekly-trigger-pulse
-  gpdb_release: delete
-  type: time
-  source:
-    location: America/Los_Angeles
-    days: [Sunday]
-    start: 1:00 PM
-    stop: 2:00 PM
-
 ## ======================================================================
 ## jobs
 ## ======================================================================
@@ -1091,7 +1073,7 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       BEHAVE_TAGS: persistent_rebuild
-      BLDWRAP_POSTGRES_CONF_ADDONS: ""
+      BLDWRAP_POSTGRES_CONF_ADDONS: ''
       TEST_OS: centos
 
 - name: cs-fts_centos
@@ -1373,12 +1355,9 @@ jobs:
 - name: pulse_MU_BehaveBackupRestore
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: &rhel_artifacts_for_pulse_release-add-trigger
     - get: gpdb_src
-      gpdb_release: add_trigger
+      trigger: true
       params: {submodules: none}
       passed:
       - gpdb_src_packaging
@@ -1412,9 +1391,6 @@ jobs:
 - name: pulse_MU_BehaveBackupRestore_filename_compatibility
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1437,9 +1413,6 @@ jobs:
 - name: pulse_MU_BehaveGPCheckcat
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1462,9 +1435,6 @@ jobs:
 - name: pulse_MU_BehaveGPRecoverseg
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1487,9 +1457,6 @@ jobs:
 - name: pulse_MU_BehaveGptransfer43xTo43x
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1512,9 +1479,6 @@ jobs:
 - name: pulse_MU_BehaveNetBackup77
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1537,9 +1501,6 @@ jobs:
 - name: pulse_MU_BehaveNetBackup77_filename_compatibility
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1562,9 +1523,6 @@ jobs:
 - name: pulse_MU_Kerberos-jdbc-no-scm
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1587,9 +1545,6 @@ jobs:
 - name: pulse_MU_Kerberos-smoke
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1612,9 +1567,6 @@ jobs:
 - name: pulse_MU_DDBOOST_Full
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1637,9 +1589,6 @@ jobs:
 - name: pulse_MU_DDBOOST_Full_filename_compatibility
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1662,9 +1611,6 @@ jobs:
 - name: pulse_MU_DDBOOST_Incremental
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1687,9 +1633,6 @@ jobs:
 - name: pulse_MU_DDBOOST_Incremental_filename_compatibility
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1712,9 +1655,6 @@ jobs:
 - name: pulse_MU_MFR-TINC
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1737,9 +1677,6 @@ jobs:
 - name: pulse_MU_Gpexpand
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1762,9 +1699,6 @@ jobs:
 - name: pulse_cs-aoco-compression
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1787,9 +1721,6 @@ jobs:
 - name: pulse_cs-bin-swap
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1812,9 +1743,6 @@ jobs:
 - name: pulse_cs-filerep-schema-topology-crashrecov
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1837,9 +1765,6 @@ jobs:
 - name: pulse_cs-filerep-end-to-end
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1862,9 +1787,6 @@ jobs:
 - name: pulse_cs-pg-two-phase
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1887,9 +1809,6 @@ jobs:
 - name: pulse_cs-walrepl-multinode
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -1928,8 +1847,8 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: memory_accounting
-      BLDWRAP_POSTGRES_CONF_ADDONS: ""
-      TEST_OS: "centos"
+      BLDWRAP_POSTGRES_CONF_ADDONS: ''
+      TEST_OS: centos
 
 - name: QP_runaway-query
   plan:
@@ -1950,8 +1869,8 @@ jobs:
     image: centos-gpdb-dev-5
     params:
       MAKE_TEST_COMMAND: runaway_query
-      BLDWRAP_POSTGRES_CONF_ADDONS: ""
-      TEST_OS: "centos"
+      BLDWRAP_POSTGRES_CONF_ADDONS: ''
+      TEST_OS: centos
 
 - name: QP_optimizer-functional
   plan:
@@ -1988,9 +1907,6 @@ jobs:
 - name: pulse_Gppkg
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -2013,9 +1929,6 @@ jobs:
 - name: pulse_Gppkg-redhat6
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -2038,9 +1951,6 @@ jobs:
 - name: pulse_CCLE
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -2063,12 +1973,9 @@ jobs:
 - name: pulse_CCLE-sles11sp4
   plan:
   - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: &sles_artifacts_for_pulse_release-add-trigger
     - get: gpdb_src
-      gpdb_release: add_trigger
+      trigger: true
       params: {submodules: none}
       passed:
       - gpdb_src_packaging
@@ -2102,9 +2009,6 @@ jobs:
 - name: pulse_mpp-interconnect
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
@@ -2127,9 +2031,6 @@ jobs:
 - name: pulse_mpp-interconnect-sles
   plan:
   - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
   - aggregate: *sles_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
     image: pulse-api-image
