@@ -38,10 +38,8 @@ groups:
   - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
-  - pulse_DPM_DDBOOST_Full
-  - pulse_DPM_DDBOOST_Incremental
-  - pulse_DPM_DDBOOST_Full_filename_compatibility
-  - pulse_DPM_DDBOOST_Incremental_filename_compatibility
+  - pulse_DPM_BehaveDDBoost
+  - pulse_DPM_BehaveDDBoost_filename_compatibility
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
   - pulse_Kerberos-smoke
@@ -100,10 +98,8 @@ groups:
   - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
-  - pulse_DPM_DDBOOST_Full
-  - pulse_DPM_DDBOOST_Incremental
-  - pulse_DPM_DDBOOST_Full_filename_compatibility
-  - pulse_DPM_DDBOOST_Incremental_filename_compatibility
+  - pulse_DPM_BehaveDDBoost
+  - pulse_DPM_BehaveDDBoost_filename_compatibility
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
   - pulse_Kerberos-smoke
@@ -148,10 +144,8 @@ groups:
   - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
-  - pulse_DPM_DDBOOST_Full
-  - pulse_DPM_DDBOOST_Incremental
-  - pulse_DPM_DDBOOST_Full_filename_compatibility
-  - pulse_DPM_DDBOOST_Incremental_filename_compatibility
+  - pulse_DPM_BehaveDDBoost
+  - pulse_DPM_BehaveDDBoost_filename_compatibility
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
   - pulse_Kerberos-smoke
@@ -1620,7 +1614,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_DPM_DDBOOST_Full
+- name: pulse_DPM_BehaveDDBoost
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1632,7 +1626,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Full
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveDDBoost
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -1641,11 +1635,11 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Full
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveDDBoost
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_DPM_DDBOOST_Full_filename_compatibility
+- name: pulse_DPM_BehaveDDBoost_filename_compatibility
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1657,7 +1651,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/trigger_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Full_filename_compatibility
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveDDBoost_filename_compatibility
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
   - task: monitor_pulse
@@ -1666,57 +1660,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Full_filename_compatibility
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_DPM_DDBOOST_Incremental
-  plan:
-  - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_DPM_DDBOOST_Incremental_filename_compatibility
-  plan:
-  - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental_filename_compatibility
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-DDBOOST_Incremental_filename_compatibility
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveDDBoost_filename_compatibility
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
