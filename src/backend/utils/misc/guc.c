@@ -778,6 +778,7 @@ bool		optimizer_enable_master_only_queries;
 bool		optimizer_enable_hashjoin;
 bool		optimizer_enable_dynamictablescan;
 bool		optimizer_enable_indexscan;
+bool		optimizer_enable_tablescan;
 
 /* Optimizer plan enumeration related GUCs */
 bool		optimizer_enumerate_plans;
@@ -4188,6 +4189,16 @@ static struct config_bool ConfigureNamesBool[] =
             true, NULL, NULL
     },
 
+    {
+        {"optimizer_enable_tablescan", PGC_USERSET, DEVELOPER_OPTIONS,
+            gettext_noop("Enables the optimizer's use of plans with table scan."),
+            NULL,
+            GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+        },
+        &optimizer_enable_tablescan,
+        true, NULL, NULL
+    },
+    
     {
         {"optimizer_multilevel_partitioning", PGC_USERSET, DEVELOPER_OPTIONS,
             gettext_noop("Enable optimization of queries on multilevel partitioned tables."),
