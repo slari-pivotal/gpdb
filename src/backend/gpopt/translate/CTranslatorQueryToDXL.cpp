@@ -67,7 +67,7 @@ extern bool optimizer_enable_dml_constraints;
 extern bool optimizer_enable_multiple_distinct_aggs;
 
 // OIDs of variants of LEAD window function
-const OID rgOIDLead[] =
+static const OID rgOIDLead[] =
 	{
 	7011, 7074, 7075, 7310, 7312,
 	7314, 7316, 7318,
@@ -94,7 +94,7 @@ const OID rgOIDLead[] =
 	};
 
 // OIDs of variants of LAG window function
-const OID rgOIDLag[] =
+static const OID rgOIDLag[] =
 	{
 	7675, 7491, 7493, 7495, 7497, 7499,
 	7501, 7503, 7505, 7507, 7509,
@@ -299,7 +299,7 @@ CTranslatorQueryToDXL::CheckUnsupportedNodeTypes
 	Query *pquery
 	)
 {
-	SUnsupportedFeature rgUnsupported[] =
+	static const SUnsupportedFeature rgUnsupported[] =
 	{
 		{T_RowExpr, GPOS_WSZ_LIT("ROW EXPRESSION")},
 		{T_RowCompareExpr, GPOS_WSZ_LIT("ROW COMPARE")},
@@ -420,7 +420,7 @@ CTranslatorQueryToDXL::CheckSupportedCmdType
 		return;
 	}
 
-	SCmdNameElem rgStrMap[] =
+	static const SCmdNameElem rgStrMap[] =
 		{
 		{CMD_UTILITY, GPOS_WSZ_LIT("UTILITY command")}
 		};
@@ -2876,7 +2876,7 @@ CTranslatorQueryToDXL::PdxlnFromGPDBFromClauseEntry
 			GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("gp_dist_random"));
 		}
 
-		SRTETranslator rgTranslators[] =
+		static const SRTETranslator rgTranslators[] =
 		{
 			{RTE_RELATION, &CTranslatorQueryToDXL::PdxlnFromRelation},
 			{RTE_VALUES, &CTranslatorQueryToDXL::PdxlnFromValues},
@@ -2940,7 +2940,7 @@ CTranslatorQueryToDXL::UnsupportedRTEKind
 				|| RTE_FUNCTION == rtekind || RTE_SUBQUERY == rtekind
 				|| RTE_VALUES == rtekind));
 
-	SRTENameElem rgStrMap[] =
+	static const SRTENameElem rgStrMap[] =
 		{
 		{RTE_JOIN, GPOS_WSZ_LIT("RangeTableEntry of type Join")},
 		{RTE_SPECIAL, GPOS_WSZ_LIT("RangeTableEntry of type Special")},
