@@ -30,21 +30,21 @@ groups:
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
-  - pulse_MU_BehaveBackupRestore
-  - pulse_MU_BehaveBackupRestore_filename_compatibility
-  - pulse_MU_BehaveGPCheckcat
-  - pulse_MU_BehaveGPRecoverseg
-  - pulse_MU_BehaveGptransfer43xTo43x
-  - pulse_MU_BehaveNetBackup77
-  - pulse_MU_BehaveNetBackup77_filename_compatibility
-  - pulse_MU_DDBOOST_Full
-  - pulse_MU_DDBOOST_Incremental
-  - pulse_MU_DDBOOST_Full_filename_compatibility
-  - pulse_MU_DDBOOST_Incremental_filename_compatibility
-  - pulse_MU_Gpexpand
-  - pulse_MU_Kerberos-jdbc-no-scm
-  - pulse_MU_Kerberos-smoke
-  - pulse_MU_MFR-TINC
+  - pulse_DPM_BehaveBackupRestore
+  - pulse_DPM_BehaveBackupRestore_filename_compatibility
+  - pulse_DPM_BehaveGPCheckcat
+  - pulse_DPM_BehaveGPRecoverseg
+  - pulse_DPM_BehaveGptransfer43xTo43x
+  - pulse_DPM_BehaveNetBackup77
+  - pulse_DPM_BehaveNetBackup77_filename_compatibility
+  - pulse_DPM_DDBOOST_Full
+  - pulse_DPM_DDBOOST_Incremental
+  - pulse_DPM_DDBOOST_Full_filename_compatibility
+  - pulse_DPM_DDBOOST_Incremental_filename_compatibility
+  - pulse_MM_Gpexpand
+  - pulse_Kerberos-jdbc-no-scm
+  - pulse_Kerberos-smoke
+  - pulse_DPM_MFR-TINC
   - pulse_cs-aoco-compression
   - pulse_cs-bin-swap
   - pulse_cs-filerep-schema-topology-crashrecov
@@ -91,21 +91,21 @@ groups:
   - pulse_mpp-interconnect-sles
 - name: Pulse
   jobs:
-  - pulse_MU_BehaveBackupRestore
-  - pulse_MU_BehaveBackupRestore_filename_compatibility
-  - pulse_MU_BehaveGPCheckcat
-  - pulse_MU_BehaveGPRecoverseg
-  - pulse_MU_BehaveGptransfer43xTo43x
-  - pulse_MU_BehaveNetBackup77
-  - pulse_MU_BehaveNetBackup77_filename_compatibility
-  - pulse_MU_DDBOOST_Full
-  - pulse_MU_DDBOOST_Incremental
-  - pulse_MU_DDBOOST_Full_filename_compatibility
-  - pulse_MU_DDBOOST_Incremental_filename_compatibility
-  - pulse_MU_Gpexpand
-  - pulse_MU_Kerberos-jdbc-no-scm
-  - pulse_MU_Kerberos-smoke
-  - pulse_MU_MFR-TINC
+  - pulse_DPM_BehaveBackupRestore
+  - pulse_DPM_BehaveBackupRestore_filename_compatibility
+  - pulse_DPM_BehaveGPCheckcat
+  - pulse_DPM_BehaveGPRecoverseg
+  - pulse_DPM_BehaveGptransfer43xTo43x
+  - pulse_DPM_BehaveNetBackup77
+  - pulse_DPM_BehaveNetBackup77_filename_compatibility
+  - pulse_DPM_DDBOOST_Full
+  - pulse_DPM_DDBOOST_Incremental
+  - pulse_DPM_DDBOOST_Full_filename_compatibility
+  - pulse_DPM_DDBOOST_Incremental_filename_compatibility
+  - pulse_MM_Gpexpand
+  - pulse_Kerberos-jdbc-no-scm
+  - pulse_Kerberos-smoke
+  - pulse_DPM_MFR-TINC
   - pulse_cs-aoco-compression
   - pulse_cs-bin-swap
   - pulse_cs-filerep-schema-topology-crashrecov
@@ -139,21 +139,21 @@ groups:
   - QP_optimizer-functional
 - name: Pulse_MU
   jobs:
-  - pulse_MU_BehaveBackupRestore
-  - pulse_MU_BehaveBackupRestore_filename_compatibility
-  - pulse_MU_BehaveGPCheckcat
-  - pulse_MU_BehaveGPRecoverseg
-  - pulse_MU_BehaveGptransfer43xTo43x
-  - pulse_MU_BehaveNetBackup77
-  - pulse_MU_BehaveNetBackup77_filename_compatibility
-  - pulse_MU_DDBOOST_Full
-  - pulse_MU_DDBOOST_Incremental
-  - pulse_MU_DDBOOST_Full_filename_compatibility
-  - pulse_MU_DDBOOST_Incremental_filename_compatibility
-  - pulse_MU_Gpexpand
-  - pulse_MU_Kerberos-jdbc-no-scm
-  - pulse_MU_Kerberos-smoke
-  - pulse_MU_MFR-TINC
+  - pulse_DPM_BehaveBackupRestore
+  - pulse_DPM_BehaveBackupRestore_filename_compatibility
+  - pulse_DPM_BehaveGPCheckcat
+  - pulse_DPM_BehaveGPRecoverseg
+  - pulse_DPM_BehaveGptransfer43xTo43x
+  - pulse_DPM_BehaveNetBackup77
+  - pulse_DPM_BehaveNetBackup77_filename_compatibility
+  - pulse_DPM_DDBOOST_Full
+  - pulse_DPM_DDBOOST_Incremental
+  - pulse_DPM_DDBOOST_Full_filename_compatibility
+  - pulse_DPM_DDBOOST_Incremental_filename_compatibility
+  - pulse_MM_Gpexpand
+  - pulse_Kerberos-jdbc-no-scm
+  - pulse_Kerberos-smoke
+  - pulse_DPM_MFR-TINC
 - name: Windows
   jobs:
   - compile_gpdb_windows_ccl
@@ -1370,7 +1370,7 @@ jobs:
 # initials of the team that owns the suite (e.g. MU = Management Utilities)
 # and tag is the tag passed to behave.
 
-- name: pulse_MU_BehaveBackupRestore
+- name: pulse_DPM_BehaveBackupRestore
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1409,7 +1409,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_BehaveBackupRestore_filename_compatibility
+- name: pulse_DPM_BehaveBackupRestore_filename_compatibility
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1434,7 +1434,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_BehaveGPCheckcat
+- name: pulse_DPM_BehaveGPCheckcat
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1459,7 +1459,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_BehaveGPRecoverseg
+- name: pulse_DPM_BehaveGPRecoverseg
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1484,7 +1484,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_BehaveGptransfer43xTo43x
+- name: pulse_DPM_BehaveGptransfer43xTo43x
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1509,7 +1509,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_BehaveNetBackup77
+- name: pulse_DPM_BehaveNetBackup77
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1534,7 +1534,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_BehaveNetBackup77_filename_compatibility
+- name: pulse_DPM_BehaveNetBackup77_filename_compatibility
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1559,7 +1559,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_Kerberos-jdbc-no-scm
+- name: pulse_Kerberos-jdbc-no-scm
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1584,7 +1584,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_Kerberos-smoke
+- name: pulse_Kerberos-smoke
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1609,7 +1609,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_DDBOOST_Full
+- name: pulse_DPM_DDBOOST_Full
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1634,7 +1634,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_DDBOOST_Full_filename_compatibility
+- name: pulse_DPM_DDBOOST_Full_filename_compatibility
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1659,7 +1659,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_DDBOOST_Incremental
+- name: pulse_DPM_DDBOOST_Incremental
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1684,7 +1684,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_DDBOOST_Incremental_filename_compatibility
+- name: pulse_DPM_DDBOOST_Incremental_filename_compatibility
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1709,7 +1709,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_MFR-TINC
+- name: pulse_DPM_MFR-TINC
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
@@ -1734,7 +1734,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MU_Gpexpand
+- name: pulse_MM_Gpexpand
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
