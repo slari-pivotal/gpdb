@@ -15,6 +15,7 @@
 #include "postgres.h"
 
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "fmgr.h"
 #include "funcapi.h"
@@ -328,7 +329,8 @@ static URL_FILE
 
 	url = quoteArgument(EXTPROTOCOL_GET_URL(fcinfo));
 	initStringInfo(&cmd);
-	appendStringInfo(&cmd, "%s%s %s %s %s", env_cmd.data, java_cmd, format,
+
+	appendStringInfo(&cmd, EXEC_URL_PREFIX "%s%s %s %s %s", env_cmd.data, java_cmd, format,
 			gp_hadoop_connector_version, url);
 
 	if (!forwrite)
