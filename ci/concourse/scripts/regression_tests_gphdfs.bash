@@ -29,6 +29,8 @@ function gen_env(){
 	EOFF
 
 	\${HADOOP_HOME}/bin/hdfs namenode -format -force
+
+	gpssh-exkeys -h localhost -h 0.0.0.0
 	\${HADOOP_HOME}/sbin/start-dfs.sh
 
 	cd "\${1}/gpdb_src/gpAux/extensions/gphdfs/regression/integrate"

@@ -8,7 +8,7 @@ export GP_HADOOP_TARGET_VERSION=${GP_HADOOP_TARGET_VERSION:-cdh4.1}
 export HADOOP_HOST=${HADOOP_HOST:-localhost}
 export HADOOP_PORT=${HADOOP_PORT:-8020}
 
-export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk.x86_64/jre
+export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk.x86_64/jre
 
 override_core_site() {
 	cat > "${HADOOP_HOME}/etc/hadoop/core-site.xml" <<-EOF
@@ -89,7 +89,7 @@ _main() {
 	$HADOOPCMD fs -rm -f -r /mapred/*
 
 	# gphdfs_regress_schedule
-	PGOPTIONS="-c optimizer=off -c codegen=off -c gp_hadoop_home=${HADOOP_HOME} -c gp_hadoop_target_version=${GP_HADOOP_TARGET_VERSION}" ${PGREGRESS} --psqldir=$GPHOME/bin/ --init-file=$CURDIR/gphdfs_init_file --schedule=$CURDIR/gphdfs_regress_schedule  --srcdir=$CURDIR/source_replaced --inputdir=$CURDIR/source_replaced --outputdir=.
+	PGOPTIONS="-c optimizer=off -c gp_hadoop_home=${HADOOP_HOME} -c gp_hadoop_target_version=${GP_HADOOP_TARGET_VERSION}" ${PGREGRESS} --psqldir=$GPHOME/bin/ --init-file=$CURDIR/gphdfs_init_file --schedule=$CURDIR/gphdfs_regress_schedule  --srcdir=$CURDIR/source_replaced --inputdir=$CURDIR/source_replaced --outputdir=.
 }
 
 _main "$@"
