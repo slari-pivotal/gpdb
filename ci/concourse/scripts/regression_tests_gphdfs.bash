@@ -15,9 +15,9 @@ function gen_env(){
 	cd "\${1}/gpdb_src/gpAux"
 	source gpdemo/gpdemo-env.sh
 
-	wget -P /tmp http://www-us.apache.org/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz
-	tar zxf /tmp/hadoop-2.7.3.tar.gz -C /tmp
-	export HADOOP_HOME=/tmp/hadoop-2.7.3
+	wget -P /tmp http://www-us.apache.org/dist/hadoop/common/hadoop-2.6.5/hadoop-2.6.5.tar.gz
+	tar zxf /tmp/hadoop-2.6.5.tar.gz -C /tmp
+	export HADOOP_HOME=/tmp/hadoop-2.6.5
 
 	cat > "\${HADOOP_HOME}/etc/hadoop/core-site.xml" <<-EOFF
 		<configuration>
