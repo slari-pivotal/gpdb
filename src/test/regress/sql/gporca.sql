@@ -5,6 +5,12 @@
 -- show version
 SELECT count(*) from gp_opt_version();
 
+-- Mask out Log & timestamp for orca message that has feature not supported.
+-- start_matchsubs
+-- m/^LOG.*\"Feature/
+-- s/^LOG.*\"Feature/\"Feature/
+-- end_matchsubs
+
 -- fix the number of segments for Orca
 set optimizer_segments = 3;
 
@@ -33,7 +39,6 @@ alter table orca.s add column d int;
 insert into orca.s select i, i/2 from generate_series(1,30) i;
 
 set optimizer_log=on;
-set optimizer=on;
 set optimizer_enable_indexjoin=on;
 -- expected fall back to the planner
 select sum(distinct a), count(distinct b) from orca.r;
@@ -72,8 +77,6 @@ select 129::bigint, 5623::int, 45::smallint from orca.r;
 
 --  distributed tables
 
-set optimizer=off;
-
 create table orca.foo (x1 int, x2 int, x3 int);
 create table orca.bar1 (x1 int, x2 int, x3 int) distributed randomly;
 create table orca.bar2 (x1 int, x2 int, x3 int) distributed randomly;
@@ -82,8 +85,6 @@ insert into orca.foo select i,i+1,i+2 from generate_series(1,10) i;
 
 insert into orca.bar1 select i,i+1,i+2 from generate_series(1,20) i;
 insert into orca.bar2 select i,i+1,i+2 from generate_series(1,30) i;
-
-set optimizer=on;
 
 -- produces result node
 
@@ -121,8 +122,6 @@ select count(*)+1 from orca.foo x where x.x1 > (select count(*)+1 from orca.bar1
 select count(*)+1 from orca.foo x where x.x1 > (select count(*) from orca.bar1 y where y.x1 = x.x2);
 select count(*) from orca.foo x where x.x1 > (select count(*)+1 from orca.bar1 y where y.x1 = x.x2);
 
-set optimizer=off;
-
 drop table orca.r cascade;
 create table orca.r(a int, b int) distributed by (a);
 create unique index r_a on orca.r(a);
@@ -138,8 +137,6 @@ insert into orca.s select i%7, i%2 from generate_series(1,30) i;
 analyze orca.r;
 analyze orca.s;
 
-set optimizer=on;
-
 select * from orca.r, orca.s where r.a=s.c;
 
 -- Materialize node
@@ -147,8 +144,6 @@ select * from orca.r, orca.s where r.a<s.c+1 or r.a>s.c;
 
 -- empty target list
 select r.* from orca.r, orca.s where s.c=2;
-
-set optimizer=off;
 
 create table orca.m();
 alter table orca.m add column a int;
@@ -162,8 +157,6 @@ insert into orca.m select i-1, i%2 from generate_series(1,35) i;
 insert into orca.m1 select i-2, i%3 from generate_series(1,25) i;
 
 insert into orca.r values (null, 1);
-
-set optimizer=on;
 
 -- join types
 select r.a, s.c from orca.r left outer join orca.s on(r.a=s.c);
@@ -205,11 +198,7 @@ select * from orca.r where a = (select 1);
 -- union with const table
 select * from ((select a as x from orca.r) union (select 1 as x )) as foo order by x;
 
-set optimizer=off;
-
 insert into orca.m values (1,-1), (1,2), (1,1);
-
-set optimizer=on;
 
 -- computed columns
 select a,a,a+b from orca.m;
@@ -240,10 +229,8 @@ select a,1 from orca.r group by rollup(a);
 select array[array[a,b]], array[b] from orca.r;
 
 -- setops
-select a, b from m union select b,a from orca.m;
-SELECT a from m UNION ALL select b from orca.m UNION ALL select a+b from orca.m group by 1;
-
-set optimizer=off;
+select a, b from orca.m union select b,a from orca.m;
+SELECT a from orca.m UNION ALL select b from orca.m UNION ALL select a+b from orca.m group by 1;
 
 drop table if exists orca.foo;
 create table orca.foo(a int, b int, c int, d int);
@@ -253,8 +240,6 @@ create table orca.bar(a int, b int, c int);
 
 insert into orca.foo select i, i%2, i%4, i-1 from generate_series(1,40)i;
 insert into orca.bar select i, i%3, i%2 from generate_series(1,30)i;
-
-set optimizer=on;
 
 -- distinct operation
 SELECT distinct a, b from orca.foo;
@@ -295,15 +280,10 @@ select 1 as v from orca.foo full join orca.bar on (foo.d = bar.a) group by d;
 select * from orca.r where a in (select count(*)+1 as v from orca.foo full join orca.bar on (foo.d = bar.a) group by d+r.b);
 select * from orca.r where r.a in (select d+r.b+1 as v from orca.foo full join orca.bar on (foo.d = bar.a) group by d+r.b) order by r.a, r.b;
 
-set optimizer=off;
-
 drop table if exists orca.rcte;
 create table orca.rcte(a int, b int, c int);
 
 insert into orca.rcte select i, i%2, i%3 from generate_series(1,40)i;
-
--- select disable_xform('CXformInlineCTEConsumer');
-set optimizer=on;
 
 with x as (select * from orca.rcte where a < 10) select * from x x1, x x2;
 with x as (select * from orca.rcte where a < 10) select * from x x1, x x2 where x2.a = x1.b;
@@ -331,7 +311,6 @@ select a, c from orca.r, orca.s where a  = any  (select c from orca.r) order by 
 select a, c from orca.r, orca.s where a  <> all (select c) order by a, c limit 10;
 select a, (select (select (select c from orca.s where a=c group by c))) as subq from orca.r order by a;
 with v as (select a,b from orca.r, orca.s where a=c)  select c from orca.s group by c having count(*) not in (select b from v where a=c) order by c;
-set optimizer=off;
 
 CREATE TABLE orca.onek (
 unique1 int4,
@@ -359,8 +338,6 @@ insert into orca.onek values (883,4,1,3,3,3,3,83,83,383,883,6,7,'ZHAAAA','EAAAAA
 insert into orca.onek values (439,5,1,3,9,19,9,39,39,439,439,18,19,'XQAAAA','FAAAAA','HHHHxx');
 insert into orca.onek values (670,6,0,2,0,10,0,70,70,170,670,0,1,'UZAAAA','GAAAAA','OOOOxx');
 insert into orca.onek values (543,7,1,3,3,3,3,43,143,43,543,6,7,'XUAAAA','HAAAAA','VVVVxx');
-
-set optimizer=on;
 
 select ten, sum(distinct four) from orca.onek a
 group by ten 
@@ -457,6 +434,9 @@ insert into orca.t values('201208',2,'tag1','tag2');
 
 -- test projections
 select * from orca.t order by 1,2;
+
+-- test EXPLAIN support of partition selection nodes, while we're at it.
+explain select * from orca.t order by 1,2;
 
 select tag2, tag1 from orca.t order by 1, 2;;
 
@@ -581,11 +561,10 @@ insert into orca.t_employee values('01-07-2012'::date,1,'tag1','(1, ''foo'')'::o
 insert into orca.t_employee values('01-08-2012'::date,2,'tag1','(2, ''foo'')'::orca.employee);
 
 set optimizer_enable_constant_expression_evaluation=on;
-
-select disable_xform('CXformDynamicGet2DynamicTableScan');
+set optimizer_enable_dynamictablescan = off;
 explain select * from orca.t_employee where user_id = 2;
 select * from orca.t_employee where user_id = 2;
-select enable_xform('CXformDynamicGet2DynamicTableScan');
+reset optimizer_enable_dynamictablescan;
 
 reset optimizer_enable_constant_expression_evaluation;
 reset optimizer_enable_partial_index;
@@ -756,9 +735,9 @@ CREATE FUNCTION sum_sfunc2(anyelement,anyelement,anyelement) returns anyelement 
 CREATE AGGREGATE myagg2(anyelement,anyelement) (SFUNC = sum_sfunc2, STYPE = anyelement, INITCOND = '0');
 SELECT myagg2(i,j) FROM orca.tab1;
 
-CREATE FUNCTION tfp(anyarray,anyelement) RETURNS anyarray AS 'select $1 || $2' LANGUAGE SQL;
-CREATE FUNCTION ffp(anyarray) RETURNS anyarray AS 'select $1' LANGUAGE SQL;
-CREATE AGGREGATE myagg3(BASETYPE = anyelement, SFUNC = tfp, STYPE = anyarray, FINALFUNC = ffp, INITCOND = '{}');
+CREATE FUNCTION gptfp(anyarray,anyelement) RETURNS anyarray AS 'select $1 || $2' LANGUAGE SQL;
+CREATE FUNCTION gpffp(anyarray) RETURNS anyarray AS 'select $1' LANGUAGE SQL;
+CREATE AGGREGATE myagg3(BASETYPE = anyelement, SFUNC = gptfp, STYPE = anyarray, FINALFUNC = gpffp, INITCOND = '{}');
 CREATE TABLE array_table(f1 int, f2 int[], f3 text);
 INSERT INTO array_table values(1,array[1],'a');
 INSERT INTO array_table values(2,array[11],'b');
@@ -770,35 +749,35 @@ INSERT INTO array_table values(7,array[3],'a');
 INSERT INTO array_table values(8,array[3],'b');
 SELECT f3, myagg3(f1) from (select * from array_table order by f1 limit 10) as foo GROUP BY f3 ORDER BY f3;
 
--- Functions that are wrongly annotated in the catalog as NOSQL
-CREATE TABLE orca.test_part (i int) PARTITION BY RANGE(i) (start(1) exclusive end(2) inclusive);
-CREATE TABLE orca.test_distributed(i int);
-INSERT INTO orca.test_distributed SELECT i from generate_series(1,2) i;
-
--- Function pg_get_partition_rule_def(oid, bool)
-SELECT pg_get_partition_rule_def(pr1.oid, true) AS partitionboundary ,n.nspname AS schemaname, cl.relname AS tablename 
-FROM orca.test_distributed, pg_namespace n, pg_namespace n2, pg_class cl
-LEFT JOIN pg_tablespace sp ON cl.reltablespace = sp.oid, pg_class cl2
-LEFT JOIN pg_tablespace sp3 ON cl2.reltablespace = sp3.oid, pg_partition pp, pg_partition_rule pr1
-WHERE pp.paristemplate = false AND pp.parrelid = cl.oid AND pr1.paroid = pp.oid AND cl2.oid = pr1.parchildrelid
-AND cl.relnamespace = n.oid AND cl2.relnamespace = n2.oid and cl.relname ='test_part';
-
--- Function pg_get_partition_rule_def(oid)
-SELECT pg_get_partition_rule_def(pr1.oid) AS partitionboundary ,n.nspname AS schemaname, cl.relname AS tablename 
-FROM orca.test_distributed, pg_namespace n, pg_namespace n2, pg_class cl
-LEFT JOIN pg_tablespace sp ON cl.reltablespace = sp.oid, pg_class cl2
-LEFT JOIN pg_tablespace sp3 ON cl2.reltablespace = sp3.oid, pg_partition pp, pg_partition_rule pr1
-WHERE pp.paristemplate = false AND pp.parrelid = cl.oid AND pr1.paroid = pp.oid AND cl2.oid = pr1.parchildrelid
-AND cl.relnamespace = n.oid AND cl2.relnamespace = n2.oid and cl.relname ='test_part';
+-- Functions that are wrongly annotated in the catalog as NOSQL		
+CREATE TABLE orca.test_part (i int) PARTITION BY RANGE(i) (start(1) exclusive end(2) inclusive);		
+CREATE TABLE orca.test_distributed(i int);		
+INSERT INTO orca.test_distributed SELECT i from generate_series(1,2) i;		
+		
+-- Function pg_get_partition_rule_def(oid, bool)		
+SELECT pg_get_partition_rule_def(pr1.oid, true) AS partitionboundary ,n.nspname AS schemaname, cl.relname AS tablename 		
+FROM orca.test_distributed, pg_namespace n, pg_namespace n2, pg_class cl		
+LEFT JOIN pg_tablespace sp ON cl.reltablespace = sp.oid, pg_class cl2		
+LEFT JOIN pg_tablespace sp3 ON cl2.reltablespace = sp3.oid, pg_partition pp, pg_partition_rule pr1		
+WHERE pp.paristemplate = false AND pp.parrelid = cl.oid AND pr1.paroid = pp.oid AND cl2.oid = pr1.parchildrelid		
+AND cl.relnamespace = n.oid AND cl2.relnamespace = n2.oid and cl.relname ='test_part';		
+		
+-- Function pg_get_partition_rule_def(oid)		
+SELECT pg_get_partition_rule_def(pr1.oid) AS partitionboundary ,n.nspname AS schemaname, cl.relname AS tablename 		
+FROM orca.test_distributed, pg_namespace n, pg_namespace n2, pg_class cl		
+LEFT JOIN pg_tablespace sp ON cl.reltablespace = sp.oid, pg_class cl2		
+LEFT JOIN pg_tablespace sp3 ON cl2.reltablespace = sp3.oid, pg_partition pp, pg_partition_rule pr1		
+WHERE pp.paristemplate = false AND pp.parrelid = cl.oid AND pr1.paroid = pp.oid AND cl2.oid = pr1.parchildrelid		
+AND cl.relnamespace = n.oid AND cl2.relnamespace = n2.oid and cl.relname ='test_part';		
 
 -- MPP-22453: wrong result in indexscan when the indexqual compares different data types
 create table mpp22453(a int, d date);
 insert into mpp22453 values (1, '2012-01-01'), (2, '2012-01-02'), (3, '2012-12-31');
 create index mpp22453_idx on mpp22453(d);
-select disable_xform('CXformGet2TableScan');
+set optimizer_enable_tablescan = off;
 select * from mpp22453 where d > date '2012-01-31' + interval '1 day' ;
 select * from mpp22453 where d > '2012-02-01';
-select enable_xform('CXformGet2TableScan');
+reset optimizer_enable_tablescan;
 
 -- MPP-22791: SIGSEGV when querying a table with default partition only
 create table mpp22791(a int, b int) partition by range(b) (default partition d);
@@ -832,7 +811,7 @@ CREATE TABLE orca.tmp_verd_s_pp_provtabs_agt_0015_extract1 (
     erstellt_am_135 timestamp(5) without time zone,
     erstellt_am_134 timestamp(5) without time zone
 )
-WITH (appendonly=true, compresstype=quicklz) DISTRIBUTED BY (uid136);
+WITH (appendonly=true, compresstype=zlib) DISTRIBUTED BY (uid136);
 
  set allow_system_table_mods="DML";
 
@@ -986,13 +965,12 @@ alter table orca.bm_dyn_test_onepart add partition part5 values(5);
 insert into orca.bm_dyn_test_onepart values(2, 5, '2');
 
 set optimizer_enable_bitmapscan=on;
-select disable_xform('CXformDynamicGet2DynamicTableScan');
-
+set optimizer_enable_dynamictablescan = off;
 -- gather on 1 segment because of direct dispatch
 explain select * from orca.bm_dyn_test_onepart where i=2 and t='2';
 select * from orca.bm_dyn_test_onepart where i=2 and t='2';
 
-select enable_xform('CXformDynamicGet2DynamicTableScan');
+reset optimizer_enable_dynamictablescan;
 reset optimizer_enable_bitmapscan;
 
 -- More BitmapTableScan & BitmapIndexScan tests
@@ -1128,9 +1106,7 @@ name character varying(40)
 
 insert into bm.outer_tab select i % 10, i % 5, i % 2 from generate_series(1, 100) i;
 
-select disable_xform('CXformInnerJoin2HashJoin');
-select disable_xform('CXformLeftSemiJoin2HashJoin');
-
+set optimizer_enable_hashjoin = off;
 select count(1) from bm.outer_tab;
 select count(1) from bm.het_bm;
 
@@ -1138,10 +1114,10 @@ select sum(id) id_sum, sum(i) i_sum, sum(j) j_sum from bm.outer_tab as ot join b
 where het_bm.i between 2 and 5;
 
 drop schema bm cascade;
-select enable_xform('CXformInnerJoin2HashJoin');
-select enable_xform('CXformLeftSemiJoin2HashJoin');
+reset optimizer_enable_hashjoin;
 reset optimizer_enable_bitmapscan;
 -- End of BitmapTableScan & BitmapIndexScan tests
+
 set optimizer_enable_constant_expression_evaluation=on;
 
 CREATE TABLE my_tt_agg_opt (
@@ -1170,10 +1146,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql volatile;
 
+-- start_ignore
 select disable_xform('CXformInnerJoin2DynamicIndexGetApply');
 select disable_xform('CXformInnerJoin2HashJoin');
 select disable_xform('CXformInnerJoin2IndexGetApply');
 select disable_xform('CXformInnerJoin2NLJoin');
+-- end_ignore
 
 set optimizer_enable_partial_index=on;
 set optimizer_enable_indexjoin=on;
@@ -1194,10 +1172,12 @@ reset optimizer_enable_constant_expression_evaluation;
 reset optimizer_enable_indexjoin;
 reset optimizer_enable_partial_index;
 
+-- start_ignore
 select enable_xform('CXformInnerJoin2DynamicIndexGetApply');
 select enable_xform('CXformInnerJoin2HashJoin');
 select enable_xform('CXformInnerJoin2IndexGetApply');
 select enable_xform('CXformInnerJoin2NLJoin');
+-- end_ignore
 
 -- MPP-25661: IndexScan crashing for qual with reference to outer tuple
 drop table if exists idxscan_outer;
@@ -1216,16 +1196,26 @@ productid int,
 comment character varying(40)
 );
 
+-- Have more rows in one table, so that the planner will
+-- choose to make that the outer side of the join.
 insert into idxscan_outer values (1, 'a', 'aaa');
 insert into idxscan_outer values (2, 'b', 'bbb');
 insert into idxscan_outer values (3, 'c', 'ccc');
+insert into idxscan_outer values (4, 'd', 'ddd');
+insert into idxscan_outer values (5, 'e', 'eee');
+insert into idxscan_outer values (6, 'f', 'fff');
+insert into idxscan_outer values (7, 'g', 'ggg');
+insert into idxscan_outer values (8, 'h', 'hhh');
+insert into idxscan_outer values (9, 'i', 'iii');
 
 insert into idxscan_inner values (11, 1, 'xxxx');
 insert into idxscan_inner values (24, 2, 'yyyy');
 insert into idxscan_inner values (13, 3, 'zzzz');
 
-select disable_xform('CXformInnerJoin2HashJoin');
-select disable_xform('CXformLeftSemiJoin2HashJoin');
+analyze idxscan_outer;
+analyze idxscan_inner;
+
+set optimizer_enable_hashjoin = off;
 
 explain select id, comment from idxscan_outer as o join idxscan_inner as i on o.id = i.productid
 where ordernum between 10 and 20;
@@ -1233,8 +1223,7 @@ where ordernum between 10 and 20;
 select id, comment from idxscan_outer as o join idxscan_inner as i on o.id = i.productid
 where ordernum between 10 and 20;
 
-select enable_xform('CXformInnerJoin2HashJoin');
-select enable_xform('CXformLeftSemiJoin2HashJoin');
+reset optimizer_enable_hashjoin;
 
 drop table idxscan_outer;
 drop table idxscan_inner;
@@ -1266,76 +1255,76 @@ explain select * from orca.index_test where c = 5;
 -- force_explain
 explain select * from orca.index_test where a = 5 and c = 5;
 
--- bitmap test
-
-CREATE TABLE orca.outer_table (
-    flex_value_id numeric(15,0) ,
-    language character varying(4) ,
-    last_update_date date
-)
-WITH (appendonly=true, orientation=column) DISTRIBUTED BY (flex_value_id);
-
-
-set allow_system_table_mods="DML";
-UPDATE pg_class
-SET
-	relpages = 1::int,
-	reltuples = 0.0::real
-WHERE relname = 'outer_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'ofa_applsys');
-UPDATE pg_class
-SET
-	relpages = 64::int,
-	reltuples = 61988.0::real
-WHERE relname = 'outer_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'applsys');
-
-CREATE TABLE orca.inner_table (
-    flex_value_set_id numeric(10,0) ,
-    flex_value_id numeric(15,0) ,
-    flex_value character varying(150) ,
-    last_update_date date
-)
-WITH (appendonly=true, orientation=column) DISTRIBUTED BY (flex_value_set_id ,flex_value_id);
-
-CREATE INDEX inner_table_idx ON orca.inner_table USING btree (flex_value_id);
-UPDATE pg_class
-SET
-	relpages = 64::int,
-	reltuples = 30994.0::real
-WHERE relname = 'inner_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'applsys');
-
-
-insert into orca.outer_table values(12345,'ZHS');
-insert into orca.outer_table values(012345,'ZHS');
-insert into orca.inner_table values(54321,12345);
-insert into orca.inner_table values(654321,123456);
-
-CREATE TABLE orca.join_table(fid numeric(10,0));
-insert into orca.join_table VALUES(54321);
-
-select disable_xform('CXformInnerJoin2HashJoin');
-select disable_xform('CXformInnerJoin2IndexGetApply');
-
-explain SELECT fid FROM
-(SELECT b1.flex_value_set_id, b1.flex_value_id
-FROM
-orca.inner_table b1,
-orca.outer_table c1
-WHERE
-b1.flex_value_id = c1.flex_value_id 
-and c1.language = 'ZHS') t,
-orca.join_table
-WHERE orca.join_table.fid = t.flex_value_set_id;
-
-SELECT fid FROM
-(SELECT b1.flex_value_set_id, b1.flex_value_id
-FROM
-orca.inner_table b1,
-orca.outer_table c1
-WHERE
-b1.flex_value_id = c1.flex_value_id 
-and c1.language = 'ZHS') t,
-orca.join_table
-WHERE orca.join_table.fid = t.flex_value_set_id;
+-- bitmap test		
+		
+CREATE TABLE orca.outer_table (		
+    flex_value_id numeric(15,0) ,		
+    language character varying(4) ,		
+    last_update_date date		
+)		
+WITH (appendonly=true, orientation=column) DISTRIBUTED BY (flex_value_id);		
+		
+		
+set allow_system_table_mods="DML";		
+UPDATE pg_class		
+SET		
+	relpages = 1::int,		
+	reltuples = 0.0::real		
+WHERE relname = 'outer_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'ofa_applsys');		
+UPDATE pg_class		
+SET		
+	relpages = 64::int,		
+	reltuples = 61988.0::real		
+WHERE relname = 'outer_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'applsys');		
+		
+CREATE TABLE orca.inner_table (		
+    flex_value_set_id numeric(10,0) ,		
+    flex_value_id numeric(15,0) ,		
+    flex_value character varying(150) ,		
+    last_update_date date		
+)		
+WITH (appendonly=true, orientation=column) DISTRIBUTED BY (flex_value_set_id ,flex_value_id);		
+		
+CREATE INDEX inner_table_idx ON orca.inner_table USING btree (flex_value_id);		
+UPDATE pg_class		
+SET		
+	relpages = 64::int,		
+	reltuples = 30994.0::real		
+WHERE relname = 'inner_table' AND relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'applsys');		
+		
+		
+insert into orca.outer_table values(12345,'ZHS');		
+insert into orca.outer_table values(012345,'ZHS');		
+insert into orca.inner_table values(54321,12345);		
+insert into orca.inner_table values(654321,123456);		
+		
+CREATE TABLE orca.join_table(fid numeric(10,0));		
+insert into orca.join_table VALUES(54321);		
+		
+select disable_xform('CXformInnerJoin2HashJoin');		
+select disable_xform('CXformInnerJoin2IndexGetApply');		
+		
+explain SELECT fid FROM		
+(SELECT b1.flex_value_set_id, b1.flex_value_id		
+FROM		
+orca.inner_table b1,		
+orca.outer_table c1		
+WHERE		
+b1.flex_value_id = c1.flex_value_id 		
+and c1.language = 'ZHS') t,		
+orca.join_table		
+WHERE orca.join_table.fid = t.flex_value_set_id;		
+		
+SELECT fid FROM		
+(SELECT b1.flex_value_set_id, b1.flex_value_id		
+FROM		
+orca.inner_table b1,		
+orca.outer_table c1		
+WHERE		
+b1.flex_value_id = c1.flex_value_id 		
+and c1.language = 'ZHS') t,		
+orca.join_table		
+WHERE orca.join_table.fid = t.flex_value_set_id;		
 
 -- renaming columns
 select * from (values (2),(null)) v(k);
@@ -1379,17 +1368,17 @@ drop role unpriv;
 drop table can_set_tag_target;
 drop table can_set_tag_audit;
 
--- TVF accepts ANYELEMENT, ANYELEMENT returns ANYARRAY
-CREATE FUNCTION func_element(ANYELEMENT, ANYELEMENT) RETURNS TABLE(a ANYARRAY)
-AS $$ SELECT ARRAY[$1, $2] $$ LANGUAGE SQL STABLE;
-SELECT * FROM func_element(12,13);
-DROP FUNCTION IF EXISTS func_element(ANYELEMENT, ANYELEMENT);
-
--- TVF accepts ANYELEMENT, ANYARRAY returns ANYARRAY, ANYELEMENT
-CREATE FUNCTION func_element_array(ANYELEMENT, ANYARRAY) RETURNS TABLE(a ANYARRAY, b ANYELEMENT)
-AS $$ SELECT ARRAY[$1], $2[1]$$ LANGUAGE SQL STABLE;
-SELECT * FROM func_element_array('red', ARRAY['blue']);
-DROP FUNCTION IF EXISTS func_element_array(ANYELEMENT, ANYARRAY);
+-- TVF accepts ANYELEMENT, ANYELEMENT returns ANYARRAY		
+CREATE FUNCTION func_element(ANYELEMENT, ANYELEMENT) RETURNS TABLE(a ANYARRAY)		
+AS $$ SELECT ARRAY[$1, $2] $$ LANGUAGE SQL STABLE;		
+SELECT * FROM func_element(12,13);		
+DROP FUNCTION IF EXISTS func_element(ANYELEMENT, ANYELEMENT);		
+		
+-- TVF accepts ANYELEMENT, ANYARRAY returns ANYARRAY, ANYELEMENT		
+CREATE FUNCTION func_element_array(ANYELEMENT, ANYARRAY) RETURNS TABLE(a ANYARRAY, b ANYELEMENT)		
+AS $$ SELECT ARRAY[$1], $2[1]$$ LANGUAGE SQL STABLE;		
+SELECT * FROM func_element_array('red', ARRAY['blue']);		
+DROP FUNCTION IF EXISTS func_element_array(ANYELEMENT, ANYARRAY);		
 
 -- start_ignore
 create language plpythonu;
@@ -1439,10 +1428,29 @@ EXPLAIN SELECT * FROM bitmap_test WHERE a in ('1', '2', 47);
 drop table if exists foo;
 -- end_ignore
 
-create table foo(a int, b int);
+create table foo(a int, b int) distributed by (a);
+
+-- The amount of log messages you get depends on a lot of options, but any
+-- difference in the output will make the test fail. Disable log_statement
+-- and log_min_duration_statement, they are the most obvious ones.
+set log_statement='none';
+set log_min_duration_statement=-1;
 set client_min_messages='log';
 select count(*) from foo group by cube(a,b);
 reset client_min_messages;
+reset log_statement;
+reset log_min_duration_statement;
+
+-- start_ignore
+drop table foo;
+-- end_ignore
+
+-- Test GPDB Expr (T_ArrayCoerceExpr) conversion to Scalar Array Coerce Expr
+-- start_ignore
+create table foo (a int, b character varying(10));
+-- end_ignore
+-- Query should not fallback to planner
+explain select * from foo where b in ('1', '2');
 
 -- clean up
 drop schema orca cascade;
