@@ -413,7 +413,7 @@ CTranslatorQueryToDXL::CheckSupportedCmdType
 	{		
 		if (!optimizer_enable_ctas && NULL != pquery->intoClause)
 		{
-			GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("CTAS"));
+			GPOS_RAISE(gpdxl::ExmaDXL, gpdxl::ExmiQuery2DXLUnsupportedFeature, GPOS_WSZ_LIT("CTAS. Set optimizer_enable_ctas to on to enable CTAS with PQO"));
 		}
 		
 		// supported: regular select or CTAS when it is enabled
