@@ -83,6 +83,7 @@ static Node *preprocess_expression(PlannerInfo *root, Node *expr, int kind);
 static void preprocess_qual_conditions(PlannerInfo *root, Node *jtnode);
 static Plan *inheritance_planner(PlannerInfo *root);
 static Plan *grouping_planner(PlannerInfo *root, double tuple_fraction);
+static void inline_simple_cte(Query *parse);
 static double preprocess_limit(PlannerInfo *root,
 				 double tuple_fraction,
 				 int64 *offset_est, int64 *count_est);
@@ -104,6 +105,14 @@ typedef struct
 	Index last_sgr;
 } register_ordered_aggs_context;
 
+/*
+ * walker context for replacing CTEs with subplans
+ */
+typedef struct inline_cte_context
+{
+    int querylevel;
+    List *query_level_list;
+} inline_cte_context;
 
 static Node *register_ordered_aggs_mutator(Node *node, 
 										   register_ordered_aggs_context *context);
@@ -327,6 +336,9 @@ standard_planner(Query *parse, int cursorOptions, ParamListInfo boundParams)
 		isCursor = true;
 		cursorOptions |= ((DeclareCursorStmt *) parse->utilityStmt)->options;
 	}
+
+    if (gp_inline_simple_cte)
+        inline_simple_cte(parse);
 	
 	/*
 	 * The planner can be called recursively (an example is when
@@ -3591,7 +3603,156 @@ pushdown_preliminary_limit(Plan *plan, Node *limitCount, int64 count_est, Node *
 }
 
 
+/*
+ * Walker that checks if the Node contains a reference to a CTE
+ */
+static bool
+contains_cte_walker(Node *node, void *context)
+{
+    if (node == NULL)
+        return false;
 
+    if (IsA(node, RangeTblEntry))
+    {
+        RangeTblEntry *rte = (RangeTblEntry*) node;
+        if (rte->rtekind == RTE_CTE)
+            return true;
+    }
+
+    if (IsA((Node *)node, Query))
+    {
+        return query_tree_walker((Query *) node, contains_cte_walker, (void *) context, QTW_TRY_CTE_INLINING);
+    }
+
+    return expression_tree_walker(node, contains_cte_walker, context);
+}
+
+/*
+ * Checks if the Node contains a reference to a CTE
+ */
+static bool
+contains_cte(Node *clause)
+{
+    return contains_cte_walker(clause, NULL);
+}
+
+
+/*
+ * Returns the address of the CTE list in a given query level
+ */
+static Query *
+getCteListOwnerQuery(inline_cte_context *ctx, int level, Index ctelevelsup)
+{
+    /*
+     * Query level from root. Root's level is 0.
+     */
+    int cte_query_level = level - ctelevelsup - 1;
+
+    List *lookup_query_list = list_nth(ctx->query_level_list, cte_query_level);
+
+    /*
+     * The query is always the last one in the list since we do
+     * preorder traversal of the tree. The last in this query level
+     * list is always expected to be the parent query that holds the ctelist
+     * which rte is refering to.
+     */
+    Query *parse = (Query *)llast(lookup_query_list);
+
+    return parse;
+}
+
+/*
+ * find CTE range table entries and replace them with a subquery whereever applicable
+ */
+Node *
+inline_cte_mutator(Node *node, inline_cte_context *ctx)
+{
+    if (NULL == node)
+        return node;
+
+    if (IsA(node, CommonTableExpr))
+        return node;
+
+    if (IsA(node, RangeTblEntry))
+    {
+        RangeTblEntry *rte = (RangeTblEntry*) node;
+        if (rte->rtekind == RTE_CTE)
+        {
+            Query *parse = getCteListOwnerQuery(ctx, ctx->querylevel, rte->ctelevelsup);
+            List *cteList = parse->cteList;
+
+            ListCell *lc;
+            foreach(lc, cteList)
+            {
+                CommonTableExpr *cte = (CommonTableExpr*) lfirst(lc);
+
+                if (strcmp(cte->ctename, rte->ctename) == 0)
+                {
+                    /*
+                     * If CTE is referred in more than once, or
+                     * if the CTE contains another CTE, or
+                     * if the CTE query is a correlated subquery, we do not inline it
+                     */
+                    if (cte->cterefcount > 1 || contains_cte((Node *)cte) || IsSubqueryCorrelated((Query *)cte->ctequery))
+                    {
+                        break;
+                    }
+                    rte->rtekind = RTE_SUBQUERY;
+                    rte->subquery = copyObject(cte->ctequery);
+                    rte->subquery->canSetTag = true;
+                    rte->ctename = NULL;
+                    rte->ctelevelsup = 0;
+                    rte->ctecoltypes = NULL;
+                    rte->ctecoltypmods = NULL;
+                    parse->cteList = list_delete_ptr(cteList, cte);
+                    break;
+                }
+            }
+        }
+        return rte;
+    }
+
+    if (IsA(node, Query))
+    {
+        int len = list_length(ctx->query_level_list);
+        ctx->querylevel +=1;
+        List *query_cur_level_list = NIL;
+        /*
+         * We keep a list of queries in each query level.
+         * This will let us to access the cteList immediately
+         * after it is referenced in the RTE. rte->ctelevelsup
+         * denotes the query level above rte where cteList can
+         * be found. On the other hand we also track current
+         * query's level by ctx->querylevel.
+         */
+        if (ctx->querylevel-1 < len)
+        {
+            query_cur_level_list = list_nth(ctx->query_level_list, ctx->querylevel-1);
+            query_cur_level_list = lappend(query_cur_level_list, (void *)node);
+        }
+        else
+        {
+            query_cur_level_list = lappend(query_cur_level_list, (void *)node);
+            ctx->query_level_list = lappend(ctx->query_level_list, query_cur_level_list);
+        }
+
+        Query *queryNode = query_tree_mutator((Query *) node, inline_cte_mutator, (void *) ctx, QTW_TRY_CTE_INLINING | QTW_DONT_COPY_QUERY);
+        ctx->querylevel -=1;
+        return (Node *)queryNode;
+    }
+
+    return expression_tree_mutator(node, inline_cte_mutator, (void *) ctx);
+}
+
+static void inline_simple_cte(Query *parse)
+{
+    inline_cte_context ctx;
+
+    ctx.querylevel = 0;
+    ctx.query_level_list = NIL;
+
+    inline_cte_mutator((Node*)parse, &ctx);
+}
 
 
 

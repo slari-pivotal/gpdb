@@ -625,8 +625,11 @@ range_table_walker(List *rtable,
 			case RTE_RELATION:
 			case RTE_SPECIAL:
             case RTE_VOID:
+				break;
 			case RTE_CTE:
-				/* nothing to do */
+				if(flags & QTW_TRY_CTE_INLINING)
+					if(walker(rte, context))
+						return true;
 				break;
 			case RTE_SUBQUERY:
 				if (!(flags & QTW_IGNORE_RT_SUBQUERIES))

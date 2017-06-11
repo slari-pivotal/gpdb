@@ -4098,9 +4098,12 @@ range_table_mutator(List *rtable,
 			case RTE_RELATION:
 			case RTE_SPECIAL:
             case RTE_VOID:
-			case RTE_CTE:
-				/* we don't bother to copy eref, aliases, etc; OK? */
-				break;
+                /* we don't bother to copy eref, aliases, etc; OK? */
+                break;
+            case RTE_CTE:
+                if(flags & QTW_TRY_CTE_INLINING)
+                    newrte = mutator(rte, context);
+                break;
 			case RTE_SUBQUERY:
 				if (!(flags & QTW_IGNORE_RT_SUBQUERIES))
 				{

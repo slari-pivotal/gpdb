@@ -19,6 +19,7 @@
 #define QTW_IGNORE_JOINALIASES		0x04		/* JOIN alias var lists */
 #define QTW_EXAMINE_RTES			0x08		/* examine RTEs */
 #define QTW_DONT_COPY_QUERY			0x10		/* do not copy top Query */
+#define QTW_TRY_CTE_INLINING		0x20		/* Examine CTE to see if it can be inlined */
 
 extern bool expression_tree_walker(Node *node, bool (*walker) (),
 											   void *context);

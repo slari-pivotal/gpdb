@@ -363,6 +363,7 @@ bool		gp_temporary_files_filespace_repair = false;
 bool		gp_create_table_random_default_distribution = true;
 bool		gp_allow_non_uniform_partitioning_ddl = true;
 bool		gp_enable_exchange_default_partition = false;
+bool		gp_inline_simple_cte = true;
 
 int			explain_memory_verbosity = 0;
 char* 		memory_profiler_run_id = "none";
@@ -3806,6 +3807,15 @@ static struct config_bool ConfigureNamesBool[] =
 		&gp_enable_exchange_default_partition,
 		false, NULL, NULL
 	},
+
+    {
+        {"gp_inline_simple_cte", PGC_USERSET, COMPAT_OPTIONS,
+            gettext_noop("Inline simple CTEs that are referred only once."),
+            NULL
+        },
+        &gp_inline_simple_cte,
+        true, NULL, NULL
+    },
 
 	{
 		{"gp_strict_xml_parse", PGC_USERSET, CLIENT_CONN_STATEMENT,
