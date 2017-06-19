@@ -191,39 +191,29 @@ resources:
   source:
     repository: pivotaldata/centos-gpdb-dev
     tag: '5'
-    username: {{docker_username}}
-    password: {{docker_password}}
 
 - name: centos-mingw
   type: docker-image
   source:
     repository: pivotaldata/centos-mingw
-    username: {{docker_username}}
-    password: {{docker_password}}
 
 - name: centos-gpdb-dev-6
   type: docker-image
   source:
     repository: pivotaldata/centos-gpdb-dev
     tag: '6'
-    username: {{docker_username}}
-    password: {{docker_password}}
 
 - name: centos-gpdb-dev-7
   type: docker-image
   source:
     repository: pivotaldata/centos-gpdb-dev
     tag: '7'
-    username: {{docker_username}}
-    password: {{docker_password}}
 
 - name: sles-gpdb-dev
   type: docker-image
   source:
     repository: pivotaldata/sles-gpdb-dev
     tag: '11'
-    username: {{docker_username}}
-    password: {{docker_password}}
 
 - name: pulse-api-image
   type: docker-image
