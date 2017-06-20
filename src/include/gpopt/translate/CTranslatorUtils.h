@@ -457,6 +457,10 @@ namespace gpdxl
 			// translate the list of error messages from an assert constraint list
 			static 
 			List *PlAssertErrorMsgs(CDXLNode *pdxlnAssertConstraintList);
+
+			// check if we need to create stats buckets in DXL for the column attribute
+			static
+			BOOL FCreateStatsBucket(OID oidAttType);
 	};
 }
 
