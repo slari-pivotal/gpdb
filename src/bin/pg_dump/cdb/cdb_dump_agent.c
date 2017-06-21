@@ -4703,6 +4703,7 @@ dumpAgg(Archive *fout, AggInfo *agginfo)
 	int			i_agginitval;
 	int			i_aggprelimfn;
 	int			i_convertok;
+	int			i_aggordered;
 	const char *aggtransfn;
 	const char *aggfinalfn;
 	const char *aggsortop;
@@ -4710,6 +4711,7 @@ dumpAgg(Archive *fout, AggInfo *agginfo)
 	const char *agginitval;
 	const char *aggprelimfn;
 	bool		convertok;
+	bool		aggordered;
 
 	/* Skip if not to be dumped */
 	if (!agginfo->aggfn.dobj.dump || dataOnly)
@@ -4728,7 +4730,8 @@ dumpAgg(Archive *fout, AggInfo *agginfo)
 					  "aggsortop::pg_catalog.regoperator, "
 					  "agginitval, "
 					  "aggprelimfn, "
-					  "'t'::boolean as convertok "
+					  "'t'::boolean as convertok, "
+					  "aggordered "
 					  "from pg_catalog.pg_aggregate a, pg_catalog.pg_proc p "
 					  "where a.aggfnoid = p.oid "
 					  "and p.oid = '%u'::pg_catalog.oid",
@@ -4753,6 +4756,7 @@ dumpAgg(Archive *fout, AggInfo *agginfo)
 	i_agginitval = PQfnumber(res, "agginitval");
 	i_aggprelimfn = PQfnumber(res, "aggprelimfn");
 	i_convertok = PQfnumber(res, "convertok");
+	i_aggordered = PQfnumber(res, "aggordered");
 
 	aggtransfn = PQgetvalue(res, 0, i_aggtransfn);
 	aggfinalfn = PQgetvalue(res, 0, i_aggfinalfn);
@@ -4761,6 +4765,7 @@ dumpAgg(Archive *fout, AggInfo *agginfo)
 	agginitval = PQgetvalue(res, 0, i_agginitval);
 	aggprelimfn = PQgetvalue(res, 0, i_aggprelimfn);
 	convertok = (PQgetvalue(res, 0, i_convertok)[0] == 't');
+	aggordered = (PQgetvalue(res, 0, i_aggordered)[0] == 't');
 
 	aggsig = format_aggregate_signature(agginfo, fout, true);
 	aggsig_tag = format_aggregate_signature(agginfo, fout, false);
@@ -4810,7 +4815,8 @@ dumpAgg(Archive *fout, AggInfo *agginfo)
 					  fmtId(agginfo->aggfn.dobj.namespace->dobj.name),
 					  aggsig);
 
-	appendPQExpBuffer(q, "CREATE AGGREGATE %s (\n%s\n);\n",
+	appendPQExpBuffer(q, "CREATE %s %s (\n%s\n);\n",
+					  aggordered == true ? "ORDERED AGGREGATE" : "AGGREGATE",
 					  aggsig, details->data);
 
 	ArchiveEntry(fout, agginfo->aggfn.dobj.catId, agginfo->aggfn.dobj.dumpId,
