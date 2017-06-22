@@ -2491,6 +2491,9 @@ isFileToBeCopied(const char *filename)
 	if (strstr(filename, ".tar"))
 		return 1;
 
+	if (strstr(filename, "gp_statistics_"))
+		return 1;
+
 	return 0;
 }
 
