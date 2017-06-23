@@ -53,7 +53,6 @@ groups:
   - pulse_QP_memory-accounting
   - QP_runaway-query
   - QP_optimizer-functional
-  - pulse_Gppkg
   - pulse_Gppkg-redhat6
   - pulse_CCLE
   - pulse_CCLE-sles11sp4
@@ -111,7 +110,6 @@ groups:
   - pulse_cs-pg-two-phase
   - pulse_cs-walrepl-multinode
   - pulse_QP_memory-accounting
-  - pulse_Gppkg
   - pulse_Gppkg-redhat6
   - pulse_CCLE
   - pulse_CCLE-sles11sp4
@@ -1939,31 +1937,6 @@ jobs:
         MAKE_TEST_COMMAND: optimizer_functional_part2
         BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off optimizer_print_missing_stats=off
         TEST_OS: centos
-
-- name: pulse_Gppkg
-  plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-gppkg
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-TINC-gppkg
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
 
 - name: pulse_Gppkg-redhat6
   plan:
