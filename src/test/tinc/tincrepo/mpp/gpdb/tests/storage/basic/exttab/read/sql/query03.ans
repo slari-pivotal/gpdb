@@ -745,7 +745,7 @@ NOTICE:  external table "gpfdist_curl" does not exist, skipping
 DROP EXTERNAL TABLE
 -- end_ignore
 CREATE EXTERNAL WEB TABLE gpfdist_curl (c1 text)
-execute E'(curl http://@hostname@:@gp_port@/output/extcpytest3.csv)'
+execute E'(@gpwhich_curl@ http://@hostname@:@gp_port@/output/extcpytest3.csv)'
 on SEGMENT 0
 FORMAT 'text' (header delimiter '|');
 CREATE EXTERNAL TABLE

@@ -86,7 +86,7 @@ class LegacyRETTestCase(SQLTestCase):
         Returns sustitution variables.
         """
         source_dir = self.get_source_dir()
-        variables = {'@gpwhich_curl@': 'curl',
+        variables = {'@gpwhich_curl@': 'curl -H "X-GP-PROTO:0"',
                 '@abs_srcdir@': source_dir,
                 '@gpwhich_gunzip@': 'gunzip',
                 '@hostname@': self.gpfdist.gethost(),
