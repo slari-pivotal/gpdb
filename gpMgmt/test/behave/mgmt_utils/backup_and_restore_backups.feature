@@ -5,7 +5,6 @@ Feature: Validate command line arguments
     @nbusetup76
     Scenario: Setup to load NBU libraries
         Given the test suite is initialized for Netbackup "7.6"
-        And the netbackup storage params have been parsed
 
     @nbuonly
     @nbusetup77
