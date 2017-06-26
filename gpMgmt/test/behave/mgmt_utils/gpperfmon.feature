@@ -70,6 +70,40 @@ Feature: gpperfmon
         When the user truncates "segment_history" tables in "gpperfmon"
         Then wait until the results from boolean sql "SELECT count(*) > 0 FROM segment_history" is "true"
 
+    @gpperfmon_diskspace_history
+    Scenario: gpperfmon adds to diskspace_history table
+        Given gpperfmon is configured and running in qamode
+        When the user truncates "diskspace_history" tables in "gpperfmon"
+        Then wait until the results from boolean sql "SELECT count(*) > 0 FROM diskspace_history" is "true"
+
+    """
+    The gpperfmon_skew_cpu_and_cpu_elapsed does not work on MacOS because of Sigar lib limitations.
+    To run all the other scenarios and omit this test on MacOS, use:
+    $ behave test/behave/mgmt_utils/gpperfmon.feature --tags @gpperfmon --tags ~@gpperfmon_skew_cpu_and_cpu_elapsed
+    """
+    @gpperfmon_skew_cpu_and_cpu_elapsed
+    Scenario: gpperfmon records skew_cpu and cpu_elapsed
+        Given gpperfmon is configured and running in qamode
+        Given the user truncates "queries_history" tables in "gpperfmon"
+        Given database "gptest" is dropped and recreated
+        When below sql is executed in "gptest" db
+        """
+        CREATE TABLE sales (id int, date date, amt decimal(10,2))
+        DISTRIBUTED BY (id);
+        """
+        When below sql is executed in "gptest" db
+        """
+        insert into sales values(generate_series(2,10), '2016-12-01', generate_series(1,20));
+        insert into sales values(1, '2016-12-01', generate_series(1,10000000));
+        """
+        When below sql is executed in "gptest" db
+        """
+        select count(*) from sales;
+        """
+        Then wait until the results from boolean sql "SELECT count(*) > 0 FROM queries_history where cpu_elapsed > 1 and query_text like 'select count(*)%'" is "true"
+        Then wait until the results from boolean sql "SELECT count(*) > 0 FROM queries_history where skew_cpu > 0.05 and db = 'gptest'" is "true"
+        Then wait until the results from boolean sql "SELECT count(*) > 0 FROM queries_history where skew_rows > 0 and db = 'gptest'" is "true"
+
     @gpperfmon_partition
     Scenario: gpperfmon keeps all partitions upon restart if partition_age not set, drops excess partitions otherwise
         Given gpperfmon is configured and running in qamode
