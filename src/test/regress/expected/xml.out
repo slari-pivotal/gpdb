@@ -30,7 +30,7 @@ NOTICE:  table "xmlb" does not exist, skipping
 create TABLE xmlb (like xmla) distributed randomly;
 copy xmla to '/tmp/xmla.xml';
 copy xmlb from '/tmp/xmla.xml';
-ERROR:  invalid XML document  (seg1 gpdb4dev:40001 pid=23509)
+ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
 DETAIL:
 Entity: line 1: parser error : Start tag expected, '<' not found
 bar
@@ -49,7 +49,7 @@ select * from xmlb;
 SET gp_strict_xml_parse TO TRUE;
 -- Test normal insert with gp_strict_xml_parse GUC
 INSERT INTO xmltest VALUES (0, 'content_only');
-ERROR:  invalid XML document
+ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
 DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
 content_only
 ^
@@ -66,7 +66,7 @@ SET gp_strict_xml_parse TO TRUE;
 INSERT INTO xmltest VALUES (1, '<value>one</value>');
 INSERT INTO xmltest VALUES (2, '<value>two</value>');
 INSERT INTO xmltest VALUES (3, '<wrong');
-ERROR:  invalid XML document
+ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
 DETAIL:  Entity: line 1: parser error : Couldn't find end of Start Tag wrong line 1
 <wrong
       ^
@@ -107,7 +107,7 @@ SELECT xmlconcat2(xmlcomment('hello'),
 (1 row)
 
 SELECT xmlconcat2('hello', 'you');
-ERROR:  invalid XML document
+ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
 LINE 1: SELECT xmlconcat2('hello', 'you');
                ^
 DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
@@ -119,7 +119,7 @@ LINE 1: SELECT xmlconcat2(1, 2);
                ^
 HINT:  No function matches the given name and argument types. You may need to add explicit type casts.
 SELECT xmlconcat2('bad', '<syntax');
-ERROR:  invalid XML document
+ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
 LINE 1: SELECT xmlconcat2('bad', '<syntax');
                ^
 DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
@@ -202,7 +202,7 @@ SELECT xpath(NULL, NULL) IS NULL FROM xmltest;
 (2 rows)
 
 SELECT xpath('', '<!-- error -->');
-ERROR:  invalid XML document
+ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
 LINE 1: SELECT xpath('', '<!-- error -->');
                ^
 DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
