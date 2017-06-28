@@ -36,6 +36,7 @@ begin_start = 'B'
 begin_expr = 'BEGIN'
 end_start = 'E'
 end_expr = 'END'
+strict_xml = 'gp_strict_xml_parse'
 
 
 def get_table_info(line, cur_comment_expr):
@@ -396,6 +397,8 @@ def process_data(arguments, fdin, fdout):
                 else:
                     schema = schema_wo_escaping
                 fdout.write(line)
+        elif (line[0] == set_start) and line.startswith(set_expr) and set_assignment in line and strict_xml in line:
+            fdout.write(line)
         elif (line[0] == copy_start) and line.startswith(copy_expr) and line.endswith(copy_expr_end):
             table = extract_table(line)
             table = removeEscapingDoubleQuoteInSQLString(table, False)

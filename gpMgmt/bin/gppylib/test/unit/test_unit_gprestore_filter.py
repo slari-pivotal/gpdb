@@ -755,6 +755,7 @@ SET client_min_messages = warning;
 SET escape_string_warning = off;
 
 SET search_path = pepper, pg_catalog;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -778,6 +779,7 @@ COPY ao_table (column1, column2, column3) FROM stdin;
 """
 
         expected_out = """SET search_path = pepper, pg_catalog;
+SET gp_strict_xml_parse = false;
 COPY ao_table (column1, column2, column3) FROM stdin;
 3	backup	2010-01-04
 7	backup	2010-01-08
@@ -825,6 +827,7 @@ SET client_min_messages = warning;
 SET escape_string_warning = off;
 
 SET search_path = public, pg_catalog;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -930,6 +933,7 @@ COPY ao_part_table_comp_1_prt_p1_2_prt_1 (column1, column2, column3) FROM stdin;
 """
 
         expected_out = """SET search_path = public, pg_catalog;
+SET gp_strict_xml_parse = false;
 COPY ao_part_table_1_prt_p1_2_prt_1 (column1, column2, column3) FROM stdin;
 2	backup	2010-01-03
 6	backup	2010-01-07
@@ -1021,6 +1025,7 @@ COPY ao_table (column1, column2, column3) FROM stdin;
 --
 
 SET search_path = pepper, pg_catalog;
+SET gp_strict_xml_parse = false;
 
 --
 -- Data for Name: ao_table; Type: TABLE DATA; Schema: pepper; Owner: dcddev
@@ -1071,6 +1076,7 @@ SET search_path = pepper, pg_catalog;
 --
 
 SET search_path = pepper, pg_catalog;
+SET gp_strict_xml_parse = false;
 
 --
 -- Data for Name: ao_table; Type: TABLE DATA; Schema: pepper; Owner: dcddev
@@ -1092,6 +1098,7 @@ SET search_path = pepper, pg_catalog;
 """
 
         expected_out = """SET search_path = pepper, pg_catalog;
+SET gp_strict_xml_parse = false;
 """
 
         in_name = os.path.join(os.getcwd(), 'infile')
@@ -1116,6 +1123,7 @@ SET search_path = pepper, pg_catalog;
     def test_process_data_multi_byte_char(self):
 
         test_case_buf = """SET search_path = public, pg_catalog;
+SET gp_strict_xml_parse = false;
 
 --
 -- Data for Name: 测试; Type: TABLE DATA; Schema: public; Owner: dcddev
@@ -1131,6 +1139,7 @@ COPY "测试" (column1, column2, column3) FROM stdin;
 \.
 """
         expected_out = """SET search_path = public, pg_catalog;
+SET gp_strict_xml_parse = false;
 COPY "测试" (column1, column2, column3) FROM stdin;
 3	backup	2010-01-04
 7	backup	2010-01-08
@@ -1185,6 +1194,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 --
 -- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: dcddev
@@ -1229,6 +1239,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 --
 SET search_path = public, pg_catalog;
@@ -1263,6 +1274,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1309,6 +1321,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1345,6 +1358,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1391,6 +1405,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1419,6 +1434,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1465,6 +1481,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1501,6 +1518,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1547,6 +1565,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1583,6 +1602,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1632,6 +1652,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1673,6 +1694,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1722,6 +1744,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1758,6 +1781,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1811,6 +1835,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1856,6 +1881,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1909,6 +1935,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -1954,6 +1981,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2003,6 +2031,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2222,6 +2251,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2283,6 +2313,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2310,6 +2341,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2359,6 +2391,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2386,6 +2419,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2438,6 +2472,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2520,6 +2555,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2764,6 +2800,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -2943,6 +2980,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -3091,6 +3129,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -3170,6 +3209,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -3265,6 +3305,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -3341,6 +3382,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -3436,6 +3478,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -3512,6 +3555,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
@@ -3607,6 +3651,7 @@ SET standard_conforming_strings = off;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET escape_string_warning = off;
+SET gp_strict_xml_parse = false;
 
 SET default_with_oids = false;
 
