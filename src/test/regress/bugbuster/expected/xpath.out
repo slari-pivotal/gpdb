@@ -16,7 +16,7 @@ select xml_in('<a></a>');
 (1 row)
 
 select xml_in('<a></>');
-ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
+ERROR:  invalid XML document
 DETAIL:  Entity: line 1: parser error : Opening and ending tag mismatch: a line 1 and unparseable
 <a></>
       ^
@@ -276,7 +276,7 @@ select xml_out((select * from readxml));
 
 --negative test
 select xml_out((select xml_in('<a>hello<a>')));
-ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
+ERROR:  invalid XML document
 DETAIL:  Entity: line 1: parser error : Premature end of data in tag a line 1
 <a>hello<a>
            ^
@@ -323,7 +323,7 @@ select xml('<a><say>speak</say><hello>say hello</hello></a>');
 (1 row)
 
 select xml('hello');
-ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
+ERROR:  invalid XML document
 LINE 1: select xml('hello');
                ^
 DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
@@ -349,7 +349,7 @@ SELECT xmlconcat2('<?xml version="1.1"?><foo/>', '<?xml version="1.1" standalone
 
 ---negative test ---
 SELECT xmlconcat2('1', '2');
-ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
+ERROR:  invalid XML document
 LINE 1: SELECT xmlconcat2('1', '2');
                ^
 DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found
@@ -361,7 +361,7 @@ LINE 1: SELECT xmlconcat2(1, 2);
                ^
 HINT:  No function matches the given name and argument types. You may need to add explicit type casts.
 SELECT xmlconcat2('bad', '<syntax');
-ERROR:  invalid XML document, you might want to set GUC gp_strict_xml_parse to false to try parsing xml as content also
+ERROR:  invalid XML document
 LINE 1: SELECT xmlconcat2('bad', '<syntax');
                ^
 DETAIL:  Entity: line 1: parser error : Start tag expected, '<' not found

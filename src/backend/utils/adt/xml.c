@@ -1135,9 +1135,9 @@ xml_parse(text *data, XmlOptionType xmloption_arg, bool preserve_whitespace,
 			{
 				if (gp_strict_xml_parse)
 					xml_ereport(ERROR, ERRCODE_INVALID_XML_DOCUMENT,
-							"invalid XML document, you might want to set GUC "
-							"gp_strict_xml_parse to false to try parsing xml as "
-							"content also");
+							"invalid XML document (GUC gp_strict_xml_parse is "
+							"true), you might want to set it to false to try "
+							"parsing xml as content also");
 				else
 					parse_xml_as_content = true;
 			}

@@ -35,6 +35,9 @@ s/\(cdbdisp\.c:\d+\)//
 m/.*NOTICE.*TransactionInProgress.*can't shrink relation.*/
 s/.*NOTICE.*TransactionInProgress.*can't shrink relation.*/TransactionInProgress can't shrink relation/
 
+m/^ERROR:  invalid XML document.*/
+s/^ERROR:  invalid XML document.*/ERROR:  invalid XML document/
+
 # Mask out some numbers (parts of partition names) that vary from run to run.
 m/overlaps existing partition "r\d+"/
 s/overlaps existing partition "r\d+"/partition "r##########"/
