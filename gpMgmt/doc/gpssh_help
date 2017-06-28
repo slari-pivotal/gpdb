@@ -161,6 +161,7 @@ comment. This is an example gpssh.conf file.
     [gpssh]
     delaybeforesend = 0.05
     prompt_validation_timeout = 1.0
+    sync_retries = 3
 
 
 These are the gpssh.conf parameters.
@@ -172,7 +173,6 @@ delaybeforesend = seconds
  cause a long wait time during gpssh startup. The -d option
  overrides this parameter.
 
-
 prompt_validation_timeout = multiplier
 
  A decimal number greater than 0 (zero) that is the multiplier for the
@@ -180,6 +180,17 @@ prompt_validation_timeout = multiplier
  value has a small impact during gpssh startup. Default is 1. The -t
  option overrides this parameter.
 
+sync_retries = count of times
+
+ A non-negative integer that specifies how many times to try to
+ validate the ssh prompt. Default is 3.
+ Setting this value to 0 means gpssh will immediately pass
+ along pxssh's best effort.
+ Increasing this value will allow for slow network connections,
+ cpu load, or other slowness on the segment host, but will
+ also delay feedback when a connection cannot be established
+ for other reasons.
+ It cannot be configured with a command-line option.
 
 
 
