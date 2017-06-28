@@ -79,6 +79,8 @@ static int	largest_gangsize = 0;
 
 static MemoryContext GangContext = NULL;
 
+static Gang *CurrentGangCreating = NULL;
+
 /*
  * Parameter structure for the DoConnect threads
  */
@@ -205,6 +207,8 @@ createGang(GangType type, int gang_id, int size, int content, char *portal_name)
 	int			create_gang_retry_counter = 0;
 	int			in_recovery_mode_count;
 
+	Assert(CurrentGangCreating == NULL);
+
 	/* If we're in a retry, we may need to reset our initial state, a bit */
 create_gang_retry:
 	portal = NULL;
@@ -250,6 +254,8 @@ create_gang_retry:
 	newGangDefinition = buildGangDefinition(type, gang_id, size, content, portal_name);
 
 	Assert(newGangDefinition != NULL);
+
+	CurrentGangCreating = newGangDefinition;
 
 	/*
 	 * Loop through the segment_database_descriptors items inside newGangDefinition.
@@ -532,6 +538,7 @@ create_gang_retry:
 
 					disconnectAndDestroyGang(newGangDefinition); /* free up connections */
 					newGangDefinition = NULL;
+					CurrentGangCreating = NULL;
 
 					MemoryContextSwitchTo(oldContext);
 
@@ -569,6 +576,7 @@ create_gang_retry:
 
 			/* clean the gang before error out */
 			disconnectAndDestroyGang(newGangDefinition);
+			CurrentGangCreating = NULL;
 
 			ereport(ERROR, (errcode(ERRCODE_GP_INTERCONNECTION_ERROR),
 					errmsg("failed to acquire resources on one or more segments")));
@@ -583,6 +591,7 @@ create_gang_retry:
 
 		disconnectAndDestroyGang(newGangDefinition);
 		newGangDefinition = NULL;
+		CurrentGangCreating = NULL;
 		CheckForResetSession();
 
 		if (hasSegmentDown)
@@ -618,6 +627,8 @@ create_gang_retry:
 					errmsg("failed to acquire resources on one or more segments")));
 		}
 	}
+
+	CurrentGangCreating = NULL;
 
 	return newGangDefinition;
 }
@@ -2439,6 +2450,14 @@ freeGangsForPortal(char *portal_name)
 
 	if (Gp_role != GP_ROLE_DISPATCH)
 		return;
+
+	if (CurrentGangCreating != NULL)
+	{
+		disconnectAndDestroyGang(CurrentGangCreating);
+		CurrentGangCreating = NULL;
+
+		CheckForResetSession();
+	}
 
 	if (gp_log_gang >= GPVARS_VERBOSITY_DEBUG)
 		elog(LOG, "freeGangsForPortal '%s'. Reader gang inventory: "
