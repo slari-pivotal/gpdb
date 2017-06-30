@@ -4588,6 +4588,31 @@ def impl(context, setting_string, path_to_file):
         f.write(setting_string)
         f.write("\n")
 
+@given('the latest gpperfmon gpdb-alert log is copied to a file with a fake (earlier) timestamp')
+@when('the latest gpperfmon gpdb-alert log is copied to a file with a fake (earlier) timestamp')
+def impl(context):
+    gpdb_alert_file_path_src = sorted(glob.glob(os.path.join(os.getenv("MASTER_DATA_DIRECTORY"),
+                                    "gpperfmon",
+                                       "logs",
+                                       "gpdb-alert*")))[-1]
+    # typical filename would be gpdb-alert-2017-04-26_155335.csv
+    # setting the timestamp to a string that starts with `-` (em-dash)
+    #   will be sorted (based on ascii) before numeric timestamps
+    #   without colliding with a real timestamp
+    dest = re.sub(r"_\d{6}\.csv$", "_-takeme.csv", gpdb_alert_file_path_src)
+
+    # Let's wait until there's actually something in the file before actually
+    # doing a copy of the log...
+    for _ in range(60):
+        if os.stat(gpdb_alert_file_path_src).st_size != 0:
+            shutil.copy(gpdb_alert_file_path_src, dest)
+            context.fake_timestamp_file = dest
+            return
+        sleep(1)
+
+    raise Exception("File: %s is empty" % gpdb_alert_file_path_src)
+
+
 @given('the test suite is initialized for Netbackup "{ver}"')
 def impl(context, ver):
     gphome = os.environ.get('GPHOME')
