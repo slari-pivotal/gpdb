@@ -751,8 +751,8 @@ INFO:  Dispatch command to SINGLE content
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int2 WHERE 1::int2 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -761,8 +761,8 @@ INFO:  Dispatch command to ALL contents
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int2 WHERE 1::int4 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -771,8 +771,8 @@ INFO:  Dispatch command to ALL contents
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int2 WHERE 1::int8 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -811,8 +811,8 @@ INFO:  Dispatch command to SINGLE content
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int4 WHERE 1::int2 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -821,8 +821,8 @@ INFO:  Dispatch command to ALL contents
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int4 WHERE 1::int4 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -831,8 +831,8 @@ INFO:  Dispatch command to ALL contents
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int4 WHERE 1::int8 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -871,8 +871,8 @@ INFO:  Dispatch command to SINGLE content
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int8 WHERE 1::int2 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -881,8 +881,8 @@ INFO:  Dispatch command to ALL contents
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int8 WHERE 1::int4 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -891,8 +891,8 @@ INFO:  Dispatch command to ALL contents
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int8 WHERE 1::int8 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
   1
 (1 row)
@@ -920,8 +920,8 @@ INFO:  Dispatch command to SINGLE content
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int2 WHERE 32768::int4 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
 (0 rows)
 
@@ -929,8 +929,8 @@ INFO:  Dispatch command to ALL contents
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int2 WHERE -32769::int4 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
 (0 rows)
 
@@ -956,8 +956,8 @@ INFO:  Dispatch command to SINGLE content
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int2 WHERE 2147483648::int8 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
 (0 rows)
 
@@ -965,8 +965,8 @@ INFO:  Dispatch command to ALL contents
 -- Known_opt_diff: MPP-21346
 -- end_ignore
 SELECT * FROM direct_test_type_int2 WHERE -2147483649::int8 = id;
-INFO:  Dispatch command to ALL contents
- id 
+INFO:  Dispatch command to SINGLE content
+ id
 ----
 (0 rows)
 

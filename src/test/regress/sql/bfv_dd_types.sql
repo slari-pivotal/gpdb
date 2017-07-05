@@ -83,7 +83,6 @@ SELECT * FROM direct_test_type_int2 WHERE id = 1::int2;
 SELECT * FROM direct_test_type_int2 WHERE id = 1::int4;
 SELECT * FROM direct_test_type_int2 WHERE id = 1::int8;
 
--- TODO: the following 3 are currently not directly dispatched (AGL-1248)
 SELECT * FROM direct_test_type_int2 WHERE 1::int2 = id;
 SELECT * FROM direct_test_type_int2 WHERE 1::int4 = id;
 SELECT * FROM direct_test_type_int2 WHERE 1::int8 = id;
@@ -92,7 +91,6 @@ SELECT * FROM direct_test_type_int4 WHERE id = 1::int2;
 SELECT * FROM direct_test_type_int4 WHERE id = 1::int4;
 SELECT * FROM direct_test_type_int4 WHERE id = 1::int8;
 
--- TODO: the following 3 are currently not directly dispatched (AGL-1248)
 SELECT * FROM direct_test_type_int4 WHERE 1::int2 = id;
 SELECT * FROM direct_test_type_int4 WHERE 1::int4 = id;
 SELECT * FROM direct_test_type_int4 WHERE 1::int8 = id;
@@ -108,14 +106,12 @@ SELECT * FROM direct_test_type_int8 WHERE 1::int8 = id;
 SELECT * FROM direct_test_type_int2 WHERE id = 32768::int4;
 SELECT * FROM direct_test_type_int2 WHERE id = -32769::int4;
 
--- TODO: the following 2 are currently not directly dispatched (AGL-1248)
 SELECT * FROM direct_test_type_int2 WHERE 32768::int4 = id;
 SELECT * FROM direct_test_type_int2 WHERE -32769::int4 = id;
 
 SELECT * FROM direct_test_type_int2 WHERE id = 2147483648::int8;
 SELECT * FROM direct_test_type_int2 WHERE id = -2147483649::int8;
 
--- TODO: the following 2 are currently not directly dispatched (AGL-1248)
 SELECT * FROM direct_test_type_int2 WHERE 2147483648::int8 = id;
 SELECT * FROM direct_test_type_int2 WHERE -2147483649::int8 = id;
 
