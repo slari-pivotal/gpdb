@@ -2261,6 +2261,17 @@ typedef struct ReplaceGroupColsContext
 	 * appear inside an Aggref.
 	 */
 	bool in_aggref;
+
+	/*
+	 * If grouping column to be removed is a Const then we
+	 * don't want to replace Consts (with same value as grouping
+	 * column) appearing inside an expression. For instance:
+	 * select count(distinct var), var + 1 as a, 1 as b from table 
+	 * group by rollup(a,b);
+	 * In this while removing b from target list, we don't want to
+	 * remove Const 1 appearing in expression: var + 1
+	 */
+	bool const_in_expr;
 } ReplaceGroupColsContext;
 
 
@@ -2282,6 +2293,17 @@ replace_grouping_columns_mutator(Node *node, void *v_cxt)
 			break;
 	}
 
+	// If target entry is a primitive Const node then we are
+	// not inside the expression
+	if (IsA(node, TargetEntry))
+	{
+		TargetEntry *te = (TargetEntry *)node;
+		if (IsA(te->expr, Const))
+			cxt->const_in_expr = false;
+		else
+			cxt->const_in_expr = true;
+	}
+
 	if (IsA(node, Aggref))
 	{
 		Aggref *aggref = (Aggref *)node;
@@ -2301,13 +2323,15 @@ replace_grouping_columns_mutator(Node *node, void *v_cxt)
 	if (lc != NULL)
 	{
 		/* Generate a NULL constant to replace the node. */
-		Const *null;
+		Const *nullConst;
 		Node *grpcol = lfirst(lc);
 
-		if (!cxt->in_aggref)
+		// Don't replace the node if we are inside an Aggref or
+		// if the node is a Const and if we are inside an expression
+		if (!cxt->in_aggref && (!IsA(node, Const) || !cxt->const_in_expr))
 		{
-			null = makeNullConst(exprType((Node *)grpcol), -1);
-			return (Node *)null;
+			nullConst = makeNullConst(exprType((Node *)grpcol), -1);
+			return (Node *)nullConst;
 		}
 	}
 	
@@ -2346,6 +2370,7 @@ replace_grouping_columns(Node *node,
 
 	cxt.grpcols = grpcols;
 	cxt.in_aggref = false;
+	cxt.const_in_expr = false;
 	
 	new_node = replace_grouping_columns_mutator((Node *)node, (void *)&cxt);
 	list_free(grpcols);

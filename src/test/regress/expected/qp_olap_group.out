@@ -6003,3 +6003,12 @@ GROUP BY ROLLUP((sale.prc),(sale.prc,sale.vn),(sale.qty,sale.qty),(sale.vn)),GRO
     |        60.0000000
 (8 rows)
 
+-- ###### Rollup with DQA and constants in target list expressions with same value as that of constant grouping column ###### --
+SELECT COUNT(DISTINCT cn) as cn_r FROM (SELECT cn, CASE WHEN (vn = 0) THEN 1 END AS f, 1 AS g FROM sale) sale_view GROUP BY ROLLUP(f,g);
+ cn_r
+------
+    4
+    4
+    4
+(3 rows)
+
