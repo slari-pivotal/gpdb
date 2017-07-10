@@ -1463,6 +1463,7 @@ Feature: Validate command line arguments
 
     @ddpartIII
     @ddonly
+    @skip_filename_compatibility
     Scenario: 146 Full backup and restore with remote DataDomain replication using gpcrondump
         Given the old timestamps are read from json
         When the remote backup sets are restored to the local storage unit
@@ -1473,6 +1474,7 @@ Feature: Validate command line arguments
 
     @ddpartIII
     @ddonly
+    @skip_filename_compatibility
     Scenario: 147 Full backup and restore with remote DataDomain replication using gp_mfr
         Given the old timestamps are read from json
         When the remote backup sets are restored to the local storage unit
@@ -1484,6 +1486,7 @@ Feature: Validate command line arguments
 
     @ddpartIII
     @ddonly
+    @skip_filename_compatibility
     Scenario: 148 Incremental backup and restore with remote DataDomain replication using gpcrondump
         Given the old timestamps are read from json
         When the remote backup sets are restored to the local storage unit
@@ -1494,6 +1497,7 @@ Feature: Validate command line arguments
 
     @ddpartIII
     @ddonly
+    @skip_filename_compatibility
     Scenario: 149 Incremental backup and restore with remote DataDomain replication using gp_mfr
         Given the old timestamps are read from json
         When the remote backup sets are restored to the local storage unit

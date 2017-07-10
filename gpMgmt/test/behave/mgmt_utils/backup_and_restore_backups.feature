@@ -1961,6 +1961,7 @@ Feature: Validate command line arguments
 
     @ddpartIII
     @ddonly
+    @skip_filename_compatibility
     Scenario: 146 Full backup and restore with remote DataDomain replication using gpcrondump
         Given the backup test is initialized with database "bkdb146"
         And there is a "heap" table "public.heap_table" in "bkdb146" with data
@@ -1977,6 +1978,7 @@ Feature: Validate command line arguments
 
     @ddpartIII
     @ddonly
+    @skip_filename_compatibility
     Scenario: 147 Full backup and restore with remote DataDomain replication using gp_mfr
         Given the backup test is initialized with database "bkdb147"
         And there is a "heap" table "public.heap_table" in "bkdb147" with data
@@ -1994,6 +1996,7 @@ Feature: Validate command line arguments
 
     @ddpartIII
     @ddonly
+    @skip_filename_compatibility
     Scenario: 148 Incremental backup and restore with remote DataDomain replication using gpcrondump
         Given the backup test is initialized with database "bkdb148"
         And there is a "heap" table "public.heap_table" in "bkdb148" with data
@@ -2014,6 +2017,7 @@ Feature: Validate command line arguments
 
     @ddpartIII
     @ddonly
+    @skip_filename_compatibility
     Scenario: 149 Incremental backup and restore with remote DataDomain replication using gp_mfr
         Given the backup test is initialized with database "bkdb149"
         And there is a "heap" table "public.heap_table" in "bkdb149" with data
