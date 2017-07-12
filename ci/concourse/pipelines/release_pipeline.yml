@@ -43,7 +43,6 @@ groups:
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
   - pulse_Kerberos-smoke
-  - pulse_DPM_MFR-TINC
   - pulse_cs-aoco-compression
   - pulse_cs-bin-swap
   - pulse_cs-filerep-schema-topology-crashrecov
@@ -102,7 +101,6 @@ groups:
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
   - pulse_Kerberos-smoke
-  - pulse_DPM_MFR-TINC
   - pulse_cs-aoco-compression
   - pulse_cs-bin-swap
   - pulse_cs-filerep-schema-topology-crashrecov
@@ -147,7 +145,6 @@ groups:
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
   - pulse_Kerberos-smoke
-  - pulse_DPM_MFR-TINC
 - name: Windows
   jobs:
   - compile_gpdb_windows_ccl
@@ -1660,31 +1657,6 @@ jobs:
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveDDBoost_filename_compatibility
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_DPM_MFR-TINC
-  plan:
-  - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-MFR-TINC
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-MFR-TINC
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
