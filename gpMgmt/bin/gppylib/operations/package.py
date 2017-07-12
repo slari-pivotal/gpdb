@@ -1213,8 +1213,13 @@ class MigratePackages(Operation):
     of $GPHOMEs. However, the migration will only succeed if the packages being migrated
     are actually compatible with the target GPDB.
     """
-    def __init__(self, from_gphome, to_gphome):
-        self.from_gphome, self.to_gphome = from_gphome, to_gphome
+
+    def __init__(self, from_gphome, to_gphome, standby_host, segment_host_list):
+        self.from_gphome= from_gphome
+        self.to_gphome =  to_gphome
+        self.standby_host = standby_host
+        self.segment_host_list = segment_host_list
+
     def execute(self):
         if not os.path.samefile(self.to_gphome, GPHOME):
             raise ExceptionNoStackTraceNeeded('The target GPHOME, %s, must match the current $GPHOME used to launch gppkg.' % self.to_gphome)
@@ -1238,6 +1243,9 @@ class MigratePackages(Operation):
                 logger.info("%s is already installed." % package)
             except Exception:
                 logger.exception("Failed to migrate %s from %s" % (old_archive_path, package))
+
+        CleanGppkg(self.standby_host, self.segment_host_list).run()
+
         logger.info('The package migration has completed.')
 
 
