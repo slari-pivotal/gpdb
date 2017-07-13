@@ -81,7 +81,7 @@ function prep_env_for_centos() {
     ;;
   esac
 
-  ln -sf "/$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/python-2.6.2" /opt/python-2.6.2
+  ln -sf "/$(pwd)/gpdb_src/gpAux/ext/${BLDARCH}/python-2.6.9" /opt/python-2.6.9
   export PATH=${JAVA_HOME}/bin:${PATH}
 }
 
@@ -125,6 +125,6 @@ workaround_before_concourse_stops_stripping_suid_bits() {
 }
 
 function run_test() {
-  ln -s "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/python-2.6.2" /opt
+  ln -s "$(pwd)/gpdb_src/gpAux/ext/rhel5_x86_64/python-2.6.9" /opt
   su - gpadmin -c "bash /opt/run_test.sh $(pwd)"
 }

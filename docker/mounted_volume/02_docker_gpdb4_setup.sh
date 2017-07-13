@@ -33,9 +33,9 @@ export IVYREPO_HOST=repo.pivotal.io
 export IVYREPO_REALM="Artifactory Realm"
 export IVYREPO_USER=build_readonly
 export IVYREPO_PASSWD="zlIU5Ys&U0WBKN&O"
-export PYTHONPATH=/opt/python-2.6.2/lib/python2.6:$PYTHONPATH
-export PYTHONHOME=/opt/python-2.6.2
-export PATH=/opt/python-2.6.2/bin:$PATH
+export PYTHONPATH=/opt/python-2.6.9/lib/python2.6:$PYTHONPATH
+export PYTHONHOME=/opt/python-2.6.9
+export PATH=/opt/python-2.6.9/bin:$PATH
 
 ' >> ~/.bashrc
 
@@ -45,8 +45,8 @@ source ~/built-gpdb4/greenplum-db-devel/greenplum_path.sh
 source ~/gpdemo/gpdemo-env.sh
 ' >> ~/.bashrc
 cd ~/gpdb4_mount/gpAux
-rm -f /opt/python-2.6.2
-ln -s "/home/gpadmin/gpdb4_mount/gpAux/ext/rhel5_x86_64/python-2.6.2" /opt
+rm -f /opt/python-2.6.9
+ln -s "/home/gpadmin/gpdb4_mount/gpAux/ext/rhel5_x86_64/python-2.6.9" /opt
 make sync_tools
 
 #=========================================================

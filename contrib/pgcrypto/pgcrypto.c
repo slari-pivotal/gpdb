@@ -32,6 +32,7 @@
 #include "postgres.h"
 
 #include <ctype.h>
+#include <openssl/evp.h>
 #include <openssl/fips.h>
 
 #include "fmgr.h"
