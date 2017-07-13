@@ -39,7 +39,7 @@ groups:
   - pulse_DPM_BehaveDDBoost_filename_compatibility
   - pulse_MM_BehaveGpcheckcat
   - pulse_MM_BehaveGprecoverseg
-  - pulse_MM_BehaveGptransfer43xTo43x
+  - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
   - pulse_Kerberos-smoke
@@ -93,7 +93,7 @@ groups:
   - pulse_DPM_BehaveBackupRestore_filename_compatibility
   - pulse_MM_BehaveGpcheckcat
   - pulse_MM_BehaveGprecoverseg
-  - pulse_MM_BehaveGptransfer43xTo43x
+  - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
   - pulse_DPM_BehaveDDBoost
@@ -137,7 +137,7 @@ groups:
   - pulse_DPM_BehaveBackupRestore_filename_compatibility
   - pulse_MM_BehaveGpcheckcat
   - pulse_MM_BehaveGprecoverseg
-  - pulse_MM_BehaveGptransfer43xTo43x
+  - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
   - pulse_DPM_BehaveDDBoost
@@ -1484,7 +1484,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_MM_BehaveGptransfer43xTo43x
+- name: pulse_DPM_BehaveGptransfer43xTo43x
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
