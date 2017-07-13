@@ -33,13 +33,13 @@ groups:
   - push_to_pivnet_manually_sles
   - pulse_DPM_BehaveBackupRestore
   - pulse_DPM_BehaveBackupRestore_filename_compatibility
-  - pulse_DPM_BehaveGPCheckcat
-  - pulse_DPM_BehaveGPRecoverseg
-  - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
   - pulse_DPM_BehaveDDBoost
   - pulse_DPM_BehaveDDBoost_filename_compatibility
+  - pulse_MM_BehaveGpcheckcat
+  - pulse_MM_BehaveGprecoverseg
+  - pulse_MM_BehaveGptransfer43xTo43x
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
   - pulse_Kerberos-smoke
@@ -91,9 +91,9 @@ groups:
   jobs:
   - pulse_DPM_BehaveBackupRestore
   - pulse_DPM_BehaveBackupRestore_filename_compatibility
-  - pulse_DPM_BehaveGPCheckcat
-  - pulse_DPM_BehaveGPRecoverseg
-  - pulse_DPM_BehaveGptransfer43xTo43x
+  - pulse_MM_BehaveGpcheckcat
+  - pulse_MM_BehaveGprecoverseg
+  - pulse_MM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
   - pulse_DPM_BehaveDDBoost
@@ -135,9 +135,9 @@ groups:
   jobs:
   - pulse_DPM_BehaveBackupRestore
   - pulse_DPM_BehaveBackupRestore_filename_compatibility
-  - pulse_DPM_BehaveGPCheckcat
-  - pulse_DPM_BehaveGPRecoverseg
-  - pulse_DPM_BehaveGptransfer43xTo43x
+  - pulse_MM_BehaveGpcheckcat
+  - pulse_MM_BehaveGprecoverseg
+  - pulse_MM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
   - pulse_DPM_BehaveDDBoost
@@ -1434,7 +1434,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_DPM_BehaveGPCheckcat
+- name: pulse_MM_BehaveGpcheckcat
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1459,7 +1459,7 @@ jobs:
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_DPM_BehaveGPRecoverseg
+- name: pulse_MM_BehaveGprecoverseg
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
@@ -1480,11 +1480,11 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPRecoverseg
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGprecoverseg
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
-- name: pulse_DPM_BehaveGptransfer43xTo43x
+- name: pulse_MM_BehaveGptransfer43xTo43x
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
