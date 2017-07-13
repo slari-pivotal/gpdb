@@ -1480,7 +1480,7 @@ jobs:
     file: gpdb_src/ci/pulse/api/monitor_pulse.yml
     params:
       PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGprecoverseg
+      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPRecoverseg
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
