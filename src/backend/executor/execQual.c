@@ -176,9 +176,6 @@ static Datum ExecEvalFieldStore(FieldStoreState *fstate,
 static Datum ExecEvalRelabelType(GenericExprState *exprstate,
 					ExprContext *econtext,
 					bool *isNull, ExprDoneCond *isDone);
-static Datum ExecEvalPartOidExpr(PartOidExprState *exprstate,
-						ExprContext *econtext,
-						bool *isNull, ExprDoneCond *isDone);
 static Datum ExecEvalPartDefaultExpr(PartDefaultExprState *exprstate,
 						ExprContext *econtext,
 						bool *isNull, ExprDoneCond *isDone);
@@ -4224,35 +4221,6 @@ ExecEvalRelabelType(GenericExprState *exprstate,
 }
 
 /* ----------------------------------------------------------------
- *		ExecEvalPartOidExpr
- *
- *		Evaluate a PartOidExpr
- * ----------------------------------------------------------------
- */
-static Datum ExecEvalPartOidExpr(PartOidExprState *exprstate,
-						ExprContext *econtext,
-						bool *isNull, ExprDoneCond *isDone)
-{
-
-	Assert(NULL != exprstate);
-	Assert(NULL != isNull);
-
-	if (isDone)
-	{
-		*isDone = ExprSingleResult;
-	}
-
-	if (InvalidOid != *exprstate->acceptedLeafOid)
-	{
-		*isNull = false;
-		return UInt32GetDatum(*exprstate->acceptedLeafOid);
-	}
-
-	*isNull = true;
-	return PointerGetDatum(NULL);
-}
-
-/* ----------------------------------------------------------------
  *		ExecEvalPartDefaultExpr
  *
  *		Evaluate a PartDefaultExpr
@@ -5310,27 +5278,6 @@ ExecInitExpr(Expr *node, PlanState *parent)
 				/* Don't fall through to the "common" code below */
 				return (ExprState *) outlist;
 			}
-		case T_PartOidExpr:
-			{
-				Insist(parent && IsA(parent, PartitionSelectorState));
-				PartitionSelectorState *psstate = (PartitionSelectorState *) parent;
-				PartOidExprState *exprstate = makeNode(PartOidExprState);
-#if USE_ASSERT_CHECKING
-				PartOidExpr *expr = (PartOidExpr *) node;
-				Assert (expr->level == ((PartitionSelector *) psstate->ps.plan)->nLevels - 1 &&
-						"PartOidExpr can only refer to leaf level.");
-#endif
-				exprstate->xprstate.evalfunc = (ExprStateEvalFunc) ExecEvalPartOidExpr;
-				/*
-				 * exprstate->acceptedLeafPart is a double pointer, pointing
-				 * to the field in the PartitionSelectorState that will
-				 * be holding the actual acceptedLeafOid.
-				 */
-				exprstate->acceptedLeafOid = &(psstate->acceptedLeafOid);
-
-				state = (ExprState *) exprstate;
-			}
-			break;
 		case T_PartDefaultExpr:
 			{
 				Insist(parent && IsA(parent, PartitionSelectorState));

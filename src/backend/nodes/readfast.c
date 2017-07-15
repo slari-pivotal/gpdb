@@ -393,16 +393,6 @@ _readDMLActionExpr(const char ** str)
 	READ_DONE();
 }
 
-static PartOidExpr *
-_readPartOidExpr(const char ** str)
-{
-	READ_LOCALS(PartOidExpr);
-
-	READ_INT_FIELD(level);
-
-	READ_DONE();
-}
-
 static PartDefaultExpr *
 _readPartDefaultExpr(const char ** str)
 {
@@ -3491,7 +3481,6 @@ _readDML(const char ** str)
 	READ_LOCALS(DML);
 
 	READ_UINT_FIELD(scanrelid);
-	READ_INT_FIELD(oidColIdx);
 	READ_INT_FIELD(actionColIdx);
 	READ_INT_FIELD(ctidColIdx);
 	READ_INT_FIELD(tupleoidColIdx);
@@ -4594,9 +4583,6 @@ readNodeBinary(const char ** str)
 				break;
 			case T_DMLActionExpr:
 				return_value = _readDMLActionExpr(str);
-				break;
-			case T_PartOidExpr:
-				return_value = _readPartOidExpr(str);
 				break;
 			case T_PartDefaultExpr:
 				return_value = _readPartDefaultExpr(str);

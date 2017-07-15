@@ -2483,9 +2483,6 @@ exprType(Node *expr)
 		case T_DMLActionExpr:
 			type = INT4OID;
 			break;
-		case T_PartOidExpr:
-			type = OIDOID;
-			break;
 		case T_PartDefaultExpr:
 			type = BOOLOID;
 			break;

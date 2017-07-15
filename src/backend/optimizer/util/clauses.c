@@ -3484,7 +3484,6 @@ expression_tree_mutator(Node *node,
 		case T_Null:
 		case T_DML:
 		case T_RowTrigger:
-		case T_PartOidExpr:
 		case T_PartDefaultExpr:
 		case T_PartBoundExpr:
 		case T_PartBoundInclusionExpr:

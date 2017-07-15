@@ -139,7 +139,6 @@ expression_tree_walker(Node *node,
 		case T_RangeTblRef:
 		case T_OuterJoinInfo:
 		case T_DMLActionExpr:
-		case T_PartOidExpr:
 		case T_PartDefaultExpr:
 		case T_PartBoundExpr:
 		case T_PartBoundInclusionExpr:
@@ -1166,7 +1165,6 @@ plan_tree_walker(Node *node,
 		case T_SetOperationStmt:
 		case T_InClauseInfo:
 		case T_TableValueExpr:
-		case T_PartOidExpr:
 		case T_PartDefaultExpr:
 		case T_PartBoundExpr:
 		case T_PartBoundInclusionExpr:

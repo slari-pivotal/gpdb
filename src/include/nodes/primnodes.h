@@ -1423,15 +1423,6 @@ typedef struct DMLActionExpr
 	Expr        xpr;
 } DMLActionExpr;
 
-/*
- * PartOidExpr
- * Represents the expression which holds a part oid in a PartitionSelector operator
- */
-typedef struct PartOidExpr
-{
-	Expr		xpr;
-	int 		level;			/* partitioning level */
-} PartOidExpr;
 
 /*
  * PartDefaultExpr

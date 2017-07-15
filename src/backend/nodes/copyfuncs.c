@@ -1059,7 +1059,6 @@ _copyDML(const DML *from)
 	CopyPlanFields((Plan *) from, (Plan *) newnode);
 
 	COPY_SCALAR_FIELD(scanrelid);
-	COPY_SCALAR_FIELD(oidColIdx);
 	COPY_SCALAR_FIELD(actionColIdx);
 	COPY_SCALAR_FIELD(ctidColIdx);
 	COPY_SCALAR_FIELD(tupleoidColIdx);
@@ -2522,15 +2521,6 @@ static DMLActionExpr *
 _copyDMLActionExpr(const DMLActionExpr *from)
 {
 	DMLActionExpr *newnode = makeNode(DMLActionExpr);
-
-	return newnode;
-}
-
-static PartOidExpr *
-_copyPartOidExpr(const PartOidExpr *from)
-{
-	PartOidExpr *newnode = makeNode(PartOidExpr);
-	COPY_SCALAR_FIELD(level);
 
 	return newnode;
 }
@@ -5064,9 +5054,6 @@ copyObject(void *from)
 			break;
 		case T_DMLActionExpr:
 			retval = _copyDMLActionExpr(from);
-			break;
-		case T_PartOidExpr:
-			retval = _copyPartOidExpr(from);
 			break;
 		case T_PartDefaultExpr:
 			retval = _copyPartDefaultExpr(from);
