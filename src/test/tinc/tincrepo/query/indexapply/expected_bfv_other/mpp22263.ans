@@ -13,6 +13,6 @@ SET
 -- @tags ORCA bfv
 -- @gpopt 1.522
 -- @description bfv for MPP-22263
-\!grep 'Filter: mpp22263.stringu1::text = "outer".column2'
-               Filter: mpp22263.stringu1::text = "outer".column2
-\!grep 'Filter: mpp22263.stringu1::text = "outer".column2'
+\!grep 'Filter: mpp22263.stringu1::text = "Values".column2'
+               Filter: mpp22263.stringu1::text = "Values".column2
+\!grep 'Filter: mpp22263.stringu1::text = "Values".column2'

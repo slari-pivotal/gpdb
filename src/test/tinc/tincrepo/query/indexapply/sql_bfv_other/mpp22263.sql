@@ -10,4 +10,4 @@ select * from mpp22263, (values(147, 'RFAAAA'), (931, 'VJAAAA')) as v (i, j)
     WHERE mpp22263.unique1 = v.i and mpp22263.stringu1 = v.j;
 --end_ignore
 
-\!grep 'Filter: mpp22263.stringu1::text = "outer".column2' %MYD%/output_bfv_other/mpp22263_orca.out
+\!grep 'Filter: mpp22263.stringu1::text = "Values".column2' %MYD%/output_bfv_other/mpp22263_orca.out
