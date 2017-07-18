@@ -51,11 +51,12 @@ SSH_RETRY_DELAY=.5
 class WorkerPool(object):
     """TODO:"""
     
-    def __init__(self,numWorkers=16,items=None):        
+    def __init__(self,numWorkers=16,items=None,daemonize=False):
         self.workers=[]
         self.work_queue=Queue()
         self.completed_queue=Queue()
         self.num_assigned=0
+        self.daemonize=daemonize
         if items is not None:
             for item in items:                
                 self.work_queue.put(item)
@@ -186,6 +187,7 @@ class Worker(Thread):
         self.timeout=timeout
         self.logger=logger
         Thread.__init__(self)
+        self.daemon=pool.daemonize
     
     
     def run(self):

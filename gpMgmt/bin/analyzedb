@@ -1051,6 +1051,7 @@ class AnalyzeWorkerPool(WorkerPool):
         self.work_queue = Queue()
         self.completed_queue = Queue()
         self.num_assigned = 0
+        self.daemonize=False
         self.detailed = False
         if items is not None:
             for item in items:
