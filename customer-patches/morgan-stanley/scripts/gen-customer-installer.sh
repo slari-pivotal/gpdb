@@ -59,19 +59,19 @@ extract_std_gppkg(){
 
 ## ======================================================================
 
-RELEASE=4.3.9.1MS28
 BASE_DIR=`pwd`
+RELEASE=`${BASE_DIR}/gpdb_src/getversion --short`
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-GPDB_INSTALLER_FILE=${GPDB_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_rc/greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip}
+GPDB_INSTALLER_FILE=${GPDB_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_rc/greenplum-db-${RELEASE}-rhel5-x86_64.zip}
 CONN_INSTALLER_FILE=${CONN_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_connectivity/greenplum-connectivity-${RELEASE}-build-1-rhel5-x86_64.zip}
 CLIENTS_INSTALLER_FILE=${CLIENTS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_clients/greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip}
 LOADERS_INSTALLER_FILE=${LOADERS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_loaders/greenplum-loaders-${RELEASE}-build-1-rhel5-x86_64.zip}
 
 PGCRYPTO_GPPKG_FILE=${PGCRYPTO_GPPKG_FILE:=${BASE_DIR}/pgcrypto_rhel5_gppkg/pgcrypto-ossv1.1_pv1.2_gpdb4.3orca-rhel5-x86_64.gppkg}
-PLR_GPPKG_FILE=${PLR_GPPKG_FILE:=${BASE_DIR}/plr_rhel5_gppkg/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-rhel5-x86_64.gppkg}
-PLJAVA_GPPKG_FILE=${PLJAVA_GPPKG_FILE:=${BASE_DIR}/pljava_rhel5_gppkg/pljava-ossv1.4.0_pv1.3_gpdb4.3orca-rhel5-x86_64.gppkg}
-MADLIB_GPPKG_FILE=${MADLIB_GPPKG_FILE:=${BASE_DIR}/madlib_rhel5_gppkg/madlib-ossv1.9.1_pv1.9.6_gpdb4.3orca-rhel5-x86_64.gppkg}
+PLR_GPPKG_FILE=${PLR_GPPKG_FILE:=${BASE_DIR}/plr_rhel5_gppkg/plr-ossv8.3.0.15_pv2.2.0_gpdb4.3orca-rhel5-x86_64.gppkg}
+PLJAVA_GPPKG_FILE=${PLJAVA_GPPKG_FILE:=${BASE_DIR}/pljava_rhel5_gppkg/pljava-ossv1.5.0_pv1.4.0_gpdb4.3orca-rhel5-x86_64.gppkg}
+MADLIB_GPPKG_FILE=${MADLIB_GPPKG_FILE:=${BASE_DIR}/madlib_rhel5_gppkg/madlib-ossv1.11_pv1.9.8_gpdb4.3orca-rhel5-x86_64.gppkg}
 
 JDBC_DRIVER_FILE=${JDBC_DRIVER_FILE:=${BASE_DIR}/greenplum_jdbc_zip/greenplum_jdbc_5.1.1.zip}
 GPSUPPORT_FILE=${GPSUPPORT_FILE:=${BASE_DIR}/gpsupport_package/gpsupport-1.2.0.0.gz}
@@ -147,15 +147,8 @@ echo "Update greenplum_path.sh"
 echo '' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 echo 'export R_HOME=$GPHOME/ext/R-3.1.0/lib64/R' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
-JAVA_JRE=$(echo ${GPDB_INSTALLDIR}/ext/jre*)  # force glob expansion
-if ! [ -d $JAVA_JRE ] ; then
-  echo "ERROR: JRE not found at $JAVA_JRE"
-  exit 1
-fi
 
-echo 'export JAVA_HOME=$GPHOME/ext/'"$(basename ${JAVA_JRE})" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
-echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
-echo 'export LD_LIBRARY_PATH=$GPHOME/ext/R-3.1.0/lib64/R/lib:$JAVA_HOME/lib/amd64/server:$LD_LIBRARY_PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo 'export LD_LIBRARY_PATH=$GPHOME/ext/R-3.1.0/lib64/R/lib:$LD_LIBRARY_PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
 ## ----------------------------------------------------------------------
 ## Process Alpine
@@ -201,9 +194,6 @@ ln -s "Versions/$(get_madlib_version)" Current
 ln -s Current/bin bin
 ln -s Current/doc doc
 popd > /dev/null
-
-MADLIB_FIX_BIN="$BASE_DIR/gpdb_src/ci/concourse/scripts/fix_madpack.sh"
-$MADLIB_FIX_BIN --prefix usr/local/madlib
 
 mv usr/local/madlib ../greenplum-db
 mv *.gppkg ..
@@ -539,8 +529,8 @@ echo "---------------------------------------------------------------------"
 echo ""
 
 mkdir -p $BASE_DIR/ms_installer_rhel5_gpdb_rc $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients
-cp greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_rc/
-cp greenplum-db-${RELEASE}-build-1-rhel5-x86_64.zip.sha256 $BASE_DIR/ms_installer_rhel5_gpdb_rc/
+cp greenplum-db-${RELEASE}-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_rc/
+cp greenplum-db-${RELEASE}-rhel5-x86_64.zip.sha256 $BASE_DIR/ms_installer_rhel5_gpdb_rc/
 cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
 cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip.sha256 $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
 
