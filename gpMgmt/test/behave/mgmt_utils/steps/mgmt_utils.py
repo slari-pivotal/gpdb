@@ -1397,6 +1397,8 @@ def impl(context, filetype, directory):
         filename = 'gp_dump_%s_filter' % context.backup_timestamp
     elif filetype == '_schema':
         filename = 'gp_dump_%s_schema' % context.backup_timestamp
+    elif filetype == 'table':
+        filename = 'gp_dump_%s_table' % context.backup_timestamp
     else:
         raise Exception("Unknown filetype '%s' specified" % filetype)
 

@@ -25,7 +25,7 @@ class Context(Values, object):
         "increments": ("dump", "_increments"), "last_operation": ("dump", "_last_operation"), "master_config": ("master_config_files", ".tar"),
         "metadata": ("dump_%d_%s", ""), "partition_list": ("dump", "_table_list"), "pipes": ("dump", "_pipes"), "plan": ("restore", "_plan"),
         "postdata": ("dump_%d_%s", "_post_data"), "report": ("dump", ".rpt"), "schema": ("dump", "_schema"), "segment_config": ("segment_config_files_%d_%s", ".tar"),
-        "stats": ("statistics_%d_%s", ""), "status": ("dump_status_%d_%s", ""),
+        "stats": ("statistics_%d_%s", ""), "table": ("dump", "_table"), "status": ("dump_status_%d_%s", ""),
     }
     defaults = {
         "backup_dir": None, "batch_default": 64, "change_schema": None, "cleanup_date": None, "cleanup_total": None, "clear_catalog_dumps": False,
@@ -1014,4 +1014,4 @@ def validate_netbackup_params(param_dict):
     for label, param in param_dict.iteritems():
         if param and len(param) > max_len:
             raise Exception("Netbackup {0} ({1}) exceeds the maximum length of {2} characters".format(label, param, max_len))
-    
+

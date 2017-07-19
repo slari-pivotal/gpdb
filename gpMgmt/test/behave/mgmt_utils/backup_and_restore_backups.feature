@@ -213,6 +213,7 @@ Feature: Validate command line arguments
 
     @nbupartI
     @ddpartI
+    @skip_filename_compatibility
     Scenario: 14 Full Backup with option -t and Restore
         Given the backup test is initialized with database "bkdb14"
         And there is a "heap" table "public.heap_table" in "bkdb14" with data
@@ -224,9 +225,11 @@ Feature: Validate command line arguments
         And the temp files "include_dump_tables" are not created in the system
         And the timestamp from gpcrondump is stored
         And verify that the "report" file in " " dir contains "Backup Type: Full"
+        And "table" file should be created under " "
 
     @nbupartI
     @ddpartI
+    @skip_filename_compatibility
     Scenario: 15 Full Backup with option -T and Restore
         Given the backup test is initialized with database "bkdb15"
         And there is a "heap" table "public.heap_table" in "bkdb15" with data
@@ -237,6 +240,7 @@ Feature: Validate command line arguments
         Then gpcrondump should return a return code of 0
         And the temp files "exclude_dump_tables" are not created in the system
         And the timestamp from gpcrondump is stored
+        And "table" file should be created under " "
 
     @nbupartI
     @ddpartI
