@@ -9459,23 +9459,6 @@ GetSelectedPartitionOids(HTAB *partOidHash, Datum **partOids, long *partCount)
 	}
 }
 
-
-/**
- * Prints the names of DPE selected partitions from a
- * HTAB (pidIndex) of partition oids.
- */
-void
-LogSelectedPartitionOids(HTAB *pidIndex)
-{
-	Datum *elements = NULL;
-	long numPartitions = 0;
-	GetSelectedPartitionOids(pidIndex, &elements, &numPartitions);
-	Assert(NULL != elements);
-
-	elog(LOG, "DPE matched partitions: %s", DebugPartitionOid(elements, numPartitions));
-	pfree(elements);
-}
-
 /*
  * findPartitionMetadataEntry
  *   Find PartitionMetadata object for a given partition oid from a list.

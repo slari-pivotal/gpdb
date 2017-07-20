@@ -277,9 +277,6 @@ DebugPartitionOid(Datum *elements, int n);
 extern void
 GetSelectedPartitionOids(HTAB *partOidHash, Datum **partOids, long *partCount);
 
-extern void
-LogSelectedPartitionOids(HTAB *pidIndex);
-
 extern List *
 all_leaf_partition_relids(PartitionNode *pn);
 
