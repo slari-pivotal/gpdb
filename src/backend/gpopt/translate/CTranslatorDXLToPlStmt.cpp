@@ -1845,18 +1845,17 @@ CTranslatorDXLToPlStmt::PplanFunctionScanFromDXLTVF
 	// translation context for column mappings
 	CDXLTranslateContextBaseTable dxltrctxbt(m_pmp);
 
-	// we will add the new range table entry as the last element of the range table
-	Index iRel = gpdb::UlListLength(m_pctxdxltoplstmt->PlPrte()) + 1;
-
-	dxltrctxbt.SetIdx(iRel);
-
 	// create function scan node
 	FunctionScan *pfuncscan = MakeNode(FunctionScan);
-	pfuncscan->scan.scanrelid = iRel;
 	Plan *pplan = &(pfuncscan->scan.plan);
 
 	RangeTblEntry *prte = PrteFromDXLTVF(pdxlnTVF, pdxltrctxOut, &dxltrctxbt, pplan);
 	GPOS_ASSERT(NULL != prte);
+
+	// we will add the new range table entry as the last element of the range table
+	Index iRel = gpdb::UlListLength(m_pctxdxltoplstmt->PlPrte()) + 1;
+	dxltrctxbt.SetIdx(iRel);
+	pfuncscan->scan.scanrelid = iRel;
 
 	m_pctxdxltoplstmt->AddRTE(prte);
 
