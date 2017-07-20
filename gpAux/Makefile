@@ -187,8 +187,8 @@ endif
 win32_CONFIGFLAGS=--with-gssapi --without-libcurl --disable-mapreduce $(APR_CONFIG)
 rhel5_x86_32_CONFIGFLAGS=--host=i686-pc-linux-gnu --enable-snmp --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 rhel5_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
-rhel6_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
-rhel7_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
+rhel6_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG) --enable-tap-tests
+rhel7_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG) --enable-tap-tests
 sles11_x86_64_CONFIGFLAGS=--enable-snmp --enable-ddboost --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 linux_x86_64_CONFIGFLAGS=--enable-snmp --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 osx106_x86_CONFIGFLAGS=--enable-snmp --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
