@@ -5592,7 +5592,7 @@ static struct config_int ConfigureNamesInt[] =
 	},
 
 	{
-		{"gp_filerep_ct_batch_size", PGC_USERSET, GP_ARRAY_TUNING,
+		{"gp_filerep_ct_batch_size", PGC_USERSET, DEVELOPER_OPTIONS,
 			gettext_noop("Maximum number of blocks from changetracking log that"
 						 " a filerep resync worker processes at one time."),
 		 NULL,
