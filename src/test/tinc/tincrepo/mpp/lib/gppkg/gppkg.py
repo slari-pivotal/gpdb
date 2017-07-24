@@ -183,8 +183,8 @@ class Gppkg:
     def get_os_platform(self):
         from sys import platform as _platform
         machine = ''
-        if _platform == 'linux' or _platform == 'linux2': # Both SuSE and RHEL returns linux
-            if  os.path.exists("/etc/SuSE-release"):
+        if _platform.startswith('linux'):  # Both SuSE and RHEL returns linux, might be linux2 or linux4
+            if os.path.exists("/etc/SuSE-release"):
                 machine = 'suse'
             else:
                 machine = 'redhat'
@@ -192,10 +192,11 @@ class Gppkg:
             machine = 'solaris'
 
         if not machine:
-            raise Exception('unable to determine the platform')
+            raise Exception('unable to recognize the platform. sys.platform found: %s' % _platform)
 
         cmd = 'cat '
         res = {'rc':0, 'stderr':'', 'stdout':''}
+        os_ = "unknown"
         if machine.lower() == 'suse':
             cmd = cmd + '/etc/SuSE-release'
             run_shell_command (cmd, 'check os kernel version', res)
