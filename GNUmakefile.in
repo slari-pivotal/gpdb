@@ -118,7 +118,6 @@ check: all
 check installcheck installcheck-parallel installcheck-good:
 	$(MAKE) -C src/test $@
 	$(MAKE) -C gpAux/extensions $@
-	$(MAKE) -C src/interfaces/gppc installcheck
 
 GNUmakefile: GNUmakefile.in $(top_builddir)/config.status
 	./config.status $@
