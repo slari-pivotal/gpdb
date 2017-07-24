@@ -14,6 +14,7 @@ WANTED_DIRS = \
 		extprotocol \
 		gp_distribution_policy \
 		gp_internal_tools \
+		gp_inject_fault \
 		gp_cancel_query \
 		indexscan
 
