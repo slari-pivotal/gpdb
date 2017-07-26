@@ -377,3 +377,7 @@ memory_accounting:
 	$(TESTER) \
 		resource_management.memory_accounting.test_oom.OOMTestCase \
 		resource_management.memory_accounting.too_many_exec_accounts.test_exec_accounts
+
+pgcrypto:
+	$(TESTER) \
+		mpp.gpdb.tests.package.contrib.pgcrypto.functional.test_functional_pgcrypto.PgcryptoScenarioTestCase

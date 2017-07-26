@@ -243,7 +243,7 @@ pgp_free(PGP_Context *ctx)
 {
 	if (ctx->pub_key)
 		pgp_key_free(ctx->pub_key);
-	memset(ctx, 0, sizeof *ctx);
+	px_memset(ctx, 0, sizeof *ctx);
 	px_free(ctx);
 	return 0;
 }

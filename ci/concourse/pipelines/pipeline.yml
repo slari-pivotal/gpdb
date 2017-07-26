@@ -58,6 +58,7 @@ groups:
   - pulse_mpp-interconnect
   - pulse_mpp-interconnect-sles
   - compile_gpdb_windows_ccl
+  - TINC_pgcrypto
 
 - name: CentOS/RHEL
   jobs:
@@ -72,6 +73,7 @@ groups:
   - regression_tests_gphdfs_centos
   - MU_check_centos
   - pt-rebuild
+  - TINC_pgcrypto
   - gpdb_rc_packaging_centos
   - gpdb_src_packaging
   - manual_testing_on_pulse_centos
@@ -729,6 +731,28 @@ jobs:
     - put: ccache_gpdb_centos5
       params:
         file: gpdb_artifacts/ccache_gpdb.tar.gz
+
+
+- name: TINC_pgcrypto
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed:
+      - compile_gpdb_centos
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed:
+      - compile_gpdb_centos
+    - get: pgcrypto_gppkg
+      resource: pgcrypto_rhel5_gppkg
+      passed:
+      - compile_gpdb_centos
+      trigger: true
+  - task: test_pgcrypto
+    image: centos-gpdb-dev-5
+    file: gpdb_src/ci/concourse/test_pgcrypto.yml
+
+
 
 - name: compile_gpdb_windows_ccl
   plan:
