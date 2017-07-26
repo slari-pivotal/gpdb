@@ -736,6 +736,7 @@ jobs:
 - name: TINC_pgcrypto
   plan:
   - aggregate:
+    - get: centos-gpdb-dev-5
     - get: gpdb_src
       passed:
       - compile_gpdb_centos
