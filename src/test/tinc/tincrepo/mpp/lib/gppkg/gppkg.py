@@ -18,11 +18,11 @@ limitations under the License.
 import os, re
 import platform
 import tinctest
+from gppylib.commands.base import Command
 from tinctest.lib import run_shell_command, local_path
 from tinctest import logger
 
 class Gppkg:
-    DEFAULT_BUILD_PROD_URL = "http://artifacts-cache.ci.eng.pivotal.io/dist/GPDB"
     GPPKG_URL = os.environ.get('GPPKG_RC_URL',None)
 
     def check_pkg_exists(self, pkgname):
@@ -89,22 +89,42 @@ class Gppkg:
 
     def download_pkg(self, product_version, gppkg):
         """
-        Download gppkg from artifacts server.
+        Download gppkg from s3.
         """
         target_dir = local_path('download/')
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
-        (rc, download_link, package_name) = self.get_download_url_from_build_prod(product_version, gppkg)
+        (rc, package_name) = self.get_package_name_from_config(product_version, gppkg)
         if rc != 0:
-            return (-1, None, None)
-        wget_cmd = 'wget --html-extension %s -O %s`basename %s`' % (download_link, target_dir, download_link)
+            return -1, None, None
 
-        logger.debug('Download link: %s' % wget_cmd)
-        res = {'rc':0, 'stderr':'', 'stdout':''}
-        run_shell_command (wget_cmd, 'run wget', res)
-        if res['rc'] > 0:
-            raise Exception("Gppkg download failed")
-        return (0, target_dir, package_name)
+        bucket = "gpdb-4.3-stable-concourse"
+        compatibility_test = "orca" not in package_name
+        if "gppc" in package_name or compatibility_test:
+            bucket = "gppkgs-used-for-tinc-tests"
+
+        aws_cmd = "unset LD_LIBRARY_PATH && " \
+                  "export PATH=/usr/bin && " \
+                  "unset PYTHONPATH && " \
+                  "unset PYTHONHOME && " \
+                  "aws --region us-west-2 s3api get-object " \
+                  "--bucket %s --key deliverables/%s  %s" \
+                  % (bucket, package_name, os.path.join(target_dir, package_name))
+
+        logger.debug('Download link: %s' % aws_cmd)
+
+        cmd = Command("aws get-object", aws_cmd)
+
+        tinctest.logger.info('Executing command: %s' % (aws_cmd))
+        cmd.run()
+        result = cmd.get_results()
+        tinctest.logger.info('Finished command execution with return code %s ' % (str(result.rc)))
+        tinctest.logger.debug('stdout: ' + result.stdout)
+        tinctest.logger.debug('stderr: ' + result.stderr)
+
+        if result.rc > 0:
+            raise Exception("Gppkg download failed: %s" % result.stderr)
+        return 0, target_dir, package_name
 
     def gppkg_install(self, product_version, gppkg):
         (existed, _) = self.check_pkg_exists(gppkg)
@@ -118,26 +138,22 @@ class Gppkg:
         run_shell_command('gpstop -air')
         return True
 
-    def get_download_url_from_build_prod(self, product_version, gppkg):
-        # defaults to be 4.2
-        gpdb_version = '4.2'
-        if product_version.startswith('4.3'):
-            gpdb_version = '4.3'
+    def get_package_name_from_config(self, product_version, gppkg):
+        gpdb_version = '4.3'
         orca = ""
         try:
             minor_version = float(re.compile('.*\d+\.\d+\.(\d+\.\d+)').match(product_version).group(1))
-            if minor_version >= float(5.0): #minor version grabbed from 4.3.5.0 when orca was introduced
+            if minor_version >= float(5.0):  # minor version grabbed from 4.3.5.0 when orca was introduced
                 orca = 'orca'
         except Exception as e:
             logger.error("%s" % str(e))
             raise Exception('Unable to parse product_version: %s' % product_version)
 
         os_, platform_ = self.get_os_platform()
-        compatiable = self.check_os_compatibility(os_, gppkg)
-        if not compatiable:
-            logger.error("the package %s is not compatiable with the os %s, please make sure the compatiable package exists" %(gppkg, os_))
-            return(-1, None, None)
-        build_prod_host = self.DEFAULT_BUILD_PROD_URL
+        compatible = self.check_os_compatibility(os_, gppkg)
+        if not compatible:
+            logger.error("the package %s is not compatible with the os %s, please make sure the compatible package exists" %(gppkg, os_))
+            return -1, None, None
         gppkg_config = self.getconfig(product_version=gpdb_version, gppkg=gppkg)
         gppkg_config['pkg'] = gppkg
         gppkg_config['gpdbversion'] = gpdb_version
@@ -146,16 +162,11 @@ class Gppkg:
         gppkg_config['type'] = 'gppkg'
         gppkg_config['orca'] = orca
 
-        #GPDB 4.2 and 4.3 is having different nameing format for gppkg
+        gppkg_name = "%(pkg)s-pv%(version)s_gpdb%(gpdbversion)s%(orca)s-%(os)s-%(platform)s.%(type)s" % gppkg_config
         if 'gpdbversion' in gppkg_config  and 'ossversion' in gppkg_config:
             gppkg_name = "%(pkg)s-ossv%(ossversion)s_pv%(version)s_gpdb%(gpdbversion)s%(orca)s-%(os)s-%(platform)s.%(type)s" % gppkg_config
-        elif gpdb_version == '4.3':
-            gppkg_name = "%(pkg)s-pv%(version)s_gpdb%(gpdbversion)s%(orca)s-%(os)s-%(platform)s.%(type)s" % gppkg_config
-        else:
-            gppkg_name = "%(pkg)s-%(version)s-%(os)s-%(platform)s.%(type)s" % gppkg_config
 
-        download_url = build_prod_host + '/gppkg/%(pkg)s/'%gppkg_config + gppkg_name
-        return (0, download_url, gppkg_name)
+        return 0, gppkg_name
 
     def getconfig(self, product_version='4.2', gppkg=None):
         config_file = local_path('gppkg.'+product_version+'.config')
