@@ -549,6 +549,19 @@ SELECT * FROM segment_reject_limit_from;
  1 | 2
 (2 rows)
 
+-- STDIN is not support by copy from on segment
+COPY segment_reject_limit_from from STDIN on segment log errors segment reject limit 3 rows;
+ERROR:  STDIN and STDOUT are not supported by 'COPY ON SEGMENT'
+SELECT * FROM segment_reject_limit_from;
+ a | b
+---+---
+ 1 | 1
+ 1 | 2
+(2 rows)
+
+-- STDOUT is not support by copy to on segment
+COPY segment_reject_limit_from to STDOUT on segment log errors segment reject limit 3 rows;
+ERROR:  STDIN and STDOUT are not supported by 'COPY ON SEGMENT'
 -- start_ignore
 -- end_ignore
 CREATE TABLE test_copy_on_segment (a int, b text, c text);

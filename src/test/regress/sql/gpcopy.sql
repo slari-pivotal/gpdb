@@ -586,6 +586,13 @@ SELECT relname, filename, bytenum, errmsg FROM gp_read_error_log('segment_reject
 COPY segment_reject_limit_from from '/tmp/segment_reject_limit<SEGID>.csv' on segment log errors segment reject limit 3 rows;
 SELECT * FROM segment_reject_limit_from;
 
+-- STDIN is not support by copy from on segment
+COPY segment_reject_limit_from from STDIN on segment log errors segment reject limit 3 rows;
+SELECT * FROM segment_reject_limit_from;
+
+-- STDOUT is not support by copy to on segment
+COPY segment_reject_limit_from to STDOUT on segment log errors segment reject limit 3 rows;
+
 -- start_ignore
 DROP TABLE IF EXISTS test_copy_on_segment;
 DROP TABLE IF EXISTS test_copy_on_segment_withoids;

@@ -1048,6 +1048,13 @@ DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate)
 				 defel->defname);
 	}
 
+	/* Check for incompatible options */
+
+	if (cstate->on_segment && stmt->filename==NULL)
+		ereport(ERROR,
+				(errcode(ERRCODE_SYNTAX_ERROR),
+				 errmsg("STDIN and STDOUT are not supported by 'COPY ON SEGMENT'")));
+
 	/* Set defaults */
 
 	cstate->err_loc_type = ROWNUM_ORIGINAL;
