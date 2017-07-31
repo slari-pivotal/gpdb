@@ -564,10 +564,38 @@ COPY copy_regression_newline from stdin with delimiter '|' newline 'blah';
 COPY copy_regression_newline to stdout with delimiter '|' newline 'blah';
 
 DROP TABLE copy_regression_newline;
+
+-- exceed reject limit  on segment
+DROP TABLE IF EXISTS segment_reject_limit;
+CREATE TABLE segment_reject_limit (a int,b char) distributed by (a);
+INSERT INTO segment_reject_limit values(1,'1');
+INSERT INTO segment_reject_limit values(1,'2');
+INSERT INTO segment_reject_limit values(1,'a');
+INSERT INTO segment_reject_limit values(1,'b');
+
+COPY segment_reject_limit TO '/tmp/segment_reject_limit<SEGID>.csv' on segment;
+
+DROP TABLE IF EXISTS segment_reject_limit_from;
+CREATE TABLE segment_reject_limit_from (a int,b int);
+COPY segment_reject_limit_from from '/tmp/segment_reject_limit<SEGID>.csv' on segment log errors segment reject limit 2 rows;
+
+SELECT * FROM segment_reject_limit_from;
+SELECT relname, filename, bytenum, errmsg FROM gp_read_error_log('segment_reject_limit_from');
+
+--not exceed reject limit  on segment
+COPY segment_reject_limit_from from '/tmp/segment_reject_limit<SEGID>.csv' on segment log errors segment reject limit 3 rows;
+SELECT * FROM segment_reject_limit_from;
+
 -- start_ignore
 DROP TABLE IF EXISTS test_copy_on_segment;
+DROP TABLE IF EXISTS test_copy_on_segment_withoids;
+DROP TABLE IF EXISTS test_copy_from_on_segment_txt;
+DROP TABLE IF EXISTS test_copy_from_on_segment_csv;
+DROP TABLE IF EXISTS test_copy_from_on_segment_withoids;
+DROP TABLE IF EXISTS onek_copy_from_onsegment;
 DROP EXTERNAL TABLE IF EXISTS check_copy_onsegment_txt1;
 DROP EXTERNAL TABLE IF EXISTS check_copy_onsegment_csv1;
+DROP EXTERNAL TABLE IF EXISTS check_onek_copy_onsegment;
 DROP EXTERNAL TABLE IF EXISTS rm_copy_onsegment_files;
 -- end_ignore
 
@@ -601,6 +629,25 @@ ON SEGMENT 0
 FORMAT 'csv';
 SELECT * FROM check_copy_onsegment_csv1 ORDER BY a;
 
+CREATE EXTERNAL WEB TABLE check_copy_onsegment_withoids (sum int)
+EXECUTE E'(cat /tmp/withoids_valid_filename*.csv|wc -l)'
+ON SEGMENT 0
+FORMAT 'text';
+SELECT * FROM check_copy_onsegment_withoids;
+
+CREATE TABLE test_copy_from_on_segment_txt (LIKE test_copy_on_segment);
+COPY test_copy_from_on_segment_txt FROM '/tmp/invalid_filename.txt' ON SEGMENT;
+COPY test_copy_from_on_segment_txt FROM '/tmp/valid_filename<SEGID>.txt' ON SEGMENT;
+SELECT * FROM test_copy_from_on_segment_txt ORDER BY a;
+
+CREATE TABLE test_copy_from_on_segment_csv (LIKE test_copy_on_segment);
+COPY test_copy_from_on_segment_csv FROM '/tmp/valid_filename<SEGID>.csv' WITH ON SEGMENT CSV QUOTE '"' ESCAPE E'\\' NULL E'\N' DELIMITER ',' HEADER IGNORE EXTERNAL PARTITIONS;
+SELECT * FROM test_copy_from_on_segment_csv ORDER BY a;
+
+CREATE TABLE test_copy_from_on_segment_withoids (LIKE test_copy_on_segment_withoids) WITH OIDS;
+COPY test_copy_from_on_segment_withoids FROM '/tmp/withoids_valid_filename<SEGID>.csv' WITH ON SEGMENT OIDS CSV QUOTE '"' ESCAPE E'\\' NULL E'\N' DELIMITER ',' IGNORE EXTERNAL PARTITIONS;
+SELECT * FROM test_copy_from_on_segment_withoids ORDER BY a;
+
 CREATE TABLE onek_copy_onsegment (
     unique1     int4,
     unique2     int4,
@@ -629,6 +676,11 @@ ON SEGMENT 0
 FORMAT 'text';
 SELECT * FROM check_onek_copy_onsegment;
 
+CREATE TABLE onek_copy_from_onsegment (LIKE onek_copy_onsegment);
+COPY onek_copy_from_onsegment FROM '/tmp/valid_filename_onek_copy_onsegment<SEGID>.txt' ON SEGMENT;
+SELECT * FROM onek_copy_onsegment EXCEPT SELECT * FROM onek_copy_from_onsegment;
+SELECT count(*) FROM onek_copy_from_onsegment;
+
 CREATE EXTERNAL WEB TABLE rm_copy_onsegment_files (a int)
 EXECUTE E'(rm -rf /tmp/*valid_filename*.*)'
 ON SEGMENT 0
@@ -636,6 +688,11 @@ FORMAT 'text';
 SELECT * FROM rm_copy_onsegment_files;
 
 DROP TABLE IF EXISTS test_copy_on_segment;
+DROP TABLE IF EXISTS test_copy_on_segment_withoids;
+DROP TABLE IF EXISTS test_copy_from_on_segment_txt;
+DROP TABLE IF EXISTS test_copy_from_on_segment_csv;
+DROP TABLE IF EXISTS test_copy_from_on_segment_withoids;
+DROP TABLE IF EXISTS onek_copy_from_onsegment;
 DROP EXTERNAL TABLE IF EXISTS check_copy_onsegment_txt1;
 DROP EXTERNAL TABLE IF EXISTS check_copy_onsegment_csv1;
 DROP EXTERNAL TABLE IF EXISTS check_onek_copy_onsegment;

@@ -101,6 +101,7 @@ cdbdisp_makeResult(struct CdbDispatchResults           *meleeResults,
     dispatchResult->resultbuf = createPQExpBuffer();
     dispatchResult->error_message = NULL;
 	dispatchResult->numrowsrejected = 0;
+	dispatchResult->numrowscompleted = 0;
 
 	if (PQExpBufferBroken(dispatchResult->resultbuf))
 	{

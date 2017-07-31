@@ -46,6 +46,7 @@ PostgreSQL documentation
 
 COPY table [(column [, ...])] FROM {'file' | STDIN}
      [ [WITH] 
+       [ON SEGMENT]
        [OIDS]
        [HEADER]
        [DELIMITER [ AS ] 'delimiter']

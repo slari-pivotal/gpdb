@@ -69,7 +69,8 @@ typedef struct CdbDispatchResult
 	bool 						QEWriter_Dirty;
 
 	int					numrowsrejected; /* num rows rejected in SREH mode */
-	
+
+	int					numrowscompleted; /* num rows completed in COPY FROM ON SEGMENT */
 }   CdbDispatchResult;
 
 

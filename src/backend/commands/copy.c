@@ -191,7 +191,7 @@ else \
 	if (!elog_dismiss(DEBUG5)) \
 		PG_RE_THROW(); /* <-- hope to never get here! */ \
 \
-	if (Gp_role == GP_ROLE_DISPATCH)\
+	if (Gp_role == GP_ROLE_DISPATCH || cstate->on_segment)\
 	{\
 		Insist(cstate->err_loc_type == ROWNUM_ORIGINAL);\
 		cstate->cdbsreh->rawdata = (char *) palloc(strlen(cstate->line_buf.data) * \
@@ -1189,6 +1189,13 @@ DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate)
 			replaceStringInfoString(&filepath, "<SEGID>", segid_buf);
 
 			cstate->filename = filepath.data;
+			/* Rename filename if error log needed */
+			if (NULL != cstate->cdbsreh)
+			{
+				snprintf(cstate->cdbsreh->filename,
+						 sizeof(cstate->cdbsreh->filename), "%s",
+						 filepath.data);
+			}
 
 			pipe = false;
 		}
@@ -1520,6 +1527,11 @@ DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate)
 					(errcode(ERRCODE_GP_FEATURE_NOT_SUPPORTED),
 					 errmsg("COPY single row error handling only available for distributed user tables")));
 
+		if (cstate->on_segment && Gp_role == GP_ROLE_EXECUTE)
+		{
+			pipe = true;
+		}
+
 		if (pipe)
 		{
 			if (whereToSendOutput == DestRemote)
@@ -1530,14 +1542,19 @@ DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate)
 		else
 		{
 			struct stat st;
+			char *filename = cstate->filename;
 
-			cstate->copy_file = AllocateFile(cstate->filename, PG_BINARY_R);
+			/* Use dummy file on master for COPY FROM ON SEGMENT */
+			if (cstate->on_segment && Gp_role == GP_ROLE_DISPATCH)
+				filename = "/dev/null";
+
+			cstate->copy_file = AllocateFile(filename, PG_BINARY_R);
 
 			if (cstate->copy_file == NULL)
 				ereport(ERROR,
 						(errcode_for_file_access(),
 						 errmsg("could not open file \"%s\" for reading: %m",
-								cstate->filename)));
+								filename)));
 
 			// Increase buffer size to improve performance  (cmcdevitt)
             setvbuf(cstate->copy_file, NULL, _IOFBF, 393216); // 384 Kbytes
@@ -1548,7 +1565,7 @@ DoCopyInternal(const CopyStmt *stmt, const char *queryString, CopyState cstate)
 				FreeFile(cstate->copy_file);
 				ereport(ERROR,
 						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-						 errmsg("\"%s\" is a directory", cstate->filename)));
+						 errmsg("\"%s\" is a directory", filename)));
 			}
 		}
 
@@ -2458,7 +2475,6 @@ CopyOneRowTo(CopyState cstate, Oid tupleOid, Datum *values, bool *isnulls)
 	MemoryContextSwitchTo(oldcontext);
 }
 
-
 /*
  * CopyFromCreateDispatchCommand
  *
@@ -2578,6 +2594,9 @@ static void CopyFromCreateDispatchCommand(CopyState cstate,
 	else
 		appendStringInfo(cdbcopy_cmd, " FROM STDIN WITH");
 
+	if (cstate->on_segment)
+		appendStringInfo(cdbcopy_cmd, " ON SEGMENT");
+
 	if (cstate->oids)
 		appendStringInfo(cdbcopy_cmd, " OIDS");
 
@@ -2598,6 +2617,14 @@ static void CopyFromCreateDispatchCommand(CopyState cstate,
 	if (cstate->csv_mode)
 	{
 		appendStringInfo(cdbcopy_cmd, " CSV");
+
+		/*
+		 * If on_segment, QE needs to write its own CSV header. If not,
+		 * only QD needs to, QE doesn't send CSV header to QD
+		 */
+		if (cstate->on_segment && cstate->header_line)
+			appendStringInfo(cdbcopy_cmd, " HEADER");
+
 		appendStringInfo(cdbcopy_cmd, " QUOTE AS E'%s'", escape_quotes(cstate->quote));
 		appendStringInfo(cdbcopy_cmd, " ESCAPE AS E'%s'", escape_quotes(cstate->escape));
 
@@ -2670,7 +2697,8 @@ CopyFromDispatch(CopyState cstate)
 	Datum	   *values;
 	bool	   *nulls;
 	int		   *attr_offsets;
-	int			total_rejeted_from_qes = 0;
+	int			total_rejected_from_qes = 0;
+	int			total_completed_from_qes = 0;
 	bool		isnull;
 	bool	   *isvarlena;
 	ResultRelInfo *resultRelInfo;
@@ -3052,7 +3080,7 @@ CopyFromDispatch(CopyState cstate)
 	 */
 	//ExecBSInsertTriggers(estate, resultRelInfo);
 
-	file_has_oids = cstate->oids;	/* must rely on user to tell us this... */
+	*pfile_has_oids = cstate->oids; /* must rely on user to tell us... */
 
 	values = (Datum *) palloc(num_phys_attrs * sizeof(Datum));
 	nulls = (bool *) palloc(num_phys_attrs * sizeof(bool));
@@ -3558,12 +3586,13 @@ CopyFromDispatch(CopyState cstate)
 								 cstate->line_buf.data);
 				
 				/* send modified data */
-				cdbCopySendData(cdbCopy,
-								target_seg,
-								line_buf_with_lineno.data,
-								line_buf_with_lineno.len);
-
-				RESET_LINEBUF_WITH_LINENO;
+				if (!cstate->on_segment) {
+					cdbCopySendData(cdbCopy,
+									target_seg,
+									line_buf_with_lineno.data,
+									line_buf_with_lineno.len);
+					RESET_LINEBUF_WITH_LINENO;
+				}
 
 				cstate->processed++;
 				if (estate->es_result_partitions)
@@ -3595,7 +3624,7 @@ CopyFromDispatch(CopyState cstate)
 	 * databases Now we would like to end the copy command on
 	 * all segment databases across the cluster.
 	 */
-	total_rejeted_from_qes = cdbCopyEnd(cdbCopy);
+	total_rejected_from_qes = cdbCopyEndAndFetchRejectNum(cdbCopy, &total_completed_from_qes);
 
 	/*
 	 * If we quit the processing loop earlier due to a
@@ -3652,7 +3681,7 @@ CopyFromDispatch(CopyState cstate)
 		if (cstate->cdbsreh->errtbl)
 			total_rejected_from_qd = 0;
 		
-		total_rejected = total_rejected_from_qd + total_rejeted_from_qes;
+		total_rejected = total_rejected_from_qd + total_rejected_from_qes;
 		cstate->processed -= total_rejected;
 
 		/* emit a NOTICE with number of rejected rows */
@@ -3663,6 +3692,7 @@ CopyFromDispatch(CopyState cstate)
 			SetErrorTableVerdict(cstate->cdbsreh, total_rejected);
 	}
 
+	cstate->processed += total_completed_from_qes;
 
 	/*
 	 * Done, clean up
@@ -3799,6 +3829,7 @@ CopyFrom(CopyState cstate)
 	num_phys_attrs = tupDesc->natts;
 	attr_count = list_length(cstate->attnumlist);
 	num_defaults = 0;
+	bool		is_segment_data_processed = (cstate->on_segment && Gp_role == GP_ROLE_EXECUTE) ? false : true;
 
 	oldcontext = MemoryContextSwitchTo(estate->es_query_cxt);
 
@@ -3884,7 +3915,7 @@ CopyFrom(CopyState cstate)
 	 */
 	ExecBSInsertTriggers(estate, resultRelInfo);
 
-	file_has_oids = cstate->oids;	/* must rely on user to tell us this... */
+	*pfile_has_oids = cstate->oids; /* must rely on user to tell us... */
 
 	baseValues = (Datum *) palloc(num_phys_attrs * sizeof(Datum));
 	baseNulls = (bool *) palloc(num_phys_attrs * sizeof(bool));
@@ -3899,13 +3930,14 @@ CopyFrom(CopyState cstate)
 	errcontext.previous = error_context_stack;
 	error_context_stack = &errcontext;
 
-	if (Gp_role == GP_ROLE_EXECUTE)
+	if (Gp_role == GP_ROLE_EXECUTE && (cstate->on_segment == false))
 		cstate->err_loc_type = ROWNUM_EMBEDDED; /* get original row num from QD COPY */
 	else
 		cstate->err_loc_type = ROWNUM_ORIGINAL; /* we can count rows by ourselves */
 
 	CopyInitDataParser(cstate);
 
+PROCESS_SEGMENT_DATA:
 	do
 	{
 		size_t		bytesread = 0;
@@ -3925,16 +3957,52 @@ CopyFrom(CopyState cstate)
 		 */
 		if (bytesread > 0 || !cstate->fe_eof)
 		{
-			/* handle HEADER, but only if we're in utility mode */
-			if (cstate->header_line)
+			/* handle HEADER, but only if COPY FROM ON SEGMENT */
+			if (cstate->header_line && cstate->on_segment)
 			{
-				cstate->line_done = cstate->csv_mode ?
-					CopyReadLineCSV(cstate, bytesread) :
-					CopyReadLineText(cstate, bytesread);
-				cstate->cur_lineno++;
-				cstate->header_line = false;
+				/* on first time around just throw the header line away */
+				PG_TRY();
+				{
+					cstate->line_done = cstate->csv_mode ?
+						CopyReadLineCSV(cstate, bytesread) :
+						CopyReadLineText(cstate, bytesread);
+				}
+				PG_CATCH();
+				{
+					/*
+					 * TODO: use COPY_HANDLE_ERROR here, but make sure to
+					 * ignore this error per the "note:" below.
+					 */
 
+					/*
+					 * got here? encoding conversion error occured on the
+					 * header line (first row).
+					 */
+					if (cstate->errMode == ALL_OR_NOTHING)
+					{
+						/* re-throw error and abort */
+						cdbCopyEnd(cdbCopy);
+						PG_RE_THROW();
+					}
+					else
+					{
+						/* SREH - release error state */
+						if (!elog_dismiss(DEBUG5))
+							PG_RE_THROW(); /* hope to never get here! */
+
+						/*
+						 * note: we don't bother doing anything special here.
+						 * we are never interested in logging a header line
+						 * error. just continue the workflow.
+						 */
+					}
+				}
+				PG_END_TRY();
+
+				cstate->cur_lineno++;
 				RESET_LINEBUF;
+
+				cstate->header_line = false;
 			}
 
 			while (!cstate->raw_buf_done)
@@ -4368,6 +4436,42 @@ CopyFrom(CopyState cstate)
 		}
 	} while (!no_more_data);
 
+	/*
+	 * After processed data from QD, which is empty and just for workflow, now
+	 * to process the data on segment, only one shot if cstate->on_segment &&
+	 * Gp_role == GP_ROLE_DISPATCH
+	 */
+	if (!is_segment_data_processed)
+	{
+		struct stat st;
+		char *filename = cstate->filename;
+		cstate->copy_file = AllocateFile(filename, PG_BINARY_R);
+
+		if (cstate->copy_file == NULL)
+			ereport(ERROR,
+					(errcode_for_file_access(),
+						errmsg("could not open file \"%s\" for reading: %m",
+							filename)));
+
+		/* Increase buffer size to improve performance (cmcdevitt) */
+		setvbuf(cstate->copy_file, NULL, _IOFBF, 393216); // 384 Kbytes
+
+		fstat(fileno(cstate->copy_file), &st);
+		if (S_ISDIR(st.st_mode))
+			ereport(ERROR,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+						errmsg("\"%s\" is a directory", filename)));
+		cstate->copy_dest = COPY_FILE;
+
+		is_segment_data_processed = true;
+
+		*pfile_has_oids = cstate->oids; /* must rely on user to tell us... */
+		CopyInitDataParser(cstate);
+
+		goto PROCESS_SEGMENT_DATA;
+	}
+
+	elog(DEBUG1, "Segment %u, Copied %lu rows.", GpIdentity.segindex, cstate->processed);
 
 	/*
 	 * Done, clean up
@@ -4389,9 +4493,12 @@ CopyFrom(CopyState cstate)
 	/*
 	 * If SREH and in executor mode send the number of rejected
 	 * rows to the client (QD COPY).
+	 * If COPY ... FROM ... ON SEGMENT, then need to send the number of completed
 	 */
-	if(cstate->errMode != ALL_OR_NOTHING && Gp_role == GP_ROLE_EXECUTE)
-		SendNumRowsRejected(cstate->cdbsreh->rejectcount);
+	if ((cstate->errMode != ALL_OR_NOTHING && Gp_role == GP_ROLE_EXECUTE)
+		|| cstate->on_segment)
+		SendNumRows((cstate->errMode != ALL_OR_NOTHING) ? cstate->cdbsreh->rejectcount : 0,
+				cstate->on_segment ? cstate->processed : 0);
 
 	if (estate->es_result_partitions && Gp_role == GP_ROLE_EXECUTE)
 		SendAOTupCounts(estate);
