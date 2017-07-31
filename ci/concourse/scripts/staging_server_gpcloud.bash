@@ -13,8 +13,8 @@ function gen_env(){
 	source /usr/local/greenplum-db-devel/greenplum_path.sh
 
 	cd "\${1}/gpdb_src/gpAux/extensions/gpcloud"
-	make -B
-	make -B gpcheckcloud
+	make
+	make gpcheckcloud
 	EOF
 
 	chown -R gpadmin:gpadmin $(pwd)
@@ -53,9 +53,13 @@ function _main() {
 	time configure
 	time install_gpdb
 	time setup_gpadmin_user
-	time gen_env
 
-	time build_gpcloud_components
+	if [ "$overwrite_gpcloud" = "true" ]
+	then
+		time gen_env
+		time build_gpcloud_components
+	fi
+
 	time push_to_staging_server
 }
 
