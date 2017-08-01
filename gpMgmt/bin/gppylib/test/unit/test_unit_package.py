@@ -88,22 +88,6 @@ class IsVersionCompatibleTestCase(GpTestCase):
         subject = IsVersionCompatible(gppkg)
         subject.execute()
 
-    def test__execute_happy_list_no_packages(self):
-        self.mock_list_files_by_pattern_run.return_value = []
-        package_name_list = self.subject.execute()
-        self.assertTrue(len(package_name_list) == 0)
-
-    def test__execute_happy_list_all_packages(self):
-        self.mock_list_files_by_pattern_run.return_value = ['sample.gppkg', 'sample-version-random_OS-arch_type.gppkg']
-        package_name_list = self.subject.execute()
-        self.assertTrue(len(package_name_list) == 2)
-        self.assertTrue(package_name_list == ['sample', 'sample-version'])
-
-    def test__execute_fail_raise_error_with_no_gppkg_postfix(self):
-        self.mock_list_files_by_pattern_run.return_value = ['sample']
-        with self.assertRaisesRegexp(Exception, "unable to parse sample as a gppkg"):
-            self.subject.execute()
-
 
 class MigratePackagesTestCase(GpTestCase):
     def setUp(self):
