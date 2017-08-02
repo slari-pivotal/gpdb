@@ -381,3 +381,8 @@ memory_accounting:
 pgcrypto:
 	$(TESTER) \
 		mpp.gpdb.tests.package.contrib.pgcrypto.functional.test_functional_pgcrypto.PgcryptoScenarioTestCase
+
+# External table tests:
+basic_exttab:
+	$(TESTER) $(DISCOVER) -t tincrepo/mpp/gpdb/tests \
+	-s storage/basic/exttab
