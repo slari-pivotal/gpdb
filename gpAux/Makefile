@@ -1363,6 +1363,10 @@ installcheck-bugbuster :
 	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
 	@cd $(BUILDDIR)/src/test/regress && $(MAKE) installcheck-bugbuster && gpcheckcat -A
 
+installcheck-externaltable:
+	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
+	@cd $(BUILDDIR)/contrib/formatter_fixedwidth && $(MAKE) installcheck
+
 #---------------------------------------------------------------------
 # More internal functions
 #---------------------------------------------------------------------
