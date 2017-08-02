@@ -1053,14 +1053,15 @@ jobs:
       passed: [compile_gpdb_centos]
       trigger: true
     - get: centos-gpdb-dev-5
-  - task: ic_gpdb
-    file: gpdb_src/ci/concourse/ic_gpdb.yml
-    image: centos-gpdb-dev-5
-    params:
-      MAKE_TEST_COMMAND: installcheck-externaltable
-      BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
-      TEST_OS: centos
-  - task: basic_exttab
+  - aggregate:
+    - task: ic_gpdb
+      file: gpdb_src/ci/concourse/ic_gpdb.yml
+      image: centos-gpdb-dev-5
+      params:
+        MAKE_TEST_COMMAND: installcheck-externaltable
+        BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
+        TEST_OS: centos
+    - task: basic_exttab
       timeout: 1h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: centos-gpdb-dev-5
@@ -1081,14 +1082,15 @@ jobs:
       passed: [compile_gpdb_sles]
       trigger: true
     - get: sles-gpdb-dev
-  - task: ic_gpdb
-    file: gpdb_src/ci/concourse/ic_gpdb.yml
-    image: sles-gpdb-dev
-    params:
-      MAKE_TEST_COMMAND: installcheck-externaltable
-      BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
-      TEST_OS: sles
-  - task: basic_exttab
+  - aggregate:
+    - task: ic_gpdb
+      file: gpdb_src/ci/concourse/ic_gpdb.yml
+      image: sles-gpdb-dev
+      params:
+        MAKE_TEST_COMMAND: installcheck-externaltable
+        BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
+        TEST_OS: sles
+    - task: basic_exttab
       timeout: 1h
       file: gpdb_src/ci/concourse/tinc_gpdb.yml
       image: sles-gpdb-dev
