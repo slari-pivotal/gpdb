@@ -1365,6 +1365,7 @@ installcheck-bugbuster :
 
 installcheck-externaltable:
 	@if [ ! -f $(ISCONFIG) ]; then echo "not configured, cannot check"; exit 1; fi
+	@cd $(BUILDDIR)/src/test/regress && $(MAKE) all
 	@cd $(BUILDDIR)/contrib/formatter_fixedwidth && $(MAKE) installcheck
 
 #---------------------------------------------------------------------
