@@ -1210,7 +1210,6 @@ COptTasks::PrintMissingStatsWarning
 				}
 
 				pmdidRel->AddRef();
-				pmdidRel->AddRef();
 				phsmdidRel->FInsert(pmdidRel);
 				oss << pmdrel->Mdname().Pstr()->Wsz();
 			}
