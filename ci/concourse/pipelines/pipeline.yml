@@ -1090,13 +1090,6 @@ jobs:
         MAKE_TEST_COMMAND: installcheck-externaltable
         BLDWRAP_POSTGRES_CONF_ADDONS: fsync=off
         TEST_OS: sles
-    - task: basic_exttab
-      timeout: 1h
-      file: gpdb_src/ci/concourse/tinc_gpdb.yml
-      image: sles-gpdb-dev
-      params:
-        MAKE_TEST_COMMAND: basic_exttab
-        TEST_OS: sles
 
 - name: regression_tests_gpcloud_centos
   plan:
