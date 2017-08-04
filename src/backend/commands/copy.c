@@ -4474,6 +4474,7 @@ PROCESS_SEGMENT_DATA:
 
 		*pfile_has_oids = cstate->oids; /* must rely on user to tell us... */
 		CopyInitDataParser(cstate);
+		no_more_data = false;
 
 		goto PROCESS_SEGMENT_DATA;
 	}

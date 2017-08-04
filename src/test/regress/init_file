@@ -53,8 +53,4 @@ s/^LOG.*\"Feature/\"Feature/
 # Mask out timestamp and whoami message for gpfaultinjector
 m/^\d+.*gpfaultinjector.*-\[INFO\]:-/
 s/^\d+.*gpfaultinjector.*-\[INFO\]:-//
-
-# Mask out line numbers
-m/ERROR:  <SEGID> is required for file name.*/
-s/ERROR:  <SEGID> is required for file name.*/ERROR:  <SEGID> is required for file name/
 -- end_matchsubs
