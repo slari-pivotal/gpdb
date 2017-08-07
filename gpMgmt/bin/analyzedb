@@ -302,9 +302,7 @@ class AnalyzeDb(Operation):
             # curr_ao_state contains the number of DML commands that have been executed on an AO table
             # curr_last_op contains the timestamp of the last DDL command (CREATE, ALTER, TRUNCATE, DROP) of an AO table
             curr_ao_state = self._get_ao_state(input_tables_set)  # ['schema, table, modcount', ...]
-            curr_last_op = self._get_lastop_state(
-                input_tables_set)  # e.g. ['public,ao_tab,67468,ALTER,ADD COLUMN,2014-10-15 14:49:27.658777-07', ...]
-
+            curr_last_op = self._get_lastop_state(input_tables_set)  # e.g. ['public,ao_tab,67468,ALTER,ADD COLUMN,2014-10-15 14:49:27.658777-07', ...]
             last_analyze_timestamp, prev_ao_state, prev_col_dict, prev_last_op = self.read_last_analyzedb_output()
 
             # compare two states to get dirty tables

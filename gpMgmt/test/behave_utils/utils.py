@@ -1420,22 +1420,24 @@ def wait_till_resync_transition(host='localhost', port=os.environ.get('PGPORT'),
     num_insync_nodes = 'psql -t -h %s -p %s -U %s -d template1 -c "select count(*) from gp_segment_configuration where mode <>\'s\';"'%(host, port, user)
     (rc1, out1, err1) = run_cmd(num_resync_nodes)
     (rc2, out2, err2) = run_cmd(num_insync_nodes)
-    if rc1 !=0 or rc2 !=0:
-        raise Exception('Exception from executing psql query: %s'%num_unsync_nodes)
-    else:
+    if rc1 !=0:
+        raise Exception('Exception from executing psql query: %s' % num_resync_nodes)
+    if rc2 != 0:
+        raise Exception('Exception from executing psql query: %s' % num_insync_nodes)
+
+    num_resync = int(out1.strip())
+    num_insync = int(out2.strip())
+    count = 0
+    while num_resync != num_insync:
+        time.sleep(30)
+        (rc1, out1, err1) = run_cmd(num_resync_nodes)
+        (rc2, out2, err2) = run_cmd(num_insync_nodes)
         num_resync = int(out1.strip())
         num_insync = int(out2.strip())
-        count = 0
-        while(num_resync != num_insync):
-            time.sleep(30)
-            (rc1, out1, err1) = run_cmd(num_resync_nodes)
-            (rc2, out2, err2) = run_cmd(num_insync_nodes)
-            num_resync = int(out1.strip())
-            num_insync = int(out2.strip())
-            count = count + 1
-            if (count > 80): 
-                raise Exception("Timed out: cluster not in sync transition")
-        return True 
+        count = count + 1
+        if count > 80:
+            raise Exception("Timed out: cluster not in sync transition")
+    return True
 
 def check_dump_dir_exists(context, dbname):
     dir_map = get_backup_dirs_for_hosts(dbname)
@@ -1503,7 +1505,7 @@ def check_count_for_specific_query(dbname, query, nrows):
     with dbconn.connect(dbconn.DbURL(dbname=dbname)) as conn:
         result = dbconn.execSQLForSingleton(conn, NUM_ROWS_QUERY)
     if result != nrows:
-        raise Exception('%d rows in table %s.%s, expected row count = %d' % (result, dbname, tablename, nrows))
+        raise Exception('%d rows in table %s.%s, expected row count = %d' % (result, dbname, NUM_ROWS_QUERY, nrows))
 
 def get_primary_segment_host_port():
     """
