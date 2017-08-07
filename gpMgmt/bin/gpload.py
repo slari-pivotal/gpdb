@@ -762,7 +762,7 @@ class CatThread(threading.Thread):
                     line = self.fd.readline()
                     if line=='':
                         break
-                    self.gpload.log(self.gpload.LOG, 'gpfdist: ' + line.strip('\n'))
+                    self.gpload.log(self.gpload.DEBUG, 'gpfdist: ' + line.strip('\n'))
             else:
                 while 1:
                     retList = select.select( [self.fd]
@@ -778,7 +778,7 @@ class CatThread(threading.Thread):
                         continue
                     if line=='':
                         break
-                    self.gpload.log(self.gpload.LOG, 'gpfdist: ' + line.strip('\n'))
+                    self.gpload.log(self.gpload.DEBUG, 'gpfdist: ' + line.strip('\n'))
         except Exception, e:
             # close fd so that not block the worker thread because of stdout/stderr pipe not finish/closed.
             self.fd.close()
@@ -1318,7 +1318,7 @@ class gpload:
         if level <= self.options.qv:
             sys.stdout.write(str)
 
-        if level <= self.options.qv or level <= self.LOG:
+        if level <= self.options.qv or level <= self.INFO:
             try:
                self.logfile.write(str)
                self.logfile.flush()
