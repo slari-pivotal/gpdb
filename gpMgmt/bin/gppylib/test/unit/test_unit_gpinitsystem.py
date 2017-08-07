@@ -42,9 +42,8 @@ class GpInitSystemTest(GpTestCase):
     def test_invalid_option_prints_raw_usage(self):
         p = Popen([self.gpinitsystem_path, '--unknown-option'], stdout=PIPE)
         output = p.stdout.read()
-        self.assertIn("[ERROR]:-Unknown option --unknown-option", output)
-        self.assertIn("Creates a new Greenplum Database instance", output)
-        self.assertNotIn("Initializes a Greenplum Database system by using configuration", output)
+        self.assertIn("[FATAL]:-Missing value for option unknown-option", output)
+        self.assertIn("Initializes a Greenplum Database system by using configuration", output)
 
 if __name__ == '__main__':
     run_tests()
