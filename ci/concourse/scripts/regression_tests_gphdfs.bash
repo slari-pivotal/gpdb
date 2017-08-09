@@ -19,6 +19,7 @@ function gen_env(){
 	tar zxf /tmp/hadoop-2.6.5.tar.gz -C /tmp
 	export HADOOP_HOME=/tmp/hadoop-2.6.5
 
+	wget -O \${HADOOP_HOME}/share/hadoop/common/lib/parquet-hadoop-bundle-1.7.0.jar http://central.maven.org/maven2/org/apache/parquet/parquet-hadoop-bundle/1.7.0/parquet-hadoop-bundle-1.7.0.jar
 	cat > "\${HADOOP_HOME}/etc/hadoop/core-site.xml" <<-EOFF
 		<configuration>
 		<property>
