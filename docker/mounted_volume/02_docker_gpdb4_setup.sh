@@ -4,6 +4,8 @@
 
 set -e
 
+SINGLE_QUOTED_IVY_PASSWORD=$1
+
 
 mkdir -p ~/.ssh
 
@@ -24,30 +26,31 @@ chmod 600 ~/.ssh/config
 
 #Configure environment and pull libraries
 #the below echo uses multiple lines
-echo '
+echo "
 #for gpdb4 compilation
 source /opt/gcc_env.sh
 export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk.x86_64
-export PATH=${JAVA_HOME}/bin:${PATH}
+export PATH=\${JAVA_HOME}/bin:\${PATH}
 export IVYREPO_HOST=repo.pivotal.io
-export IVYREPO_REALM="Artifactory Realm"
+export IVYREPO_REALM=\"Artifactory Realm\"
 export IVYREPO_USER=build_readonly
-export IVYREPO_PASSWD="zlIU5Ys&U0WBKN&O"
-export PYTHONPATH=/opt/python-2.6.9/lib/python2.6:$PYTHONPATH
+export IVYREPO_PASSWD=\"$SINGLE_QUOTED_IVY_PASSWORD\"
+export PYTHONPATH=/opt/python-2.6.9/lib/python2.6:\$PYTHONPATH
 export PYTHONHOME=/opt/python-2.6.9
-export PATH=/opt/python-2.6.9/bin:$PATH
+export PATH=/opt/python-2.6.9/bin:\$PATH
 
-' >> ~/.bashrc
+" >> ~/.bashrc
+
 
 source ~/.bashrc
 echo '
-source ~/built-gpdb4/greenplum-db-devel/greenplum_path.sh
+source /usr/local/greenplum-db-devel/greenplum_path.sh
 source ~/gpdemo/gpdemo-env.sh
 ' >> ~/.bashrc
 cd ~/gpdb4_mount/gpAux
 rm -f /opt/python-2.6.9
 ln -s "/home/gpadmin/gpdb4_mount/gpAux/ext/rhel5_x86_64/python-2.6.9" /opt
-make sync_tools
+make IVYREPO_HOST="$IVYREPO_HOST" \'IVYREPO_REALM="$IVYREPO_REALM"\' IVYREPO_USER="$IVYREPO_USER" IVYREPO_PASSWD="$IVYREPO_PASSWD" sync_tools
 
 #=========================================================
 # Give parent script a chance to save container

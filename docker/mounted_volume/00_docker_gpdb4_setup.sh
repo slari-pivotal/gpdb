@@ -3,6 +3,19 @@
 set -e
 
 GPDB4_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+## assume ~workspace contains both gpdb4 and gpdb-ci-deployments dirs
+GPDB_CI_DEPLOYMENTS_DIR="$GPDB4_DIR/../gpdb-ci-deployments"
+IVYREPO_PASSWD=$(python - <<EOF
+import yaml
+import os
+yaml_path = os.path.realpath('$GPDB_CI_DEPLOYMENTS_DIR/gpdb-4.3_STABLE-ci-secrets.yml')
+with open(yaml_path, 'r') as f:
+  contents = f.read()
+parsed_yaml = yaml.load(contents)
+print parsed_yaml['ivyrepo_passwd']
+EOF
+)
+
 DOCKER_SCRIPT_SRC_DIR=$GPDB4_DIR/docker/mounted_volume
 
 if [ "$#" -ne 1 ]; then
@@ -34,7 +47,7 @@ docker cp $DOCKER_SCRIPT_SRC_DIR/02_docker_gpdb4_setup.sh $DOCKER_NAME:/tmp/
 docker cp $DOCKER_SCRIPT_SRC_DIR/03_gpadmin_docker_compile.sh $DOCKER_NAME:/tmp/
 
 docker exec $DOCKER_NAME /bin/sh - /tmp/01_root_docker_setup.sh
-docker exec $DOCKER_NAME /bin/su - gpadmin -c /tmp/02_docker_gpdb4_setup.sh
+docker exec $DOCKER_NAME /bin/su - gpadmin -c "/tmp/02_docker_gpdb4_setup.sh '$IVYREPO_PASSWD'"
 
 docker stop $DOCKER_NAME
 docker commit ${DOCKER_NAME} gpdb4-image:base
