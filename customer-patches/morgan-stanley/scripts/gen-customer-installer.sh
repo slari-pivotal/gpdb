@@ -63,20 +63,53 @@ BASE_DIR=`pwd`
 RELEASE=`${BASE_DIR}/gpdb_src/getversion --short`
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-GPDB_INSTALLER_FILE=${GPDB_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_rc/greenplum-db-${RELEASE}-rhel5-x86_64.zip}
-CONN_INSTALLER_FILE=${CONN_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_connectivity/greenplum-connectivity-${RELEASE}-build-1-rhel5-x86_64.zip}
-CLIENTS_INSTALLER_FILE=${CLIENTS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_clients/greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip}
-LOADERS_INSTALLER_FILE=${LOADERS_INSTALLER_FILE:=${BASE_DIR}/installer_rhel5_gpdb_loaders/greenplum-loaders-${RELEASE}-build-1-rhel5-x86_64.zip}
+if [ -z "${GPMT_FILE}" ]; then
+    GPMT_FILE=$(echo ${BASE_DIR}/gpmt_binary/gpmt.gz)
+fi
 
-PGCRYPTO_GPPKG_FILE=${PGCRYPTO_GPPKG_FILE:=${BASE_DIR}/pgcrypto_rhel5_gppkg/pgcrypto-*-rhel5-x86_64.gppkg}
-PLR_GPPKG_FILE=${PLR_GPPKG_FILE:=${BASE_DIR}/plr_rhel5_gppkg/plr-*-rhel5-x86_64.gppkg}
-PLJAVA_GPPKG_FILE=${PLJAVA_GPPKG_FILE:=${BASE_DIR}/pljava_rhel5_gppkg/pljava-*rhel5-x86_64.gppkg}
-MADLIB_GPPKG_FILE=${MADLIB_GPPKG_FILE:=${BASE_DIR}/madlib_rhel5_gppkg/madlib-*rhel5-x86_64.gppkg}
+if [ -z "${GPSUPPORT_FILE}" ]; then
+    GPSUPPORT_FILE=$(echo ${BASE_DIR}/gpsupport_package/gpsupport-1.2.0.0.gz)
+fi
 
-JDBC_DRIVER_FILE=${JDBC_DRIVER_FILE:=${BASE_DIR}/greenplum_jdbc_zip/greenplum_jdbc_5.1.1.zip}
-GPSUPPORT_FILE=${GPSUPPORT_FILE:=${BASE_DIR}/gpsupport_package/gpsupport-1.2.0.0.gz}
-GPMT_FILE=${GPMT_FILE:=${BASE_DIR}/gpmt_binary/gpmt.gz}
-QAUTILS_FILE=${QAUTILS_FILE:=${BASE_DIR}/qautils_rhel5_tarball/QAUtils-rhel5-x86_64.tar.gz}
+if [ -z "${JDBC_DRIVER_FILE}" ]; then
+    JDBC_DRIVER_FILE=$(echo ${BASE_DIR}/greenplum_jdbc_zip/greenplum_jdbc_5.1.1.zip)
+fi
+
+if [ -z "${MADLIB_GPPKG_FILE}" ]; then
+    MADLIB_GPPKG_FILE=$(echo ${BASE_DIR}/madlib_rhel5_gppkg/madlib-*-rhel5-x86_64.gppkg)
+fi
+
+if [ -z "${PLJAVA_GPPKG_FILE}" ]; then
+    PLJAVA_GPPKG_FILE=$(echo ${BASE_DIR}/pljava_rhel5_gppkg/pljava-*-rhel5-x86_64.gppkg)
+fi
+
+if [ -z "${PLR_GPPKG_FILE}" ]; then
+    PLR_GPPKG_FILE=$(echo ${BASE_DIR}/plr_rhel5_gppkg/plr-*-rhel5-x86_64.gppkg)
+fi
+
+if [ -z "${LOADERS_INSTALLER_FILE}" ]; then
+    LOADERS_INSTALLER_FILE=$(echo ${BASE_DIR}/installer_rhel5_gpdb_loaders/greenplum-loaders-${RELEASE}-build-1-rhel5-x86_64.zip)
+fi
+
+if [ -z "${CLIENTS_INSTALLER_FILE}" ]; then
+    CLIENTS_INSTALLER_FILE=$(echo ${BASE_DIR}/installer_rhel5_gpdb_clients/greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip)
+fi
+
+if [ -z "${GPDB_INSTALLER_FILE}" ]; then
+    GPDB_INSTALLER_FILE=$(echo ${BASE_DIR}/installer_rhel5_gpdb_rc/greenplum-db-${RELEASE}-rhel5-x86_64.zip)
+fi
+
+if [ -z "${CONN_INSTALLER_FILE}" ]; then
+    CONN_INSTALLER_FILE=$(echo ${BASE_DIR}/installer_rhel5_gpdb_connectivity/greenplum-connectivity-${RELEASE}-build-1-rhel5-x86_64.zip)
+fi
+
+if [ -z "${PGCRYPTO_GPPKG_FILE}" ]; then
+    PGCRYPTO_GPPKG_FILE=$(echo ${BASE_DIR}/pgcrypto_rhel5_gppkg/pgcrypto-*-rhel5-x86_64.gppkg)
+fi
+
+if [ -z "${QAUTILS_FILE}" ]; then
+    QAUTILS_FILE=$(echo ${BASE_DIR}/qautils_rhel5_tarball/QAUtils-rhel5-x86_64.tar.gz)
+fi
 
 cat <<-EOF
 ======================================================================
