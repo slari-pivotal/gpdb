@@ -2674,10 +2674,13 @@ _readCopyStmt(const char ** str)
 	READ_NODE_FIELD(sreh);
 	READ_NODE_FIELD(partitions);
 	READ_NODE_FIELD(ao_segnos);
-
+	READ_INT_FIELD(nattrs);
+	READ_ENUM_FIELD(ptype, GpPolicyType);
+	READ_INT_ARRAY(distribution_attrs, nattrs, AttrNumber);
 	READ_DONE();
 
 }
+
 static GrantStmt *
 _readGrantStmt(const char ** str)
 {

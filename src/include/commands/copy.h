@@ -19,7 +19,6 @@
 #include "tcop/dest.h"
 #include "executor/executor.h"
 
-
 /*
  * Represents the different source/dest cases we need to worry about at
  * the bottom level

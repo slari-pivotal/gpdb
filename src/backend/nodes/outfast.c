@@ -2851,8 +2851,10 @@ _outCopyStmt(StringInfo str, CopyStmt *node)
 	WRITE_NODE_FIELD(sreh);
 	WRITE_NODE_FIELD(partitions);
 	WRITE_NODE_FIELD(ao_segnos);
+	WRITE_INT_FIELD(nattrs);
+	WRITE_ENUM_FIELD(ptype, GpPolicyType);
+	WRITE_INT_ARRAY(distribution_attrs, nattrs, AttrNumber);
 }
-
 
 static void
 _outGrantStmt(StringInfo str, GrantStmt *node)
