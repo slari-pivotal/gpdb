@@ -178,10 +178,17 @@ echo ""
 echo "Update greenplum_path.sh"
 
 echo '' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
-echo 'export R_HOME=$GPHOME/ext/R-3.1.0/lib64/R' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
 
-echo 'export LD_LIBRARY_PATH=$GPHOME/ext/R-3.1.0/lib64/R/lib:$LD_LIBRARY_PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo 'export JAVA_HOME=$GPHOME/ext/'"$(basename ${JAVA_JRE})" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+
+# Retrieve the version of R included in the plr gppkg by quering the R installation rpm
+R_VERSION=$(tar -xf $PLR_GPPKG_FILE -C /tmp/ && rpm -qip /tmp/deps/R-*.x86_64.rpm | grep Version | awk '{print $3}')
+
+echo "export R_HOME=\$GPHOME/ext/R-${R_VERSION}/lib64/R" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+
+echo "export LD_LIBRARY_PATH=\$GPHOME/ext/R-${R_VERSION}/lib64/R/lib:\$LD_LIBRARY_PATH" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
 ## ----------------------------------------------------------------------
 ## Process Alpine
