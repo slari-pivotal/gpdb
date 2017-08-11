@@ -111,6 +111,10 @@ if [ -z "${QAUTILS_FILE}" ]; then
     QAUTILS_FILE=$(echo ${BASE_DIR}/qautils_rhel5_tarball/QAUtils-rhel5-x86_64.tar.gz)
 fi
 
+if [ -z "${JRE_FILE}" ]; then
+    JRE_FILE=$(echo ${BASE_DIR}/jre/jre-*.tgz)
+fi
+
 cat <<-EOF
 ======================================================================
 TIMESTAMP ..... : $(date)
@@ -159,10 +163,26 @@ SKIP=$(awk '/^__END_HEADER__/ {print NR + 1; exit 0; }'  ${GPDB_BIN})
 head -$( expr ${SKIP} - 1 ) ${GPDB_BIN} > header-gpdb.txt
 
 ## Extract installer payload (compressed tarball)
-tail -n +${SKIP} ${GPDB_BIN} | tar zvxf - -C ${GPDB_INSTALLDIR}
+tail -n +${SKIP} ${GPDB_BIN} | tar zxf - -C ${GPDB_INSTALLDIR}
 
 ## Save original installer
 mv ${GPDB_BIN} ${GPDB_BIN}.orig
+
+## ----------------------------------------------------------------------
+## Manual extract of JRE
+## ----------------------------------------------------------------------
+
+tar -xzf ${JRE_FILE} -C ${GPDB_INSTALLDIR}/ext/
+
+JAVA_JRE_VERSION=$(echo ${GPDB_INSTALLDIR}/ext/jre*)
+if ! [ -d $JAVA_JRE_VERSION ] ; then
+  echo "ERROR: JRE not found at $JAVA_JRE_VERSION"
+  exit 1
+fi
+
+echo 'export JAVA_HOME=$GPHOME/ext/'"$(basename ${JAVA_JRE})" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo 'export LD_LIBRARY_PATH=$JAVA_HOME/lib/amd64/server:$LD_LIBRARY_PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
 ## ----------------------------------------------------------------------
 ## Process GPPKGS
