@@ -350,6 +350,55 @@ class GpConfig(GpTestCase):
         self.assertIn("[context: -1] [dbid: 2] [name: my_property_name] [value: foo | file: bar]",
                       mock_stdout.getvalue())
 
+    def setup_for_testing_quoting_string_values(self, vartype, value, additional_args=None):
+        sys.argv = ["gpconfig", "--change", "my_property_name", "--value", value]
+        if additional_args:
+            sys.argv.extend(additional_args)
+        self.cursor.set_result_for_testing([['my_property_name', 'setting', 'unit', 'short_desc',
+                                             'context', vartype, 'min_val', 'max_val']])
+
+    def validation_for_testing_quoting_string_values(self, expected_value):
+        for call in self.pool.addCommand.call_args_list:
+            # call_obj[0] returns all unnamed arguments -> ['arg1', 'arg2']
+            # In this case, we have an object as an argument to poo.addCommand
+            # call_obj[1] returns a dict for all named arguments -> {key='arg3', key2='arg4'}
+            gp_add_config_script_obj = call[0][0]
+            value = base64.urlsafe_b64encode(pickle.dumps(expected_value))
+            try:
+                self.assertTrue(value in gp_add_config_script_obj.cmdStr)
+            except AssertionError as e:
+                raise Exception("\nAssert failed: %s\n cmdStr:\n%s\nvs:\nvalue: %s" % (str(e),
+                                                                                       gp_add_config_script_obj.cmdStr,
+                                                                                       value))
+
+    def test_change_of_unquoted_string_to_quoted_succeeds(self):
+        self.setup_for_testing_quoting_string_values(vartype='string', value='baz')
+        self.subject.do_main()
+        self.validation_for_testing_quoting_string_values(expected_value="'baz'")
+
+    def test_change_of_master_value_with_quotes_succeeds(self):
+        already_quoted_master_value = "'baz'"
+        vartype = 'string'
+        self.setup_for_testing_quoting_string_values(vartype=vartype, value='baz', additional_args=['--mastervalue', already_quoted_master_value])
+        self.subject.do_main()
+        self.validation_for_testing_quoting_string_values(expected_value="'baz'")
+
+    def test_change_of_master_only_quotes_succeeds(self):
+        unquoted_master_value = "baz"
+        vartype = 'string'
+        self.setup_for_testing_quoting_string_values(vartype=vartype, value=unquoted_master_value, additional_args=['--masteronly'])
+        self.subject.do_main()
+        self.validation_for_testing_quoting_string_values(expected_value="'baz'")
+
+    def test_change_of_bool_guc_does_not_quote(self):
+        unquoted_value = "baz"
+        vartype = 'bool'
+        self.setup_for_testing_quoting_string_values(vartype=vartype, value=unquoted_value)
+        self.subject.do_main()
+        self.validation_for_testing_quoting_string_values(expected_value="baz")
+
+
+
     @staticmethod
     def _create_gparray_with_2_primary_2_mirrors():
         master = GpDB.initFromString(

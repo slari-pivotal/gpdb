@@ -4448,7 +4448,7 @@ def impl(context):
                               When the user runs "gpstart -a"
                               Then gpstart should return a return code of 0
                               And verify that a role "gpmon" exists in database "gpperfmon"
-                              And verify that the last line of the file "postgresql.conf" in the master data directory contains the string "gpperfmon_log_alert_level=warning"
+                              And verify that the last line of the file "postgresql.conf" in the master data directory contains the string "gpperfmon_log_alert_level='warning'"
                               And verify that there is a "heap" table "database_history" in "gpperfmon"
                               Then wait until the process "gpmmon" is up
                               And wait until the process "gpsmon" is up
@@ -4570,16 +4570,16 @@ def read_config_yaml(yaml_file):
     else:
         return cfgyamldata
 
+
 @given('the setting "{variable_name}" is NOT set in the configuration file "{path_to_file}"')
 @when('the setting "{variable_name}" is NOT set in the configuration file "{path_to_file}"')
 def impl(context, variable_name, path_to_file):
     path = os.path.join(os.getenv("MASTER_DATA_DIRECTORY"), path_to_file)
-    match_start_of_line = '^' + variable_name + '.*'
-    pattern = re.compile(match_start_of_line)
-    with open(path, 'r') as f:
-        for line in f.read().split('\n'):
-            if pattern.match(line):
-                raise Exception('found in file %s the setting: %s' % (line, variable_name))
+    output_file = "/tmp/gpperfmon_temp_config"
+    cmd = Command("sed to remove line", "sed '/^%s/,+1 d' < %s > %s" % (variable_name, path, output_file))
+    cmd.run(validateAfter=True)
+    shutil.move(output_file, path)
+
 
 @given('the setting "{setting_string}" is placed in the configuration file "{path_to_file}"')
 @when('the setting "{setting_string}" is placed in the configuration file "{path_to_file}"')

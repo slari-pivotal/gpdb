@@ -260,7 +260,15 @@ def do_change(options):
         gp_array = GpArray.initFromCatalog(dbconn.DbURL(), utility=True)
 
         if not options.skipvalidation:
-            validate_options(options)
+            conn = dbconn.connect(dbconn.DbURL(), True)
+            guc = get_normal_guc(conn, options)
+
+            # Force the postgresql.conf parser to detect vartype string as GUC_STRING in the guc-file.c/guc-file.l
+            options.value = quote_string(guc, options.value)
+            options.mastervalue = quote_string(guc, options.mastervalue)
+
+            validate_options(options, conn, guc)
+            conn.close()
 
     except DatabaseError as ex:
         logger.error(ex.__str__())
@@ -335,9 +343,14 @@ def do_change(options):
         logger.info("completed successfully")
 
 
-def validate_options(options):
-    conn = dbconn.connect(dbconn.DbURL(), True)
-    guc = get_normal_guc(conn, options)
+def quote_string(guc, value):
+    if value and guc and guc.vartype == "string":
+        if not value.startswith("'") and not value.endswith("'"):
+            value = "'" + value + "'"
+    return value
+
+
+def validate_options(options, conn, guc):
     if not guc:
         # Hidden gucs: a guc is considered hidden if both:
         #     1. It is not present with normal gucs in pg_settings
@@ -353,11 +366,11 @@ def validate_options(options):
               "Please refer to gpconfig documentation." % options.entry
         logger.fatal(msg)
         raise Exception(msg)
-    conn.close()
     if options.entry in prohibitedGucs:
         msg = "The parameter '%s' is not modifiable with this tool" % options.entry
         logger.fatal(msg)
         raise Exception(msg)
+
     if options.value:
         msg = guc.validate(options.value, options.mastervalue, options)
         if msg != "ok":
