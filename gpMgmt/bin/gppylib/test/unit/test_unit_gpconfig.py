@@ -207,7 +207,7 @@ class GpConfig(GpTestCase):
 
         self.subject.do_main()
 
-        self.subject.logger.info.assert_called_with("completed successfully")
+        self.subject.logger.info.assert_called_with("completed successfully with parameters '-c my_property_name -v 100 -m 20'")
         self.assertEqual(self.pool.addCommand.call_count, 2)
         segment_command = self.pool.addCommand.call_args_list[0][0][0]
         self.assertTrue("my_property_name" in segment_command.cmdStr)
@@ -228,7 +228,7 @@ class GpConfig(GpTestCase):
 
         self.subject.do_main()
 
-        self.subject.logger.info.assert_called_with("completed successfully")
+        self.subject.logger.info.assert_called_with("completed successfully with parameters '-c my_property_name -v 100 --masteronly'")
         self.assertEqual(self.pool.addCommand.call_count, 1)
         master_command = self.pool.addCommand.call_args_list[0][0][0]
         self.assertTrue(("my_property_name") in master_command.cmdStr)
@@ -248,7 +248,7 @@ class GpConfig(GpTestCase):
         sys.argv = ["gpconfig", "-c", "my_hidden_guc_name", "-v", "100", "--skipvalidation"]
         self.subject.do_main()
 
-        self.subject.logger.info.assert_called_with("completed successfully")
+        self.subject.logger.info.assert_called_with("completed successfully with parameters '-c my_hidden_guc_name -v 100 --skipvalidation'")
         self.assertEqual(self.pool.addCommand.call_count, 2)
         segment_command = self.pool.addCommand.call_args_list[0][0][0]
         self.assertTrue("my_hidden_guc_name" in segment_command.cmdStr)
@@ -397,6 +397,23 @@ class GpConfig(GpTestCase):
         self.subject.do_main()
         self.validation_for_testing_quoting_string_values(expected_value="baz")
 
+    def test_gpconfig_logs_successful_guc_change(self):
+        sys.argv = ["gpconfig", "-c", 'my_property_name', "-v", "100", "--masteronly"]
+        self.cursor.set_result_for_testing([['my_property_name', 'setting', 'unit', 'short_desc',
+                                             'context', 'vartype', 'min_val', 'max_val']])
+
+        self.subject.do_main()
+
+        self.subject.logger.info.assert_called_with("completed successfully with parameters '-c my_property_name -v 100 --masteronly'")
+
+    def test_gpconfig_logs_unsuccessful_guc_change(self):
+        sys.argv = ["gpconfig", "-c", 'my_property_name', "-v", "100", "--masteronly"]
+        self.cursor.set_result_for_testing([['my_property_name', 'setting', 'unit', 'short_desc',
+                                             'context', 'vartype', 'min_val', 'max_val']])
+        self.segment_read_config.was_successful.return_value = False
+        self.subject.do_main()
+
+        self.subject.logger.error.assert_called_with("finished with errors, parameter string '-c my_property_name -v 100 --masteronly'")
 
 
     @staticmethod
