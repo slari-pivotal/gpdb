@@ -13,22 +13,21 @@ RETURNS boolean
 AS '$libdir/gp_inject_fault'
 LANGUAGE C VOLATILE STRICT NO SQL;
 
-begin;
 -- inject fault of type sleep on all primaries
-select gp_inject_fault('finish_prepared_after_record_commit_prepared',
+select gp_inject_fault('checkpoint',
        'sleep', '', '', '', 1, 2, dbid) from gp_segment_configuration
        where role = 'p' and content > -1;
 -- check fault status
-select gp_inject_fault('finish_prepared_after_record_commit_prepared',
+select gp_inject_fault('checkpoint',
        'status', '', '', '', 1, 2, dbid) from gp_segment_configuration
        where role = 'p' and content > -1;
--- commit transaction should trigger the fault
-end;
+-- Calling checkpoint should trigger the fault
+checkpoint;
 -- fault status should indicate it's triggered
-select gp_inject_fault('finish_prepared_after_record_commit_prepared',
+select gp_inject_fault('checkpoint',
        'status', '', '', '', 1, 2, dbid) from gp_segment_configuration
        where role = 'p' and content > -1;
 -- reset the fault on all primaries
-select gp_inject_fault('finish_prepared_after_record_commit_prepared',
+select gp_inject_fault('checkpoint',
        'reset', '', '', '', 1, 2, dbid) from gp_segment_configuration
        where role = 'p' and content > -1;
