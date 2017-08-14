@@ -3587,7 +3587,6 @@ OpenIntoRel(QueryDesc *queryDesc)
     Oid         intoOid;
     Oid         intoComptypeOid;
     GpPolicy   *targetPolicy;
-	int			safefswritesize = gp_safefswritesize;
 	bool		bufferPoolBulkLoad;
 
 	RelFileNode relFileNode;
@@ -3665,7 +3664,6 @@ OpenIntoRel(QueryDesc *queryDesc)
 	
 	/* get the relstorage (heap or AO tables) */
 	stdRdOptions = (StdRdOptions*) heap_reloptions(relkind, reloptions, true);
-	heap_test_override_reloptions(relkind, stdRdOptions, &safefswritesize);
 	if(stdRdOptions->appendonly)
 		relstorage = stdRdOptions->columnstore ? RELSTORAGE_AOCOLS : RELSTORAGE_AOROWS;
 	else
