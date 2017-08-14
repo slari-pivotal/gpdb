@@ -180,7 +180,10 @@ if ! [ -d $JAVA_JRE_VERSION ] ; then
   exit 1
 fi
 
-echo 'export JAVA_HOME=$GPHOME/ext/'"$(basename ${JAVA_JRE})" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo ""
+echo "Update path to JRE in greenplum_path.sh"
+
+echo 'export JAVA_HOME=$GPHOME/ext/'"$(basename ${JAVA_JRE_VERSION})" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 echo 'export LD_LIBRARY_PATH=$JAVA_HOME/lib/amd64/server:$LD_LIBRARY_PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
