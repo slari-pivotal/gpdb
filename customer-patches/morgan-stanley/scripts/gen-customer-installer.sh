@@ -172,6 +172,9 @@ mv ${GPDB_BIN} ${GPDB_BIN}.orig
 ## Manual extract of JRE
 ## ----------------------------------------------------------------------
 
+echo ""
+echo "Include JRE"
+
 tar -xzf ${JRE_FILE} -C ${GPDB_INSTALLDIR}/ext/
 
 JAVA_JRE_VERSION=$(echo ${GPDB_INSTALLDIR}/ext/jre*)
@@ -191,26 +194,26 @@ echo 'export LD_LIBRARY_PATH=$JAVA_HOME/lib/amd64/server:$LD_LIBRARY_PATH' >> ${
 ## Process GPPKGS
 ## ----------------------------------------------------------------------
 
+echo ""
+echo "Extracting ggppkg"
+
 extract_std_gppkg ${PLJAVA_GPPKG_FILE}
 
 extract_std_gppkg ${PGCRYPTO_GPPKG_FILE}
 
 extract_std_gppkg ${PLR_GPPKG_FILE}
 
+## ----------------------------------------------------------------------
+## Process R
+## ----------------------------------------------------------------------
+
 echo ""
-echo "Update greenplum_path.sh"
-
-echo '' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
-
-
-echo 'export JAVA_HOME=$GPHOME/ext/'"$(basename ${JAVA_JRE})" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
-echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo "Update Path to R in greenplum_path.sh"
 
 # Retrieve the version of R included in the plr gppkg by quering the R installation rpm
 R_VERSION=$(tar -xf $PLR_GPPKG_FILE -C /tmp/ && rpm -qip /tmp/deps/R-*.x86_64.rpm | grep Version | awk '{print $3}')
 
 echo "export R_HOME=\$GPHOME/ext/R-${R_VERSION}/lib64/R" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
-
 echo "export LD_LIBRARY_PATH=\$GPHOME/ext/R-${R_VERSION}/lib64/R/lib:\$LD_LIBRARY_PATH" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
 ## ----------------------------------------------------------------------
