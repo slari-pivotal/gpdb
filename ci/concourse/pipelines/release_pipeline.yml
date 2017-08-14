@@ -506,7 +506,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: ms_deliverables/greenplum-db-*-rhel5-x86_64.zip
+    regexp: ms_deliverables/greenplum-db-(.*)-rhel5-x86_64.zip
 
 - name: ms_installer_rhel5_gpdb_rc_sha256
   type: s3
@@ -515,7 +515,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: ms_deliverables/greenplum-db-*-rhel5-x86_64.zip.sha256
+    regexp: ms_deliverables/greenplum-db-(.*)-rhel5-x86_64.zip.sha256
 
 - name: ms_installer_rhel5_gpdb_bundled_clients
   type: s3
@@ -524,7 +524,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: ms_deliverables/greenplum-clients-*-rhel5-x86_64.zip
+    regexp: ms_deliverables/greenplum-clients-(.*)-rhel5-x86_64.zip
 
 - name: ms_installer_rhel5_gpdb_bundled_clients_sha256
   type: s3
@@ -533,7 +533,7 @@ resources:
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: ms_deliverables/greenplum-clients-*-rhel5-x86_64.zip.sha256
+    regexp: ms_deliverables/greenplum-clients-(.*)-rhel5-x86_64.zip.sha256
 
 - name: jre
   type: s3
