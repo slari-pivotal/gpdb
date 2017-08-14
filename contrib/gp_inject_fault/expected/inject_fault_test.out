@@ -8,7 +8,7 @@ CREATE FUNCTION gp_inject_fault(
   tablename text,
   numoccurrences int4,
   sleeptime int4,
-  db_id smallint)
+  db_id int4)
 RETURNS boolean
 AS '$libdir/gp_inject_fault'
 LANGUAGE C VOLATILE STRICT NO SQL;
