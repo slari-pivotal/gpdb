@@ -83,11 +83,27 @@ typedef struct FilespaceDirEntryData
 } FilespaceDirEntryData;
 typedef FilespaceDirEntryData *FilespaceDirEntry;
 
+#define WRITE_FILESPACE_HASH_LOCK \
+	{ \
+		Assert(LWLockHeldByMe(PersistentObjLock)); \
+		LWLockAcquire(FilespaceHashLock, LW_EXCLUSIVE); \
+	}
 
+#define WRITE_FILESPACE_HASH_UNLOCK \
+	{ \
+		Assert(LWLockHeldByMe(PersistentObjLock)); \
+		LWLockRelease(FilespaceHashLock); \
+	}
 /*
  * Global Variables
  */
 PersistentFilespaceSharedData	*persistentFilespaceSharedData = NULL;
+/*
+ * Reads to the persistentFilespaceSharedHashTable are protected by
+ * FilespaceHashLock alone. To write to persistentFilespaceSharedHashTable,
+ * you must first acquire the PersistentObjLock, and then the
+ * FilespaceHashLock, both in exclusive mode.
+ */
 static HTAB *persistentFilespaceSharedHashTable = NULL;
 
 PersistentFilespaceData	persistentFilespaceData = PersistentFilespaceData_StaticInit;
@@ -112,6 +128,8 @@ PersistentFilespace_FindDirUnderLock(
 	FilespaceDirEntry	filespaceDirEntry;
 
 	FilespaceDirEntryKey key;
+
+	Assert(LWLockHeldByMe(FilespaceHashLock));
 
 	if (persistentFilespaceSharedHashTable == NULL)
 		elog(PANIC, "Persistent filespace information shared-memory not setup");
@@ -140,6 +158,8 @@ PersistentFilespace_CreateDirUnderLock(
 
 	FilespaceDirEntryKey key;
 
+	Assert(LWLockHeldByMe(FilespaceHashLock));
+
 	if (persistentFilespaceSharedHashTable == NULL)
 		elog(PANIC, "Persistent filespace information shared-memory not setup");
 
@@ -167,6 +187,8 @@ PersistentFilespace_RemoveDirUnderLock(
 	FilespaceDirEntry	filespaceDirEntry)
 {
 	FilespaceDirEntry	removeFilespaceDirEntry;
+
+	Assert(LWLockHeldByMe(FilespaceHashLock));
 
 	if (persistentFilespaceSharedHashTable == NULL)
 		elog(PANIC, "Persistent filespace information shared-memory not setup");
@@ -238,9 +260,15 @@ static bool PersistentFilespace_ScanTupleCallback(
 		return true;	// Continue.
 	}
 
-	filespaceDirEntry =
-			PersistentFilespace_CreateDirUnderLock(
-											filespaceOid);
+   /*
+	* Normally we would acquire this lock with the WRITE_FILESPACE_HASH_LOCK
+	* macro, however, this particular function can be called during startup.
+	* During startup, which executes in a single threaded context, no
+	* PersistentObjLock exists and we cannot assert that we're holding it.
+	*/
+	LWLockAcquire(FilespaceHashLock, LW_EXCLUSIVE);
+
+	filespaceDirEntry =	PersistentFilespace_CreateDirUnderLock(filespaceOid);
 
 	filespaceDirEntry->dbId1 = dbId1;
 	memcpy(filespaceDirEntry->locationBlankPadded1, locationBlankPadded1, FilespaceLocationBlankPaddedWithNullTermLen);
@@ -251,6 +279,8 @@ static bool PersistentFilespace_ScanTupleCallback(
 	filespaceDirEntry->state = state;
 	filespaceDirEntry->persistentSerialNum = serialNum;
 	filespaceDirEntry->persistentTid = *persistentTid;
+
+	LWLockRelease(FilespaceHashLock);
 
 	if (Debug_persistent_print)
 		elog(Persistent_DebugPrintLevel(),
@@ -451,76 +481,24 @@ extern void PersistentFilespace_LookupTidAndSerialNum(
 
 	int64			*persistentSerialNum)
 {
-	READ_PERSISTENT_STATE_ORDERED_LOCK_DECLARE;
-
 	FilespaceDirEntry filespaceDirEntry;
 
 	PersistentFilespace_VerifyInitScan();
-
-	READ_PERSISTENT_STATE_ORDERED_LOCK;
-
-	filespaceDirEntry =
-				PersistentFilespace_FindDirUnderLock(
-												filespaceOid);
+	LWLockAcquire(FilespaceHashLock, LW_SHARED);
+	filespaceDirEntry =	PersistentFilespace_FindDirUnderLock(filespaceOid);
 	if (filespaceDirEntry == NULL)
 		elog(ERROR, "Did not find persistent filespace entry %u",
 			 filespaceOid);
 
 	*persistentTid = filespaceDirEntry->persistentTid;
 	*persistentSerialNum = filespaceDirEntry->persistentSerialNum;
-
-	READ_PERSISTENT_STATE_ORDERED_UNLOCK;
+	LWLockRelease(FilespaceHashLock);
 }
 
 
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
-
-static void PersistentFilespace_AddTuple(
-	FilespaceDirEntry filespaceDirEntry,
-
-	int64			createMirrorDataLossTrackingSessionNum,
-
-	MirroredObjectExistenceState mirrorExistenceState,
-
-	int32			reserved,
-
-	TransactionId 	parentXid,
-
-	bool			flushToXLog)
-				/* When true, the XLOG record for this change will be flushed to disk. */
-{
-	Oid filespaceOid = filespaceDirEntry->key.filespaceOid;
-
-	ItemPointerData previousFreeTid;
-
-	Datum values[Natts_gp_persistent_filespace_node];
-
-	MemSet(&previousFreeTid, 0, sizeof(ItemPointerData));
-
-	GpPersistentFilespaceNode_SetDatumValues(
-										values,
-										filespaceOid,
-										filespaceDirEntry->dbId1,
-										filespaceDirEntry->locationBlankPadded1,
-										filespaceDirEntry->dbId2,
-										filespaceDirEntry->locationBlankPadded2,
-										filespaceDirEntry->state,
-										createMirrorDataLossTrackingSessionNum,
-										mirrorExistenceState,
-										reserved,
-										parentXid,
-										/* persistentSerialNum */ 0,	// This will be set by PersistentFileSysObj_AddTuple.
-										&previousFreeTid);
-
-	PersistentFileSysObj_AddTuple(
-							PersistentFsObjType_FilespaceDir,
-							values,
-							flushToXLog,
-							&filespaceDirEntry->persistentTid,
-							&filespaceDirEntry->persistentSerialNum);
-}
 
 static void PersistentFilespace_BlankPadCopyLocation(
 	char locationBlankPadded[FilespaceLocationBlankPaddedWithNullTermLen],
@@ -591,50 +569,14 @@ void PersistentFilespace_ConvertBlankPaddedLocation(
 	}
 }
 
-bool PersistentFilespace_TryGetPrimaryAndMirrorUnderLock(
-	Oid 		filespaceOid,
-				/* The filespace OID to lookup. */
-
-	char **primaryFilespaceLocation,
-				/* The primary filespace directory path.  Return NULL for global and base. */
-
-	char **mirrorFilespaceLocation)
-				/* The primary filespace directory path.  Return NULL for global and base.
-				 * Or, returns NULL when mirror not configured. */
+static void
+PersistentFilespace_GetPaths(FilespaceDirEntry filespaceDirEntry,
+							 char **primaryFilespaceLocation,
+							 char **mirrorFilespaceLocation)
 {
-	FilespaceDirEntry filespaceDirEntry;
-
 	int16 primaryDbId;
-
 	char *primaryBlankPadded = NULL;
 	char *mirrorBlankPadded = NULL;
-
-	*primaryFilespaceLocation = NULL;
-	*mirrorFilespaceLocation = NULL;
-
-#ifdef MASTER_MIRROR_SYNC
-	/*
-	 * Can't rely on persistent tables or memory structures on the standby so
-	 * get it from the cache maintained by the master mirror sync code
-	 */
-	if (IsStandbyMode())
-	{
-		return mmxlog_filespace_get_path(
-									filespaceOid,
-									primaryFilespaceLocation);
-	}
-#endif
-
-	/*
-	 * Important to make this call AFTER we check if we are the Standby Master.
-	 */
-	PersistentFilespace_VerifyInitScan();
-
-	filespaceDirEntry =
-				PersistentFilespace_FindDirUnderLock(
-												filespaceOid);
-	if (filespaceDirEntry == NULL)
-		return false;
 
 	/*
 	 * The persistent_filespace_node_table contains the paths for both the
@@ -703,11 +645,109 @@ bool PersistentFilespace_TryGetPrimaryAndMirrorUnderLock(
 											mirrorFilespaceLocation,
 											mirrorBlankPadded,
 											/* isPrimary */ false);
-
-	return true;
 }
 
-void PersistentFilespace_GetPrimaryAndMirrorUnderLock(
+PersistentTablespaceGetFilespaces
+PersistentFilespace_GetFilespaceFromTablespace(Oid tablespaceOid,
+											   char **primaryFilespaceLocation,
+											   char **mirrorFilespaceLocation,
+											   Oid *filespaceOid)
+{
+	bool			found;
+	TablespaceDirEntry	tablespaceDirEntry;
+	TablespaceDirEntryKey tsKey;
+	FilespaceDirEntry	filespaceDirEntry;
+	FilespaceDirEntryKey fsKey;
+	PersistentTablespaceGetFilespaces result;
+
+	if (persistentTablespaceSharedHashTable == NULL)
+		elog(PANIC, "persistent tablespace shared-memory not setup");
+	if (persistentFilespaceSharedHashTable == NULL)
+		elog(PANIC, "persistent filespace shared-memory not setup");
+
+	LWLockAcquire(FilespaceHashLock, LW_SHARED);
+	LWLockAcquire(TablespaceHashLock, LW_SHARED);
+
+	tsKey.tablespaceOid = tablespaceOid;
+	tablespaceDirEntry = (TablespaceDirEntry) hash_search(
+		persistentTablespaceSharedHashTable, (void *) &tsKey,
+		HASH_FIND, &found);
+	if (found)
+	{
+		fsKey.filespaceOid = *filespaceOid = tablespaceDirEntry->filespaceOid;
+		filespaceDirEntry = (FilespaceDirEntry)	hash_search(
+			persistentFilespaceSharedHashTable, (void *) &fsKey,
+			HASH_FIND, &found);
+		if (found)
+		{
+			result = PersistentTablespaceGetFilespaces_Ok;
+		}
+		else
+			result = PersistentTablespaceGetFilespaces_FilespaceNotFound;
+	}
+	else
+		result = PersistentTablespaceGetFilespaces_TablespaceNotFound;
+
+	if (result == PersistentTablespaceGetFilespaces_Ok)
+		PersistentFilespace_GetPaths(filespaceDirEntry,
+									 primaryFilespaceLocation,
+									 mirrorFilespaceLocation);
+	LWLockRelease(TablespaceHashLock);
+	LWLockRelease(FilespaceHashLock);
+
+	return result;
+}
+
+bool PersistentFilespace_TryGetPrimaryAndMirror(
+	Oid 		filespaceOid,
+				/* The filespace OID to lookup. */
+
+	char **primaryFilespaceLocation,
+				/* The primary filespace directory path.  Return NULL for global and base. */
+
+	char **mirrorFilespaceLocation)
+				/* The primary filespace directory path.  Return NULL for global and base.
+				 * Or, returns NULL when mirror not configured. */
+{
+	FilespaceDirEntry filespaceDirEntry;
+	bool result = false;
+
+	*primaryFilespaceLocation = NULL;
+	*mirrorFilespaceLocation = NULL;
+
+#ifdef MASTER_MIRROR_SYNC
+	/*
+	 * Can't rely on persistent tables or memory structures on the standby so
+	 * get it from the cache maintained by the master mirror sync code
+	 */
+	if (IsStandbyMode())
+	{
+		return mmxlog_filespace_get_path(
+									filespaceOid,
+									primaryFilespaceLocation);
+	}
+#endif
+
+	/*
+	 * Important to make this call AFTER we check if we are the Standby Master.
+	 */
+	PersistentFilespace_VerifyInitScan();
+
+	LWLockAcquire(FilespaceHashLock, LW_SHARED);
+	filespaceDirEntry = PersistentFilespace_FindDirUnderLock(filespaceOid);
+	if (filespaceDirEntry)
+	{
+		PersistentFilespace_GetPaths(filespaceDirEntry,
+									 primaryFilespaceLocation,
+									 mirrorFilespaceLocation);
+		result = true;
+	}
+	LWLockRelease(FilespaceHashLock);
+
+	return result;
+}
+
+void PersistentFilespace_GetPrimaryAndMirror(
 	Oid 		filespaceOid,
 				/* The filespace OID to lookup. */
 
@@ -720,11 +760,11 @@ void PersistentFilespace_GetPrimaryAndMirrorUnderLock(
 {
 	/*
 	 * Do not call PersistentFilespace_VerifyInitScan here to allow
-	 * PersistentFilespace_TryGetPrimaryAndMirrorUnderLock to handle the Standby Master
+	 * PersistentFilespace_TryGetPrimaryAndMirror to handle the Standby Master
 	 * special case.
 	 */
 
-	if (!PersistentFilespace_TryGetPrimaryAndMirrorUnderLock(
+	if (!PersistentFilespace_TryGetPrimaryAndMirror(
 													filespaceOid,
 													primaryFilespaceLocation,
 													mirrorFilespaceLocation))
@@ -732,72 +772,6 @@ void PersistentFilespace_GetPrimaryAndMirrorUnderLock(
 		elog(ERROR, "Did not find persistent filespace entry %u",
 			 filespaceOid);
 	}
-}
-
-bool PersistentFilespace_TryGetPrimaryAndMirror(
-	Oid 		filespaceOid,
- 	            /* The filespace OID to lookup */
-
-	char **primaryFilespaceLocation,
-				/* The primary filespace directory path.  Return NULL for global and base. */
-
-	char **mirrorFilespaceLocation)
-				/* The primary filespace directory path.  Return NULL for global and base.
-				 * Or, returns NULL when mirror not configured. */
-{
-	READ_PERSISTENT_STATE_ORDERED_LOCK_DECLARE;
-
-	bool result;
-
-	/*
-	 * Do not call PersistentFilespace_VerifyInitScan here to allow
-	 * PersistentFilespace_TryGetPrimaryAndMirrorUnderLock to handle the Standby Master
-	 * special case.
-	 */
-
-	READ_PERSISTENT_STATE_ORDERED_LOCK;
-
-	result = PersistentFilespace_TryGetPrimaryAndMirrorUnderLock(
-													filespaceOid,
-													primaryFilespaceLocation,
-													mirrorFilespaceLocation);
-
-	READ_PERSISTENT_STATE_ORDERED_UNLOCK;
-
-	return result;
-}
-
-void PersistentFilespace_GetPrimaryAndMirror(
-	Oid 		filespaceOid,
- 	            /* The filespace OID to lookup */
-
-	char **primaryFilespaceLocation,
-				/* The primary filespace directory path.  Return NULL for global and base. */
-
-	char **mirrorFilespaceLocation)
-				/* The primary filespace directory path.  Return NULL for global and base.
-				 * Or, returns NULL when mirror not configured. */
-{
-	READ_PERSISTENT_STATE_ORDERED_LOCK_DECLARE;
-
-	/*
-	 * Do not call PersistentFilespace_VerifyInitScan here to allow
-	 * PersistentFilespace_TryGetPrimaryAndMirrorUnderLock to handle the Standby Master
-	 * special case.
-	 */
-
-	READ_PERSISTENT_STATE_ORDERED_LOCK;
-
-	if (!PersistentFilespace_TryGetPrimaryAndMirrorUnderLock(
-											filespaceOid,
-											primaryFilespaceLocation,
-											mirrorFilespaceLocation))
-	{
-		elog(ERROR, "Did not find persistent filespace entry %u",
-			 filespaceOid);
-	}
-
-	READ_PERSISTENT_STATE_ORDERED_UNLOCK;
 }
 
 // -----------------------------------------------------------------------------
@@ -847,6 +821,10 @@ void PersistentFilespace_MarkCreatePending(
 	PersistentFileSysObjName fsObjName;
 
 	FilespaceDirEntry filespaceDirEntry;
+	TransactionId topXid;
+	Datum values[Natts_gp_persistent_filespace_node];
+	char mirrorFilespaceLocationBlankPadded[FilespaceLocationBlankPaddedWithNullTermLen];
+	char primaryFilespaceLocationBlankPadded[FilespaceLocationBlankPaddedWithNullTermLen];
 
 	if (Persistent_BeforePersistenceWork())
 	{
@@ -862,35 +840,62 @@ void PersistentFilespace_MarkCreatePending(
 
 	PersistentFileSysObjName_SetFilespaceDir(&fsObjName,filespaceOid);
 
+	topXid = GetTopTransactionId();
+
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK;
 
-	filespaceDirEntry =
-				PersistentFilespace_CreateDirUnderLock(
-												filespaceOid);
+	PersistentFilespace_BlankPadCopyLocation(
+										primaryFilespaceLocationBlankPadded,
+										primaryFilespaceLocation);
+	
+	PersistentFilespace_BlankPadCopyLocation(
+										mirrorFilespaceLocationBlankPadded,
+										mirrorFilespaceLocation);
+
+	ItemPointerData previousFreeTid;
+	MemSet(&previousFreeTid, 0, sizeof(ItemPointerData));
+
+	GpPersistentFilespaceNode_SetDatumValues(
+										values,
+										filespaceOid,
+										primaryDbId,
+										primaryFilespaceLocationBlankPadded,
+										mirrorDbId,
+										mirrorFilespaceLocationBlankPadded,
+										PersistentFileSysState_CreatePending,
+										/* createMirrorDataLossTrackingSessionNum */ 0,
+										mirrorExistenceState,
+										/* reserved */ 0,
+										/* parentXid */ topXid,
+										/* persistentSerialNum */ 0,
+										/* previousFreeTid */ &previousFreeTid); // This will be set by PersistentFileSysObj_AddTuple.
+
+	PersistentFileSysObj_AddTuple(
+							PersistentFsObjType_FilespaceDir,
+							values,
+							flushToXLog,
+							persistentTid,
+							persistentSerialNum);
+
+	WRITE_FILESPACE_HASH_LOCK;
+
+	filespaceDirEntry =	PersistentFilespace_CreateDirUnderLock(filespaceOid);
+
 	Assert(filespaceDirEntry != NULL);
 
 	filespaceDirEntry->dbId1 = primaryDbId;
-	PersistentFilespace_BlankPadCopyLocation(
-										filespaceDirEntry->locationBlankPadded1,
-										primaryFilespaceLocation);
-
+	memcpy(filespaceDirEntry->locationBlankPadded1, primaryFilespaceLocationBlankPadded,
+		   FilespaceLocationBlankPaddedWithNullTermLen);
+	
 	filespaceDirEntry->dbId2 = mirrorDbId;
-	PersistentFilespace_BlankPadCopyLocation(
-										filespaceDirEntry->locationBlankPadded2,
-										mirrorFilespaceLocation);
+	memcpy(filespaceDirEntry->locationBlankPadded2, mirrorFilespaceLocationBlankPadded,
+		   FilespaceLocationBlankPaddedWithNullTermLen);
 
 	filespaceDirEntry->state = PersistentFileSysState_CreatePending;
+	ItemPointerCopy(persistentTid, &filespaceDirEntry->persistentTid);
+	filespaceDirEntry->persistentSerialNum = *persistentSerialNum;
 
-	PersistentFilespace_AddTuple(
-							filespaceDirEntry,
-							/* createMirrorDataLossTrackingSessionNum */ 0,
-							mirrorExistenceState,
-							/* reserved */ 0,
-							/* parentXid */ GetTopTransactionId(),
-							flushToXLog);
-
-	*persistentTid = filespaceDirEntry->persistentTid;
-	*persistentSerialNum = filespaceDirEntry->persistentSerialNum;
+	WRITE_FILESPACE_HASH_UNLOCK;
 
 	/*
 	 * This XLOG must be generated under the persistent write-lock.
@@ -977,9 +982,8 @@ void PersistentFilespace_Created(
 
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK;
 
-	filespaceDirEntry =
-				PersistentFilespace_FindDirUnderLock(
-												filespaceOid);
+	WRITE_FILESPACE_HASH_LOCK;
+	filespaceDirEntry =	PersistentFilespace_FindDirUnderLock(filespaceOid);
 	if (filespaceDirEntry == NULL)
 		elog(ERROR, "did not find persistent filespace entry %u",
 			 filespaceOid);
@@ -989,6 +993,9 @@ void PersistentFilespace_Created(
 			 "'Create Pending' state (actual state '%s')",
 			 filespaceOid,
 			 PersistentFileSysObjState_Name(filespaceDirEntry->state));
+
+	filespaceDirEntry->state = PersistentFileSysState_Created;
+	WRITE_FILESPACE_HASH_UNLOCK;
 
 	stateChangeResult =
 		PersistentFileSysObj_StateChange(
@@ -1000,8 +1007,6 @@ void PersistentFilespace_Created(
 								/* flushToXlog */ false,
 								/* oldState */ NULL,
 								/* verifiedActionCallback */ NULL);
-
-	filespaceDirEntry->state = PersistentFileSysState_Created;
 
 	WRITE_PERSISTENT_STATE_ORDERED_UNLOCK;
 
@@ -1061,9 +1066,8 @@ PersistentFileSysObjStateChangeResult PersistentFilespace_MarkDropPending(
 
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK;
 
-	filespaceDirEntry =
-				PersistentFilespace_FindDirUnderLock(
-												filespaceOid);
+	WRITE_FILESPACE_HASH_LOCK;
+	filespaceDirEntry =	PersistentFilespace_FindDirUnderLock(filespaceOid);
 	if (filespaceDirEntry == NULL)
 		elog(ERROR, "Did not find persistent filespace entry %u",
 			 filespaceOid);
@@ -1073,6 +1077,9 @@ PersistentFileSysObjStateChangeResult PersistentFilespace_MarkDropPending(
 		elog(ERROR, "Persistent filespace entry %u expected to be in 'Create Pending' or 'Created' state (actual state '%s')",
 			 filespaceOid,
 			 PersistentFileSysObjState_Name(filespaceDirEntry->state));
+
+	filespaceDirEntry->state = PersistentFileSysState_DropPending;
+	WRITE_FILESPACE_HASH_UNLOCK;
 
 	stateChangeResult =
 		PersistentFileSysObj_StateChange(
@@ -1084,8 +1091,6 @@ PersistentFileSysObjStateChangeResult PersistentFilespace_MarkDropPending(
 								/* flushToXlog */ false,
 								/* oldState */ NULL,
 								/* verifiedActionCallback */ NULL);
-
-	filespaceDirEntry->state = PersistentFileSysState_DropPending;
 
 	WRITE_PERSISTENT_STATE_ORDERED_UNLOCK;
 
@@ -1142,9 +1147,8 @@ PersistentFileSysObjStateChangeResult PersistentFilespace_MarkAbortingCreate(
 
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK;
 
-	filespaceDirEntry =
-				PersistentFilespace_FindDirUnderLock(
-												filespaceOid);
+	WRITE_FILESPACE_HASH_LOCK;
+	filespaceDirEntry = PersistentFilespace_FindDirUnderLock(filespaceOid);
 	if (filespaceDirEntry == NULL)
 		elog(ERROR, "Did not find persistent filespace entry %u",
 			 filespaceOid);
@@ -1153,6 +1157,9 @@ PersistentFileSysObjStateChangeResult PersistentFilespace_MarkAbortingCreate(
 		elog(ERROR, "Persistent filespace entry %u expected to be in 'Create Pending' (actual state '%s')",
 			 filespaceOid,
 			 PersistentFileSysObjState_Name(filespaceDirEntry->state));
+
+	filespaceDirEntry->state = PersistentFileSysState_AbortingCreate;
+	WRITE_FILESPACE_HASH_UNLOCK;
 
 	stateChangeResult =
 		PersistentFileSysObj_StateChange(
@@ -1164,8 +1171,6 @@ PersistentFileSysObjStateChangeResult PersistentFilespace_MarkAbortingCreate(
 								/* flushToXlog */ false,
 								/* oldState */ NULL,
 								/* verifiedActionCallback */ NULL);
-
-	filespaceDirEntry->state = PersistentFileSysState_AbortingCreate;
 
 	WRITE_PERSISTENT_STATE_ORDERED_UNLOCK;
 
@@ -1257,19 +1262,6 @@ void PersistentFilespace_Dropped(
 
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK;
 
-	filespaceDirEntry =
-				PersistentFilespace_FindDirUnderLock(
-												filespaceOid);
-	if (filespaceDirEntry == NULL)
-		elog(ERROR, "Did not find persistent filespace entry %u",
-			 filespaceOid);
-
-	if (filespaceDirEntry->state != PersistentFileSysState_DropPending &&
-		filespaceDirEntry->state != PersistentFileSysState_AbortingCreate)
-		elog(ERROR, "Persistent filespace entry %u expected to be in 'Drop Pending' or 'Aborting Create' (actual state '%s')",
-			 filespaceOid,
-			 PersistentFileSysObjState_Name(filespaceDirEntry->state));
-
 	stateChangeResult =
 		PersistentFileSysObj_StateChange(
 								&fsObjName,
@@ -1281,9 +1273,21 @@ void PersistentFilespace_Dropped(
 								&oldState,
 								PersistentFilespace_DroppedVerifiedActionCallback);
 
-	filespaceDirEntry->state = PersistentFileSysState_Free;
+	WRITE_FILESPACE_HASH_LOCK;
+	filespaceDirEntry = PersistentFilespace_FindDirUnderLock(filespaceOid);
+	if (filespaceDirEntry == NULL)
+		elog(ERROR, "Did not find persistent filespace entry %u",
+			 filespaceOid);
 
+	if (filespaceDirEntry->state != PersistentFileSysState_DropPending &&
+		filespaceDirEntry->state != PersistentFileSysState_AbortingCreate)
+		elog(ERROR, "Persistent filespace entry %u expected to be in 'Drop Pending' or 'Aborting Create' (actual state '%s')",
+			 filespaceOid,
+			 PersistentFileSysObjState_Name(filespaceDirEntry->state));
+
+	filespaceDirEntry->state = PersistentFileSysState_Free;
 	PersistentFilespace_RemoveDirUnderLock(filespaceDirEntry);
+	WRITE_FILESPACE_HASH_UNLOCK;
 
 	WRITE_PERSISTENT_STATE_ORDERED_UNLOCK;
 
@@ -1311,6 +1315,8 @@ PersistentFilespace_AddMirror(Oid filespace,
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK_DECLARE;
 
 	FilespaceDirEntry fde;
+	ItemPointerData persistentTid;
+	int64 persistentSerialNum;
 
 	if (Persistent_BeforePersistenceWork())
 		elog(ERROR, "persistent table changes forbidden");
@@ -1321,6 +1327,7 @@ PersistentFilespace_AddMirror(Oid filespace,
 
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK;
 
+	LWLockAcquire(FilespaceHashLock, LW_SHARED);
 	fde = PersistentFilespace_FindDirUnderLock(filespace);
 	if (fde == NULL)
 		elog(ERROR, "did not find persistent filespace entry %u",
@@ -1347,9 +1354,13 @@ PersistentFilespace_AddMirror(Oid filespace,
 		Insist(false);
 	}
 
+	ItemPointerCopy(&fde->persistentTid, &persistentTid);
+	persistentSerialNum = fde->persistentSerialNum;
+	LWLockRelease(FilespaceHashLock);
+
 	PersistentFileSysObj_AddMirror(&fsObjName,
-								   &fde->persistentTid,
-								   fde->persistentSerialNum,
+								   &persistentTid,
+								   persistentSerialNum,
 								   pridbid,
 								   mirdbid,
 								   (void *)newpath,
@@ -1379,10 +1390,25 @@ PersistentFilespace_RemoveSegment(int16 dbid, bool ismirror)
 
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK;
 
+	/*
+	 * We release FilespaceHashLock in the middle of the loop and re-acquire
+	 * it after doing persistent table change.  This is needed to prevent
+	 * holding the lock for any purpose other than to protect the filespace
+	 * shared hash table.  Not releasing this lock could result in file I/O
+	 * and potential deadlock due to other LW locks being acquired in the
+	 * process.  Releasing the lock this way is safe because we are still
+	 * holding PersistentObjLock in exclusive mode.  Any change to the
+	 * filespace shared hash table is also protected by PersistentObjLock.
+	 */
+	WRITE_FILESPACE_HASH_LOCK;
 	while ((fde = hash_seq_search(&hstat)) != NULL)
 	{
 		Oid filespace = fde->key.filespaceOid;
 		PersistentFileSysObjName fsObjName;
+		ItemPointerData persistentTid;
+		int64 persistentSerialNum = fde->persistentSerialNum;
+
+		ItemPointerCopy(&fde->persistentTid, &persistentTid);
 
 		PersistentFileSysObjName_SetFilespaceDir(&fsObjName, filespace);
 
@@ -1399,13 +1425,18 @@ PersistentFilespace_RemoveSegment(int16 dbid, bool ismirror)
 										"");
 		}
 
+		WRITE_FILESPACE_HASH_UNLOCK;
+
 		PersistentFileSysObj_RemoveSegment(&fsObjName,
-								   &fde->persistentTid,
-								   fde->persistentSerialNum,
+								   &persistentTid,
+								   persistentSerialNum,
 								   dbid,
 								   ismirror,
 								   /* flushToXlog */ false);
+		WRITE_FILESPACE_HASH_LOCK;
 	}
+	WRITE_FILESPACE_HASH_UNLOCK;
+	
 	WRITE_PERSISTENT_STATE_ORDERED_UNLOCK;
 }
 
@@ -1429,10 +1460,25 @@ PersistentFilespace_ActivateStandby(int16 oldmaster, int16 newmaster)
 
 	WRITE_PERSISTENT_STATE_ORDERED_LOCK;
 
+	/*
+	 * We release FilespaceHashLock in the middle of the loop and re-acquire
+	 * it after doing persistent table change.  This is needed to prevent
+	 * holding the lock for any purpose other than to protect the filespace
+	 * shared hash table.  Not releasing this lock could result in file I/O
+	 * and potential deadlock due to other LW locks being acquired in the
+	 * process.  Releasing the lock this way is safe because we are still
+	 * holding PersistentObjLock in exclusive mode.  Any change to the
+	 * filespace shared hash table is also protected by PersistentObjLock.
+	 */
+	WRITE_FILESPACE_HASH_LOCK;
 	while ((fde = hash_seq_search(&hstat)) != NULL)
 	{
 		Oid filespace = fde->key.filespaceOid;
 		PersistentFileSysObjName fsObjName;
+		ItemPointerData persistentTid;
+		int64 persistentSerialNum = fde->persistentSerialNum;
+
+		ItemPointerCopy(&fde->persistentTid, &persistentTid);
 
 		PersistentFileSysObjName_SetFilespaceDir(&fsObjName, filespace);
 
@@ -1464,14 +1510,17 @@ PersistentFilespace_ActivateStandby(int16 oldmaster, int16 newmaster)
 										fde->locationBlankPadded2,
 										"");
 		}
+		WRITE_FILESPACE_HASH_UNLOCK;
 
 		PersistentFileSysObj_ActivateStandby(&fsObjName,
-								   &fde->persistentTid,
-								   fde->persistentSerialNum,
+								   &persistentTid,
+								   persistentSerialNum,
 								   oldmaster,
 								   newmaster,
 								   /* flushToXlog */ false);
+		WRITE_FILESPACE_HASH_LOCK;
 	}
+	WRITE_FILESPACE_HASH_UNLOCK;
 
 	WRITE_PERSISTENT_STATE_ORDERED_UNLOCK;
 }

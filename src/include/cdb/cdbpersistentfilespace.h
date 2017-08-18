@@ -17,6 +17,7 @@
 #include "storage/itemptr.h"
 #include "utils/palloc.h"
 #include "cdb/cdbpersistentfilesysobj.h"
+#include "cdb/cdbpersistenttablespace.h"
 
 extern void PersistentFilespace_Reset(void);
 
@@ -41,17 +42,14 @@ extern void PersistentFilespace_LookupTidAndSerialNum(
 
 	int64			*persistentSerialNum);
 
-extern bool PersistentFilespace_TryGetPrimaryAndMirrorUnderLock(
-	Oid 		filespaceOid,
-				/* The filespace OID to lookup. */
 
-	char **primaryFilespaceLocation,
-				/* The primary filespace directory path.  Return NULL for global and base. */
-	
-	char **mirrorFilespaceLocation);
-				/* The primary filespace directory path.  Return NULL for global and base. 
-				 * Or, returns NULL when mirror not configured. */
-extern void PersistentFilespace_GetPrimaryAndMirrorUnderLock(
+extern PersistentTablespaceGetFilespaces
+PersistentFilespace_GetFilespaceFromTablespace(Oid tablespaceOid,
+											   char **primaryFilespaceLocation,
+											   char **mirrorFilespaceLocation,
+											   Oid *filespaceOid);
+
+extern bool PersistentFilespace_TryGetPrimaryAndMirror(
 	Oid 		filespaceOid,
 				/* The filespace OID to lookup. */
 

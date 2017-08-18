@@ -9,3 +9,5 @@ test: vacuum_after_vacuum_skip_drop_column
 
 # Tests on Append-Optimized tables (column-oriented).
 test: uao/vacuum_cleanup_column
+
+test: pt_io_in_progress_deadlock
