@@ -2915,6 +2915,7 @@ def impl(context, dbname):
     execute_sql(dbname, sql)
 
 @when('sql "{sql}" is executed in "{dbname}" db')
+@then('sql "{sql}" is executed in "{dbname}" db')
 def impl(context, sql, dbname):
     execute_sql(dbname, sql)
 
@@ -4777,3 +4778,28 @@ def impl(context, gppkg_name):
 @when('gppkg "{gppkg_name}" is removed from master host')
 def impl(context, gppkg_name):
     _remove_gppkg_from_host(context, gppkg_name, is_master_host=True)
+
+
+@given('the cluster is stopped and cluster config is regenerated only')
+def impl(context):
+    stop_database(context)
+
+    cmd = """
+    cd $HOME/gpdemo; \
+        export MASTER_DEMO_PORT={master_port} && \
+        export DEMO_PORT_BASE={port_base} && \
+        export NUM_PRIMARY_MIRROR_PAIRS={num_primary_mirror_pairs} && \
+        export WITH_MIRRORS={with_mirrors} && \
+        ./demo_cluster.sh -d && ./demo_cluster.sh -c && \
+        env ONLY_PREPARE_CLUSTER_ENV=true ./demo_cluster.sh
+    """.format(master_port=os.getenv('MASTER_PORT', 15432),
+               port_base=os.getenv('PORT_BASE', 25432),
+               num_primary_mirror_pairs=os.getenv('NUM_PRIMARY_MIRROR_PAIRS', 3),
+               with_mirrors='true',
+               )
+
+    run_command(context, cmd)
+
+    if context.ret_code != 0:
+        raise Exception('%s' % context.error_message)
+

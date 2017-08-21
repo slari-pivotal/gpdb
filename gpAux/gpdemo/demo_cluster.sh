@@ -310,6 +310,11 @@ cat >> $CLUSTER_CONFIG <<-EOF
 
 EOF
 
+if [ "${ONLY_PREPARE_CLUSTER_ENV}" == "true" ]; then
+    echo "ONLY_PREPARE_CLUSTER_ENV set, generated clusterConf file: $CLUSTER_CONFIG, exiting"
+    exit 0
+fi
+
 ## ======================================================================
 ## Create cluster
 ## ======================================================================
