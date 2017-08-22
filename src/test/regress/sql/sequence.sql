@@ -1,6 +1,6 @@
---
--- test creation of SERIAL column
---
+---
+--- test creation of SERIAL column
+---
  
 CREATE TABLE serialTest (f1 text, f2 serial);
  
