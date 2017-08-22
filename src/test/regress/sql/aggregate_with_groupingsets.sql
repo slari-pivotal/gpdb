@@ -1,23 +1,23 @@
----
---- Drop existing table
----
+--
+-- Drop existing table
+--
 DROP TABLE IF EXISTS foo;
 
----
---- Create new table foo
----
+--
+-- Create new table foo
+--
 CREATE TABLE foo(type INTEGER, prod VARCHAR, quantity NUMERIC);
 
----
---- Insert some value
----
+--
+-- Insert some value
+--
 INSERT INTO foo VALUES(1, 'Table', 100);
 INSERT INTO foo VALUES(2, 'Chair', 250);
 INSERT INTO foo VALUES(3, 'Bed', 300);
 
----
---- Select query with grouping sets
----
+--
+-- Select query with grouping sets
+--
 SELECT type, prod, sum(quantity) s_quant
 FROM
 (
