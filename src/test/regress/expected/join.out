@@ -2146,11 +2146,9 @@ on (x1 = xx1) where (xx2 is not null) ORDER BY 1,2,3,4;
 select count(*) from tenk1 a where unique1 in
   (select unique1 from tenk1 b join tenk1 c using (unique1)
    where b.unique2 = 42);
- count 
--------
-     1
-(1 row)
-
+ERROR:  relation "tenk1" does not exist
+LINE 1: select count(*) from tenk1 a where unique1 in
+                             ^
 --
 -- regression test: check for failure to generate a plan with multiple
 -- degenerate IN clauses
@@ -2159,11 +2157,9 @@ select count(*) from tenk1 x where
   x.unique1 in (select a.f1 from int4_tbl a,float8_tbl b where a.f1=b.f1) and
   x.unique1 = 0 and
   x.unique1 in (select aa.f1 from int4_tbl aa,float8_tbl bb where aa.f1=bb.f1);
- count 
--------
-     1
-(1 row)
-
+ERROR:  relation "tenk1" does not exist
+LINE 1: select count(*) from tenk1 x where
+                             ^
 --
 -- Clean up
 --
@@ -2278,8 +2274,8 @@ LEFT JOIN (
 WHERE d.f1 IS NULL;
   f1  
 ------
-    0
  9999
+    0
     1
 (3 rows)
 
@@ -2371,16 +2367,17 @@ create table nhtest (i numeric(10, 2)) distributed by (i);
 insert into nhtest values(100000.22);
 insert into nhtest values(300000.19);
 explain select * from nhtest a join nhtest b using (i);
-                                 QUERY PLAN                                  
------------------------------------------------------------------------------
- Gather Motion 2:1  (slice1; segments: 2)  (cost=1.02..2.07 rows=2 width=11)
+                                       QUERY PLAN                                        
+-----------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice1; segments: 3)  (cost=1.02..2.07 rows=4 width=11)
    ->  Hash Join  (cost=1.02..2.07 rows=2 width=11)
          Hash Cond: a.i = b.i
          ->  Seq Scan on nhtest a  (cost=0.00..1.01 rows=1 width=11)
          ->  Hash  (cost=1.01..1.01 rows=1 width=11)
                ->  Seq Scan on nhtest b  (cost=0.00..1.01 rows=1 width=11)
- Settings:  enable_hashjoin=on; enable_mergejoin=off; enable_nestloop=off
-(7 rows)
+ Settings:  enable_hashjoin=on; enable_mergejoin=off; enable_nestloop=off; optimizer=off
+ Optimizer status: legacy query optimizer
+(8 rows)
 
 select * from nhtest a join nhtest b using (i);
      i     
@@ -2420,14 +2417,20 @@ select count(*) from hjtest a1, hjtest a2 where a2.i = least (a1.i,4) and a2.j =
 -- 1. Use FULL OUTER JOIN to induce a Merge Join
 -- 2. Use a large tuple size to induce a Materialize
 -- 3. Use gp_dist_random() to induce a Redistribute
----
+--
 set enable_hashjoin to off;
 set enable_mergejoin to on;
 set enable_nestloop to off;
-CREATE TABLE alpha (i int, j int);
-CREATE TABLE theta (i int, j char(10000000));
 DROP TABLE IF EXISTS alpha;
+NOTICE:  table "alpha" does not exist, skipping
 DROP TABLE IF EXISTS theta;
+NOTICE:  table "theta" does not exist, skipping
+CREATE TABLE alpha (i int, j int);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'i' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
+CREATE TABLE theta (i int, j char(10000000));
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'i' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 INSERT INTO alpha values (1, 1), (2, 2);
 INSERT INTO theta values (1, 'f'), (2, 'g');
 SELECT *
@@ -2460,18 +2463,19 @@ analyze t2;
 explain select count(*) from t1,t2 where t1.x = 100 and t1.x = t2.x;
                                                 QUERY PLAN                                                
 ----------------------------------------------------------------------------------------------------------
- Aggregate  (cost=7.10..7.11 rows=1 width=8)
-   ->  Gather Motion 2:1  (slice2; segments: 2)  (cost=7.04..7.08 rows=1 width=8)
-         ->  Aggregate  (cost=7.04..7.05 rows=1 width=8)
-               ->  Nested Loop  (cost=0.00..7.03 rows=2 width=0)
-                     ->  Redistribute Motion 2:2  (slice1; segments: 2)  (cost=0.00..3.52 rows=1 width=4)
+ Aggregate  (cost=9.11..9.12 rows=1 width=8)
+   ->  Gather Motion 3:1  (slice2; segments: 3)  (cost=9.04..9.09 rows=1 width=8)
+         ->  Aggregate  (cost=9.04..9.05 rows=1 width=8)
+               ->  Nested Loop  (cost=0.00..9.03 rows=2 width=0)
+                     ->  Redistribute Motion 3:3  (slice1; segments: 3)  (cost=0.00..4.52 rows=1 width=4)
                            Hash Key: 100
-                           ->  Seq Scan on t1  (cost=0.00..3.50 rows=1 width=4)
+                           ->  Seq Scan on t1  (cost=0.00..4.50 rows=1 width=4)
                                  Filter: x = 100 AND 100 = x
-                     ->  Seq Scan on t2  (cost=0.00..3.50 rows=1 width=4)
+                     ->  Seq Scan on t2  (cost=0.00..4.50 rows=1 width=4)
                            Filter: 100 = x AND x = 100
- Settings:  enable_hashjoin=on; enable_mergejoin=off; enable_nestloop=off
-(11 rows)
+ Settings:  optimizer=off
+ Optimizer status: legacy query optimizer
+(12 rows)
 
 select count(*) from t1,t2 where t1.x = 100 and t1.x = t2.x;
  count 
@@ -2485,17 +2489,18 @@ select count(*) from t1,t2 where t1.x = 100 and t1.x = t2.x;
 explain select * from t1,t2 where t1.x = 100 and t2.x >= t1.x;
                                             QUERY PLAN                                            
 --------------------------------------------------------------------------------------------------
- Gather Motion 2:1  (slice2; segments: 2)  (cost=3.28..6.58 rows=2 width=24)
-   ->  Nested Loop  (cost=3.28..6.58 rows=2 width=24)
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=4.29..8.61 rows=4 width=24)
+   ->  Nested Loop  (cost=4.29..8.61 rows=2 width=24)
          Join Filter: t2.x >= t1.x
-         ->  Seq Scan on t1  (cost=0.00..3.25 rows=1 width=12)
+         ->  Seq Scan on t1  (cost=0.00..4.25 rows=1 width=12)
                Filter: x = 100
-         ->  Materialize  (cost=3.28..3.30 rows=1 width=12)
-               ->  Broadcast Motion 2:2  (slice1; segments: 2)  (cost=0.00..3.28 rows=1 width=12)
-                     ->  Seq Scan on t2  (cost=0.00..3.25 rows=1 width=12)
+         ->  Materialize  (cost=4.29..4.32 rows=1 width=12)
+               ->  Broadcast Motion 3:3  (slice1; segments: 3)  (cost=0.00..4.29 rows=1 width=12)
+                     ->  Seq Scan on t2  (cost=0.00..4.25 rows=1 width=12)
                            Filter: x >= 100
- Settings:  enable_hashjoin=on; enable_mergejoin=off; enable_nestloop=off
-(10 rows)
+ Settings:  optimizer=off
+ Optimizer status: legacy query optimizer
+(11 rows)
 
 select * from t1,t2 where t1.x = 100 and t2.x >= t1.x;
   x  |  y  |  z  |  x  |  y  |  z  
@@ -2510,17 +2515,18 @@ set optimizer_segments=2;
 explain select * from t1,t2 where t1.x = 100 and t1.x = t2.y and t1.x <= t2.x;
                                             QUERY PLAN                                            
 --------------------------------------------------------------------------------------------------
- Gather Motion 2:1  (slice2; segments: 2)  (cost=3.53..7.58 rows=2 width=24)
-   ->  Nested Loop  (cost=3.53..7.58 rows=2 width=24)
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=4.54..9.61 rows=4 width=24)
+   ->  Nested Loop  (cost=4.54..9.61 rows=2 width=24)
          Join Filter: t1.x <= t2.x
-         ->  Seq Scan on t2  (cost=0.00..4.00 rows=1 width=12)
+         ->  Seq Scan on t2  (cost=0.00..5.00 rows=1 width=12)
                Filter: 100 = y AND y = 100 AND 100 <= x AND y <= x
-         ->  Materialize  (cost=3.53..3.55 rows=1 width=12)
-               ->  Broadcast Motion 2:2  (slice1; segments: 2)  (cost=0.00..3.53 rows=1 width=12)
-                     ->  Seq Scan on t1  (cost=0.00..3.50 rows=1 width=12)
+         ->  Materialize  (cost=4.54..4.57 rows=1 width=12)
+               ->  Broadcast Motion 3:3  (slice1; segments: 3)  (cost=0.00..4.54 rows=1 width=12)
+                     ->  Seq Scan on t1  (cost=0.00..4.50 rows=1 width=12)
                            Filter: x = 100 AND 100 = x
- Settings:  enable_hashjoin=on; enable_mergejoin=off; enable_nestloop=off
-(10 rows)
+ Settings:  optimizer=off; optimizer_segments=2
+ Optimizer status: legacy query optimizer
+(11 rows)
 
 reset optimizer_segments;
 select * from t1,t2 where t1.x = 100 and t1.x = t2.y and t1.x <= t2.x;
@@ -2535,135 +2541,137 @@ select * from t1,t2 where t1.x = 100 and t1.x = t2.y and t1.x <= t2.x;
 create table hjn_test (i int, j int) distributed by (i,j);
 insert into hjn_test values(3, 4);
 create table int4_tbl (f1 int);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'f1' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 insert into int4_tbl values(123456), (-2147483647), (0), (-123456), (2147483647);
-select count(*) from hjn_test, (select 3 as bar) foo where hjn_test.i = least (foo.bar, 4) and hjn_test.j = 4;
-count 
+select count(*) from hjn_test, (select 3 as bar) foo where hjn_test.i = least (foo.bar,4) and hjn_test.j = 4;
+ count 
 -------
-    1
+     1
 (1 row)
 
 select count(*) from hjn_test, (select 3 as bar) foo where hjn_test.i = least (foo.bar,(array[4])[1]) and hjn_test.j = (array[4])[1];
-count 
+ count 
 -------
-    1
+     1
 (1 row)
 
 select count(*) from hjn_test, (select 3 as bar) foo where least (foo.bar,(array[4])[1]) = hjn_test.i and hjn_test.j = (array[4])[1];
-count 
+ count 
 -------
-    1
+     1
 (1 row)
 
 select count(*) from hjn_test, (select 3 as bar) foo where hjn_test.i = least (foo.bar, least(4,10)) and hjn_test.j = least(4,10);
-count 
+ count 
 -------
-    1
+     1
 (1 row)
 
 select * from int4_tbl a join int4_tbl b on (a.f1 = (select f1 from int4_tbl c where c.f1=b.f1));
      f1      |     f1      
 -------------+-------------
- -2147483647 | -2147483647
       123456 |      123456
-     -123456 |     -123456
+ -2147483647 | -2147483647
            0 |           0
+     -123456 |     -123456
   2147483647 |  2147483647
 (5 rows)
 
 set enable_hashjoin to off;
 -- Disable hashjoin forms fo ORCA
 select disable_xform('CXformInnerJoin2HashJoin');
-            disable_xform
+            disable_xform             
 --------------------------------------
  CXformInnerJoin2HashJoin is disabled
 (1 row)
 
 select disable_xform('CXformLeftAntiSemiJoin2HashJoin');
-                disable_xform
+                disable_xform                
 ---------------------------------------------
  CXformLeftAntiSemiJoin2HashJoin is disabled
 (1 row)
 
 select disable_xform('CXformLeftAntiSemiJoinNotIn2HashJoinNotIn');
-                     disable_xform
+                     disable_xform                     
 -------------------------------------------------------
  CXformLeftAntiSemiJoinNotIn2HashJoinNotIn is disabled
 (1 row)
 
 select disable_xform('CXformLeftOuterJoin2HashJoin');
-              disable_xform
+              disable_xform               
 ------------------------------------------
  CXformLeftOuterJoin2HashJoin is disabled
 (1 row)
 
 select disable_xform('CXformLeftSemiJoin2HashJoin');
-              disable_xform
+              disable_xform              
 -----------------------------------------
  CXformLeftSemiJoin2HashJoin is disabled
 (1 row)
 
-select count(*) from hjn_test, (select 3 as bar) foo where hjn_test.i = least (foo.bar, 4) and hjn_test.j = 4;
-count 
+select count(*) from hjn_test, (select 3 as bar) foo where hjn_test.i = least (foo.bar,4) and hjn_test.j = 4;
+ count 
 -------
-    1
+     1
 (1 row)
 
 select count(*) from hjn_test, (select 3 as bar) foo where hjn_test.i = least (foo.bar,(array[4])[1]) and hjn_test.j = (array[4])[1];
-count 
+ count 
 -------
-    1
+     1
 (1 row)
 
 select count(*) from hjn_test, (select 3 as bar) foo where least (foo.bar,(array[4])[1]) = hjn_test.i and hjn_test.j = (array[4])[1];
-count 
+ count 
 -------
-    1
+     1
 (1 row)
 
 select count(*) from hjn_test, (select 3 as bar) foo where hjn_test.i = least (foo.bar, least(4,10)) and hjn_test.j = least(4,10);
-count 
+ count 
 -------
-    1
+     1
 (1 row)
 
 select * from int4_tbl a join int4_tbl b on (a.f1 = (select f1 from int4_tbl c where c.f1=b.f1));
      f1      |     f1      
 -------------+-------------
  -2147483647 | -2147483647
-      123456 |      123456
      -123456 |     -123456
            0 |           0
+      123456 |      123456
   2147483647 |  2147483647
 (5 rows)
 
 reset enable_hashjoin;
 -- Enable hashjoin forms fo ORCA
 select enable_xform('CXformInnerJoin2HashJoin');
-            enable_xform
+            enable_xform             
 -------------------------------------
  CXformInnerJoin2HashJoin is enabled
 (1 row)
 
 select enable_xform('CXformLeftAntiSemiJoin2HashJoin');
-                enable_xform
+                enable_xform                
 --------------------------------------------
  CXformLeftAntiSemiJoin2HashJoin is enabled
 (1 row)
 
 select enable_xform('CXformLeftAntiSemiJoinNotIn2HashJoinNotIn');
-                     enable_xform
+                     enable_xform                     
 ------------------------------------------------------
  CXformLeftAntiSemiJoinNotIn2HashJoinNotIn is enabled
 (1 row)
 
 select enable_xform('CXformLeftOuterJoin2HashJoin');
-              enable_xform
+              enable_xform               
 -----------------------------------------
  CXformLeftOuterJoin2HashJoin is enabled
 (1 row)
 
 select enable_xform('CXformLeftSemiJoin2HashJoin');
-              enable_xform
+              enable_xform              
 ----------------------------------------
  CXformLeftSemiJoin2HashJoin is enabled
 (1 row)
