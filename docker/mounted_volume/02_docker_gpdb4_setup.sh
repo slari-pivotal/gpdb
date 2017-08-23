@@ -50,6 +50,12 @@ source ~/gpdemo/gpdemo-env.sh
 cd ~/gpdb4_mount/gpAux
 rm -f /opt/python-2.6.9
 ln -s "/home/gpadmin/gpdb4_mount/gpAux/ext/rhel5_x86_64/python-2.6.9" /opt
+
+set +e
+# We don't want to fail if clean has nothing to do
+make clean distclean
+set -e
+
 make IVYREPO_HOST="$IVYREPO_HOST" \'IVYREPO_REALM="$IVYREPO_REALM"\' IVYREPO_USER="$IVYREPO_USER" IVYREPO_PASSWD="$IVYREPO_PASSWD" sync_tools
 
 #=========================================================
