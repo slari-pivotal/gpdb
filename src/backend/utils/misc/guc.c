@@ -835,6 +835,9 @@ bool		gp_reject_internal_tcp_conn = true;
 /* plpgsql plancache GUC */
 bool gp_plpgsql_clear_cache_always = false;
 
+/* copy */
+bool		gp_enable_segment_copy_checking = true;
+
 /*
  * Default storage options GUC.  Value is comma-separated name=value
  * pairs.  E.g. "appendonly=true,orientation=column"
@@ -4573,6 +4576,15 @@ static struct config_bool ConfigureNamesBool[] =
 		},
 		&pljava_classpath_insecure,
 		false, assign_pljava_classpath_insecure, NULL
+	},
+	{
+		{"gp_enable_segment_copy_checking", PGC_USERSET, CUSTOM_OPTIONS,
+			gettext_noop("Enable check the distribution key restriction on segment for command \"COPY FROM ON SEGMENT\"."),
+			NULL,
+			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
+		},
+		&gp_enable_segment_copy_checking,
+		true, NULL, NULL
 	},
 	/* End-of-list marker */
 	{
