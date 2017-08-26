@@ -20,6 +20,7 @@
 #define RESOWNER_H
 
 #include "storage/buf.h"
+#include "storage/lock.h"
 #include "utils/catcache.h"
 
 
@@ -86,6 +87,10 @@ extern void UnregisterResourceReleaseCallback(ResourceReleaseCallback callback,
 extern void ResourceOwnerEnlargeBuffers(ResourceOwner owner);
 extern void ResourceOwnerRememberBuffer(ResourceOwner owner, Buffer buffer);
 extern void ResourceOwnerForgetBuffer(ResourceOwner owner, Buffer buffer);
+
+/* support for local lock management */
+extern void ResourceOwnerRememberLock(ResourceOwner owner, LOCALLOCK *locallock);
+extern void ResourceOwnerForgetLock(ResourceOwner owner, LOCALLOCK *locallock);
 
 /* support for catcache refcount management */
 extern void ResourceOwnerEnlargeCatCacheRefs(ResourceOwner owner);
