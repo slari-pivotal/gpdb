@@ -22,6 +22,7 @@
 #include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/fmgroids.h"
+#include "utils/resowner.h"
 
 /*
  * The hidden tuples are pointing to nowhere on disk, but we need to

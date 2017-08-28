@@ -87,7 +87,6 @@ typedef struct ResPortalIncrement
 {
 	int			pid;					/* Process this increment is for. */
 	uint32		portalId;				/* Portal Id */
-	ResourceOwner	owner;				/* Resource Owner. */
 	bool		isHold;					/* Holdable cursor? */
 	bool		isCommitted;			/* 1st commit complete? */
 	SHM_QUEUE	portalLink;				/* List link in PROCLOCKS list 

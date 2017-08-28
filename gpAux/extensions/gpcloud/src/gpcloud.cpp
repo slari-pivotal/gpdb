@@ -11,6 +11,7 @@ extern "C" {
 #include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/memutils.h"
+#include "utils/resowner.h"
 
 /* Do the module magic dance */
 PG_MODULE_MAGIC;
