@@ -52,7 +52,7 @@ end;
 -- Set bgwriter_lru_percent to max value so that bgwriter does not
 -- skip the pages we are about to make dirty.
 \!gpconfig -c bgwriter_all_percent -v 100 --skipvalidation | grep 'completed successfully' | sed -e 's/^.*INFO..//'
--completed successfully
+-completed successfully with parameters '-c bgwriter_all_percent -v 100 --skipvalidation'
 \!gpstop -au | grep -i 'error\|fail'
 show bgwriter_all_percent;
  bgwriter_all_percent 
@@ -236,7 +236,7 @@ NOTICE:  Success:
 
 -- Restore GUC.
 \!gpconfig -c bgwriter_all_percent -v 1 --skipvalidation | grep 'completed successfully' | sed -e 's/^.*INFO..//'
--completed successfully
+-completed successfully with parameters '-c bgwriter_all_percent -v 1 --skipvalidation'
 \!gpstop -au | grep -i 'error\|fail'
 show bgwriter_all_percent;
  bgwriter_all_percent 
