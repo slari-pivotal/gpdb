@@ -44,17 +44,13 @@ CREATE TABLE tenk_ao10 (like tenk_heap) with (compresslevel=5);
 CREATE TABLE tenk_ao11 (like tenk_heap) with (blocksize=8192);
 CREATE TABLE tenk_ao12 (like tenk_heap) with (appendonly=false,blocksize=8192);
 
--------------------- 
 -- catalog checks
---------------------
 
 -- check pg_appendonly
 SELECT c.relname, a.blocksize, a.compresstype, a.compresslevel, a.checksum FROM pg_class c, pg_appendonly a
        WHERE c.relname LIKE 'tenk_ao%' AND c.oid=a.relid AND c.relname not like 'tenk_aocs%' ORDER BY c.relname;
 
--------------------- 
 -- fn needed later
---------------------
 create  or replace function aototal(relname text) returns float8 as $$
 declare
   aosegname text;
@@ -70,9 +66,7 @@ begin
 end; $$ language plpgsql volatile READS SQL DATA;
 
 
--------------------- 
 -- supported sql
---------------------
 
 -- COPY
 COPY tenk_heap FROM '@abs_srcdir@/data/tenk.data';
@@ -137,9 +131,7 @@ SELECT count(*) FROM tenk_ao3;
 SELECT count(*) FROM tenk_ao4;
 SELECT aototal('tenk_ao1'), aototal('tenk_ao2'), aototal('tenk_ao3'), aototal('tenk_ao4');
 
--------------------- 
 -- transactionality
---------------------
 -- rollback
 BEGIN;
 INSERT INTO tenk_ao1 SELECT * FROM tenk_heap;
@@ -180,9 +172,7 @@ COMMIT;
 SELECT count(*) FROM tenk_ao1 WHERE unique1 = 12345678; -- should be 0
 SELECT count(*) FROM tenk_ao1 WHERE unique1 = 87654321; -- should be 5
 
---------------------
 -- cursors (basic)
---------------------
 BEGIN;
 
 DECLARE foo1 CURSOR FOR SELECT * FROM tenk_ao1 ORDER BY 1,2,3,4;
@@ -390,7 +380,6 @@ delete from temp_tenk_ao5 where unique2 = 99998889;
 select count(*) from temp_tenk_ao5;
 truncate table temp_tenk_ao5;
 vacuum analyze temp_tenk_ao5;
-\d temp_tenk_ao5
 insert into temp_tenk_ao5(unique1, unique2) values (99998888, 99998888);
 select unique1 from temp_tenk_ao5;
 
@@ -428,9 +417,7 @@ create rule ao_rule_delete as on update to tenk_ao5 do instead delete from tenk_
 insert into tenk_ao5(unique1, unique2) values (3, 99998889); -- should go through both rules
 select * from tenk_ao5 where unique1=1;
 
----------------------
 -- UAO
----------------------
 -- DELETE
 select count(*) from tenk_ao1;
 select count(*) from gp_toolkit.__gp_aoseg_name('tenk_ao1') where modcount > 0;
@@ -464,19 +451,13 @@ ALTER TABLE tenk_renamed ADD COLUMN newcol2 int NOT NULL; -- should fail
 SELECT count(*) FROM tenk_renamed;
 ALTER TABLE tenk_renamed RENAME TO tenk_ao1;
 
---------------------
 -- system columns
---------------------
 CREATE TABLE syscoltest(a int) WITH (appendonly=true);
 INSERT INTO syscoltest VALUES(1);
 SELECT ctid FROM syscoltest;
 DROP TABLE syscoltest;
 
---------------------
 -- relation size tests -- make sure can execute without block directory, sanity checks on relative sizes
---
---
---------------------
 CREATE TABLE aosizetest_1(a int) WITH (appendonly=true);
 CREATE TABLE aosizetest_2(a int) WITH (appendonly=true);
 --
@@ -554,9 +535,7 @@ select * from readindex_wrapper('ao_table_check_aoseg_index') as rec(ictid tid, 
 insert into ao_table_check_aoseg_index values (1,1);
 select * from readindex_wrapper('ao_table_check_aoseg_index') as rec(ictid tid, hctid tid, aotid text, istatus text, hstatus text, segno int); -- entries added
 
--------------------- 
 -- supported sql 
---------------------
 DROP TABLE tenk_heap;
 DROP TABLE tenk_ao1;
 DROP TABLE tenk_ao2;
@@ -566,9 +545,7 @@ DROP TABLE tenk_ao5;
 DROP TABLE aowithoids;
 DROP TABLE ao_selection;
 
----------------------------------------------------------------
 -- Sub-transaction tests to validate AO behavior
----------------------------------------------------------------
 -- create table in sub-transaction aborts but top transaction commits
 BEGIN;
 SAVEPOINT sp1;
@@ -651,9 +628,7 @@ RESET enable_bitmapscan;
 DROP OWNED BY appendony_test_user2 CASCADE;
 DROP ROLE IF EXISTS appendony_test_user2;
 
---------------------------------------------------------------------------------
 -- Finally check to detect if any dangling gp_fastsequence entries are left
 -- behind by this SQL file
---------------------------------------------------------------------------------
 SELECT objid FROM gp_fastsequence AS gfs LEFT OUTER JOIN (SELECT oid FROM
 pg_class) AS pgc ON (gfs.objid = pgc.oid) WHERE pgc.oid IS NULL;
