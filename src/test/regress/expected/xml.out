@@ -37,6 +37,7 @@ bar
 ^
 CONTEXT:  COPY xmlb, line 1, column bar
 SET gp_strict_xml_parse TO FALSE;
+set gp_vmem_idle_resource_timeout=1;
 copy xmlb from '/tmp/xmla.xml';
 select * from xmlb;
                                       cx1
@@ -46,6 +47,8 @@ select * from xmlb;
  <!DOCTYPE note SYSTEM "note.dtd"><note><to>Tove</to><body>hello</body></note>
 (3 rows)
 
+copy xmlb from '/tmp/xmla.xml';
+set gp_vmem_idle_resource_timeout=600000;
 SET gp_strict_xml_parse TO TRUE;
 -- Test normal insert with gp_strict_xml_parse GUC
 INSERT INTO xmltest VALUES (0, 'content_only');

@@ -29,8 +29,11 @@ copy xmla to '/tmp/xmla.xml';
 copy xmlb from '/tmp/xmla.xml';
 
 SET gp_strict_xml_parse TO FALSE;
+set gp_vmem_idle_resource_timeout=1;
 copy xmlb from '/tmp/xmla.xml';
 select * from xmlb;
+copy xmlb from '/tmp/xmla.xml';
+set gp_vmem_idle_resource_timeout=600000;
 SET gp_strict_xml_parse TO TRUE;
 
 -- Test normal insert with gp_strict_xml_parse GUC

@@ -3815,7 +3815,7 @@ static struct config_bool ConfigureNamesBool[] =
 		{"gp_strict_xml_parse", PGC_USERSET, CLIENT_CONN_STATEMENT,
 			gettext_noop("Sets whether XML data is considered strictly as documents. "),
 			NULL,
-			GUC_NOT_IN_SAMPLE
+			GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE | GUC_GPDB_ADDOPT
 		},
 		&gp_strict_xml_parse,
 		true, NULL, NULL
