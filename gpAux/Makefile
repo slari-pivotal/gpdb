@@ -178,12 +178,13 @@ DEFPORT=5432
 ORCA_CONFIG=--enable-orca
 ifneq "$(findstring $(BLD_ARCH),win32 win64)" ""
 APR_CONFIG=--with-apr-config=$(GPPGDIR)/src/bin/gpfdist/ext/bin/apr-1-config
-OPENSSL=openssl-0.9.8ze
+OPENSSL=openssl-1.0.2l
 BLD_THIRDPARTY_OPENSSL_INCLUDES=-I$(GPPGDIR)/src/bin/gpfdist/ext/$(OPENSSL)/include
 else
 APR_CONFIG=--with-apr-config=$(BLD_THIRDPARTY_BIN_DIR)/apr-1-config
 endif
 
+aix7_ppc_64_CONFIGFLAGS=--with-gssapi --without-libcurl --disable-mapreduce $(APR_CONFIG)
 win32_CONFIGFLAGS=--with-gssapi --without-libcurl --disable-mapreduce $(APR_CONFIG)
 rhel5_x86_32_CONFIGFLAGS=--host=i686-pc-linux-gnu --enable-snmp --enable-ddboost --with-gssapi --enable-netbackup ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
 rhel5_x86_64_CONFIGFLAGS=--enable-snmp --enable-connectemc --enable-ddboost --with-gssapi --enable-netbackup --enable-gphdfs ${ORCA_CONFIG} --with-libxml $(APR_CONFIG)
@@ -338,7 +339,7 @@ export $(BLD_WHERE_THE_LIBRARY_THINGS_ARE)=$(BLD_LD_LIBRARY_PATH)
 
 # how much of GPDB to build by platform (default is "full")
 rhel5_x86_32_GPDB_BUILDSET=partial
-aix7_ppc_64_GPDB_BUILDSET=partial
+aix7_ppc_64_GPDB_BUILDSET=aix_subset
 win64_GPDB_BUILDSET=partial
 win32_GPDB_BUILDSET=partial
 BLD_GPDB_BUILDSET=$($(BLD_ARCH)_GPDB_BUILDSET)
@@ -386,14 +387,25 @@ endef
 ifeq "$(BLD_GPDB_BUILDSET)" "aix_subset"
 define BUILD_STEPS
 	rm -rf $(INSTLOC)
+	cd $(BUILDDIR)/gpMgmt/ && $(MAKE) generate_greenplum_path_file
+        cd $(BUILDDIR)/src/backend/ && $(MAKE) ../../src/include/parser/gram.h
+        cd $(BUILDDIR)/src/backend/ && $(MAKE) ../../src/include/utils/fmgroids.h
+	cd $(BUILDDIR)/src/interfaces/libpq/ && $(MAKE) install
 	cd $(BUILDDIR)/src/include/ && $(MAKE) install
-	@$(MAKE) mkdbgen INSTLOC=$(INSTLOC)
+	cd $(BUILDDIR)/src/bin/psql/ && $(MAKE) install
+	cd $(BUILDDIR)/src/bin/pg_dump/ && $(MAKE) install
+	cd $(BUILDDIR)/src/bin/pg_config/ && $(MAKE) install
+	cd $(BUILDDIR)/src/bin/gpfdist && $(MAKE) install
+
 	@$(MAKE) mgmtcopy INSTLOC=$(INSTLOC)
 	@$(MAKE) copylibs INSTLOC=$(INSTLOC)
+	@$(MAKE) clients INSTLOC=$(INSTLOC) CLIENTINSTLOC=$(CLIENTINSTLOC)
+	@$(MAKE) set_scripts_version INSTLOC=$(CLIENTINSTLOC)
+	if [ "$(findstring win,$(BLD_ARCH))" != "win" ]; then \
+	  cd $(GPMGMT)/bin && $(MAKE) pygresql INSTLOC=$(INSTLOC) ; \
+	fi
 	@$(MAKE) loaders INSTLOC=$(INSTLOC) LOADERSINSTLOC=$(LOADERSINSTLOC)
 	@$(MAKE) set_scripts_version INSTLOC=$(LOADERSINSTLOC)
-	@$(MAKE) connectivity INSTLOC=$(INSTLOC) CONNECTIVITYINSTLOC=$(CONNECTIVITYINSTLOC)
-	@$(MAKE) set_scripts_version INSTLOC=$(CONNECTIVITYINSTLOC)
 endef
 endif
 
@@ -611,9 +623,11 @@ define tmpCLIENT_FILESET
 	pg_dumpall$(EXE_EXT)
 	psql$(EXE_EXT)
 endef
+ifeq "$(findstring rhel,$(BLD_ARCH))" "rhel"
 define Unix_CLIENT_FILESET
 	gpmapreduce$(EXE_EXT)
 endef
+endif
 CLIENT_FILESET = $(strip $(tmpCLIENT_FILESET) $($(DOC_TYPE)_CLIENT_FILESET))
 
 # yes, the doubled gpload lines are correct
@@ -633,7 +647,7 @@ LOADERS_FILESET_BINEXT = $(strip $(tmpLOADERS_FILESET_BINEXT))
 
 # define python file subset to ship by platform, as desired
 BLD_PYTHON_FILESET=.
-aix7_ppc_64_PYTHON_FILESET=bin/python* lib/python* include/python*
+aix7_ppc_64_PYTHON_FILESET=bin/python* lib/python* lib64/python* include/python*
 ifneq "$($(BLD_ARCH)_PYTHON_FILESET)" ""
 BLD_PYTHON_FILESET=$($(BLD_ARCH)_PYTHON_FILESET)
 endif
@@ -661,7 +675,7 @@ FILESET_LIB_GCC_LOC=$($(BLD_ARCH)_LOADERS_LIBS_GCC_LOC)
 # These libraries though should be provided by Pivotal and are found under <gpdb_src>/gpAux/ext/<platform>/lib
 # This should all be renamed
 
-aix7_ppc_64_LOADERS_LIBS_PERZL=libcrypto.so libcrypto.so.0.9.8 libssl.so libssl.so.0.9.8
+aix7_ppc_64_LOADERS_LIBS_PERZL=libcrypto.a libssl.a
 aix7_ppc_64_LOADERS_LIBS_PERZL_LOC=$(BLD_TOP)/ext/aix7_ppc_64/lib
 
 LOADERS_FILESET_LIB_PERZL=$($(BLD_ARCH)_LOADERS_LIBS_PERZL)
@@ -1209,7 +1223,7 @@ ifeq "$(findstring $(BLD_ARCH),aix7_ppc_64 win32 win64)" ""
 endif
 
 # Copy curl binary file into bin directory (only for server builds).
-ifneq "$(BLD_GPDB_BUILDSET)" "partial"
+ifeq  "$(BLD_GPDB_BUILDSET)" ""
 	@if [ -f $(BLD_THIRDPARTY_BIN_DIR)/curl ]; then \
 		echo "Copying $(BLD_THIRDPARTY_BIN_DIR)/curl into $(INSTLOC)/bin/"; \
 		cp -p $(BLD_THIRDPARTY_BIN_DIR)/curl $(INSTLOC)/bin/; \

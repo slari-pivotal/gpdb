@@ -120,9 +120,11 @@ PYCRYPTO_DIR=pycrypto-$(PYCRYPTO_VERSION)
 
 pycrypto:
 	@echo "--- pycrypto"
+ifeq "$(findstring $(BLD_ARCH),aix7_ppc_64 )" ""
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PYCRYPTO_DIR).tar.gz
 	cd $(PYLIB_SRC)/$(PYCRYPTO_DIR)/ && CC="$(CC)" python setup.py build
 	cp -r $(PYLIB_SRC)/$(PYCRYPTO_DIR)/build/lib.*/Crypto $(PYLIB_DIR)
+endif
 
 #
 # PSI
@@ -132,9 +134,11 @@ PSI_DIR=PSI-$(PSI_VERSION)
 
 psi:
 	@echo "--- psi"
+ifeq "$(findstring $(BLD_ARCH),aix7_ppc_64 )" ""
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PSI_DIR).tar.gz
 	cd $(PYLIB_SRC)/$(PSI_DIR)/ && CC="$(CC)" python setup.py build
 	cp -r $(PYLIB_SRC)/$(PSI_DIR)/build/lib.*/psi $(PYLIB_DIR)
+endif
 
 #
 # PSUTIL
@@ -144,9 +148,11 @@ PSUTIL_DIR=psutil-$(PSUTIL_VERSION)
 
 psutil:
 	@echo "--- psutil"
+ifeq "$(findstring $(BLD_ARCH),aix7_ppc_64 )" ""
 	cd $(PYLIB_SRC)/ && $(TAR) xzf $(PSUTIL_DIR).tar.gz
 	cd $(PYLIB_SRC)/$(PSUTIL_DIR)/ && CC="$(CC)" python setup.py build
 	cp -r $(PYLIB_SRC)/$(PSUTIL_DIR)/build/lib.*/psutil $(PYLIB_DIR)
+endif
 
 #
 # PYCHECKER
