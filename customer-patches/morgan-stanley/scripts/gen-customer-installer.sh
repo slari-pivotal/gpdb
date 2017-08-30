@@ -80,11 +80,11 @@ if [ -z "${MADLIB_GPPKG_FILE}" ]; then
 fi
 
 if [ -z "${PLJAVA_GPPKG_FILE}" ]; then
-    PLJAVA_GPPKG_FILE=$(echo ${BASE_DIR}/pljava_rhel5_gppkg/pljava-*-rhel5-x86_64.gppkg)
+    PLJAVA_GPPKG_FILE=$(echo ${BASE_DIR}/pljava_rhel5_gppkg/pljava-*-gp4-rhel5-x86_64.gppkg)
 fi
 
 if [ -z "${PLR_GPPKG_FILE}" ]; then
-    PLR_GPPKG_FILE=$(echo ${BASE_DIR}/plr_rhel5_gppkg/plr-*-rhel5-x86_64.gppkg)
+    PLR_GPPKG_FILE=$(echo ${BASE_DIR}/plr_rhel5_gppkg/plr-*-GPDB4.3-rhel5-x86_64.gppkg)
 fi
 
 if [ -z "${LOADERS_INSTALLER_FILE}" ]; then
@@ -213,8 +213,8 @@ echo "Update Path to R in greenplum_path.sh"
 # Retrieve the version of R included in the plr gppkg by quering the R installation rpm
 R_VERSION=$(tar -xf $PLR_GPPKG_FILE -C /tmp/ && rpm -qip /tmp/deps/R-*.x86_64.rpm | grep Version | awk '{print $3}')
 
-echo "export R_HOME=\$GPHOME/ext/R-${R_VERSION}/lib/R" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
-echo "export LD_LIBRARY_PATH=\$GPHOME/ext/R-${R_VERSION}/lib/R/lib:\$LD_LIBRARY_PATH" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo "export R_HOME=\$GPHOME/ext/R-${R_VERSION}" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo "export LD_LIBRARY_PATH=\$GPHOME/ext/R-${R_VERSION}/extlib:\$GPHOME/ext/R-${R_VERSION}/lib:\$LD_LIBRARY_PATH" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
 ## ----------------------------------------------------------------------
 ## Process Alpine
