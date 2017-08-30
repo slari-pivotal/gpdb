@@ -50,23 +50,23 @@ resources:
     repository: pivotaldata/sles-gpdb-dev
     tag: '11'
 
-- name: bin_gpdb_centos
+- name: bin_gpdb_centos5
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: bin_gpdb_centos/bin_gpdb.tar.gz
+    versioned_file: bin_gpdb_centos5/bin_gpdb.tar.gz
 
-- name: bin_gpdb_sles
+- name: bin_gpdb_sles11
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
     bucket: {{bucket-name}}
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: bin_gpdb_sles/bin_gpdb.tar.gz
+    versioned_file: bin_gpdb_sles11/bin_gpdb.tar.gz
 
 - name: sync_tools_gpdb_centos
   type: s3
@@ -551,7 +551,7 @@ resources:
 # Stage 1: Build and C Unit Tests
 
 jobs:
-- name: compile_gpdb_centos
+- name: compile_gpdb_centos5
   plan:
   - aggregate:
     - get: gpdb_src
@@ -572,7 +572,7 @@ jobs:
       IVYREPO_USER: {{ivyrepo_user}}
       IVYREPO_PASSWD: {{ivyrepo_passwd}}
   - aggregate:
-    - put: bin_gpdb_centos
+    - put: bin_gpdb_centos5
       params:
         file: gpdb_artifacts/bin_gpdb.tar.gz
     - put: installer_rhel5_gpdb_clients
@@ -642,7 +642,7 @@ jobs:
       params:
         file: gpdb_artifacts/greenplum-loaders-*-WinXP-x86_32.msi
 
-- name: compile_gpdb_sles
+- name: compile_gpdb_sles11
   plan:
   - aggregate:
     - get: gpdb_src
@@ -663,7 +663,7 @@ jobs:
       TARGET_OS_VERSION: 11
       BLD_TARGETS: clients connectivity loaders
   - aggregate:
-    - put: bin_gpdb_sles
+    - put: bin_gpdb_sles11
       params:
         file: gpdb_artifacts/bin_gpdb.tar.gz
     - put: installer_sles11_gpdb_clients
@@ -762,15 +762,15 @@ jobs:
 # Stage 3: Packaging of installer file
 # Stage 3a: Packaging the Release Candidate (rc)
 
-- name: gpdb_rc_packaging_centos
+- name: gpdb_rc_packaging_centos5
   plan:
   - aggregate:
     - get: gpdb_src
       passed:
-      - compile_gpdb_centos
+      - compile_gpdb_centos5
     - get: bin_gpdb
-      resource: bin_gpdb_centos
-      passed: [compile_gpdb_centos]
+      resource: bin_gpdb_centos5
+      passed: [compile_gpdb_centos5]
       trigger: true
     - get: centos-gpdb-dev-5
   - task: separate_qautils_files_for_rc
@@ -817,15 +817,15 @@ jobs:
       params:
         file: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
 
-- name: gpdb_rc_packaging_sles
+- name: gpdb_rc_packaging_sles11
   plan:
   - aggregate:
     - get: gpdb_src
       passed:
-      - compile_gpdb_sles
+      - compile_gpdb_sles11
     - get: bin_gpdb
-      resource: bin_gpdb_sles
-      passed: [compile_gpdb_sles]
+      resource: bin_gpdb_sles11
+      passed: [compile_gpdb_sles11]
       trigger: true
     - get: sles-gpdb-dev
   - task: separate_qautils_files_for_rc
@@ -893,21 +893,21 @@ jobs:
   - aggregate:
     - get: gpdb_src
       passed:
-      - gpdb_rc_packaging_centos
-      - compile_gpdb_centos
+      - gpdb_rc_packaging_centos5
+      - compile_gpdb_centos5
     - get: installer_rhel5_gpdb_rc
-      passed: [gpdb_rc_packaging_centos]
+      passed: [gpdb_rc_packaging_centos5]
       trigger: true
     - get: qautils_rhel5_tarball
-      passed: [gpdb_rc_packaging_centos]
+      passed: [gpdb_rc_packaging_centos5]
     - get: installer_rhel5_gpdb_clients
-      passed: [compile_gpdb_centos]
+      passed: [compile_gpdb_centos5]
     - get: installer_rhel5_gpdb_connectivity
-      passed: [compile_gpdb_centos]
+      passed: [compile_gpdb_centos5]
     - get: installer_rhel5_gpdb_loaders
-      passed: [compile_gpdb_centos]
+      passed: [compile_gpdb_centos5]
     - get: pgcrypto_rhel5_gppkg
-      passed: [compile_gpdb_centos]
+      passed: [compile_gpdb_centos5]
     - get: plr_rhel5_gppkg
     - get: pljava_rhel5_gppkg
     - get: madlib_rhel5_gppkg
