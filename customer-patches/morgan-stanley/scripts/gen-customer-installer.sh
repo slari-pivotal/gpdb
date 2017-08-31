@@ -269,7 +269,7 @@ popd > /dev/null
 rm -rf madlib_temp
 
 ## ----------------------------------------------------------------------
-## Process gpsupport
+## Process gpsupport gpdb_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -282,7 +282,7 @@ gunzip ${GPDB_INSTALLDIR}/bin/gpsupport.gz
 chmod a+x ${GPDB_INSTALLDIR}/bin/gpsupport
 
 ## ----------------------------------------------------------------------
-## Process gpmt
+## Process gpmt gpdb_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -295,7 +295,7 @@ gunzip ${GPDB_INSTALLDIR}/bin/gpmt.gz
 chmod a+x ${GPDB_INSTALLDIR}/bin/gpmt
 
 ## ----------------------------------------------------------------------
-## Process gpcheckmirrorseg.pl
+## Process gpcheckmirrorseg.pl gpdb_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -309,7 +309,7 @@ tar zxf ../$( basename ${QAUTILS_FILE} ) bin/gpcheckmirrorseg.pl
 popd > /dev/null
 
 ## ----------------------------------------------------------------------
-## Retrieve and Extract CONN installer
+## Retrieve and Extract CONN installer gpdb_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -336,7 +336,7 @@ tail -n +${SKIP} ${CONN_BIN} | tar zxf - -C ${GPDB_INSTALLDIR}
 mv ${CONN_BIN} ${CONN_BIN}.orig
 
 ## ----------------------------------------------------------------------
-## Process JDBC Driver
+## Process JDBC Driver gpdb_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -356,7 +356,7 @@ mkdir -p ${GPDB_INSTALLDIR}/drivers/jdbc/$( basename ${JDBC_DRIVER_FILE} .zip )
 mv greenplum.jar ${GPDB_INSTALLDIR}/drivers/jdbc/$( basename ${JDBC_DRIVER_FILE} .zip )
 
 ## ----------------------------------------------------------------------
-## Update KRB5
+## Update KRB5 gpdb_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -368,11 +368,11 @@ echo ""
 LIB_LIST="krb5-1.6.2"
 
 for i in ${LIB_LIST}; do
-    for i in `cat $SCRIPT_DIR/checksums.$i | awk '{print $2}'`; do
-		if [ -f ${GPDB_INSTALLDIR}/$i ]; then
-        	rm -fv ${GPDB_INSTALLDIR}/$i
-		fi
-    done
+  for i in `cat $SCRIPT_DIR/checksums.$i | awk '{print $2}'`; do
+    if [ -f ${GPDB_INSTALLDIR}/$i ]; then
+      rm -fv ${GPDB_INSTALLDIR}/$i
+    fi
+  done
 done
 
 rm -rf krb5-rhel55_x86_64-1.13.targz
@@ -382,7 +382,7 @@ tar xf krb5-rhel62_x86_64-1.13.targz
 rsync -au rhel62_x86_64/lib/* ${GPDB_INSTALLDIR}/lib
 
 ## ----------------------------------------------------------------------
-## Assemble GPDB installer
+## Assemble GPDB installer gpdb_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -423,7 +423,7 @@ echo "  $( ls -l ../$( basename ${GPDB_INSTALLER_FILE} )).sha256 "
 echo "----------------------------------------------------------------------"
 
 ## ----------------------------------------------------------------------
-## Retrieve and Extract Clients installer
+## Retrieve and Extract Clients installer clients_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -450,7 +450,7 @@ tail -n +${SKIP} ${CLIENTS_BIN} | tar zxf - -C ${CLIENTS_INSTALLDIR}
 mv ${CLIENTS_BIN} ${CLIENTS_BIN}.orig
 
 ## ----------------------------------------------------------------------
-## Retrieve and Extract Connectivity installer
+## Retrieve and Extract Connectivity installer clients_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -477,7 +477,7 @@ tail -n +${SKIP} ${CONN_BIN} | tar zxf - -C ${CLIENTS_INSTALLDIR}
 mv ${CONN_BIN} ${CONN_BIN}.orig
 
 ## ----------------------------------------------------------------------
-## Retrieve and Extract Loaders installer
+## Retrieve and Extract Loaders installer clients_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -504,7 +504,7 @@ tail -n +${SKIP} ${LOADERS_BIN} | tar zxf - -C ${CLIENTS_INSTALLDIR}
 mv ${LOADERS_BIN} ${LOADERS_BIN}.orig
 
 ## ----------------------------------------------------------------------
-## Process JDBC Driver
+## Process JDBC Driver clients_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -521,7 +521,7 @@ mkdir -p ${CLIENTS_INSTALLDIR}/drivers/jdbc/$( basename ${JDBC_DRIVER_FILE} .zip
 mv greenplum.jar ${CLIENTS_INSTALLDIR}/drivers/jdbc/$( basename ${JDBC_DRIVER_FILE} .zip )
 
 ## ----------------------------------------------------------------------
-## Process gpsupport
+## Process gpsupport clients_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -534,7 +534,7 @@ gunzip ${CLIENTS_INSTALLDIR}/bin/gpsupport.gz
 chmod a+x ${CLIENTS_INSTALLDIR}/bin/gpsupport
 
 ## ----------------------------------------------------------------------
-## Process gpcheckmirrorseg.pl
+## Process gpcheckmirrorseg.pl clients_installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -547,7 +547,7 @@ tar zxf ../$( basename ${QAUTILS_FILE} ) bin/gpcheckmirrorseg.pl
 popd > /dev/null
 
 ## ----------------------------------------------------------------------
-## Assemble CONN installer
+## Assemble CONN installer clients_installer
 ## ----------------------------------------------------------------------
 
 echo ""
