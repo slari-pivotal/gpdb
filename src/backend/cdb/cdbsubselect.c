@@ -1093,13 +1093,7 @@ convert_IN_to_join(PlannerInfo *root, List** rtrlist_inout, SubLink *sublink)
     	 * Under certain conditions, we do cannot pull up the subquery as a join.
     	 */
 
-    	if (subselect->hasAggs
-    			|| (subselect->jointree->fromlist == NULL)
-    			|| subselect->havingQual
-    			|| subselect->groupClause
-    			|| subselect->hasWindFuncs
-    			|| subselect->distinctClause
-    			|| subselect->setOperations)
+    	if (!is_simple_subquery(root, subselect))
     		return (Node *) sublink;
     	
     	/* do not pull subqueries with correlation in a func expr in the 

@@ -771,3 +771,17 @@ SELECT tbl3.* FROM tbl2 AS tbl3 WHERE tbl3.b > ALL (
 -- Planner test to make sure the initplan is not removed for function scan
 explain select sess_id from pg_stat_activity where current_query = (select current_query());
 
+---
+--- Correlated subqueries with limit/offset clause must not be pulled up as join
+---
+create table t1c (a int);
+create table t2c (b int);
+insert into t1c values (1);
+insert into t2c values (1);
+explain select 1 from t1c where a in (select b from t2c where a = 1 limit 1);
+explain select 1 from t1c where a in (select b from t2c where a = 1 offset 1);
+select 1 from t1c where a in (select b from t2c where a = 1 limit 1);
+select 1 from t1c where a in (select b from t2c where a = 1 offset 1);
+
+drop table if exists t1c;
+drop table if exists t2c;
