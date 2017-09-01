@@ -336,7 +336,7 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 %type <boolean> opt_dxl
 %type <defelt>	opt_binary opt_oids copy_delimiter
 
-%type <boolean> copy_from opt_hold skip_external_partition
+%type <boolean> copy_from opt_program opt_hold skip_external_partition
 
 %type <ival>	opt_column event cursor_options
 %type <objtype>	reindex_type drop_type comment_type
@@ -533,7 +533,7 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 
 	PARTIAL PARTITION PARTITIONS PASSWORD PERCENT PERCENTILE_CONT PERCENTILE_DISC
 	PLACING POSITION PRECEDING PRECISION PRESERVE PREPARE PREPARED PRIMARY
-	PRIOR PRIVILEGES PROCEDURAL PROCEDURE PROTOCOL
+	PRIOR PRIVILEGES PROCEDURAL PROCEDURE PROGRAM PROTOCOL
 
 	QUEUE QUOTE
 
@@ -3092,13 +3092,17 @@ ClosePortalStmt:
  *				for backward compatibility.  2002-06-18
  *
  *				COPY ( SELECT ... ) TO file [WITH options]
+ *
+ *				where 'file' can be one of:
+ *				{ PROGRAM 'command' | STDIN | STDOUT | 'filename' }
+ *
  *				This form doesn't have the backwards-compatible option
  *				syntax.
  *
  *****************************************************************************/
 
 CopyStmt:	COPY opt_binary qualified_name opt_column_list opt_oids
-			copy_from copy_file_name copy_delimiter opt_with copy_opt_list
+			copy_from opt_program copy_file_name copy_delimiter opt_with copy_opt_list
 			OptSingleRowErrorHandling skip_external_partition
 				{
 					CopyStmt *n = makeNode(CopyStmt);
@@ -3106,25 +3110,27 @@ CopyStmt:	COPY opt_binary qualified_name opt_column_list opt_oids
 					n->query = NULL;
 					n->attlist = $4;
 					n->is_from = $6;
-					n->filename = $7;
-					n->sreh = $11;
+					n->is_program = $7;
+					n->filename = $8;
+					n->sreh = $12;
 					n->partitions = NULL;
 					n->ao_segnos = NIL;
 					n->options = NIL;
-					n->skip_ext_partition = $12;
-					
+					n->skip_ext_partition = $13;
+
 					/* Concatenate user-supplied flags */
 					if ($2)
 						n->options = lappend(n->options, $2);
 					if ($5)
 						n->options = lappend(n->options, $5);
-					if ($8)
-						n->options = lappend(n->options, $8);
-					if ($10)
-						n->options = list_concat(n->options, $10);
+					if ($9)
+						n->options = lappend(n->options, $9);
+					if ($11)
+						n->options = list_concat(n->options, $11);
+
 					$$ = (Node *)n;
 				}
-			| COPY select_with_parens TO copy_file_name opt_with
+			| COPY select_with_parens TO opt_program copy_file_name opt_with
 			  copy_opt_list
 				{
 					CopyStmt *n = makeNode(CopyStmt);
@@ -3132,11 +3138,13 @@ CopyStmt:	COPY opt_binary qualified_name opt_column_list opt_oids
 					n->query = (Query *) $2;
 					n->attlist = NIL;
 					n->is_from = false;
-					n->filename = $4;
-					n->options = $6;
+					n->is_program = $4;
+					n->filename = $5;
+					n->options = $7;
 					n->partitions = NULL;
 					n->ao_segnos = NIL;
 					n->skip_ext_partition = false;
+
 					$$ = (Node *)n;
 				}
 		;
@@ -3144,6 +3152,11 @@ CopyStmt:	COPY opt_binary qualified_name opt_column_list opt_oids
 copy_from:
 			FROM									{ $$ = TRUE; }
 			| TO									{ $$ = FALSE; }
+		;
+
+opt_program:
+			PROGRAM									{ $$ = TRUE; }
+			| /* EMPTY */							{ $$ = FALSE; }
 		;
 
 skip_external_partition:
@@ -12585,6 +12598,7 @@ unreserved_keyword:
 			| PRIVILEGES
 			| PROCEDURAL
 			| PROCEDURE
+			| PROGRAM
 			| PROTOCOL
 			| QUEUE
 			| QUOTE

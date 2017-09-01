@@ -31,3 +31,4 @@ tidycat2.sql
 tpch500GB.sql
 partindex_test.sql
 guc_env_var.sql
+gpcopy.sql

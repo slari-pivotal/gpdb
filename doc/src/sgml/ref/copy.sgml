@@ -44,7 +44,7 @@ PostgreSQL documentation
 
 <synopsis>
 
-COPY table [(column [, ...])] FROM {'file' | STDIN}
+COPY table [(column [, ...])] FROM {'file' | PROGRAM 'command' | STDIN}
      [ [WITH] 
        [ON SEGMENT]
        [OIDS]
@@ -60,7 +60,7 @@ COPY table [(column [, ...])] FROM {'file' | STDIN}
        SEGMENT REJECT LIMIT count [ROWS | PERCENT] ]
 
 
-COPY {table [(column [, ...])] | (query)} TO {'file' | STDOUT}
+COPY {table [(column [, ...])] | (query)} TO {'file' | PROGRAM 'command' | STDOUT}
       [ [WITH] 
         [ON SEGMENT]
         [OIDS]
@@ -128,6 +128,14 @@ COPY {table [(column [, ...])] | (query)} TO {'file' | STDOUT}
    or write to a file. The file must be accessible to the server and
 
    the name must be specified from the viewpoint of the server. When
+
+   <literal>PROGRAM</literal> is specified, the server executes the
+
+   given command, and reads from its standard input, or writes to its
+
+   standard output. The command must be specified from the viewpoint of the
+
+   server, and be executable by the <literal>postgres</> user. When
 
    <literal>STDIN</literal> or <literal>STDOUT</literal> is
 
@@ -232,6 +240,25 @@ COPY {table [(column [, ...])] | (query)} TO {'file' | STDOUT}
    </varlistentry>
 
 
+
+   <varlistentry>
+     <term><literal>PROGRAM</literal></term>
+     <listitem>
+      <para>
+       A command to execute. In <command>COPY FROM</command>, the input is
+       read from standard output of the command, and in <command>COPY TO</>,
+       the output is written to the standard input of the command.
+      </para>
+      <para>
+       Note that the command is invoked by the shell, so if you need to pass
+       any arguments to shell command that come from an untrusted source, you
+       must be careful to strip or escape any special characters that might
+       have a special meaning for the shell. For security reasons, it is best
+       to use a fixed command string, or at least avoid passing any user input
+       in it.
+      </para>
+     </listitem>
+   </varlistentry>
 
    <varlistentry>
 
@@ -607,11 +634,19 @@ COPY <replaceable class="parameter">count</replaceable>
 
     by the <productname>PostgreSQL</productname> user (the user ID the
 
-    server runs as), not the client. <command>COPY</command> naming a
+    server runs as), not the client. Similarly,
 
-    file is only allowed to database superusers, since it allows reading
+    the command specified with <literal>PROGRAM</literal> is executed directly
 
-    or writing any file that the server has privileges to access.
+    by the server, not by the client application, must be executable by the
+
+    <productname>PostgreSQL</productname> user.
+
+    <command>COPY</command> naming a file or command is only allowed to
+
+    database superusers, since it allows reading or writing any file that the
+
+    server has privileges to access.
 
    </para>
 
@@ -661,6 +696,13 @@ COPY <replaceable class="parameter">count</replaceable>
 
    <para>
 
+    Executing a command with <literal>PROGRAM</literal> might be restricted
+
+    by operating system's access control mechanisms, such as the SELinux.
+
+   </para>
+
+   <para>
     <command>COPY FROM</command> will invoke any triggers and check
 
     constraints on the destination table. However, it will not invoke rules.
@@ -1496,6 +1538,20 @@ COPY (SELECT * FROM country WHERE country_name LIKE 'A%') TO '/usr1/proj/bray/sq
   </para>
 
 
+
+  <para>
+
+   To copy into a compressed file, you can pipe the output through an external
+
+   compression program:
+
+<programlisting>
+
+COPY country TO PROGRAM 'gzip > /usr1/proj/bray/sql/country_data.gz';
+
+</programlisting>
+
+  </para>
 
   <para>
 
