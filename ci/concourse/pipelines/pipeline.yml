@@ -39,8 +39,6 @@ groups:
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
   - pulse_DPM_BehaveDDBoost
   - pulse_DPM_BehaveDDBoost_filename_compatibility
-  - pulse_MM_BehaveGpcheckcat
-  - pulse_MM_BehaveGprecoverseg
   - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_MM_Gpexpand
   - pulse_Kerberos-jdbc-no-scm
@@ -61,6 +59,8 @@ groups:
   - pulse_mpp-interconnect-sles
   - compile_gpdb_windows_ccl
   - TINC_pgcrypto
+  - MM_gpcheckcat
+  - MM_gprecoverseg
 
 - name: CentOS/RHEL
   jobs:
@@ -97,8 +97,6 @@ groups:
   jobs:
   - pulse_DPM_BehaveBackupRestore
   - pulse_DPM_BehaveBackupRestore_filename_compatibility
-  - pulse_MM_BehaveGpcheckcat
-  - pulse_MM_BehaveGprecoverseg
   - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
@@ -137,12 +135,18 @@ groups:
   - pulse_QP_memory-accounting
   - QP_runaway-query
   - QP_optimizer-functional
+- name: terraform
+  jobs:
+  - MM_gpcheckcat
+  - MM_gprecoverseg
+- name: MM
+  jobs:
+  - MM_gpcheckcat
+  - MM_gprecoverseg
 - name: Pulse_MU
   jobs:
   - pulse_DPM_BehaveBackupRestore
   - pulse_DPM_BehaveBackupRestore_filename_compatibility
-  - pulse_MM_BehaveGpcheckcat
-  - pulse_MM_BehaveGprecoverseg
   - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
@@ -160,6 +164,44 @@ groups:
   - bootstrap-ccache
 
 ## ======================================================================
+## anchors
+## ======================================================================
+ccp_create_params_anchor: &ccp_create_params
+  action: create
+  delete_on_failure: true
+  generate_random_name: true
+  terraform_source: ccp_src/aws-pivotal-pa-toolsmiths/
+  vars:
+    aws_instance-node-instance_type: t2.medium
+
+ccp_destroy_anchor: &ccp_destroy
+  put: terraform
+  params:
+    action: destroy
+    env_name_file: terraform/name
+    terraform_source: ccp_src/aws-pivotal-pa-toolsmiths/
+    vars:
+      aws_instance-node-instance_type: t2.micro
+  get_params:
+    action: destroy
+
+debug_sleep_anchor: &debug_sleep
+  do:
+  - task: debug_sleep
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: alpine
+          tag: latest
+      run:
+        path: 'sh'
+        args: ['-c', 'sleep 6h']
+    ensure:
+      <<: *ccp_destroy
+
+## ======================================================================
 ## resource types
 ## ======================================================================
 
@@ -168,6 +210,11 @@ resource_types:
   type: docker-image
   source:
     repository: pivotaldata/s3-resource
+
+- name: terraform
+  type: docker-image
+  source:
+    repository: ljfranklin/terraform-resource
 
 ## ======================================================================
 ## resources
@@ -180,6 +227,40 @@ resources:
     branch: {{gpdb-git-branch}}
     private_key: {{gpdb-git-key}}
     uri: {{gpdb-git-remote}}
+
+- name: ccp_src
+  type: git
+  source:
+    branch: {{ccp-git-branch}}
+    private_key: {{ccp-git-key}}
+    uri: {{ccp-git-remote}}
+
+- name: terraform
+  type: terraform
+  source:
+    env:
+      AWS_ACCESS_KEY_ID: {{tf-machine-access-key-id}}
+      AWS_SECRET_ACCESS_KEY: {{tf-machine-secret-access-key}}
+    storage:
+      access_key_id: {{tf-machine-access-key-id}}
+      secret_access_key: {{tf-machine-secret-access-key}}
+      region_name: {{aws-region}}
+      # This is on purpose not parameterized. All tfstates will go to this spot
+      bucket: pivotal-pa-toolsmiths-pipeline-dynamic-terraform
+      ###########################################################
+      # Two conventions are allowed for bucket_path:            #
+      # 1) Cluster expected to destroy when done                #
+      #    Toolsmiths will reap old and orphaned                #
+      #                                                         #
+      #      bucket_path: prod/[Pipeline Name]/                 #
+      #                                                         #
+      # 2) Long lived clusters for development.                 #
+      #    The team that creates it is responsible for cluster  #
+      #                                                         #
+      #     bucket_path: dev/[Team Name]/                       #
+      #                                                         #
+      ###########################################################
+      bucket_path: {{tf-bucket-path}}
 
 - name: centos-gpdb-dev-5
   type: docker-image
@@ -1315,6 +1396,82 @@ jobs:
     params:
       TEST_OS: centos
 
+## ======================================================================
+## terraform jobs
+## ======================================================================
+
+- name: MM_gpcheckcat
+  plan:
+  - aggregate:
+    - get: ccp_src
+    - get: gpdb_src
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-6
+  - put: terraform
+    params:
+        <<: *ccp_create_params
+  - task: gen_cluster
+    file: ccp_src/ci/tasks/gen_cluster.yml
+    input_mapping:
+      gpdb_binary: bin_gpdb
+    params:
+      AWS_ACCESS_KEY_ID: {{tf-machine-access-key-id}}
+      AWS_SECRET_ACCESS_KEY: {{tf-machine-secret-access-key}}
+      AWS_DEFAULT_REGION: {{aws-region}}
+    on_failure:
+      <<: *ccp_destroy
+  - task: run_tests
+    file: gpdb_src/ci/concourse/terraform_run_behave.yml
+    image: centos-gpdb-dev-6
+    params:
+      BEHAVE_FLAGS: --tags=gpcheckcat
+    on_failure:
+      <<: *debug_sleep
+  - *ccp_destroy
+
+- name: MM_gprecoverseg
+  plan:
+  - aggregate:
+    - get: ccp_src
+    - get: gpdb_src
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-6
+  - put: terraform
+    params:
+        <<: *ccp_create_params
+  - task: gen_cluster
+    file: ccp_src/ci/tasks/gen_cluster.yml
+    input_mapping:
+      gpdb_binary: bin_gpdb
+    params:
+      AWS_ACCESS_KEY_ID: {{tf-machine-access-key-id}}
+      AWS_SECRET_ACCESS_KEY: {{tf-machine-secret-access-key}}
+      AWS_DEFAULT_REGION: {{aws-region}}
+    on_failure:
+      <<: *ccp_destroy
+  - task: run_tests
+    file: gpdb_src/ci/concourse/terraform_run_behave.yml
+    image: centos-gpdb-dev-6
+    params:
+      BEHAVE_FLAGS: --tags=gprecoverseg
+    on_failure:
+      <<: *debug_sleep
+  - *ccp_destroy
+
 # Stage 3: Packaging of installer file
 # Stage 3a: Packaging the Release Candidate (rc)
 
@@ -1522,56 +1679,6 @@ jobs:
     params:
       PULSE_URL: {{pulse_url}}
       PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore_filename_compatibility
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_MM_BehaveGpcheckcat
-  plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPCheckcat
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPCheckcat
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_MM_BehaveGprecoverseg
-  plan:
-  - get: pulse-api-image
-  - get: nightly-trigger-pulse
-    gpdb_release: delete
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPRecoverseg
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
-    params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveGPRecoverseg
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
 
@@ -2139,6 +2246,10 @@ jobs:
       PULSE_PROJECT_NAME: mpp-interconnect-sles
       PULSE_USERNAME: {{pulse_username}}
       PULSE_PASSWORD: {{pulse_password}}
+
+## ======================================================================
+## manual jobs
+## ======================================================================
 
 - name: manual_testing_on_pulse_centos
   plan:
