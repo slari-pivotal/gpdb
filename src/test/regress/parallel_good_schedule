@@ -58,6 +58,7 @@ test: bitmapscan bitmapscan_ao
 # would finish much faster otherwise
 test: alter_table
 test: alter_distribution_policy
+test: alter_table_set
 
 test: bfv_catalog bfv_index bfv_olap bfv_aggregate bfv_partition 
 test: bfv_cte bfv_joins bfv_statistic bfv_subquery bfv_planner bfv_legacy
