@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xe
+set -e
 
 ## ----------------------------------------------------------------------
 
@@ -382,48 +382,7 @@ tar xf krb5-rhel62_x86_64-1.13.targz
 rsync -au rhel62_x86_64/lib/* ${GPDB_INSTALLDIR}/lib
 
 ## ----------------------------------------------------------------------
-## Assemble GPDB installer gpdb_installer
-## ----------------------------------------------------------------------
-
-echo ""
-echo "----------------------------------------------------------------------"
-echo "Create updated installer payload (compressed tarball)"
-echo "----------------------------------------------------------------------"
-
-pushd ${GPDB_INSTALLDIR} > /dev/null
-tar zcf ../$( basename ${GPDB_INSTALLER_FILE} .zip ).tgz *
-popd > /dev/null
-
-echo ""
-echo "----------------------------------------------------------------------"
-echo "Create updated installer bin file"
-echo "----------------------------------------------------------------------"
-
-rm -f /tmp/header-gpdb-*
-sed -e "s/%RELEASE%/${RELEASE}/g" $SCRIPT_DIR/header-gpdb-template.txt > /tmp/header-gpdb-$$.txt
-cat /tmp/header-gpdb-$$.txt $( basename ${GPDB_INSTALLER_FILE} .zip ).tgz > $( basename ${GPDB_INSTALLER_FILE} .zip ).bin
-chmod a+x $( basename ${GPDB_INSTALLER_FILE} .zip ).bin
-
-echo ""
-echo "----------------------------------------------------------------------"
-echo "Update original installer zip file with new installer"
-echo "----------------------------------------------------------------------"
-echo ""
-
-zip $( basename ${GPDB_INSTALLER_FILE} ) -u $( basename ${GPDB_INSTALLER_FILE} .zip ).bin
-mv $( basename ${GPDB_INSTALLER_FILE} ) ..
-
-openssl dgst -sha256 ../$( basename ${GPDB_INSTALLER_FILE} ) > ../$( basename ${GPDB_INSTALLER_FILE} ).sha256
-
-echo ""
-echo "----------------------------------------------------------------------"
-echo "Done baking:"
-echo "  $( ls -l ../$( basename ${GPDB_INSTALLER_FILE} )) "
-echo "  $( ls -l ../$( basename ${GPDB_INSTALLER_FILE} )).sha256 "
-echo "----------------------------------------------------------------------"
-
-## ----------------------------------------------------------------------
-## Retrieve and Extract Clients installer clients_installer
+## Retrieve and Extract Clients installer
 ## ----------------------------------------------------------------------
 
 echo ""
@@ -574,13 +533,13 @@ echo "----------------------------------------------------------------------"
 echo "Update original installer zip file with new installer"
 echo "----------------------------------------------------------------------"
 echo ""
-
+pwd
 zip $( basename ${CLIENTS_INSTALLER_FILE} ) -u $( basename ${CLIENTS_INSTALLER_FILE} .zip ).bin
 mv $( basename ${CLIENTS_INSTALLER_FILE} ) ..
 popd
 
 openssl dgst -sha256 $( basename ${CLIENTS_INSTALLER_FILE} ) > $( basename ${CLIENTS_INSTALLER_FILE} ).sha256
-
+pwd
 echo ""
 echo "----------------------------------------------------------------------"
 echo "  $( ls -l $( basename ${CLIENTS_INSTALLER_FILE} )) "
@@ -593,11 +552,24 @@ echo " Copy the generated artifacts to target output directory"
 echo "---------------------------------------------------------------------"
 echo ""
 
-mkdir -p $BASE_DIR/ms_installer_rhel5_gpdb_rc $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients
-cp greenplum-db-${RELEASE}-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_rc/
-cp greenplum-db-${RELEASE}-rhel5-x86_64.zip.sha256 $BASE_DIR/ms_installer_rhel5_gpdb_rc/
+mkdir -p $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients
 cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
 cp greenplum-clients-${RELEASE}-build-1-rhel5-x86_64.zip.sha256 $BASE_DIR/ms_installer_rhel5_gpdb_bundled_clients/
+
+## ----------------------------------------------------------------------
+## Assemble GPDB installer
+## ----------------------------------------------------------------------
+
+echo ""
+echo "----------------------------------------------------------------------"
+echo "Create updated installer payload (compressed tarball)"
+echo "----------------------------------------------------------------------"
+
+pushd $SCRIPT_DIR/build/${GPDB_INSTALLDIR} > /dev/null
+  tar zcf ../bin_gpdb.tar.gz *
+  # Copy updated tar to concourse output folder to pass to testing steps
+  mv ../bin_gpdb.tar.gz $BASE_DIR/patched_bin_gpdb_ms/
+popd > /dev/null
 
 echo ""
 echo "---------------------------------------------------------------------"

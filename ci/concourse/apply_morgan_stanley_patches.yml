@@ -18,5 +18,5 @@ inputs:
 run:
   path: gpdb_src/customer-patches/morgan-stanley/scripts/gen-customer-installer.sh
 outputs:
-  - name: ms_installer_rhel5_gpdb_rc
+  - name: patched_bin_gpdb_ms
   - name: ms_installer_rhel5_gpdb_bundled_clients

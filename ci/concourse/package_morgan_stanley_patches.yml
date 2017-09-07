@@ -1,0 +1,9 @@
+---
+platform: linux
+inputs:
+  - name: gpdb_src
+  - name: bin_gpdb
+run:
+  path: gpdb_src/customer-patches/morgan-stanley/scripts/package-customer-installer.sh
+outputs:
+  - name: ms_installer_rhel5_gpdb_rc

@@ -1,0 +1,10 @@
+
+platform: linux
+inputs:
+  - name: gpdb_src
+  - name: patched_testable_bin_gpdb_ms
+  - name: patched_bin_gpdb_ms
+run:
+  path: gpdb_src/customer-patches/morgan-stanley/scripts/test-customer-installer.sh
+outputs:
+  - name: patched_tested_bin_gpdb_ms

@@ -1,0 +1,11 @@
+---
+platform: linux
+inputs:
+  - name: gpdb_src
+  - name: patched_bin_gpdb_ms
+  - name: qautils_rhel5_tarball
+  - name: plperl_rhel6_gppkg
+run:
+  path: gpdb_src/customer-patches/morgan-stanley/scripts/prepare_bin_gpdb_for_testing.sh
+outputs:
+  - name: patched_testable_bin_gpdb_ms
