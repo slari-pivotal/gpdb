@@ -79,6 +79,14 @@ if [ -z "${MADLIB_GPPKG_FILE}" ]; then
     MADLIB_GPPKG_FILE=$(echo ${BASE_DIR}/madlib_rhel5_gppkg/*.gppkg)
 fi
 
+if [ -z "${DATASCIENCE_PYTHON_GPPKG_FILE}" ]; then
+    DATASCIENCE_PYTHON_GPPKG_FILE=$(echo ${BASE_DIR}/ds_python_rhel6/*.gppkg)
+fi
+
+if [ -z "${DATASCIENCE_R_GPPKG_FILE}" ]; then
+    DATASCIENCE_R_GPPKG_FILE=$(echo ${BASE_DIR}/ds_r_rhel6/*.gppkg)
+fi
+
 if [ -z "${PLJAVA_GPPKG_FILE}" ]; then
     PLJAVA_GPPKG_FILE=$(echo ${BASE_DIR}/pljava_rhel5_gppkg/*.gppkg)
 fi
@@ -131,6 +139,8 @@ TIMESTAMP ..... : $(date)
   PLR_GPPKG_FILE ............ : ${PLR_GPPKG_FILE}
   PLJAVA_GPPKG_FILE ......... : ${PLJAVA_GPPKG_FILE}
   MADLIB_GPPKG_FILE ......... : ${MADLIB_GPPKG_FILE}
+  DS_PYTHON_GPPKG_FILE ...... : ${DATASCIENCE_PYTHON_GPPKG_FILE}
+  DS_R_GPPKG_FILE ........... : ${DATASCIENCE_R_GPPKG_FILE}
   JDBC_DRIVER_FILE .......... : ${JDBC_DRIVER_FILE}
   GPSUPPORT_FILE ............ : ${GPSUPPORT_FILE}
 
@@ -202,6 +212,10 @@ extract_std_gppkg ${PLJAVA_GPPKG_FILE}
 extract_std_gppkg ${PGCRYPTO_GPPKG_FILE}
 
 extract_std_gppkg ${PLR_GPPKG_FILE}
+
+extract_std_gppkg ${DATASCIENCE_PYTHON_GPPKG_FILE}
+
+extract_std_gppkg ${DATASCIENCE_R_GPPKG_FILE}
 
 ## ----------------------------------------------------------------------
 ## Process R

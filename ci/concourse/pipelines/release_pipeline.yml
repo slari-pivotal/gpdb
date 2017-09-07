@@ -454,6 +454,24 @@ resources:
 ## Resources for Morgan Stanley
 ## ============================
 
+- name: ds_python_rhel6
+  type: s3
+  source:
+    bucket: {{procedural-languages-concourse-bucket}}
+    region_name: {{aws-region}}
+    access_key_id: {{gpdb5-pipeline-bucket-access-key-id}}
+    secret_access_key: {{gpdb5-pipeline-bucket-secret-access-key}}
+    regexp: release/gpdb4/data-science/DataSciencePython-(.*)-gp4-rhel6-x86_64.gppkg
+
+- name: ds_r_rhel6
+  type: s3
+  source:
+    bucket: {{procedural-languages-concourse-bucket}}
+    region_name: {{aws-region}}
+    access_key_id: {{gpdb5-pipeline-bucket-access-key-id}}
+    secret_access_key: {{gpdb5-pipeline-bucket-secret-access-key}}
+    regexp: release/gpdb4/data-science/DataScienceR-(.*)-gp4-rhel6-x86_64.gppkg
+
 - name: madlib_rhel5_gppkg
   type: s3
   source:
@@ -940,6 +958,8 @@ jobs:
     - get: greenplum_jdbc_zip
     - get: gpsupport_package
     - get: gpmt_binary
+    - get: ds_python_rhel6
+    - get: ds_r_rhel6
     - get: centos-gpdb-dev-5
     - get: jre
   - task: update_artifacts
