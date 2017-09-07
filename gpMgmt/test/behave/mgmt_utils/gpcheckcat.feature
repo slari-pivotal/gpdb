@@ -15,7 +15,10 @@ Feature: gpcheckcat tests
         And waiting "1" seconds
         Then read pid from file "test/behave/mgmt_utils/steps/data/gpcheckcat/pid_leak" and kill the process
         And the temporary file "test/behave/mgmt_utils/steps/data/gpcheckcat/pid_leak" is removed
-        And waiting "2" seconds
+        # Use this as a way to wait for the database to have time restarting/recovering itself.
+        # A kill -9 signal to the backend process will cause the postgres to
+        # view the kill as a crash and cause all the backend to restart.
+        And the segments are synchronized
         When the user runs "gpstop -ar"
         Then gpstart should return a return code of 0
         When the user runs "psql leak_db -f test/behave/mgmt_utils/steps/data/gpcheckcat/leaked_schema.sql"

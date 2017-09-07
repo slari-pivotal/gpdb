@@ -6,6 +6,7 @@ import re
 import signal
 import stat
 import time
+import sys
 
 import yaml
 import glob, shutil
@@ -792,16 +793,20 @@ def bring_nic_up(hostname, nic):
     address = hostname + '-cm'
     cmd = Command(name='bring up nic', cmdStr='sudo /sbin/ifup %s' % nic, remoteHost=address, ctxt=REMOTE)
     cmd.run(validateAfter=True)
-    
+
     if not get_nic_up(hostname, nic):
         raise Exception('Unable to bring up nic %s on host %s' % (nic, hostname))
 
 def are_segments_synchronized():
-    gparray = GpArray.initFromCatalog(dbconn.DbURL())
-    segments = gparray.getDbList()
-    for seg in segments:
-        if seg.mode != MODE_SYNCHRONIZED:
-            return False 
+    try:
+        gparray = GpArray.initFromCatalog(dbconn.DbURL())
+        segments = gparray.getDbList()
+        for seg in segments:
+            if seg.mode != MODE_SYNCHRONIZED:
+                return False
+    except:
+        print "Unexpected error:", sys.exc_info()[0]
+        return False
     return True
 
 def is_any_segment_resynchronized():
