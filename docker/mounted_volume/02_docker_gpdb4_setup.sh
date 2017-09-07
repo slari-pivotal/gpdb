@@ -28,7 +28,6 @@ chmod 600 ~/.ssh/config
 #the below echo uses multiple lines
 echo "
 #for gpdb4 compilation
-source /opt/gcc_env.sh
 export JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk.x86_64
 export PATH=\${JAVA_HOME}/bin:\${PATH}
 export IVYREPO_HOST=repo.pivotal.io
@@ -37,7 +36,9 @@ export IVYREPO_USER=build_readonly
 export IVYREPO_PASSWD=\"$SINGLE_QUOTED_IVY_PASSWORD\"
 export PYTHONPATH=/opt/python-2.6.9/lib/python2.6:\$PYTHONPATH
 export PYTHONHOME=/opt/python-2.6.9
+export GOPATH=/home/gpadmin/go/docker:/home/gpadmin/go
 export PATH=/opt/python-2.6.9/bin:\$PATH
+export PATH=/usr/local/go/bin:/home/gpadmin/go/docker/bin:$PATH
 
 " >> ~/.bashrc
 
