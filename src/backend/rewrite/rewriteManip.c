@@ -542,6 +542,7 @@ IncrementVarSublevelsUp(Node *node, int delta_sublevels_up,
 
 	context.delta_sublevels_up = delta_sublevels_up;
 	context.min_sublevels_up = min_sublevels_up;
+	context.ignore_min_sublevels_up = false;
 
 	/*
 	 * Must be prepared to start with a Query or a bare expression tree; if
@@ -571,6 +572,26 @@ IncrementVarSublevelsUpInTransformGroupedWindows(Node *node,
 									IncrementVarSublevelsUp_walker,
 									(void *) &context,
 									QTW_EXAMINE_RTES);
+}
+
+/*
+ * IncrementVarSublevelsUp_rtable -
+ *	Same as IncrementVarSublevelsUp, but to be invoked on a range table.
+ */
+void
+IncrementVarSublevelsUp_rtable(List *rtable, int delta_sublevels_up,
+							   int min_sublevels_up)
+{
+	IncrementVarSublevelsUp_context context;
+
+	context.delta_sublevels_up = delta_sublevels_up;
+	context.min_sublevels_up = min_sublevels_up;
+	context.ignore_min_sublevels_up = false;
+
+	range_table_walker(rtable,
+					   IncrementVarSublevelsUp_walker,
+					   (void *) &context,
+					   QTW_EXAMINE_RTES);
 }
 
 
