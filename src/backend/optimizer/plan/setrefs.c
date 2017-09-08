@@ -2468,6 +2468,20 @@ fix_projection_incapable_nodes(Plan *plan)
 			list_free(oldTargetList);
 		}
 	}
+	else if (IsA(plan, Append))
+	{
+		/*
+		 * while Append does not evaluate projections, append node contains appendplans and the
+		 * child's target list of those append plans need to be traversed to be fixed up. appendplans
+		 * are not traversed otherwise before set_plan_refs.
+		 */
+		ListCell *appendplanlc;
+		foreach(appendplanlc, ((Append *) plan)->appendplans)
+		{
+			Plan *appendplan = (Plan *) lfirst(appendplanlc);
+			fix_projection_incapable_nodes(appendplan);
+		}
+	}
 }
 
 /*
