@@ -33,8 +33,8 @@ groups:
   - manual_testing_on_pulse_sles
   - push_to_pivnet_manually_centos
   - push_to_pivnet_manually_sles
-  - pulse_DPM_BehaveBackupRestore
-  - pulse_DPM_BehaveBackupRestore_filename_compatibility
+  - DPM_backup-restore
+  - DPM_backup-restore_filename_compatibility
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
   - pulse_DPM_BehaveDDBoost
@@ -95,8 +95,6 @@ groups:
   - pulse_mpp-interconnect-sles
 - name: Pulse
   jobs:
-  - pulse_DPM_BehaveBackupRestore
-  - pulse_DPM_BehaveBackupRestore_filename_compatibility
   - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
@@ -139,14 +137,16 @@ groups:
   jobs:
   - MM_gpcheckcat
   - MM_gprecoverseg
+  - DPM_backup-restore
+  - DPM_backup-restore_filename_compatibility
 - name: MM
   jobs:
   - MM_gpcheckcat
   - MM_gprecoverseg
 - name: Pulse_MU
   jobs:
-  - pulse_DPM_BehaveBackupRestore
-  - pulse_DPM_BehaveBackupRestore_filename_compatibility
+  - DPM_backup-restore
+  - DPM_backup-restore_filename_compatibility
   - pulse_DPM_BehaveGptransfer43xTo43x
   - pulse_DPM_BehaveNetBackup77
   - pulse_DPM_BehaveNetBackup77_filename_compatibility
@@ -200,6 +200,22 @@ debug_sleep_anchor: &debug_sleep
         args: ['-c', 'sleep 6h']
     ensure:
       <<: *ccp_destroy
+
+rhel_artifacts_for_pulse_anchor : &rhel_artifacts_for_pulse_release-add-trigger
+  - get: gpdb_src
+    gpdb_release: add_trigger
+    params: {submodules: none}
+    passed:
+    - gpdb_src_packaging
+    - gpdb_rc_packaging_centos
+  - get: gpdb_src_archive
+    passed: [gpdb_src_packaging]
+  - get: installer_gpdb_rc
+    resource: installer_rhel5_gpdb_rc
+    passed: [gpdb_rc_packaging_centos]
+  - get: qautils_tarball
+    resource: qautils_rhel5_tarball
+    passed: [gpdb_rc_packaging_centos]
 
 ## ======================================================================
 ## resource types
@@ -305,6 +321,15 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: bin_gpdb_centos/bin_gpdb.tar.gz
+
+- name: bin_gpdb4-3-11-3_centos
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{gpdb4-3-11-3-bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: bin_gpdb-4.3.11.3.tar.gz
 
 - name: bin_gpdb_sles
   type: s3
@@ -1607,66 +1632,112 @@ jobs:
 # initials of the team that owns the suite (e.g. MU = Management Utilities)
 # and tag is the tag passed to behave.
 
-- name: pulse_DPM_BehaveBackupRestore
+- name: DPM_backup-restore
   plan:
-  - get: pulse-api-image
+  - aggregate:
+    - get: ccp_src
+    - get: gpdb_src
+      passed: [compile_gpdb_centos]
+    - get: sync_tools_gpdb
+      resource: sync_tools_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+      trigger: true
+    - get: centos-gpdb-dev-6
+  - put: terraform
+    params:
+        <<: *ccp_create_params
+  - task: gen_cluster
+    file: ccp_src/ci/tasks/gen_cluster.yml
+    input_mapping:
+      gpdb_binary: bin_gpdb
+    params:
+      AWS_ACCESS_KEY_ID: {{tf-machine-access-key-id}}
+      AWS_SECRET_ACCESS_KEY: {{tf-machine-secret-access-key}}
+      AWS_DEFAULT_REGION: {{aws-region}}
+    on_failure:
+      <<: *ccp_destroy
+  - task: run_tests
+    file: gpdb_src/ci/concourse/terraform_run_behave.yml
+    image: centos-gpdb-dev-6
+    params:
+      BEHAVE_FLAGS: --tags=analyzedb,backups,backup_and_restore_backups,backup_and_restore_restores,restores --tags=-nbuonly --tags=-ddonly
+    on_failure:
+      <<: *debug_sleep
+  - *ccp_destroy
+
+- name: DPM_backup-restore_filename_compatibility
+  plan:
   - get: nightly-trigger-pulse
     trigger: true
-  - aggregate: &rhel_artifacts_for_pulse_release-add-trigger
+  - aggregate:
     - get: gpdb_src
-      params: {submodules: none}
-      passed:
-      - gpdb_src_packaging
-      - gpdb_rc_packaging_centos
-    - get: gpdb_src_archive
-      passed: [gpdb_src_packaging]
-    - get: installer_gpdb_rc
-      resource: installer_rhel5_gpdb_rc
-      passed: [gpdb_rc_packaging_centos]
-    - get: qautils_tarball
-      resource: qautils_rhel5_tarball
-      passed: [gpdb_rc_packaging_centos]
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb
+      resource: bin_gpdb_centos
+      passed: [compile_gpdb_centos]
+    - get: bin_gpdb4-3-11-3
+      resource: bin_gpdb4-3-11-3_centos
+    - get: ccp_src
+    - get: centos-gpdb-dev-6
+  - put: terraform
     params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+      <<: *ccp_create_params
+  - task: setup_gpdb4-3-11-3
+    file: ccp_src/ci/tasks/gen_cluster.yml
+    input_mapping:
+      gpdb_binary: bin_gpdb4-3-11-3
     params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-
-- name: pulse_DPM_BehaveBackupRestore_filename_compatibility
-  plan:
-  - get: pulse-api-image
-  - get: weekly-trigger-pulse
-    trigger: true
-  - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
-  - task: trigger_pulse
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/trigger_pulse.yml
+      AWS_ACCESS_KEY_ID: {{tf-machine-access-key-id}}
+      AWS_SECRET_ACCESS_KEY: {{tf-machine-secret-access-key}}
+      AWS_DEFAULT_REGION: {{aws-region}}
+    on_failure:
+      <<: *ccp_destroy
+  - task: run_backup_tests
+    file: gpdb_src/ci/concourse/terraform_run_behave.yml
+    image: centos-gpdb-dev-6
     params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore_filename_compatibility
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
-  - task: monitor_pulse
-    attempts: 2
-    image: pulse-api-image
-    file: gpdb_src/ci/pulse/api/monitor_pulse.yml
+      BEHAVE_FLAGS: --tags=backup_and_restore_backups --tags=-nbuonly --tags=-ddonly --tags=-skip_filename_compatibility 
+    on_failure:
+      <<: *debug_sleep
+  - task: setup_new_gpdb4
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: centos
+          tag: "7"
+      inputs:
+      - name: terraform
+      - name: bin_gpdb
+      - name: ccp_src
+      - name: gpdb_src
+      - name: cluster_env_files
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -ex
+          ccp_src/aws/setup_ssh_to_cluster.sh
+          scp cluster_env_files/hostfile_all mdw:/home/gpadmin/hostfile_all
+          ssh -t mdw "source /home/gpadmin/gpdb_src/ci/concourse/scripts/backup_utils.sh; copy_backup_files"
+          ssh -t mdw "source /home/gpadmin/gpdb_src/ci/concourse/scripts/backup_utils.sh; destroy_gpdb"
+          ccp_src/aws/install_gpdb.sh bin_gpdb
+          ssh -t mdw "source /home/gpadmin/gpdb_src/ci/concourse/scripts/backup_utils.sh; restore_backup_files"
+    on_failure:
+      <<: *debug_sleep
+  - task: run_restore_tests
+    file: gpdb_src/ci/concourse/terraform_run_behave.yml
+    image: centos-gpdb-dev-6
     params:
-      PULSE_URL: {{pulse_url}}
-      PULSE_PROJECT_NAME: GPDB-43_STABLE-BehaveBackupRestore_filename_compatibility
-      PULSE_USERNAME: {{pulse_username}}
-      PULSE_PASSWORD: {{pulse_password}}
+      BEHAVE_FLAGS: --tags=backup_and_restore_restores --tags=-nbuonly --tags=-ddonly --tags=-skip_filename_compatibility
+    on_failure:
+      <<: *debug_sleep
+  - *ccp_destroy
 
 - name: pulse_DPM_BehaveGptransfer43xTo43x
   plan:
