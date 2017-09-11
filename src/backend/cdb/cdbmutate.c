@@ -55,8 +55,8 @@ typedef struct ApplyMotionState
 	plan_tree_base_prefix base; /* Required prefix for plan_tree_walker/mutator */
 	int			nextMotionID;
     int         sliceDepth;
-    int         numInitPlanMotionNodes;
     List       *initPlans;
+    List       *initPlanPlans;
 }	ApplyMotionState;
 
 /*
@@ -258,7 +258,7 @@ apply_motion(PlannerInfo *root, Plan *plan, Query *query)
 	planner_init_plan_tree_base(&state.base, root); /* error on attempt to descend into subplan plan */
 	state.nextMotionID = 1;		/* Start at 1 so zero will mean "unassigned". */
     state.sliceDepth = 0;
-    state.numInitPlanMotionNodes = 0;
+    state.initPlanPlans = NIL;
     state.initPlans = NIL;
 
 	Assert(is_plan_node((Node *) plan) && IsA(query, Query));
@@ -866,13 +866,14 @@ apply_motion_mutator(Node *node, ApplyMotionState * context)
 
     plan = (Plan *)newnode;
     flow = plan->flow;
+    /* Number of motions in initplans */
+    int nMotionNodesInitPlansPlan = 0;
 
     /* Make one big list of all of the initplans. */
     if (plan->initPlan)
     {
         ListCell   *cell;
         SubPlan    *subplan;
-        int         nMotion = 0;
 
         foreach(cell, plan->initPlan)
         {
@@ -880,13 +881,11 @@ apply_motion_mutator(Node *node, ApplyMotionState * context)
             subplan = (SubPlan *)lfirst(cell);
             Assert(IsA(subplan, SubPlan));
             Assert(root);
-            Assert(planner_subplan_get_plan(root, subplan));
-            nMotion += planner_subplan_get_plan(root, subplan)->nMotionNodes;
+            Plan *subplan_plan = planner_subplan_get_plan(root, subplan);
+            Assert(subplan_plan);
             context->initPlans = lappend(context->initPlans, subplan);
+            context->initPlanPlans = lappend(context->initPlanPlans, subplan_plan);
         }
-
-        /* Keep track of the number of Motion nodes found in Init Plans. */
-        context->numInitPlanMotionNodes += nMotion;
     }
 
     /* Pre-existing Motion nodes must be renumbered. */
@@ -968,9 +967,10 @@ apply_motion_mutator(Node *node, ApplyMotionState * context)
 
         case MOVEMENT_EXPLICIT:
         	/* add an ExplicitRedistribute motion node only if child plan nodes
-        	 * have a motion node
-        	 */ 
-        	if (context->nextMotionID - context->numInitPlanMotionNodes - saveNextMotionID > 0)
+        	 * have a motion node excluding initplan motions
+        	 */
+        	nMotionNodesInitPlansPlan = list_length(extract_nodes(NULL, (Node *)context->initPlanPlans, T_Motion));
+        	if (context->nextMotionID - nMotionNodesInitPlansPlan - saveNextMotionID > 0)
         	{
         		/* motion node in child nodes: add a ExplicitRedistribute motion */
 				newnode = (Node *) make_explicit_motion(plan,
