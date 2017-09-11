@@ -1527,6 +1527,8 @@ CTranslatorScalarToDXL::PdxlnScWindowref
 													GPOS_NEW(m_pmp) CMDIdGPDB(pwindowref->winfnoid),
 													GPOS_NEW(m_pmp) CMDIdGPDB(pwindowref->restype),
 													pwindowref->windistinct,
+													false, /* winstar default, available GPDB5 onwards */
+													false, /* winagg default, available GPDB5 onwards */
 													edxlwinstage,
 													ulWinSpecPos
 													);
