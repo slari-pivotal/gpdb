@@ -726,7 +726,6 @@ resources:
     versioned_file: deliverables/plr-ossv8.3.0.15_pv2.1_gpdb4.3orca-sles11-x86_64.gppkg
 
 - name: nightly-trigger-pulse
-  gpdb_release: delete
   type: time
   source:
     location: America/Los_Angeles
@@ -735,7 +734,6 @@ resources:
     stop: 6:00 AM
 
 - name: weekly-trigger-pulse
-  gpdb_release: delete
   type: time
   source:
     location: America/Los_Angeles
@@ -1613,11 +1611,9 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: &rhel_artifacts_for_pulse_release-add-trigger
     - get: gpdb_src
-      gpdb_release: add_trigger
       params: {submodules: none}
       passed:
       - gpdb_src_packaging
@@ -1652,7 +1648,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1677,7 +1672,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1702,7 +1696,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1727,7 +1720,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1752,7 +1744,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1777,7 +1768,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1802,7 +1792,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1827,7 +1816,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1852,7 +1840,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1877,7 +1864,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1902,7 +1888,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1927,7 +1912,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1952,7 +1936,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -1977,7 +1960,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -2002,7 +1984,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -2103,7 +2084,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -2128,7 +2108,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -2153,11 +2132,9 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: weekly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: &sles_artifacts_for_pulse_release-add-trigger
     - get: gpdb_src
-      gpdb_release: add_trigger
       params: {submodules: none}
       passed:
       - gpdb_src_packaging
@@ -2192,7 +2169,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *rhel_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse
@@ -2217,7 +2193,6 @@ jobs:
   plan:
   - get: pulse-api-image
   - get: nightly-trigger-pulse
-    gpdb_release: delete
     trigger: true
   - aggregate: *sles_artifacts_for_pulse_release-add-trigger
   - task: trigger_pulse

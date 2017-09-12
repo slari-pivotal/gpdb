@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-
-pip install pyhamcrest boto3 ruamel.yaml
-python "$(dirname $0)/release_test.py"
