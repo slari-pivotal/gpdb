@@ -667,13 +667,11 @@ jobs:
   - aggregate:
     - get: gpdb_src
       trigger: true
-    - get: sles-gpdb-dev
     - get: ccache_snapshot
       resource: ccache_gpdb_sles11
       trigger: false
   - task: build_gpdb
-    file: gpdb_src/ci/concourse/compile_gpdb.yml
-    image: sles-gpdb-dev
+    file: gpdb_src/ci/concourse/compile_gpdb_sles11.yml
     params:
       IVYREPO_HOST: {{ivyrepo_host}}
       IVYREPO_REALM: {{ivyrepo_realm}}
