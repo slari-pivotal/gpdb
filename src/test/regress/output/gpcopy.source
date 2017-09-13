@@ -592,6 +592,11 @@ ERROR:  STDIN/STDOUT not allowed with PROGRAM
 --on segment with \t
 \copy segment_reject_limit_from from '/tmp/copy_on_segment<SEGID>.csv' on       segment;
 \COPY command doesn't support ON SEGMENT
+-- \copy to/from 'stdin'/'stdout' (quoted)
+\copy segment_reject_limit_from to 'stdin';
+\copy segment_reject_limit_from from 'stdin';
+\copy segment_reject_limit_from to 'stdout';
+\copy segment_reject_limit_from from 'stdout';
 -- start_ignore
 -- end_ignore
 CREATE TABLE test_copy_on_segment_nocol ();

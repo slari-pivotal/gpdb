@@ -615,6 +615,12 @@ COPY segment_reject_limit_from to PROGRAM STDOUT log errors segment reject limit
 --on segment with \t
 \copy segment_reject_limit_from from '/tmp/copy_on_segment<SEGID>.csv' on	segment;  
 
+-- \copy to/from 'stdin'/'stdout' (quoted)
+\copy segment_reject_limit_from to 'stdin';
+\copy segment_reject_limit_from from 'stdin';
+\copy segment_reject_limit_from to 'stdout';
+\copy segment_reject_limit_from from 'stdout';
+
 -- start_ignore
 DROP TABLE IF EXISTS test_copy_on_segment;
 DROP TABLE IF EXISTS test_copy_on_segment_nocol;
