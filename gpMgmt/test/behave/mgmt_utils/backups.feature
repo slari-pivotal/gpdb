@@ -588,7 +588,7 @@ Feature: Validate command line arguments
         And the mail_contacts file does not exist
 
     Scenario: If file contains double quoted table and schema name then gpcrondump should error out finding table does not exist
-        Given the backup test is initialized with no backup files
+        Given the backup test is initialized for special characters
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/special_chars/create_special_database.sql template1"
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/special_chars/create_special_schema.sql template1"
         And the user runs "psql -f test/behave/mgmt_utils/steps/data/special_chars/create_special_table.sql template1"

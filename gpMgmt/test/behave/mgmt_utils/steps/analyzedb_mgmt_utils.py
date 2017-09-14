@@ -1,3 +1,4 @@
+import re
 import os
 import shutil
 from gppylib.db import dbconn

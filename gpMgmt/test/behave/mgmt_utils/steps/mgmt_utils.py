@@ -24,6 +24,7 @@ from collections import defaultdict
 
 from collections import defaultdict
 from datetime import datetime
+from time import sleep
 
 from gppylib.commands.gp import SegmentStart, GpStandbyStart
 from gppylib.commands.unix import findCmdInPath
