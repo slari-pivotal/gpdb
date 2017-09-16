@@ -181,6 +181,35 @@ select A.i, B.i, C.j from A, B, C where A.j in (select C.j from C where C.j = A.
 ---+---+---
 (0 rows)
 
+select C.j from C where C.i in (select rank() over (order by B.i) from B  where C.i = B.i) order by C.j;
+  j  
+-----
+ 889
+(1 row)
+
+explain select C.j from C where C.i in (select rank() over (order by B.i) from B  where C.i = B.i) order by C.j;
+                                                        QUERY PLAN                                                         
+---------------------------------------------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice2; segments: 3)  (cost=2.06..2.06 rows=1 width=4)
+   Merge Key: j
+   ->  Sort  (cost=2.06..2.06 rows=1 width=4)
+         Sort Key: c.j
+         ->  Seq Scan on c  (cost=0.00..2.05 rows=1 width=4)
+               Filter: (subplan)
+               SubPlan 1
+                 ->  Window  (cost=1.02..1.05 rows=1 width=4)
+                       Order By: b.i
+                       ->  Sort  (cost=1.02..1.03 rows=1 width=4)
+                             Sort Key: b.i
+                             ->  Result  (cost=1.01..1.02 rows=1 width=4)
+                                   Filter: $0 = b.i
+                                   ->  Materialize  (cost=1.01..1.02 rows=1 width=4)
+                                         ->  Broadcast Motion 3:3  (slice1; segments: 3)  (cost=0.00..1.01 rows=1 width=4)
+                                               ->  Seq Scan on b  (cost=0.00..1.01 rows=1 width=4)
+ Settings:  optimizer=off
+ Optimizer status: legacy query optimizer
+(18 rows)
+
 -- -- -- --
 -- Basic queries with NOT IN clause
 -- -- -- --
@@ -1125,6 +1154,24 @@ select C.j from C where not exists (select rank() over (order by B.i) from B  wh
   7
  62
 (4 rows)
+
+explain select C.j from C where not exists (select rank() over (order by B.i) from B  where C.i = B.i) order by C.j;
+                                       QUERY PLAN                                        
+-----------------------------------------------------------------------------------------
+ Gather Motion 3:1  (slice1; segments: 3)  (cost=2.11..2.12 rows=4 width=4)
+   Merge Key: j
+   ->  Sort  (cost=2.11..2.12 rows=2 width=4)
+         Sort Key: c.j
+         ->  Hash Left Anti Semi Join  (cost=1.03..2.08 rows=2 width=4)
+               Hash Cond: c.i = "Expr_SUBQUERY".csq_c0
+               ->  Seq Scan on c  (cost=0.00..1.01 rows=1 width=8)
+               ->  Hash  (cost=1.02..1.02 rows=1 width=4)
+                     ->  Subquery Scan "Expr_SUBQUERY"  (cost=0.00..1.02 rows=1 width=4)
+                           Filter: csq_c0 IS NOT NULL
+                           ->  Seq Scan on b  (cost=0.00..1.01 rows=1 width=4)
+ Settings:  optimizer=off
+ Optimizer status: legacy query optimizer
+(13 rows)
 
 RESET ALL;
 explain select * from A where not exists (select sum(C.i) from C where C.i = A.i group by a.i);

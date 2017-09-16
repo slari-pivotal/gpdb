@@ -181,6 +181,37 @@ select A.i, B.i, C.j from A, B, C where A.j in (select C.j from C where C.j = A.
 ---+---+---
 (0 rows)
 
+select C.j from C where C.i in (select rank() over (order by B.i) from B  where C.i = B.i) order by C.j;
+  j  
+-----
+ 889
+(1 row)
+
+explain select C.j from C where C.i in (select rank() over (order by B.i) from B  where C.i = B.i) order by C.j;
+                                                        QUERY PLAN                                                        
+--------------------------------------------------------------------------------------------------------------------------
+ Result  (cost=0.00..1324032.56 rows=1 width=4)
+   ->  Result  (cost=0.00..1324032.56 rows=1 width=4)
+         Filter: (subplan)
+         ->  Sort  (cost=0.00..431.00 rows=1 width=8)
+               Sort Key: c.j
+               ->  Gather Motion 3:1  (slice1; segments: 3)  (cost=0.00..431.00 rows=1 width=8)
+                     ->  Table Scan on c  (cost=0.00..431.00 rows=1 width=8)
+         SubPlan 1
+           ->  Result  (cost=0.00..431.00 rows=1 width=8)
+                 ->  Window  (cost=0.00..431.00 rows=1 width=8)
+                       Order By: b.i
+                       ->  Sort  (cost=0.00..431.00 rows=1 width=4)
+                             Sort Key: b.i
+                             ->  Result  (cost=0.00..431.00 rows=1 width=4)
+                                   Filter: $1 = b.i
+                                   ->  Materialize  (cost=0.00..431.00 rows=1 width=4)
+                                         ->  Gather Motion 3:1  (slice2; segments: 3)  (cost=0.00..431.00 rows=1 width=4)
+                                               ->  Table Scan on b  (cost=0.00..431.00 rows=1 width=4)
+ Settings:  optimizer=on
+ Optimizer status: PQO version 2.44.1
+(20 rows)
+
 -- -- -- --
 -- Basic queries with NOT IN clause
 -- -- -- --
@@ -1180,6 +1211,31 @@ select C.j from C where not exists (select rank() over (order by B.i) from B  wh
   7
  62
 (4 rows)
+
+explain select C.j from C where not exists (select rank() over (order by B.i) from B  where C.i = B.i) order by C.j;
+                                                        QUERY PLAN                                                        
+--------------------------------------------------------------------------------------------------------------------------
+ Result  (cost=0.00..1324032.31 rows=1 width=4)
+   ->  Result  (cost=0.00..1324032.31 rows=1 width=4)
+         Filter: (subplan)
+         ->  Sort  (cost=0.00..431.00 rows=1 width=8)
+               Sort Key: c.j
+               ->  Gather Motion 3:1  (slice1; segments: 3)  (cost=0.00..431.00 rows=1 width=8)
+                     ->  Table Scan on c  (cost=0.00..431.00 rows=1 width=8)
+         SubPlan 1
+           ->  Result  (cost=0.00..431.00 rows=1 width=4)
+                 ->  Window  (cost=0.00..431.00 rows=1 width=4)
+                       Order By: b.i
+                       ->  Sort  (cost=0.00..431.00 rows=1 width=4)
+                             Sort Key: b.i
+                             ->  Result  (cost=0.00..431.00 rows=1 width=4)
+                                   Filter: $0 = b.i
+                                   ->  Materialize  (cost=0.00..431.00 rows=1 width=4)
+                                         ->  Gather Motion 3:1  (slice2; segments: 3)  (cost=0.00..431.00 rows=1 width=4)
+                                               ->  Table Scan on b  (cost=0.00..431.00 rows=1 width=4)
+ Settings:  optimizer=on
+ Optimizer status: PQO version 2.44.1
+(20 rows)
 
 RESET ALL;
 -- start_ignore
