@@ -213,10 +213,6 @@ extract_std_gppkg ${PGCRYPTO_GPPKG_FILE}
 
 extract_std_gppkg ${PLR_GPPKG_FILE}
 
-extract_std_gppkg ${DATASCIENCE_PYTHON_GPPKG_FILE}
-
-extract_std_gppkg ${DATASCIENCE_R_GPPKG_FILE}
-
 ## ----------------------------------------------------------------------
 ## Process R
 ## ----------------------------------------------------------------------
@@ -230,6 +226,14 @@ R_VERSION=$(tar -xf $PLR_GPPKG_FILE -C /tmp/ && rpm -qip /tmp/deps/R-*.x86_64.rp
 echo "export R_HOME=\$GPHOME/ext/R-${R_VERSION}" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 echo "export LD_LIBRARY_PATH=\$GPHOME/ext/R-${R_VERSION}/extlib:\$GPHOME/ext/R-${R_VERSION}/lib:\$LD_LIBRARY_PATH" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 
+extract_std_gppkg ${DATASCIENCE_R_GPPKG_FILE}
+echo "export R_LIBS_USER=\$GPHOME/ext/DataScienceR/library:\$R_LIBS_USER"            >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo "export LD_LIBRARY_PATH=\$GPHOME/ext/DataScienceR/extlib/lib:\$LD_LIBRARY_PATH" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+
+extract_std_gppkg ${DATASCIENCE_PYTHON_GPPKG_FILE}
+echo "export PYTHONPATH=\$GPHOME/ext/DataSciencePython/lib/python2.6/site-packages:\$PYTHONPATH"           >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo "export PATH=\$GPHOME/ext/DataSciencePython/bin:\$PATH"                                               >> ${GPDB_INSTALLDIR}/greenplum_path.sh
+echo "export LD_LIBRARY_PATH=\$GPHOME/ext/DataSciencePython/lib/python2.6/site-packages:\$LD_LIBRARY_PATH" >> ${GPDB_INSTALLDIR}/greenplum_path.sh
 ## ----------------------------------------------------------------------
 ## Process Alpine
 ## ----------------------------------------------------------------------
