@@ -21,6 +21,13 @@ resources:
     uri: {{gpdb-git-remote}}
     tag_filter: 4.3.*
 
+- name: gpdb_release_src
+  type: git
+  source:
+    branch: {{gpdb-release-git-branch}}
+    private_key: {{gpdb-release-remote-deploy-key}}
+    uri: {{gpdb-release-git-remote}}
+
 - name: centos-gpdb-dev-5
   type: docker-image
   source:
@@ -531,25 +538,7 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: gpmt_1.1.2/gpmt.gz
 
-- name: patched_testable_bin_gpdb_ms
-  type: s3
-  source:
-    access_key_id: {{bucket-access-key-id}}
-    bucket: {{bucket-name}}
-    region_name: {{aws-region}}
-    secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: ms_intermediates/bin_gpdb.tar.gz
-
 - name: patched_bin_gpdb_ms
-  type: s3
-  source:
-    access_key_id: {{bucket-access-key-id}}
-    bucket: {{bucket-name}}
-    region_name: {{aws-region}}
-    secret_access_key: {{bucket-secret-access-key}}
-    versioned_file: ms_intermediates/bin_gpdb.tar.gz
-
-- name: patched_tested_bin_gpdb_ms
   type: s3
   source:
     access_key_id: {{bucket-access-key-id}}
@@ -1096,56 +1085,14 @@ jobs:
       params:
         file: ms_installer_rhel5_gpdb_bundled_clients/greenplum-clients-*-rhel5-x86_64.zip.sha256
 
-- name: patch_for_testing_ms
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      passed: [patch_ms]
-    - get: qautils_rhel5_tarball
-      passed: [gpdb_rc_packaging_centos5]
-    - get: plperl_rhel6_gppkg
-      passed: [compile_gpdb_centos6]
-    - get: patched_bin_gpdb_ms
-      passed: [patch_ms]
-      trigger: true
-    - get: centos-gpdb-dev-6
-  - task: prepare_bin_gpdb_for_testing
-    file: gpdb_src/ci/concourse/prepare_bin_gpdb_for_testing.yml
-    image: centos-gpdb-dev-6
-  - aggregate:
-    - put: patched_testable_bin_gpdb_ms
-      params:
-        file: patched_testable_bin_gpdb_ms/bin_gpdb.tar.gz
-    - put: patched_bin_gpdb_ms
-      params:
-        file: patched_bin_gpdb_ms/bin_gpdb.tar.gz
-
-- name: dummy_test_ms
-  plan:
-  - aggregate:
-    - get: gpdb_src
-      passed: [patch_for_testing_ms]
-    - get: patched_testable_bin_gpdb_ms
-      passed: [patch_for_testing_ms]
-      trigger: true
-    - get: centos-gpdb-dev-5
-    - get: patched_bin_gpdb_ms
-      passed: [patch_for_testing_ms]
-  - task: test_ms_artifacts
-    file: gpdb_src/ci/concourse/test_morgan_stanley_patches.yml
-    image: centos-gpdb-dev-5
-  - put: patched_tested_bin_gpdb_ms
-    params:
-      file: patched_bin_gpdb_ms/bin_gpdb.tar.gz
-
 - name: package_ms
   plan:
   - aggregate:
     - get: gpdb_src
-      passed: [dummy_test_ms]
+      passed: [patch_ms]
     - get: bin_gpdb
-      resource: patched_tested_bin_gpdb_ms
-      passed: [dummy_test_ms]
+      resource: patched_bin_gpdb_ms
+      passed: [patch_ms]
       trigger: true
     - get: centos-gpdb-dev-5
   - task: package_ms_artifacts
@@ -1158,3 +1105,32 @@ jobs:
     - put: ms_installer_rhel5_gpdb_rc_sha256
       params:
         file: ms_installer_rhel5_gpdb_rc/greenplum-db-*-rhel5-x86_64.zip.sha256
+
+- name: smoke_test_morgan_stanley
+  plan:
+  - aggregate:
+    - get: gpdb_src
+      passed: [package_ms]
+    - get: ms_installer_rhel5_gpdb_rc
+      passed: [package_ms]
+      trigger: true
+    - get: gpdb_release
+      resource: gpdb_release_src
+  - task: smoketest
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: pivotaldata/centos-gpdb-dev
+          # tag: '5-gcc4.4-happy'
+          tag: '6-gcc6.2-llvm3.7'
+      inputs:
+        - name: gpdb_src
+        - name: ms_installer_rhel5_gpdb_rc
+        - name: gpdb_release
+      params:
+        OSVER: centos5
+        TEST_OS: centos
+      run:
+        path: gpdb_release/concourse/scripts/ms_smoketest_gp4.sh
