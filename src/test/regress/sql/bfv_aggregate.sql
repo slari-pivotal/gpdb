@@ -247,10 +247,22 @@ select string_agg(b) over (partition by a order by a) from foo order by 1;
 select string_agg(b || 'txt') over (partition by a,b order by a,b) from foo order by 1;
 select '1' || string_agg(b) over (partition by a+1 order by a+1) from foo;
 
+-- MPP-29042 Multistage aggregation plans should have consistent targetlists in
+-- case of same column aliases and grouping on them.
+DROP TABLE IF EXISTS t1;
+CREATE TABLE t1 (a varchar) DISTRIBUTED RANDOMLY;
+INSERT INTO t1 VALUES ('aaaaaaa');
+INSERT INTO t1 VALUES ('aaaaaaa');
+INSERT INTO t1 VALUES ('bbbbbbb');
+INSERT INTO t1 VALUES ('bbbbbbb');
+INSERT INTO t1 VALUES ('bbbbb');
+SELECT substr(a, 1) as a FROM (SELECT ('-'||a)::varchar as a FROM (SELECT a FROM t1) t2) t3 GROUP BY a ORDER BY a;
+
 -- CLEANUP
 -- start_ignore
 drop function count_operator(text,text);
 DROP TABLE IF EXISTS foo;
+DROP TABLE IF EXISTS t1;
 drop function if exists count_operator(explain_query text, operator text);
 drop schema if exists bfv_aggregate;
 -- end_ignore

@@ -125,7 +125,7 @@ drop aggregate mysum2(int4);
 ERROR:  aggregate mysum2(integer) does not exist
 -- end_ignore
 create table toy(id,val) as select i,i from generate_series(1,5) i;
-NOTICE:  Table doesn't have 'distributed by' clause. Creating a NULL policy entry.
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause. Creating a NULL policy entry.
 create aggregate mysum1(int4) (sfunc = int4_sum, prefunc=int8pl, stype=bigint);
 create aggregate mysum2(int4) (sfunc = int4_sum, stype=bigint);
 -- TEST
@@ -247,7 +247,7 @@ set optimizer_force_multistage_agg = off;
 ---
 -- SETUP
 -- start_ignore
-SET optimizer_print_missing_stats=off;
+SET optimizer_print_missing_stats =off;
 DROP TABLE IF EXISTS attribute_table;
 NOTICE:  table "attribute_table" does not exist, skipping
 -- end_ignore
@@ -290,7 +290,7 @@ select count_operator('explain select product_id,concat(E''#attribute_''||attrib
 DROP TABLE IF EXISTS attribute_table;
 DROP AGGREGATE IF EXISTS concat(text);
 drop function do_concat(text,text) cascade;
-SET optimizer_print_missing_stats=on;
+SET optimizer_print_missing_stats =on;
 -- end_ignore
 ---
 --- Testing fallback to planner when the agg used in window does not have either prelim or inverse prelim function.
@@ -367,10 +367,29 @@ select string_agg(b || 'txt') over (partition by a,b order by a,b) from foo orde
 ERROR:  aggregate functions with no prelimfn or invprelimfn are not yet supported as window functions
 select '1' || string_agg(b) over (partition by a+1 order by a+1) from foo;
 ERROR:  aggregate functions with no prelimfn or invprelimfn are not yet supported as window functions
+-- MPP-29042 Multistage aggregation plans should have consistent targetlists in
+-- case of same column aliases and grouping on them.
+DROP TABLE IF EXISTS t1;
+NOTICE:  table "t1" does not exist, skipping
+CREATE TABLE t1 (a varchar) DISTRIBUTED RANDOMLY;
+INSERT INTO t1 VALUES ('aaaaaaa');
+INSERT INTO t1 VALUES ('aaaaaaa');
+INSERT INTO t1 VALUES ('bbbbbbb');
+INSERT INTO t1 VALUES ('bbbbbbb');
+INSERT INTO t1 VALUES ('bbbbb');
+SELECT substr(a, 1) as a FROM (SELECT ('-'||a)::varchar as a FROM (SELECT a FROM t1) t2) t3 GROUP BY a ORDER BY a;
+    a     
+----------
+ -aaaaaaa
+ -bbbbb
+ -bbbbbbb
+(3 rows)
+
 -- CLEANUP
 -- start_ignore
 drop function count_operator(text,text);
 DROP TABLE IF EXISTS foo;
+DROP TABLE IF EXISTS t1;
 drop function if exists count_operator(explain_query text, operator text);
 NOTICE:  function count_operator(text,text) does not exist, skipping
 drop schema if exists bfv_aggregate;
