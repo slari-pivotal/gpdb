@@ -450,6 +450,20 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: gppkg_from_other_team/plr-ossv8.3.0.15_pv2.2.0_gpdb4.3orca-rhel5-x86_64.gppkg
 
+- name: gpdb_release
+  type: git
+  source:
+    branch: {{gpdb-release-branch}}
+    private_key: {{gpdb-release-remote-deploy-key}}
+    uri: {{gpdb-release-git-remote}}
+
+- name: pivnet_client
+  type: git
+  source:
+    branch: {{pivnet-client-branch}}
+    private_key: {{pivnet-client-remote-deploy-key}}
+    uri: {{pivnet-client-git-remote}}
+
 ## ============================
 ## Resources for Morgan Stanley
 ## ============================
@@ -588,6 +602,15 @@ resources:
     region_name: {{aws-region}}
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: jre/jre-1.6.0_32.tgz
+
+- name: osl_gpdb4
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: gpdb-4.3-release
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: osl/open_source_license_GPDB_-_4.3_-_GA.pdf
 
 ## ======================================================================
 ## jobs
@@ -928,6 +951,105 @@ jobs:
     - put: qautils_rhel5_tarball
       params:
         file: rc_bin_gpdb/QAUtils-rhel5-x86_64.tar.gz
+
+- name: push-to-pivnet
+  plan:
+    - aggregate:
+      - get: gpdb_src
+        passed:
+        - gpdb_rc_packaging_centos5
+        - compile_gpdb_centos5
+      - get: installer_rhel5_gpdb_rc
+        passed: [gpdb_rc_packaging_centos5]
+      - get: installer_appliance_rhel5_gpdb_rc
+        passed: [gpdb_rc_packaging_centos5]
+      - get: installer_rhel5_gpdb_clients
+        passed: [compile_gpdb_centos5]
+      - get: installer_rhel5_gpdb_connectivity
+        passed: [compile_gpdb_centos5]
+      - get: installer_rhel5_gpdb_loaders
+        passed: [compile_gpdb_centos5]
+      - get: installer_sles11_gpdb_rc
+        passed: [gpdb_rc_packaging_sles11]
+      - get: installer_sles11_gpdb_loaders
+        passed: [compile_gpdb_sles11]
+      - get: installer_sles11_gpdb_connectivity
+        passed: [compile_gpdb_sles11]
+      - get: installer_sles11_gpdb_clients
+        passed: [compile_gpdb_sles11]
+      - get: pgcrypto_rhel5_gppkg
+        passed: [compile_gpdb_centos5]
+      - get: bin_gpdb_windows_loaders
+        passed: [compile_gpdb_windows_ccl]
+      - get: bin_gpdb_windows_connectivity
+        passed: [compile_gpdb_windows_ccl]
+      - get: bin_gpdb_windows_clients
+        passed: [compile_gpdb_windows_ccl]
+      - get: plperl_rhel5_gppkg
+        passed: [compile_gpdb_centos5]
+      - get: plperl_rhel6_gppkg
+        passed: [compile_gpdb_centos6]
+      - get: plperl_rhel7_gppkg
+        passed: [compile_gpdb_centos7]
+      - get: plperl_sles11_gppkg
+        passed: [compile_gpdb_sles11]
+      - get: pgcrypto_sles11_gppkg
+        passed: [compile_gpdb_sles11]
+      - get: osl_gpdb4
+      - get: pivnet_client
+      - get: gpdb_release
+
+    - task: push-to-pivnet
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ruby
+            tag: '2.3'
+        inputs:
+        - name: gpdb_release
+        - name: pivnet_client
+        - name: installer_rhel5_gpdb_rc
+        - name: installer_appliance_rhel5_gpdb_rc
+        - name: installer_rhel5_gpdb_clients
+        - name: installer_rhel5_gpdb_connectivity
+        - name: installer_rhel5_gpdb_loaders
+        - name: installer_sles11_gpdb_rc
+        - name: installer_sles11_gpdb_loaders
+        - name: installer_sles11_gpdb_connectivity
+        - name: installer_sles11_gpdb_clients
+        - name: pgcrypto_rhel5_gppkg
+        - name: bin_gpdb_windows_loaders
+        - name: bin_gpdb_windows_connectivity
+        - name: bin_gpdb_windows_clients
+        - name: plperl_rhel5_gppkg
+        - name: plperl_rhel6_gppkg
+        - name: plperl_rhel7_gppkg
+        - name: plperl_sles11_gppkg
+        - name: pgcrypto_sles11_gppkg
+        - name: osl_gpdb4
+
+        params:
+          PIVNET_ENDPOINT: {{4_3-release_pivnet_endpoint}}
+          PIVNET_AUTH_TOKEN: {{4_3-release_pivnet_api_token}}
+          PIVNET_PRODUCT_SLUG: {{4_3-release_pivnet_product_slug}}
+          PIVNET_BUCKET_ACCESS_KEY_ID: {{4_3-release_pivnet_bucket_access_key_id}}
+          PIVNET_BUCKET_SECRET_ACCESS_KEY: {{4_3-release_pivnet_bucket_secret_access_key}}
+          PIVNET_BUCKET_AWS_REGION: eu-west-1
+          PIVNET_BUCKET_NAME: {{4_3-release_pivnet_bucket-name}}
+          PIVNET_S3_FILEPATH_PREFIX: {{4_3-release_pivnet_s3-filepath-prefix}}
+          BUCKET_ACCESS_KEY_ID: {{gpdb5-pipeline-bucket-access-key-id}}
+          BUCKET_SECRET_ACCESS_KEY: {{gpdb5-pipeline-bucket-secret-access-key}}
+          BUCKET_AWS_REGION: {{gpdb5-pipeline-aws-region}}
+        run:
+          path: "sh"
+          args:
+          - -exc
+          - |
+            cd pivnet_client/
+            bundle install
+            bundle exec pivnet_client upload --verbose --metadata ../gpdb_release/pivnet/metadata_gp43.yml --search_path ../
 
 - name: patch_ms
   plan:
