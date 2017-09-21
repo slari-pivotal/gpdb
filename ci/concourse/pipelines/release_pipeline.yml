@@ -457,13 +457,6 @@ resources:
     secret_access_key: {{bucket-secret-access-key}}
     versioned_file: gppkg_from_other_team/plr-ossv8.3.0.15_pv2.2.0_gpdb4.3orca-rhel5-x86_64.gppkg
 
-- name: gpdb_release
-  type: git
-  source:
-    branch: {{gpdb-release-branch}}
-    private_key: {{gpdb-release-remote-deploy-key}}
-    uri: {{gpdb-release-git-remote}}
-
 - name: pivnet_client
   type: git
   source:
@@ -987,7 +980,7 @@ jobs:
       - get: osl_gpdb4
       - get: pivnet_client
       - get: gpdb_release
-
+        resource: gpdb_release_src
     - task: push-to-pivnet
       config:
         platform: linux
