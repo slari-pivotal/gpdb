@@ -67,3 +67,8 @@ DROP SCHEMA public;
 CREATE SCHEMA public;
 
 CREATE TABLE public.t();
+
+-- recreate plpgsql extension to match the dumps for post 5X sql dumps
+DROP EXTENSION plpgsql;
+CREATE EXTENSION plpgsql;
+
